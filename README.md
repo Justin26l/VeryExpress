@@ -9,11 +9,11 @@
 - [ ] genarate express server from template
 
 - [ ] generate openapi
-    - ✅ path
+    - [x] path
     - [ ] param
     - [ ] response  
 
-- ✅ generate mongoose & collection interface
+- [x] generate mongoose & collection interface
 
 - [ ] genarate controllers from template
     - [ ] based on openapi spec
