@@ -1,11 +1,12 @@
-# json2express-api
+# VeryExpress
+an generator that generate [Express](https://github.com/expressjs/express) rest-api app based on [jsonSchema](https://github.com/json-schema-org) and [openApi](https://github.com/OAI) 
 
-# package
-- [express](https://github.com/expressjs/express)
-- [express-restify-mongoose](https://github.com/florianholzapfel/express-restify-mongoose)
-- [json2mongoose](https://github.com/Justin26l/json2mongoose)
+## tech stack
+- TypeScript
+- ExpressJs
+- mongoDb
 
-# TO DO
+## TO DO
 - [ ] genarate express server from template
 
 - [ ] generate openapi
@@ -20,3 +21,9 @@
 
 - [ ] genarate routes from template
     - [ ] based on openapi spec
+
+## Dependencies
+- [express](https://github.com/expressjs/express)
+- [json2mongoose](https://github.com/Justin26l/json2mongoose)
+- [js-yaml](https://github.com/nodeca/js-yaml)
+- openapi-schema-to-json-schema
