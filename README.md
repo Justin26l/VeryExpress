@@ -6,11 +6,17 @@
 - [json2mongoose](https://github.com/Justin26l/json2mongoose)
 
 # TO DO
-- genarate express server from template
-    - add sample json schema
-    - generate mongoose & collection interface
-    - genarate controllers
-    - genarate routes
+- [ ] genarate express server from template
 
-# Enhance
-- genarate openapi spec
+- [ ] generate openapi
+    - ✅ path
+    - [ ] param
+    - [ ] response  
+
+- ✅ generate mongoose & collection interface
+
+- [ ] genarate controllers from template
+    - [ ] based on openapi spec
+
+- [ ] genarate routes from template
+    - [ ] based on openapi spec
