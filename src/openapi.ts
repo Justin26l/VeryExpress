@@ -4,23 +4,26 @@ import fs from "fs";
 
 import * as types from './types/types';
 import * as openapiType from './types/openapi';
+import utils from "./utils";
 
-export function compile(schemaDir: string, outDir: string) {
+export function compile(schemaDir: string, outDir: string) :void {
 
     // loop through all json schema files and compile to path object
-    let pathObj: { [key: string]: {[key: string]: openapiType.method} } = {};
-    
-    const files = fs.readdirSync(schemaDir);
+    let pathObj: openapiType.paths = {};
+    let componentSchema: openapiType.components['schemas'] = {};
 
+    // make components
+    const files = fs.readdirSync(schemaDir);
     files.forEach((file) => {
-        const jsonSchemaPath = `${schemaDir}/${file}`;
-        const jsonSchemaBuffer = fs.readFileSync(jsonSchemaPath);
-        const jsonSchema = JSON.parse(jsonSchemaBuffer.toString());
-        const path = jsonSchema["x-documentConfig"].documentName;
-        pathObj = Object.assign(pathObj, jsonToOpenapiPath(path, jsonSchema));
+        const jsonSchemaBuffer = fs.readFileSync(`${schemaDir}/${file}`);
+        const jsonSchema :types.jsonSchema = JSON.parse(jsonSchemaBuffer.toString());
+
+        pathObj = Object.assign(pathObj, jsonToOpenapiPath(jsonSchema));
+        componentSchema = Object.assign(componentSchema, jsonToOpenapiComponentSchema(jsonSchema));
     });
 
-    const openapiJson = {
+    // convert to yaml
+    const openapiJson : openapiType.openapi = {
         openapi: "3.0.0",
         info: {
             title: "veryExpress generated api server",
@@ -29,10 +32,10 @@ export function compile(schemaDir: string, outDir: string) {
         },
         paths: pathObj,
         components: {
-            schema:{}
-        }
+            schemas: componentSchema,
+        },
     };
-
+    
     const validOpenApi = json2openapi(openapiJson, { version: 3.0 });
     const openapiYaml = yaml.dump(validOpenApi);
 
@@ -42,53 +45,44 @@ export function compile(schemaDir: string, outDir: string) {
 };
 
 export function jsonToOpenapiPath(
-    path: string,
     jsonSchema: types.jsonSchema,
-): {
-    [key: string]: { // routeName
-        [key: string]: openapiType.method; // method
-    };
-} {
+): openapiType.paths 
+{
+
+    // get jsonschema properties
     const documentConfig = jsonSchema["x-documentConfig"];
+    const docName = documentConfig.documentName;
+    const lowerDocName = docName.toLowerCase();
+    const camelDocName = docName.charAt(0).toUpperCase() + docName.slice(1);
+
     const properties = jsonSchema.properties;
-    const methods = documentConfig.method;
-    const routes: {
+    const methods: types.method[] = documentConfig.method;
+
+    let routes: {
         [key: string]: { // route name
             [key: string]: openapiType.method 
         }
-    } = {};
-
-    routes['/'+path] = {};
-    routes['/'+path+'/{id}'] = {};
+    } = {
+        ['/'+lowerDocName]: {},
+        ['/'+lowerDocName+'/{id}']: {},
+    };
 
     methods.forEach((method) => {
-        const useId :boolean = ['put', 'patch', 'delete'].includes(method)
-        const useBody :boolean = ['post', 'put', 'patch'].includes(method)
-        const route :string = '/'+path + ( useId ?'/{id}' : '');
+        const useId :boolean = ['put', 'patch', 'delete'].includes(method);
+        const useBody :boolean = ['post', 'put', 'patch'].includes(method);
+        const route :string = '/'+lowerDocName + ( useId ?'/{id}' : '');
 
         routes[route][method] = {
             summary: `${method} ${documentConfig.documentName}`,
-            operationId: method + path,
-            tags: [path],
+            operationId: method + lowerDocName,
+            tags: [lowerDocName],
             parameters: [],
-            requestBody: ! useBody ? undefined : {
-                description: `${method} ${documentConfig.documentName}`,
-                required: false,
-                content: {
-                    'application/json': { schema: { $ref: `#/components/schemas/${method}${path}` } },
-                },
-            },
+            requestBody: undefined,
             responses: {
                 200: {
                     description: 'OK',
                     content: { 
-                        'application/json': { schema: {} } 
-                    },
-                },
-                201: {
-                    description: 'Created',
-                    content: { 
-                        'application/json': { schema: {} } 
+                        'application/json': { schema: { $ref: `#/components/schemas/${method}${camelDocName}Response` } },
                     },
                 },
                 400: { description: 'Bad Request', },
@@ -104,61 +98,104 @@ export function jsonToOpenapiPath(
             },
         };
 
-        if (method == 'post') {
-            delete routes[route][method].responses[200];
-        }
-        else {
-            delete routes[route][method].responses[201];
+        // update parameters/body & responses
+
+        if( (useId || method == 'get') && properties['_id']){
+            const idParameter : openapiType.parameter = {
+                name: 'id',
+                in: 'path',
+                description: properties['_id'].description,
+                required: true,
+                schema: { type: properties['_id'].type, format: properties['_id'].format },
+            };
+            
+            routes[route][method].parameters.push(idParameter);
+
+            // GET will have getList and getItem
+            if(method == 'get'){
+                routes[route+'/{id}'][method] = routes[route][method];
+                // @ts-ignore
+                routes[route+'/{id}'][method].responses[200].content["application/json"].schema.$ref = `#/components/schemas/${method}${camelDocName}Response`;
+                routes[route+'/{id}'][method].parameters.push(idParameter)
+            };
         };
 
-        // add query parameters
-        if (method == 'get') {
+        if(useBody){
+            routes[route][method].requestBody = {
+                description: `${method} ${documentConfig.documentName}`,
+                required: false,
+                content: {
+                    'application/json': { schema: { $ref: `#/components/schemas/${method}${camelDocName}Param` } },
+                },
+            };
+        };
 
-            Object.keys(properties).forEach((key) => {
-                const property = properties[key];
-
-                // add id in path
-                if(useId && key == '_id') {
-                    routes[route][method].parameters.push({
-                        name: key,
-                        in: 'path',
-                        description: property.description,
-                        required: true,
-                        schema: {
-                            type: property.type,
-                            format: property.format,
-                        },
-                    });
-                }
-
-
-                if (property.index) {
-                    routes[route][method].parameters.push({
-                        name: key,
-                        in: 'query',
-                        description: property.description,
-                        required: property.required,
-                        // deprecated: false,
-                        // allowEmptyValue: false,
-                        // style: 'form',
-                        // explode: false,
-                        // allowReserved: false,
-                        schema: {
-                            type: property.type,
-                            format: property.format,
-                        },
-                        // example: property.example,
-                        // examples: property.examples,
-                    });
-                };
-
-            });
+        // POST will use 201 as default
+        if (method == 'post') {
+            routes[route][method].responses[201] = routes[route][method].responses[200];
+            routes[route][method].responses[201].description = 'Crerated';
+            delete routes[route][method].responses[200];
         }
+        else if (method == 'delete') {
+            delete routes[route][method].responses[200].content;
+        };
 
     });
 
     return routes;
 
 };
+
+export function jsonToOpenapiComponentSchema(
+    jsonSchema: types.jsonSchema,
+): openapiType.components['schemas']
+{
+    let componentSchemaPath: openapiType.components['schemas'] = {};
+
+    // get jsonschema properties
+    const docName = jsonSchema["x-documentConfig"].documentName;
+    const camelDocName = docName.charAt(0).toUpperCase() + docName.slice(1);
+    const methods: types.method[] = jsonSchema["x-documentConfig"].method;
+
+    const componentSchemaResponse : openapiType.componentsSchemaValue = {
+        type: 'object',
+        properties: json2openapi(
+            utils.cleanXcustomValue(jsonSchema.properties, ['index', 'unique', 'required']), 
+            { version: 3.0 }
+        ),
+    };
+
+    const componentSchemaParam : openapiType.componentsSchemaValue = {
+        type: 'object',
+        properties: json2openapi(
+            utils.cleanXcustomValue(jsonSchema.properties, ['_id', 'index', 'unique', 'required']), 
+            { version: 3.0 }
+        ),
+    };
+
+    methods.forEach((method) => {
+        switch (method) {
+            case 'delete':
+                // no param, no response
+                break;
+            case 'get':
+                componentSchemaPath['get'+camelDocName+'ResponseList'] = {
+                    type: 'array', 
+                    items: componentSchemaResponse,
+                };
+                // NO break;
+            case 'post':
+            case 'put':
+            case 'patch':
+                componentSchemaPath[method+camelDocName+'Param'] = componentSchemaParam;
+                componentSchemaPath[method+camelDocName+'Response'] = componentSchemaResponse;
+                break;
+            default:
+                break;
+        };
+    });
+
+    return componentSchemaPath;
+}
 
 export default compile;

@@ -1,6 +1,6 @@
-dummyserver
-output
-dist
+dummyserver/
+output/
+src/
 
 # Dependency directories
 node_modules/

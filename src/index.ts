@@ -10,25 +10,16 @@ import { compilerOptions } from './types/types';
 export function genarate(
     schemaDir   : string,
     outDir      : string,
-    directories ?: {
-        routeDir        ?: string,
-        middlewareDir   ?: string,
-        controllerDir   ?: string,
-        modelDir        ?: string,
-        typeDir         ?: string,
-        serviceDir      ?: string,
-        utilsDir        ?: string,
-    },
     options ?: compilerOptions
 ) {
     const dir = {
-        routeDir        : directories?.routeDir         || `${outDir}/route`,
-        middlewareDir   : directories?.middlewareDir    || `${outDir}/middleware`,
-        controllerDir   : directories?.controllerDir    || `${outDir}/controller`,
-        modelDir        : directories?.modelDir         || `${outDir}/model`,
-        typeDir         : directories?.typeDir          || `${outDir}/type`,
-        serviceDir      : directories?.serviceDir       || `${outDir}/service`,
-        utilsDir        : directories?.utilsDir         || `${outDir}/utils`,
+        routeDir        : `${outDir}/route`,
+        middlewareDir   : `${outDir}/middleware`,
+        controllerDir   : `${outDir}/controller`,
+        modelDir        : `${outDir}/model`,
+        typeDir         : `${outDir}/type`,
+        serviceDir      : `${outDir}/service`,
+        utilsDir        : `${outDir}/utils`,
     };
 
     const genDir = {
@@ -116,3 +107,8 @@ export function genarate(
         });
     });
 };
+
+genarate(
+    './jsonSchema',
+    './output',
+);

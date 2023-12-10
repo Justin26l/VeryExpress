@@ -1,10 +1,29 @@
+export interface openapi {
+    openapi: string,
+    info: {
+        title: string,
+        description: string,
+        version: string,
+    },
+    paths: paths,
+    components: components,
+}
+
+export interface paths {
+    [key:string]: { // path name
+        [key:string]: method // method
+    }
+}
+
 export interface method {
     summary: string,
     operationId: string,
     tags: string[],
     parameters: parameter[],
     requestBody?: requestBody,
-    responses: responses,
+    responses: {
+        [key:number]: responseItem,
+    },
 }
 
 export interface parameter {
@@ -37,14 +56,28 @@ export interface requestBody {
     };
 }
 
-export interface responses {
-    [key:number]: responseItem,
-}
 export interface responseItem {
     description: string;
     content?: {
-        'application/json': {
+        'application/json'?: {
             schema: {[key:string]:any};
         };
     };
+}
+
+/**
+ * OpenAPI 3.0 Components
+ */
+export interface components {
+    schemas: {
+        [key:string]: componentsSchemaValue
+    }
+}
+
+export interface componentsSchemaValue {
+    type: string,
+    items?: any,
+    properties?: {
+        [key:string]: any,
+    }
 }

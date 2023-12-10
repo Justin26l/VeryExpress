@@ -36,21 +36,22 @@ export function getGenaratorHeaderComment(comment?:string) :string{
 
 }
 
-export function cleanXcustomValue(obj:{[key:string]:any}):{[key:string]:any}{
-    // check key is start with 'x-'
-    // if yes, remove it
-    // if no, check value is object
-    // if yes, cleanXValue(value)
-    // if no, do nothing
+export function cleanXcustomValue(
+    schemaObj:{[key:string]:any},
+    additionalKeyArr?: string[]
+) : { [key:string] : any } 
+{
+    let obj = Object.assign(schemaObj);
+    // filtr out key start with 'x-' and additionalKeyArr recursively
     for(const key in obj){
         if(key.startsWith("x-")){
             delete obj[key];
         }
-        else{
-            const value = obj[key];
-            if(typeof value === "object"){
-                cleanXcustomValue(value);
-            }
+        else if(additionalKeyArr && additionalKeyArr.includes(key)){
+            delete obj[key];
+        }
+        else if(typeof obj[key] === "object"){
+            cleanXcustomValue(obj[key], additionalKeyArr);
         }
     }
     return obj;
