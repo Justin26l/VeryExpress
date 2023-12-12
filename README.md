@@ -9,21 +9,21 @@ an generator that generate [Express](https://github.com/expressjs/express) rest-
 ## TO DO
 - [ ] genarate express server from template
 
-- [ ] generate openapi
+- [x] generate openapi
     - [x] path
-    - [ ] param
-    - [ ] response  
+    - [x] param
+    - [x] response  
 
 - [x] generate mongoose & collection interface
+- [ ] generate sql interface
 
 - [ ] genarate controllers from template
     - [ ] based on openapi spec
 
 - [ ] genarate routes from template
-    - [ ] based on openapi spec
+    - [ ] based on controller
 
 ## Dependencies
 - [express](https://github.com/expressjs/express)
 - [json2mongoose](https://github.com/Justin26l/json2mongoose)
 - [js-yaml](https://github.com/nodeca/js-yaml)
-- openapi-schema-to-json-schema
