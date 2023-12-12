@@ -33,17 +33,22 @@ export function genarate(
     }
 
     // create all directories if not exist
+    if(!fs.existsSync(outDir)){
+        fs.mkdirSync(outDir);
+    }
+
     Object.values(dir).forEach((path: string) => {
         if (!fs.existsSync(path)) {
             fs.mkdirSync(path);
         }
     });
 
-    // create all generated directories if not exist
+    // recreate all generated directories if not exist
     Object.values(genDir).forEach((path: string) => {
-        if (!fs.existsSync(path)) {
-            fs.mkdirSync(path);
-        }
+        if (fs.existsSync(path)) {
+            fs.rmSync(path, { recursive: true });
+        };
+        fs.mkdirSync(path);
     });
 
     // genarate opanapi
