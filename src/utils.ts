@@ -24,7 +24,7 @@ export const relativePath = (fromPath: string, toPath: string): string => {
 export function loadYaml(yamlFilePath: string){
     try {
         const doc = jsYaml.load(fs.readFileSync(yamlFilePath, 'utf8'));
-        console.dir(doc, { depth: null });
+        // console.dir(doc, { depth: null });
     } catch (e) {
         console.error(e);
     }
@@ -69,16 +69,6 @@ export function cleanXcustomValue(
 
 export const defaultCompilerOptions : compilerOptions = {
     headerComment: getGenaratorHeaderComment(),
-    modelsTemplate: `{{headerComment}}
-import { Document, Schema, Model, model } from "mongoose";
-import { {{interfaceName}} } from "<<interfacePath>>";
-
-const schemaConfig = {{mongooseSchema}};
-
-export interface {{documentName}}Document extends {{interfaceName}}, Document<string> {};
-export const {{documentName}}Schema: Schema = new Schema(schemaConfig);
-export const {{documentName}}Model: Model<{{documentName}}Document> = model<{{documentName}}Document>("{{documentName}}", {{documentName}}Schema);
-`,
 };
 
 export default {

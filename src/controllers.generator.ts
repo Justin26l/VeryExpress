@@ -1,143 +1,169 @@
 import fs from "fs";
 import util from "util";
 import jsYaml from "js-yaml";
-import { check, ValidationChain } from "express-validator";
+
+import templates from "./templates";
 
 import * as types from "./types/types";
 import * as openapiType from "./types/openapi";
 
-function compile(openapiPath: string, outputPath: string, options?: types.compilerOptions) {
+/**
+ * compile openapi to controller source code
+ * @param openapiPath 
+ * @param outputPath 
+ * @param options 
+ */
+export function compile(
+    openapiPath: string, 
+    controllerToModelPath: string, 
+    outPath: string,
+    options?: types.compilerOptions
+) {
 
     const file = fs.readFileSync(openapiPath, 'utf8');
     const openApi: openapiType.openapi = jsYaml.load(file) as openapiType.openapi;
-    const pathsValidator: { 
+    const pathsValidator: {
         [key: string]: { // path
-            [key: string]: ValidationChain[] // method
-        } 
+            [key: string]: string[] // method
+        }
     } = {};
 
     // loop path
     Object.keys(openApi.paths).forEach((path: string) => {
-        // loop method
-        pathsValidator[path]={};
+        const interfaceName = openApi.paths[path].summary;
+        pathsValidator[path] = {};
 
+        console.log('\x1b[36m%s\x1b[0m', '[Processing]', ` - Controller Generator : ${path} -> ${interfaceName}`);
+
+        // make validator
         Object.keys(openApi.paths[path]).forEach((method: string) => {
-            // check method is in types.methodsArray
-            if (!types.methodsArray.includes(method as types.method)) {
-                throw new Error(`method [${method}] is not valid.`);
-            };
+            // check method is in enum types.method
+            if (!Object.values(types.method).includes(method as types.method)) return;
+            let methodEnum: types.method = method as types.method;
 
-            const validators = buildExpressValidator(path, method as types.method, openApi);
-            
+            let validators: any[] = [];
+            validators = buildParamValidator(path, methodEnum, openApi);
+            validators = validators.concat(buildRequestBodyValidator(path, methodEnum, openApi));
+
             pathsValidator[path][method] = validators;
         });
     });
 
+    let writtedPath :string[] = [];
 
-    // console.dir(util.inspect(pathsValidator, { depth: null }), { depth: null });
+    // create and write file
+    Object.keys(openApi.paths).forEach((path: string) => {
+        // remove '/{id}' from path and check is in writtedPath
+        const pathWithoutId = path.replace('/{id}', '');
+        if (writtedPath.includes(pathWithoutId)) return;
+        else writtedPath.push(pathWithoutId);
+
+        const interfaceName = openApi.paths[path].summary;
+
+        fs.writeFileSync(outPath,
+            templates.controllerTemplate({
+                path: path,
+                modelPath: controllerToModelPath,
+                interfaceName: interfaceName,
+                validator: pathsValidator,
+                options: options,
+            })
+        );
+    });
 
 };
 
-function buildExpressValidator(
+function buildParamValidator(
     path: string,
     method: types.method,
     openapi: openapiType.openapi,
-): ValidationChain[] {
+): string[] {
 
     // {path : validator array}
-    let validators: ValidationChain[] = [];
+    let validators: string[] = [];
 
-    openapi.paths[path][method].parameters.forEach((parameter: openapiType.parameter) => {
-        // validators.push(check(parameter).exists());
-        const paramType = parameter.schema.type.toLowerCase();
-        switch (paramType) {
-            case "string":
-                validators.push(check(parameter.name).isString());
-
-                break;
-            case "integer":
-            case "float":
-            case "number":
-                validators.push(check(parameter.name).isNumeric());
-                break;
-            case "boolean":
-                validators.push(check(parameter.name).isBoolean());
-                break;
-            // case "null":
-            //     validators.push(check(parameter.name).isNull());
-            //     break;
-            case "array":
-                validators.push(check(parameter.name).isArray());
-                break;
-            case "object":
-                validators.push(check(parameter.name).isObject());
-                break;
-        }
+    openapi.paths[path][method]!.parameters.forEach((parameter: openapiType.parameter) => {
+        validators = validators.concat(processSchema(parameter.name, parameter, undefined));
     });
 
     return validators;
+};
 
+function buildRequestBodyValidator(
+    path: string,
+    method: types.method,
+    openapi: openapiType.openapi,
+): string[] {
+
+    let validators: string[] = [];
+
+    const referencePath: string | undefined = openapi.paths[path][method]?.requestBody?.content?.['application/json'].schema.$ref;
+    const reference: string | undefined = referencePath ? referencePath.split('/').pop() : undefined;
+    const components: openapiType.componentsSchemaValue | undefined = reference ? openapi.components.schemas[reference] : undefined;
+
+    if (components !== undefined) {
+        for (let key in components.properties) {
+            validators = validators.concat(processSchema(key, undefined, components.properties[key]));
+        };
+    }
+
+    return validators;
 }
 
-// function validatorMain (jsonSchema:{[key:string]:any}) :Object {
+function processSchema(fieldName: string, paramFields?: openapiType.parameter, bodyFields?: openapiType.fieldsItem): string[] {
+    let validators: string[] = [];
 
-//     const validatorsArray : {[key:string]: Array<ValidationChain>} = {
-//         create  : [],
-//         read    : [],
-//         update  : [],
-//         delete  : [],
-//     };
-//     const documentConfig :documentConfig = jsonSchema['x-documentConfig'];
-//     const properties = jsonSchema.properties;
-//     const methodConfig = documentConfig.method;
+    const useBody = bodyFields !== undefined && paramFields == undefined;
+    const checkOn = useBody ? 'body' : 'check';
+    const type: string | undefined = useBody ? bodyFields?.type : paramFields?.schema.type;
+    const required = paramFields?.required ? '.exists()' : '.optional()';
 
-//     // make validators array check as property type
-//     if ( Object.keys(methodConfig).length > 0 ) {
-//         methodConfig.create?.forEach((field:string) => {
+    const enumValidator: string =
+        useBody && bodyFields?.enum ? `.isIn(${JSON.stringify(bodyFields.enum)})` :
+            !useBody && paramFields?.schema.enum ? `.isIn(${JSON.stringify(paramFields.schema.enum)})` :
+                '';
 
-//         });
-//     }
-// };
+    const typeValidatorOption: string = JSON.stringify(
+        useBody && bodyFields ? {
+            min: bodyFields.minLength || bodyFields.minimum,
+            max: bodyFields.maxLength || bodyFields.maximum,
+        } :
+            !useBody && paramFields ? {
+                min: paramFields.schema?.minLength || paramFields.schema?.minimum,
+                max: paramFields.schema?.maxLength || paramFields.schema?.maximum,
+            } :
+                undefined
+    );
 
-// export function json2Mongoose (
-//     jsonSchema:{[key:string]:any}, 
-//     interfacePath: string,
-//     schemaFileName: string,
-//     options?: compilerOptions
-// ) {
-//     if(!jsonSchema["x-documentConfig"]){
-//         throw new Error("( jsonSchema.x-documentConfig : object ) is required");
-//     };
-//     const documentConfig = jsonSchema["x-documentConfig"];
-//     const documentName = documentConfig.documentName;
-//     const interfaceName = schemaFileName.at(0)?.toUpperCase() + schemaFileName?.slice(1);
+    const typeValidator: string | undefined = typeValidatorOption !== '{}' ? typeValidatorOption : undefined;
 
-//     // convert json to string
-//     const schema = json2MongooseChunk(jsonSchema);
-//     const schemaString  = util.inspect(schema, { depth: null });
+    switch (type) {
+        case "string":
+            validators.push(`${checkOn}("${fieldName}")${required}.isString()${typeValidator !== undefined ? `.isLength(${typeValidator})` : ''}${enumValidator}`);
+            break;
+        case "integer":
+            validators.push(`${checkOn}("${fieldName}")${required}.isInt(${typeValidator})`);
+            break;
+        case "float":
+            validators.push(`${checkOn}("${fieldName}")${required}.isFloat(${typeValidator})`);
+            break;
+        case "number":
+            validators.push(`${checkOn}("${fieldName}")${required}.isNumeric()`);
+            break;
+        case "boolean":
+            validators.push(`${checkOn}("${fieldName}")${required}.isBoolean()`);
+            break;
+        case "array":
+            validators.push(`${checkOn}("${fieldName}")${required}.isArray(${typeValidator})`);
+            break;
+        case "object":
+            if (useBody) {
+                for (let key in bodyFields?.properties) {
+                    validators = validators.concat(processSchema(fieldName + '.' + key, undefined, bodyFields.properties[key]));
+                };
+            };
+            break;
+    };
 
-//     // replace all '<<Type>>' with [Function:Type]
-//     const mongooseSchema = schemaString.replace(/'<</g, "").replace(/>>'/g, "");
-
-//     return template.modelsTemplate(interfacePath, interfaceName, documentName, mongooseSchema, options?.headerComment, options?.modelsTemplate);
-// }
-
-// export function compileFromFile(jsonSchemaPath:string, modelToInterfacePath:string, outputPath:string, options?:compilerOptions){
-//     try{
-//         const schemaFileName : string = ( jsonSchemaPath.split("/").pop() || jsonSchemaPath).replace(".json", "");
-
-//         const jsonSchemaBuffer = fs.readFileSync(jsonSchemaPath);
-//         const jsonSchema = JSON.parse(jsonSchemaBuffer.toString());
-//         const mongooseSchema = json2Mongoose(jsonSchema, modelToInterfacePath, schemaFileName, options || utils.defaultCompilerOptions);
-//         // console.log(mongooseSchema);
-
-//         fs.writeFileSync(outputPath, mongooseSchema);
-//     }
-//     catch(err :any){
-//         throw new Error(`Processing File [${jsonSchemaPath}] :\n ${(err.message || err)}`);
-//     }
-// }
-
-compile("./output/openapi.yaml", "./test.ts")
-
-// serve swagger ui
+    return validators;
+};

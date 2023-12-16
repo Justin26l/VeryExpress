@@ -31,6 +31,15 @@
             "required": false,
             "x-foreignKey": "usercontact"
         },
+        "married": {
+            "type": "string",
+            "required": true,
+            "enum": [
+                "single",
+                "inRelationship",
+                "married"
+            ]
+        },
         "userAddress": {
             "type": "object",
             "required": true,
