@@ -1,6 +1,7 @@
 // read package.json and get version
 import fs from "fs";
 import path from 'path';
+import jsYaml from "js-yaml";
 import { compilerOptions } from "./types/types";
 
 function getPackageInfo() :{
@@ -18,6 +19,15 @@ function getPackageInfo() :{
 
 export const relativePath = (fromPath: string, toPath: string): string => {
     return path.relative(fromPath, toPath).replace(/\\/g, '/');
+};
+
+export function loadYaml(yamlFilePath: string){
+    try {
+        const doc = jsYaml.load(fs.readFileSync(yamlFilePath, 'utf8'));
+        console.dir(doc, { depth: null });
+    } catch (e) {
+        console.error(e);
+    }
 };
 
 export function getGenaratorHeaderComment(comment?:string) :string{
@@ -76,4 +86,5 @@ export default {
     defaultCompilerOptions,
     relativePath,
     cleanXcustomValue,
+    loadYaml,
 };

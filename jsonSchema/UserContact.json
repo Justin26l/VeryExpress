@@ -18,7 +18,6 @@
             "format": "uuid",
             "index": true,
             "unique": true,
-            "id": true,
             "required": true
         },
         "phoneNo": {

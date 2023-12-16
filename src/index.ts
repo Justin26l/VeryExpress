@@ -72,7 +72,9 @@ export function genarate(
                 // ignore non json files
                 if (!schemaFileName.endsWith('.json')) {
                     return;
-                }
+                };
+
+                console.log('[Processing] - '+schemaFileName);
 
                 const fileName = schemaFileName.replace('.json', '');
                 const fileTs = fileName + '.ts';

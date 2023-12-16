@@ -39,6 +39,7 @@ export interface parameter {
     schema: {
         type: string;
         format?: string;
+        required?: string[];
     };
     example?: any; // This could be any type depending on your example structure
     examples?: any; // This could be any type depending on your examples structure

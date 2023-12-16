@@ -29,7 +29,7 @@
             "type": "string",
             "format": "uuid",
             "required": false,
-            "x-foreignKey": "userContact"
+            "x-foreignKey": "usercontact"
         },
         "userAddress": {
             "type": "object",
