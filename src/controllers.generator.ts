@@ -1,57 +1,81 @@
 import fs from "fs";
+import util from "util";
 import jsYaml from "js-yaml";
-import { check, ValidationChain} from "express-validator";
+import { check, ValidationChain } from "express-validator";
 
-import * as utils from "./utils";
-
+import * as types from "./types/types";
 import * as openapiType from "./types/openapi";
-import { compilerOptions, documentConfig, method } from "./types/types";
 
-function main (openapiPath:string, outputPath:string, options?:compilerOptions) {
+function compile(openapiPath: string, outputPath: string, options?: types.compilerOptions) {
 
-    try {
-        const file = fs.readFileSync(openapiPath, 'utf8');
-        const data = jsYaml.load(file);
+    const file = fs.readFileSync(openapiPath, 'utf8');
+    const openApi: openapiType.openapi = jsYaml.load(file) as openapiType.openapi;
+    const pathsValidator: { 
+        [key: string]: { // path
+            [key: string]: ValidationChain[] // method
+        } 
+    } = {};
 
-        console.dir(data, {depth: null});
-    } catch (e) {
-        console.error(e);
-    }
-}
-function buildValidator(
-    path:string, 
-    method:method, 
-    openapi:openapiType.openapi,
-) :ValidationChain[] {
+    // loop path
+    Object.keys(openApi.paths).forEach((path: string) => {
+        // loop method
+        pathsValidator[path]={};
+
+        Object.keys(openApi.paths[path]).forEach((method: string) => {
+            // check method is in types.methodsArray
+            if (!types.methodsArray.includes(method as types.method)) {
+                throw new Error(`method [${method}] is not valid.`);
+            };
+
+            const validators = buildExpressValidator(path, method as types.method, openApi);
+            
+            pathsValidator[path][method] = validators;
+        });
+    });
+
+
+    // console.dir(util.inspect(pathsValidator, { depth: null }), { depth: null });
+
+};
+
+function buildExpressValidator(
+    path: string,
+    method: types.method,
+    openapi: openapiType.openapi,
+): ValidationChain[] {
 
     // {path : validator array}
-    let validators : ValidationChain[] = [];
+    let validators: ValidationChain[] = [];
 
-    for (let parameter in openapi.paths[path][method].parameters) {
-        validators.push(check(parameter).exists());
-        switch (parameter.type.toLowerCase()) {
+    openapi.paths[path][method].parameters.forEach((parameter: openapiType.parameter) => {
+        // validators.push(check(parameter).exists());
+        const paramType = parameter.schema.type.toLowerCase();
+        switch (paramType) {
             case "string":
-                validators.push(check(parameter).isString());
+                validators.push(check(parameter.name).isString());
+
                 break;
             case "integer":
             case "float":
             case "number":
-                validators.push(check(parameter).isNumeric());
+                validators.push(check(parameter.name).isNumeric());
                 break;
             case "boolean":
-                validators.push(check(parameter).isBoolean());
+                validators.push(check(parameter.name).isBoolean());
                 break;
             // case "null":
-            //     validators.push(check(parameter).isNull());
+            //     validators.push(check(parameter.name).isNull());
             //     break;
             case "array":
-                validators.push(check(parameter).isArray());
+                validators.push(check(parameter.name).isArray());
                 break;
             case "object":
-                validators.push(check(parameter).isObject());
+                validators.push(check(parameter.name).isObject());
                 break;
         }
     });
+
+    return validators;
 
 }
 
@@ -70,7 +94,7 @@ function buildValidator(
 //     // make validators array check as property type
 //     if ( Object.keys(methodConfig).length > 0 ) {
 //         methodConfig.create?.forEach((field:string) => {
-            
+
 //         });
 //     }
 // };
@@ -91,7 +115,7 @@ function buildValidator(
 //     // convert json to string
 //     const schema = json2MongooseChunk(jsonSchema);
 //     const schemaString  = util.inspect(schema, { depth: null });
-    
+
 //     // replace all '<<Type>>' with [Function:Type]
 //     const mongooseSchema = schemaString.replace(/'<</g, "").replace(/>>'/g, "");
 
@@ -101,7 +125,7 @@ function buildValidator(
 // export function compileFromFile(jsonSchemaPath:string, modelToInterfacePath:string, outputPath:string, options?:compilerOptions){
 //     try{
 //         const schemaFileName : string = ( jsonSchemaPath.split("/").pop() || jsonSchemaPath).replace(".json", "");
-        
+
 //         const jsonSchemaBuffer = fs.readFileSync(jsonSchemaPath);
 //         const jsonSchema = JSON.parse(jsonSchemaBuffer.toString());
 //         const mongooseSchema = json2Mongoose(jsonSchema, modelToInterfacePath, schemaFileName, options || utils.defaultCompilerOptions);
@@ -114,4 +138,6 @@ function buildValidator(
 //     }
 // }
 
-main("./output/openapi.yaml", "./test.ts")
+compile("./output/openapi.yaml", "./test.ts")
+
+// serve swagger ui

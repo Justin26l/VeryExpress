@@ -1,4 +1,4 @@
-import { controllerTemplate } from './controller_template';
+import { controllerTemplate } from './controller.template';
 
 export default {
     controllerTemplate,

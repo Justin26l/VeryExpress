@@ -1,3 +1,5 @@
+import * as types from "./types";
+
 export interface openapi {
     openapi: string,
     info: {
@@ -10,8 +12,8 @@ export interface openapi {
 }
 
 export interface paths {
-    [key:string]: { // path name
-        [key:string]: method // method
+    [key:string]: {
+        [key in types.method]: method // method
     }
 }
 

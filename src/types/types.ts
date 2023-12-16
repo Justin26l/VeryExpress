@@ -30,3 +30,4 @@ export interface documentConfig {
 }
 
 export type method = 'get'|'post'|'put'|'patch'|'delete'
+export const methodsArray: method[] = ['get', 'post', 'put', 'patch', 'delete'];

@@ -2,7 +2,7 @@ import fs from 'fs';
 import express from 'express';
 
 import json2mongoose from 'json2mongoose';
-import * as openapiGen from './openapi';
+import * as openapiGen from './openapi.generator';
 import utils from './utils';
 import { compilerOptions } from './types/types';
 
