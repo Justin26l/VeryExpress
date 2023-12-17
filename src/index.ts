@@ -1,22 +1,21 @@
 import fs from 'fs';
-import express from 'express';
 
 import json2mongoose from 'json2mongoose';
-import * as openapiGen from './openapi.generator';
+import * as openapiGen from './generators/openapi.generator';
 
 import utils from './utils';
-import * as controllerGen from './controllers.generator';
-import * as routeGen from './routes.generator';
-import * as serverGen from './server.generator';
+import * as controllerGen from './generators/controllers.generator';
+import * as routeGen from './generators/routes.generator';
+import * as serverGen from './generators/server.generator';
 import { compilerOptions } from './types/types';
 
 
-export function genarate(
+export default function generate(
     schemaDir: string,
     openapiDir: string,
     outDir: string,
     options?: compilerOptions
-) {
+): void {
     const dir = {
         routeDir: `${outDir}/routes`,
         middlewareDir: `${outDir}/middlewares`,
@@ -31,7 +30,7 @@ export function genarate(
     if (!fs.existsSync(outDir)) {
         fs.mkdirSync(outDir);
     };
-    if(!fs.existsSync(openapiDir)) {
+    if (!fs.existsSync(openapiDir)) {
         fs.mkdirSync(openapiDir);
     }
 
@@ -42,10 +41,10 @@ export function genarate(
     });
 
     // genarate opanapi
-    openapiGen.compile(schemaDir, openapiDir+'/openapi.gen.yaml');
+    openapiGen.compile(schemaDir, openapiDir + '/openapi.gen.yaml');
 
     // clone nessasary files
-    utils.copyDir(`${openapiDir}`, outDir+'/openapi');
+    utils.copyDir(`${openapiDir}`, outDir + '/openapi');
     utils.copyDir(`${__dirname}/templates/utils`, dir.utilsDir);
 
     // data 
@@ -83,7 +82,7 @@ export function genarate(
             routeData.push({
                 route: `/${schema['x-documentConfig'].documentName}`,
                 controllerClassName: schema['x-documentConfig'].interfaceName,
-                controllerPath: utils.relativePath(dir.routeDir, dir.controllerDir) + '/'+schema['x-documentConfig'].interfaceName+'Controller.gen',
+                controllerPath: utils.relativePath(dir.routeDir, dir.controllerDir) + '/' + schema['x-documentConfig'].interfaceName + 'Controller.gen',
             });
 
         }
@@ -120,8 +119,3 @@ export function genarate(
 
 };
 
-genarate(
-    './jsonSchema',
-    './openapi',
-    './output',
-);

@@ -2,10 +2,10 @@ import fs from "fs";
 import util from "util";
 import jsYaml from "js-yaml";
 
-import templates from "./templates";
+import templates from "../templates";
 
-import * as types from "./types/types";
-import * as openapiType from "./types/openapi";
+import * as types from "../types/types";
+import * as openapiType from "../types/openapi";
 
 /**
  * compile openapi to controller source code

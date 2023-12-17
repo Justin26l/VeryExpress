@@ -108,7 +108,7 @@
   },
   "include": [
     "src/**/*.ts"
-, "src/routes.generator.ts"  ],
+, "src/generators/routes.generator.ts"  ],
   "exclude": [
     "node_modules",
     "output"

@@ -1,8 +1,8 @@
 import fs from "fs";
 
-import templates from "./templates";
+import templates from "../templates";
 
-import * as types from "./types/types";
+import * as types from "../types/types";
 
 /**
  * compile controllers to route source code
