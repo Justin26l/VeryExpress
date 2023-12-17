@@ -11,7 +11,7 @@ import utils from "./utils";
  * @param schemaDir 
  * @param openapiOutDir 
  */
-export function compile(schemaDir: string, openapiOutDir: string) :void {
+export function compile(schemaDir: string, outPath: string) :void {
 
     // convert to yaml
     let openapiJson : openapiType.openapi = {
@@ -33,7 +33,7 @@ export function compile(schemaDir: string, openapiOutDir: string) :void {
     files.forEach((file) => {
         // ignore non json files
         if(!file.endsWith('.json')) return;
-        console.log('\x1b[36m%s\x1b[0m', '[Processing]', ` - OpenApi Generator : ${schemaDir+'/'+file}`);
+        console.log('\x1b[36m%s\x1b[0m', '[Processing]', `OpenApi : ${schemaDir+'/'+file}`);
         
         const jsonSchemaBuffer = fs.readFileSync(`${schemaDir}/${file}`);
         const jsonSchema :types.jsonSchema = JSON.parse(jsonSchemaBuffer.toString());
@@ -45,8 +45,10 @@ export function compile(schemaDir: string, openapiOutDir: string) :void {
     const openapiYaml = yaml.dump(validOpenApi);
 
     // create and write file
-    const outputPath = `${openapiOutDir}/openapi.generated.yaml`;
-    fs.writeFileSync(outputPath, openapiYaml);
+
+    console.log('\x1b[32m%s\x1b[0m', '[Writing]', `OpenApi : ${outPath}`);
+
+    fs.writeFileSync(outPath, openapiYaml);
 };
 
 function jsonToOpenapiPath(

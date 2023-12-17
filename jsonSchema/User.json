@@ -4,7 +4,6 @@
         "documentName": "user",
         "documentType": "primary",
         "interfaceName": "User",
-        "keyPrefix": "user",
         "method": [
             "get",
             "post",

@@ -10,62 +10,72 @@ import * as openapiType from "./types/openapi";
 /**
  * compile openapi to controller source code
  * @param openapiPath 
+ * @param controllerToModelDir
  * @param outputPath 
  * @param options 
  */
 export function compile(
     openapiPath: string, 
-    controllerToModelPath: string, 
-    outPath: string,
+    controllerToModelDir: string, 
+    outDir: string,
     options?: types.compilerOptions
-) {
-
+): void {
     const file = fs.readFileSync(openapiPath, 'utf8');
     const openApi: openapiType.openapi = jsYaml.load(file) as openapiType.openapi;
-    const pathsValidator: {
+    const endpointsValidator: {
         [key: string]: { // path
             [key: string]: string[] // method
         }
     } = {};
 
     // loop path
-    Object.keys(openApi.paths).forEach((path: string) => {
-        const interfaceName = openApi.paths[path].summary;
-        pathsValidator[path] = {};
+    Object.keys(openApi.paths).forEach((endpoint: string) => {
+        const interfaceName = openApi.paths[endpoint].summary;
+        endpointsValidator[endpoint] = {};
 
-        console.log('\x1b[36m%s\x1b[0m', '[Processing]', ` - Controller Generator : ${path} -> ${interfaceName}`);
+        console.log('\x1b[36m%s\x1b[0m', '[Processing]', `Controller : ${endpoint} -> ${interfaceName}Controller`);
 
         // make validator
-        Object.keys(openApi.paths[path]).forEach((method: string) => {
+        Object.keys(openApi.paths[endpoint]).forEach((method: string) => {
             // check method is in enum types.method
             if (!Object.values(types.method).includes(method as types.method)) return;
             let methodEnum: types.method = method as types.method;
 
             let validators: any[] = [];
-            validators = buildParamValidator(path, methodEnum, openApi);
-            validators = validators.concat(buildRequestBodyValidator(path, methodEnum, openApi));
+            validators = buildParamValidator(endpoint, methodEnum, openApi);
+            validators = validators.concat(buildRequestBodyValidator(endpoint, methodEnum, openApi));
 
-            pathsValidator[path][method] = validators;
+            endpointsValidator[endpoint][method] = validators;
         });
     });
 
-    let writtedPath :string[] = [];
+    let writtedEndpoint :string[] = [];
 
     // create and write file
-    Object.keys(openApi.paths).forEach((path: string) => {
-        // remove '/{id}' from path and check is in writtedPath
-        const pathWithoutId = path.replace('/{id}', '');
-        if (writtedPath.includes(pathWithoutId)) return;
-        else writtedPath.push(pathWithoutId);
+    Object.keys(openApi.paths).forEach((endpoint: string) => {
+        // remove '/{id}' from path and check is in writtedEndpoint
+        const interfaceName = openApi.paths[endpoint].summary;
+        const endpointFormatted = endpoint.replace('/{id}', '').toLowerCase();
+        
+        if (writtedEndpoint.includes(endpointFormatted)) {
+            return;
+        }
+        else {
+            writtedEndpoint.push(endpointFormatted);
+        };
 
-        const interfaceName = openApi.paths[path].summary;
+        // write controller
+        const outPath = `${outDir}/${interfaceName}Controller.gen.ts`;
+        const controllerToModelPath = `${controllerToModelDir}/${interfaceName}Model.gen`;
+
+        console.log('\x1b[32m%s\x1b[0m', '[Writing]', `Controller : ${outPath}`);
 
         fs.writeFileSync(outPath,
             templates.controllerTemplate({
-                path: path,
+                endpoint: endpoint,
                 modelPath: controllerToModelPath,
                 interfaceName: interfaceName,
-                validator: pathsValidator,
+                validator: endpointsValidator,
                 options: options,
             })
         );
@@ -74,7 +84,7 @@ export function compile(
 };
 
 function buildParamValidator(
-    path: string,
+    endpoint: string,
     method: types.method,
     openapi: openapiType.openapi,
 ): string[] {
@@ -82,7 +92,7 @@ function buildParamValidator(
     // {path : validator array}
     let validators: string[] = [];
 
-    openapi.paths[path][method]!.parameters.forEach((parameter: openapiType.parameter) => {
+    openapi.paths[endpoint][method]!.parameters.forEach((parameter: openapiType.parameter) => {
         validators = validators.concat(processSchema(parameter.name, parameter, undefined));
     });
 
@@ -90,14 +100,14 @@ function buildParamValidator(
 };
 
 function buildRequestBodyValidator(
-    path: string,
+    endpoint: string,
     method: types.method,
     openapi: openapiType.openapi,
 ): string[] {
 
     let validators: string[] = [];
 
-    const referencePath: string | undefined = openapi.paths[path][method]?.requestBody?.content?.['application/json'].schema.$ref;
+    const referencePath: string | undefined = openapi.paths[endpoint][method]?.requestBody?.content?.['application/json'].schema.$ref;
     const reference: string | undefined = referencePath ? referencePath.split('/').pop() : undefined;
     const components: openapiType.componentsSchemaValue | undefined = reference ? openapi.components.schemas[reference] : undefined;
 

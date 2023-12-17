@@ -3,11 +3,11 @@ import * as types from '../types/types';
 export default function controllerTemplate(templateOptions: {
     headerComment?:string, 
     template?:string, 
-    path: string,
+    endpoint: string,
     modelPath: string,
     interfaceName: string,
     validator: {[key:string]:{[key:string]:string[]}},
-    options: types.compilerOptions,
+    options?: types.compilerOptions,
 }) : string {
     if(!templateOptions.headerComment){
         templateOptions.headerComment = templateOptions.options?.headerComment || "// generated files by very-express";
@@ -157,12 +157,12 @@ export default new {{interfaceName}}Controller().router;
     template = template.replace(/{{headerComment}}/g, templateOptions.headerComment);
     template = template.replace(/{{interfaceName}}/g, templateOptions.interfaceName);
     template = template.replace(/{{modelPath}}/g, templateOptions.modelPath);
-    template = template.replace(/{{getListValidator}}/g, templateOptions.validator[templateOptions.path].get.join(',\n                '));
-    template = template.replace(/{{getOneValidator}}/g, templateOptions.validator[templateOptions.path+'/{id}'].get.join(',\n                '));
-    template = template.replace(/{{postValidator}}/g, templateOptions.validator[templateOptions.path].post.join(',\n                '));
-    template = template.replace(/{{putValidator}}/g, templateOptions.validator[templateOptions.path+'/{id}'].put.join(',\n                '));
-    template = template.replace(/{{patchValidator}}/g, templateOptions.validator[templateOptions.path+'/{id}'].patch.join(',\n                '));
-    template = template.replace(/{{deleteValidator}}/g, templateOptions.validator[templateOptions.path+'/{id}'].delete.join(',\n                '));
+    template = template.replace(/{{getListValidator}}/g, templateOptions.validator[templateOptions.endpoint].get.join(',\n                '));
+    template = template.replace(/{{getOneValidator}}/g, templateOptions.validator[templateOptions.endpoint+'/{id}'].get.join(',\n                '));
+    template = template.replace(/{{postValidator}}/g, templateOptions.validator[templateOptions.endpoint].post.join(',\n                '));
+    template = template.replace(/{{putValidator}}/g, templateOptions.validator[templateOptions.endpoint+'/{id}'].put.join(',\n                '));
+    template = template.replace(/{{patchValidator}}/g, templateOptions.validator[templateOptions.endpoint+'/{id}'].patch.join(',\n                '));
+    template = template.replace(/{{deleteValidator}}/g, templateOptions.validator[templateOptions.endpoint+'/{id}'].delete.join(',\n                '));
 
     return template;
 };

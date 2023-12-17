@@ -1,7 +1,7 @@
 import jsYaml from 'js-yaml';
 import fs from 'fs';
 
-function loadYaml(yamlFilePath: string) {
+export function loadYaml(yamlFilePath: string) {
     try {
         return jsYaml.load(fs.readFileSync(yamlFilePath, 'utf8'));
     } catch (e: any) {
