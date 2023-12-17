@@ -1,6 +1,7 @@
-dummyserver/
-output/
 src/
+output/
+plan/
+jsonSchema/
 
 # Dependency directories
 node_modules/

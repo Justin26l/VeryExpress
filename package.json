@@ -1,16 +1,19 @@
 {
   "name": "very-express",
   "version": "0.0.1",
-  "description": "based on json schema, generate Express RestApi server with mongoDb ",
+  "description": "based on json schema and openapi, generate Express RestApi server with mongoDb ",
   "author": "justin26l",
   "license": "MIT",
   "main": "index.js",
+  
+  "bin": {
+    "vex": "./dist/cli.js"
+  },
   "scripts": {
-    "init": "npm install express @types/express typescript ts-node && npx tsc --init",
     "build": "tsc -p .",
-    "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "ts-node ./src/cli.ts",
-    "start": "node ./dist/cli.js"
+    "prod": "node ./dist/cli.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "jsonSchema",
