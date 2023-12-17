@@ -1,6 +1,7 @@
 src/
-output/
 plan/
+output/
+openapi/
 jsonSchema/
 
 # Dependency directories
