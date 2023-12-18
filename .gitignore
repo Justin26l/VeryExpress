@@ -1,6 +1,8 @@
-dummyserver
-output
-dist
+dist/
+
+# generated files
+output/
+openapi/
 
 # Dependency directories
 node_modules/

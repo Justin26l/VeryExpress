@@ -1,3 +1,5 @@
+import * as types from "./types";
+
 export interface openapi {
     openapi: string,
     info: {
@@ -10,8 +12,17 @@ export interface openapi {
 }
 
 export interface paths {
-    [key:string]: { // path name
-        [key:string]: method // method
+    [key:string]: {
+        summary: string,
+        [types.method.get]?: method,
+        [types.method.post]?: method,
+        [types.method.put]?: method,
+        [types.method.patch]?: method,
+        [types.method.delete]?: method,
+        [types.method.options]?: method,
+        [types.method.head]?: method,
+        [types.method.trace]?: method,
+        [key:string]: method | string | undefined,
     }
 }
 
@@ -39,6 +50,12 @@ export interface parameter {
     schema: {
         type: string;
         format?: string;
+        required?: string[];
+        minLength?: number;
+        maxLength?: number;
+        minimum?: number;
+        maximum?: number;
+        enum?: string[];
     };
     example?: any; // This could be any type depending on your example structure
     examples?: any; // This could be any type depending on your examples structure
@@ -60,7 +77,10 @@ export interface responseItem {
     description: string;
     content?: {
         'application/json'?: {
-            schema: {[key:string]:any};
+            schema: {
+                $ref?: string;
+                [key:string]:any
+            };
         };
     };
 }
@@ -78,6 +98,20 @@ export interface componentsSchemaValue {
     type: string,
     items?: any,
     properties?: {
-        [key:string]: any,
+        [key:string]: fieldsItem,
     }
+}
+
+export interface fieldsItem {
+    type: string;
+    format?: string;
+    minimum?: number;
+    maximum?: number;
+    minLength?: number;
+    maxLength?: number;
+    maxItems?: number;
+    maxProperties?: number;
+    uniqueItems?: boolean;
+    enum?: string[];
+    [key:string]: any;
 }

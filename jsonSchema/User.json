@@ -2,10 +2,8 @@
     "type": "object",
     "x-documentConfig": {
         "documentName": "user",
-        "documentType": "primary",
         "interfaceName": "User",
-        "keyPrefix": "user",
-        "method": [
+        "methods": [
             "get",
             "post",
             "put",
@@ -29,7 +27,16 @@
             "type": "string",
             "format": "uuid",
             "required": false,
-            "x-foreignKey": "userContact"
+            "x-foreignKey": "usercontact"
+        },
+        "married": {
+            "type": "string",
+            "required": true,
+            "enum": [
+                "single",
+                "inRelationship",
+                "married"
+            ]
         },
         "userAddress": {
             "type": "object",

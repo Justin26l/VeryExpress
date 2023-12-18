@@ -2,10 +2,8 @@
     "type": "object",
     "x-documentConfig": {
         "documentName": "usercontact",
-        "documentType": "secondary",
         "interfaceName": "UserContact",
-        "keyPrefix": "uc",
-        "method": [
+        "methods": [
             "get",
             "post",
             "put",
@@ -18,9 +16,8 @@
             "type": "string",
             "format": "uuid",
             "index": true,
-            "default": {
-                "$uuid": "v4"
-            }
+            "unique": true,
+            "required": true
         },
         "phoneNo": {
             "type": "string",

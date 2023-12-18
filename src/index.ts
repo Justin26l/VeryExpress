@@ -1,114 +1,127 @@
 import fs from 'fs';
-import express from 'express';
 
 import json2mongoose from 'json2mongoose';
-import * as openapiGen from './openapi';
-import utils from './utils';
-import { compilerOptions } from './types/types';
+import * as openapiGen from './generators/openapi.generator';
+
+import log from './utils/log';
+import utils from './utils/common';
+import * as controllerGen from './generators/controllers.generator';
+import * as routeGen from './generators/routes.generator';
+import * as serverGen from './generators/server.generator';
+
+import * as types from './types/types';
+import { isKeyObject } from 'util/types';
 
 
-export function genarate(
-    schemaDir   : string,
-    outDir      : string,
-    options ?: compilerOptions
-) {
+export default function generate(
+    schemaDir: string,
+    openapiDir: string,
+    outDir: string,
+    options?: types.compilerOptions
+): void {
     const dir = {
-        routeDir        : `${outDir}/route`,
-        middlewareDir   : `${outDir}/middleware`,
-        controllerDir   : `${outDir}/controller`,
-        modelDir        : `${outDir}/model`,
-        typeDir         : `${outDir}/type`,
-        serviceDir      : `${outDir}/service`,
-        utilsDir        : `${outDir}/utils`,
+        routeDir: `${outDir}/routes`,
+        middlewareDir: `${outDir}/middlewares`,
+        controllerDir: `${outDir}/controllers`,
+        modelDir: `${outDir}/models`,
+        typeDir: `${outDir}/types`,
+        serviceDir: `${outDir}/services`,
+        utilsDir: `${outDir}/utils`,
     };
 
-    const genDir = {
-        routeDir        : dir.routeDir+'/generate',
-        middlewareDir   : dir.middlewareDir+'/generate',
-        controllerDir   : dir.controllerDir+'/generate',
-        modelDir        : dir.modelDir+'/generate',
-        typeDir         : dir.typeDir+'/generate',
-        serviceDir      : dir.serviceDir+'/generate',
-        utilsDir        : dir.utilsDir+'/generate',
-    }
-
     // create all directories if not exist
+    if (!fs.existsSync(outDir)) { fs.mkdirSync(outDir); };
+    if (!fs.existsSync(openapiDir)) { fs.mkdirSync(openapiDir); };
     Object.values(dir).forEach((path: string) => {
-        if (!fs.existsSync(path)) {
-            fs.mkdirSync(path);
-        }
+        if (!fs.existsSync(path)) { fs.mkdirSync(path); };
     });
 
-    // create all generated directories if not exist
-    Object.values(genDir).forEach((path: string) => {
-        if (!fs.existsSync(path)) {
-            fs.mkdirSync(path);
+    // data 
+    let routeData: {
+        route: string,
+        controllerClassName: string,
+        controllerPath: string,
+    }[] = [];
+
+    const files: string[] = fs.readdirSync(schemaDir);
+    files.forEach((schemaFileName: string) => {
+        try {
+            // ignore non json files
+            if (!schemaFileName.endsWith('.json')) return;
+
+            // read schema file config
+            const file = fs.readFileSync(`${schemaDir}/${schemaFileName}`);
+            const jsonSchema: any = JSON.parse(file.toString());
+            const documentConfig: types.documentConfig = jsonSchema["x-documentConfig"];
+
+            if(!documentConfig) log.error(`x-documentConfig not found in ${schemaDir}/${schemaFileName}`);
+            if(!documentConfig.documentName) log.error(`x-documentConfig.documentName not found in ${schemaDir}/${schemaFileName}`);
+            if(!documentConfig.interfaceName) log.error(`x-documentConfig.interfaceName not found in ${schemaDir}/${schemaFileName}`);
+            if(!documentConfig.methods) log.error(`x-documentConfig.methods is not found in ${schemaDir}/${schemaFileName}`);
+            if(!Array.isArray(documentConfig.methods)) log.error(`x-documentConfig.methods is invalid in ${schemaDir}/${schemaFileName}`);
+
+            if(typeof jsonSchema.properties !== 'object') log.error(`properties is invalid in ${schemaDir}/${schemaFileName}`);
+
+            // make interface
+            json2mongoose.typesGen.compileFromFile(
+                `${schemaDir}/${schemaFileName}`,
+                `${dir.typeDir}/${documentConfig.interfaceName}.gen.ts`,
+                options || utils.defaultCompilerOptions
+            );
+
+            // make model
+            json2mongoose.modelsGen.compileFromFile(
+                `${schemaDir}/${schemaFileName}`,
+                `${utils.relativePath(dir.modelDir, dir.typeDir)}/${documentConfig.interfaceName}.gen`,
+                `${dir.modelDir}/${documentConfig.interfaceName}Model.gen.ts`,
+                options || utils.defaultCompilerOptions
+            );
+
+            // prepair route data
+            routeData.push({
+                route: `/${documentConfig.documentName}`,
+                controllerClassName: documentConfig.interfaceName,
+                controllerPath: utils.relativePath(dir.routeDir, dir.controllerDir) + '/' + documentConfig.interfaceName + 'Controller.gen',
+            });
+
         }
+        catch (err: any) {
+            log.error(`Processing File : ${schemaDir}/${schemaFileName}\n`, err);
+        };
     });
 
-    // genarate opanapi
-    openapiGen.compile(schemaDir, outDir);
+    // genarate opanapi from json schema
+    openapiGen.compile(schemaDir, openapiDir + '/openapi.gen.yaml');
 
-    // run json2mongoose
-    // json2mongoose.genarate(schemaDir, genDir.modelDir, genDir.typeDir, {
-    //     headerComment: utils.getGenaratorHeaderComment(),
-    // });
-    
-    fs.readdir(schemaDir, (err: any, files: string[]) => {
-        if (err) {
-            console.log(err);
-            return;
-        }
+    // clone nessasary files
+    utils.copyDir(`${openapiDir}`, outDir + '/openapi');
+    utils.copyDir(`${__dirname}/templates/utils`, dir.utilsDir);
 
-        // iterate over files
-        files.forEach((schemaFileName: string) => {
-            try {
-                
-                // ignore non json files
-                if (!schemaFileName.endsWith('.json')) {
-                    return;
-                }
+    // genarate controller from open api
+    controllerGen.compile(
+        openapiDir + '/openapi.gen.yaml',
+        `${utils.relativePath(dir.controllerDir, dir.modelDir)}`,
+        dir.controllerDir,
+        options || utils.defaultCompilerOptions
+    );
 
-                const fileName = schemaFileName.replace('.json', '');
-                const fileTs = fileName + '.ts';
+    // make route from routeData
+    routeGen.compile(
+        routeData,
+        openapiDir + '/openapi.gen.yaml',
+        `${dir.routeDir}/routes.gen.ts`,
+        options || utils.defaultCompilerOptions
+    );
 
-                // make interface
-                json2mongoose.typesGen.compileFromFile(
-                    `${schemaDir}/${schemaFileName}`,
-                    `${genDir.typeDir}/${fileTs}`,
-                    options || utils.defaultCompilerOptions
-                );
+    // make middleware
 
-                // make model
-                json2mongoose.modelsGen.compileFromFile(
-                    `${schemaDir}/${schemaFileName}`,
-                    `${utils.relativePath(genDir.modelDir, genDir.typeDir)}/${fileName}`,
-                    `${genDir.modelDir}/${fileTs}`,
-                    options || utils.defaultCompilerOptions
-                );
+    // make service
 
-                // make controller
+    // make server
+    serverGen.compile(
+        outDir,
+        options || { headerComment: utils.getSimpleHeaderComment() }
+    );
 
-                // make route
-
-                // make middleware
-
-                // make service
-
-                // make utils
-
-                // make test
-                
-            }
-            catch (err: any) {
-                console.error('\x1b[31m%s\x1b[0m', `Processing File : ${schemaDir}/${schemaFileName}\n`, err);
-            }
-
-        });
-    });
 };
 
-genarate(
-    './jsonSchema',
-    './output',
-);
