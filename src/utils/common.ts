@@ -2,7 +2,8 @@
 import fs from "fs";
 import path from 'path';
 import jsYaml from "js-yaml";
-import { compilerOptions } from "./types/types";
+import { compilerOptions } from "../types/types";
+import log from "./log";
 
 function getPackageInfo(): {
     version: string,
@@ -25,8 +26,8 @@ export function loadYaml(yamlFilePath: string) {
     try {
         const doc = jsYaml.load(fs.readFileSync(yamlFilePath, 'utf8'));
         // console.dir(doc, { depth: null });
-    } catch (e) {
-        console.error(e);
+    } catch (e:any) {
+        log.error('Error Load OpenApi File :\n', e.message || e);
     }
 };
 
@@ -88,7 +89,7 @@ export function copyDir(source: string, destination: string): void {
         }
         else {
             const outPath :string = destination+'/'+files[i];
-            console.log('\x1b[32m%s\x1b[0m', '[Writing]', `Utils : ${outPath}`);
+            log.writing(`Utils : ${outPath}`);
             fs.copyFileSync(source+'/'+files[i], outPath);
         }
     }

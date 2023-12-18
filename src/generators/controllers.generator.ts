@@ -6,6 +6,7 @@ import templates from "../templates";
 
 import * as types from "../types/types";
 import * as openapiType from "../types/openapi";
+import log from "../utils/log";
 
 /**
  * compile openapi to controller source code
@@ -24,7 +25,7 @@ export function compile(
     const openApi: openapiType.openapi = jsYaml.load(file) as openapiType.openapi;
     const endpointsValidator: {
         [key: string]: { // path
-            [key: string]: string[] // method
+            [key: string]: string[] // methods
         }
     } = {};
 
@@ -33,7 +34,7 @@ export function compile(
         const interfaceName = openApi.paths[endpoint].summary;
         endpointsValidator[endpoint] = {};
 
-        console.log('\x1b[36m%s\x1b[0m', '[Processing]', `Controller : ${endpoint} -> ${interfaceName}Controller`);
+        log.process(`Controller : ${endpoint} -> ${interfaceName}Controller`);
 
         // make validator
         Object.keys(openApi.paths[endpoint]).forEach((method: string) => {
@@ -68,7 +69,7 @@ export function compile(
         const outPath = `${outDir}/${interfaceName}Controller.gen.ts`;
         const controllerToModelPath = `${controllerToModelDir}/${interfaceName}Model.gen`;
 
-        console.log('\x1b[32m%s\x1b[0m', '[Writing]', `Controller : ${outPath}`);
+        log.process(`Controller : ${outPath}`);
 
         fs.writeFileSync(outPath,
             templates.controllerTemplate({

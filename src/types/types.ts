@@ -28,7 +28,7 @@ export interface documentConfig {
     documentType?: 'primary' | 'secondary';
     interfaceName: string;
     keyPrefix?: string;
-    method: method[]
+    methods: method[]
 }
 
 export enum method {

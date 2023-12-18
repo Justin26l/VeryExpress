@@ -3,6 +3,7 @@ import fs from "fs";
 import templates from "../templates";
 
 import * as types from "../types/types";
+import log from "../utils/log";
 
 /**
  * compile controllers to route source code
@@ -22,7 +23,7 @@ export function compile(
     options?: types.compilerOptions
 ): void {
 
-    console.log('\x1b[32m%s\x1b[0m', '[Writing]', `Router : ${outPath}`);
+    log.writing(`Router : ${outPath}`);
     // rewrite routes file
     fs.writeFileSync(outPath, 
         templates.routesTemplate({

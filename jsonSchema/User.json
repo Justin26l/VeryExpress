@@ -2,9 +2,8 @@
     "type": "object",
     "x-documentConfig": {
         "documentName": "user",
-        "documentType": "primary",
         "interfaceName": "User",
-        "method": [
+        "methods": [
             "get",
             "post",
             "put",

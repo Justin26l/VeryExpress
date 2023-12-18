@@ -4,7 +4,8 @@ import fs from "fs";
 
 import * as types from '../types/types';
 import * as openapiType from '../types/openapi';
-import utils from "../utils";
+import utils from "../utils/common";
+import log from "../utils/log";
 
 /**
  * compile json schema to openapi spec
@@ -33,7 +34,7 @@ export function compile(schemaDir: string, outPath: string) :void {
     files.forEach((file) => {
         // ignore non json files
         if(!file.endsWith('.json')) return;
-        console.log('\x1b[36m%s\x1b[0m', '[Processing]', `OpenApi : ${schemaDir+'/'+file}`);
+        log.process(`OpenApi : ${schemaDir+'/'+file}`);
         
         const jsonSchemaBuffer = fs.readFileSync(`${schemaDir}/${file}`);
         const jsonSchema :types.jsonSchema = JSON.parse(jsonSchemaBuffer.toString());
@@ -46,7 +47,7 @@ export function compile(schemaDir: string, outPath: string) :void {
 
     // create and write file
 
-    console.log('\x1b[32m%s\x1b[0m', '[Writing]', `OpenApi : ${outPath}`);
+    log.writing(`OpenApi : ${outPath}`);
 
     fs.writeFileSync(outPath, openapiYaml);
 };
@@ -57,12 +58,12 @@ function jsonToOpenapiPath(
 ): openapiType.openapi
 {
     // get jsonschema properties
-    const documentConfig = jsonSchema["x-documentConfig"];
-    const lowerDocName = documentConfig.documentName.toLowerCase();
-    const interfaceName = documentConfig.interfaceName;
+    const documentConfig : types.documentConfig = jsonSchema["x-documentConfig"];
+    const lowerDocName : string= documentConfig.documentName.toLowerCase();
+    const interfaceName : string= documentConfig.interfaceName;
 
-    const properties = jsonSchema.properties;
-    const methods: types.method[] = documentConfig.method;
+    const properties :types.jsonSchema['properties'] = jsonSchema.properties;
+    const methods: types.method[] = documentConfig.methods;
 
     let routes: openapiType.paths = {
         ['/'+lowerDocName]: {
@@ -170,7 +171,7 @@ function jsonToOpenapiComponentSchema(
     const documentConfig = jsonSchema["x-documentConfig"];
     const lowerDocName = documentConfig.documentName.toLowerCase();
     const interfaceName = documentConfig.interfaceName;
-    const methods: types.method[] = documentConfig.method;
+    const methods: types.method[] = documentConfig.methods;
 
     const componentSchemaResponse : openapiType.componentsSchemaValue = {
         type: 'object',

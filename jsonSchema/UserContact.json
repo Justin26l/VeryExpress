@@ -3,8 +3,7 @@
     "x-documentConfig": {
         "documentName": "usercontact",
         "interfaceName": "UserContact",
-        "keyPrefix": "uc",
-        "method": [
+        "methods": [
             "get",
             "post",
             "put",

@@ -3,6 +3,7 @@ import fs from "fs";
 import templates from "../templates";
 
 import * as types from "../types/types";
+import log from "../utils/log";
 
 /**
  * write files at root directory
@@ -21,7 +22,7 @@ export function compile(
     const gitignoreOutPath = `${outDir}/.gitignore`;
 
     // write server file
-    console.log('\x1b[32m%s\x1b[0m', '[Writing]', `Server : ${serverOutPath}`);
+    log.writing(`Server : ${serverOutPath}`);
     fs.writeFileSync(outDir + '/server.ts',
         templates.serverTemplate({
             options: options,
@@ -29,7 +30,7 @@ export function compile(
     );
 
     // write .env file
-    console.log('\x1b[32m%s\x1b[0m', '[Writing]', `Server : ${envOutPath}`);
+    log.writing(`Server : ${envOutPath}`);
     fs.writeFileSync(`${outDir}/.env`,
         `# veryExpress generated
 VERYEXPRESS_PORT=3000
@@ -37,7 +38,7 @@ VERYEXPRESS_PORT=3000
     );
 
     // write git ignore
-    console.log('\x1b[32m%s\x1b[0m', '[Writing]', `Server : ${gitignoreOutPath}`);
+    log.writing(`Server : ${gitignoreOutPath}`);
     fs.writeFileSync(`${outDir}/.env`,
         `# veryExpress generated
 node_modules
@@ -47,7 +48,7 @@ dist
     );
 
     // write package.json
-    // console.log('\x1b[32m%s\x1b[0m', '[Writing]', `Server : ${outDir}/package.json`);
+    // log.writing(`Server : ${outDir}/package.json`);
     // fs.writeFileSync(`${outDir}/package.json`,
     // '123'
     // );
