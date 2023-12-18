@@ -24,7 +24,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Justin26l/json2mongoose.git"
+    "url": "git+https://github.com/Justin26l/VeryExpress.git"
   },
   "dependencies": {
     "js-yaml": "4.1.0",
