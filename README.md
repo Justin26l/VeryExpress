@@ -1,11 +1,15 @@
 # VeryExpress
-an generator that generate [Express](https://github.com/expressjs/express) rest-api app based on [jsonSchema](https://github.com/json-schema-org) and [openApi](https://github.com/OAI) 
+a generator that generate [Express](https://expressjs.com/) rest-api app from [JsonSchema](https://json-schema.org/overview/what-is-jsonschema) and [OpenApi](https://www.openapis.org/) spec.
+
+## Related Project
+- [x] [json2mongoose](https://github.com/Justin26l/json2mongoose) - jsonSchema to Mongoose Model.
+- [ ] Front-End UI Generator
 
 ## Idea
 doing same things once is good,  
-twice is okay, third times is wasting life.
+twice is okay, third is wasting life.
 
-all you need is define the `JsonSchema` and `openApi` spec.
+all you need is define the `JsonSchema` and modify the `OpenApi` spec it generate.
 
 ## JsonSchmea Setup
 at the root of schema :
@@ -42,10 +46,12 @@ at the properites :
 
 ## Road Map
 - [ ] dockernize
-- [x] generate express server 
+- [x] generate express server
+    - [ ] [OAuth](https://oauth.net/) Middleware
+    - [ ] [RBAC](https://en.wikipedia.org/wiki/Role-based_access_control) Middleware
 - [x] gen. routes
 - [x] gen. controllers based on openapi spec
-    - [ ] define fields searching method
+    - [ ] define fields filtering method
 - [x] gen. openapi based on json schema
 - [x] gen. mongoose model
 - [ ] gen. sql model
