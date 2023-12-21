@@ -28,52 +28,19 @@ class {{interfaceName}}Controller {
     }
 
     public routes() {
-        this.router.get(
-            '/', 
-            [
-                {{getListValidator}}
-            ], 
-            this.get{{interfaceName}}List.bind(this)
-    );
+        
+        {{getListRoute}}
 
-        this.router.get(
-            '/:id', 
-            [
-                {{getOneValidator}}
-            ], 
-            this.get{{interfaceName}}.bind(this)
-        );
+        {{getOneRoute}}
 
-        this.router.post(
-            '/', 
-            [
-                {{postValidator}}
-            ], 
-            this.create{{interfaceName}}.bind(this)
-        );
+        {{postRoute}}
 
-        this.router.put(
-            '/:id', 
-            [
-                {{putValidator}}
-            ], 
-            this.update{{interfaceName}}.bind(this)
-        );
-        this.router.patch(
-            '/:id', 
-            [
-                {{patchValidator}}
-            ], 
-            this.update{{interfaceName}}.bind(this)
-        );
+        {{putRoute}}
 
-        this.router.delete(
-            '/:id', 
-            [
-                {{deleteValidator}}
-            ], 
-            this.delete{{interfaceName}}.bind(this)
-        );
+        {{patchRoute}}
+
+        {{deleteRoute}}
+
     };
 
     public async get{{interfaceName}}(req: Request, res: Response): Promise<Response> {
@@ -95,7 +62,7 @@ class {{interfaceName}}Controller {
         }
     }
 
-    public async get{{interfaceName}}List(req: Request, res: Response): Promise<Response> {
+    public async getList{{interfaceName}}(req: Request, res: Response): Promise<Response> {
         try {
             const user = await {{interfaceName}}Model.find();
             if (!user) {
@@ -154,15 +121,63 @@ class {{interfaceName}}Controller {
 
 export default new {{interfaceName}}Controller().router;
 `;
-    template = template.replace(/{{headerComment}}/g, templateOptions.headerComment);
-    template = template.replace(/{{interfaceName}}/g, templateOptions.interfaceName);
-    template = template.replace(/{{modelPath}}/g, templateOptions.modelPath);
-    template = template.replace(/{{getListValidator}}/g, templateOptions.validator[templateOptions.endpoint].get.join(',\n                '));
-    template = template.replace(/{{getOneValidator}}/g, templateOptions.validator[templateOptions.endpoint+'/{id}'].get.join(',\n                '));
-    template = template.replace(/{{postValidator}}/g, templateOptions.validator[templateOptions.endpoint].post.join(',\n                '));
-    template = template.replace(/{{putValidator}}/g, templateOptions.validator[templateOptions.endpoint+'/{id}'].put.join(',\n                '));
-    template = template.replace(/{{patchValidator}}/g, templateOptions.validator[templateOptions.endpoint+'/{id}'].patch.join(',\n                '));
-    template = template.replace(/{{deleteValidator}}/g, templateOptions.validator[templateOptions.endpoint+'/{id}'].delete.join(',\n                '));
+    const indent2 = '\n        ';
+    const indent3 = '\n            ';
+    const indent4 = '\n                ';
+      
+    template = template.replace(
+        /{{headerComment}}/g, 
+        templateOptions.headerComment
+    );
+    template = template.replace(
+        /{{interfaceName}}/g, 
+        templateOptions.interfaceName
+    );
+    template = template.replace(
+        /{{modelPath}}/g, 
+        templateOptions.modelPath
+    );
+          
+    template = template.replace(
+        /{{getListRoute}}/g, 
+        !templateOptions.validator[templateOptions.endpoint].get ? 
+            '' : 
+            `this.router.get('/', ${indent3}[${indent4 + templateOptions.validator[templateOptions.endpoint].get.join(',' + indent4) + indent3}],${indent3}this.getList${templateOptions.interfaceName}.bind(this)${indent2});`
+    );
+
+    template = template.replace(
+        /{{getOneRoute}}/g, 
+        !templateOptions.validator[templateOptions.endpoint+'/{id}'].get ? 
+            '' : 
+            `this.router.get('/:id', ${indent3}[${indent4 + templateOptions.validator[templateOptions.endpoint+'/{id}'].get.join(',' + indent4) + indent3}],${indent3}this.get${templateOptions.interfaceName}.bind(this)${indent2});`
+    );
+
+    template = template.replace(
+        /{{postRoute}}/g, 
+        !templateOptions.validator[templateOptions.endpoint].post ? 
+            '' : 
+            `this.router.post('/', ${indent3}[${indent4 + templateOptions.validator[templateOptions.endpoint].post.join(',' + indent4) + indent3}],${indent3}this.create${templateOptions.interfaceName}.bind(this)${indent2});`
+    );
+
+    template = template.replace(
+        /{{putRoute}}/g, 
+        !templateOptions.validator[templateOptions.endpoint+'/{id}'].put ? 
+            '' : 
+            `this.router.put('/:id', ${indent3}[${indent4 + templateOptions.validator[templateOptions.endpoint+'/{id}'].put.join(',' + indent4) + indent3}],${indent3}this.update${templateOptions.interfaceName}.bind(this)${indent2});`
+    );
+    template = template.replace(
+        /{{patchRoute}}/g, 
+        !templateOptions.validator[templateOptions.endpoint+'/{id}'].patch ? 
+            '' : 
+            `this.router.patch('/:id', ${indent3}[${indent4 + templateOptions.validator[templateOptions.endpoint+'/{id}'].patch.join(',' + indent4) + indent3}],${indent3}this.update${templateOptions.interfaceName}.bind(this)${indent2});`
+    );
+
+    template = template.replace(
+        /{{deleteRoute}}/g, 
+        !templateOptions.validator[templateOptions.endpoint+'/{id}'].delete ? 
+            '' : 
+            `this.router.delete('/:id', ${indent3}[${indent4 + templateOptions.validator[templateOptions.endpoint+'/{id}'].delete.join(',' + indent4) + indent3}],${indent3}this.delete${templateOptions.interfaceName}.bind(this)${indent2});`
+    );
 
     return template;
 };

@@ -34,7 +34,7 @@ export function compile(
         const interfaceName = openApi.paths[endpoint].summary;
         endpointsValidator[endpoint] = {};
 
-        log.process(`Controller : ${endpoint} -> ${interfaceName}Controller`);
+        log.process(`Controller : ${openapiPath} > ${endpoint}`);
 
         // make validator
         Object.keys(openApi.paths[endpoint]).forEach((method: string) => {
@@ -69,7 +69,7 @@ export function compile(
         const outPath = `${outDir}/${interfaceName}Controller.gen.ts`;
         const controllerToModelPath = `${controllerToModelDir}/${interfaceName}Model.gen`;
 
-        log.process(`Controller : ${outPath}`);
+        log.writing(`Controller : ${outPath}`);
 
         fs.writeFileSync(outPath,
             templates.controllerTemplate({
