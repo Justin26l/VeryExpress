@@ -1,4 +1,7 @@
 dist/
+.env
+!src/templates/root/
+!src/templates/root/.env
 
 # generated files
 output/

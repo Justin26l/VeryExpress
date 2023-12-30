@@ -107,10 +107,12 @@
     "skipLibCheck": true                                 /* Skip type checking all .d.ts files. */
   },
   "include": [
-    "src/**/*.ts"
-, "src/generators/routes.generator.ts"  ],
+    "src/**/*.ts", 
+    "src/generators/routes.generator.ts", "src/test.js", "src/copyDir.js"  ],
   "exclude": [
     "node_modules",
-    "output"
+    "output",
+    "src/templates/**/*.gen.ts",
+    ".env",
   ]
 }

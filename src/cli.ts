@@ -3,6 +3,8 @@ import generate from './index';
 import fs from 'fs';
 import minimist from 'minimist';
 
+import log from './utils/log';
+
 var args = minimist(process.argv.slice(2));
 console.log('\x1b[35m%s\x1b[0m', '\n========== veryExpress CLI (vex) ==========\n');
 if ('h' in args) {
@@ -10,9 +12,9 @@ if ('h' in args) {
     console.log(`
 Usage: vex [jsonSchemaDir] [openapiDir] [outputDir]
     -h : Help
-    -j : jsonSchemaDir 
-    -a : openApiDir
-    -o : outputDir
+    -j : jsonSchemaDir (default: ./jsonSchema)
+    -a : openApiDir (default: ./openapi)
+    -o : outputDir (default: ./src)
 `);
     process.exit(0);
 }
@@ -21,7 +23,7 @@ const openapiDir = args.a || args.openApiDir || process.argv[3] || './openapi';
 const outputDir = args.o || args.outputDir || process.argv[4] || './output';
 
 if(!fs.existsSync(schemaDir)){
-    console.log('\x1b[31m%s\x1b[0m', 'Schema Dir Not Found:', schemaDir);
+    log.error('Schema Dir Not Found:', schemaDir);
     process.exit(1);
 };
 

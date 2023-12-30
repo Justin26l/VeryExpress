@@ -1,4 +1,5 @@
 import fs from 'fs';
+import childProcess from 'child_process';
 
 import json2mongoose from 'json2mongoose';
 import * as openapiGen from './generators/openapi.generator';
@@ -10,7 +11,6 @@ import * as routeGen from './generators/routes.generator';
 import * as serverGen from './generators/server.generator';
 
 import * as types from './types/types';
-import { isKeyObject } from 'util/types';
 
 
 export default function generate(
@@ -19,6 +19,15 @@ export default function generate(
     outDir: string,
     options?: types.compilerOptions
 ): void {
+
+    // commit before generate
+    try {
+        childProcess.execSync('git add . && git commit -m "before vex-gen"', { stdio: 'inherit' });
+    }
+    catch (err) {
+        log.error('git commit "before vex-gen" failed', err);
+    };
+
     const dir = {
         routeDir: `${outDir}/routes`,
         middlewareDir: `${outDir}/middlewares`,
@@ -62,20 +71,26 @@ export default function generate(
 
             if(typeof jsonSchema.properties !== 'object') log.error(`properties is invalid in ${schemaDir}/${schemaFileName}`);
 
-            // make interface
-            json2mongoose.typesGen.compileFromFile(
-                `${schemaDir}/${schemaFileName}`,
-                `${dir.typeDir}/${documentConfig.interfaceName}.gen.ts`,
-                options || utils.defaultCompilerOptions
-            );
+            
+            // check if 'fileName.nogen.ts' exist then skip generate of this file
+            if ( !fs.existsSync(`${schemaDir}/${schemaFileName}.nogen.ts`) ){
+                // make interface
+                json2mongoose.typesGen.compileFromFile(
+                    `${schemaDir}/${schemaFileName}`,
+                    `${dir.typeDir}/${documentConfig.interfaceName}.gen.ts`,
+                    options || utils.defaultCompilerOptions
+                );
+            }
 
             // make model
-            json2mongoose.modelsGen.compileFromFile(
-                `${schemaDir}/${schemaFileName}`,
-                `${utils.relativePath(dir.modelDir, dir.typeDir)}/${documentConfig.interfaceName}.gen`,
-                `${dir.modelDir}/${documentConfig.interfaceName}Model.gen.ts`,
-                options || utils.defaultCompilerOptions
-            );
+            if ( !fs.existsSync(`${schemaDir}/${schemaFileName}Model.nogen.ts`) ){
+                json2mongoose.modelsGen.compileFromFile(
+                    `${schemaDir}/${schemaFileName}`,
+                    `${utils.relativePath(dir.modelDir, dir.typeDir)}/${documentConfig.interfaceName}.gen`,
+                    `${dir.modelDir}/${documentConfig.interfaceName}Model.gen.ts`,
+                    options || utils.defaultCompilerOptions
+                );
+            };
 
             // prepair route data
             routeData.push({
@@ -91,7 +106,9 @@ export default function generate(
     });
 
     // genarate opanapi from json schema
-    openapiGen.compile(schemaDir, openapiDir + '/openapi.gen.yaml');
+    if ( !fs.existsSync(openapiDir + '/openapi.nogen.yaml') ){
+        openapiGen.compile(schemaDir, openapiDir + '/openapi.gen.yaml');
+    };
 
     // clone nessasary files
     utils.copyDir(`${openapiDir}`, outDir + '/openapi');
@@ -119,6 +136,8 @@ export default function generate(
 
     // make server
     serverGen.compile(
+        schemaDir,
+        openapiDir,
         outDir,
         options || { headerComment: utils.getSimpleHeaderComment() }
     );
