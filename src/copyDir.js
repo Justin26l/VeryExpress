@@ -21,4 +21,4 @@ function copyDir (src, destination) {
     });
 }
 
-copyDir('src/templates/utils', 'dist/templates/utils');
+copyDir('src/templates', 'dist/templates');
