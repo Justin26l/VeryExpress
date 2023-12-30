@@ -112,6 +112,7 @@
   "exclude": [
     "node_modules",
     "output",
+    "src/copyDir.js",
     "src/templates/**/*.gen.ts",
     ".env",
   ]
