@@ -27,7 +27,6 @@
     "url": "git+https://github.com/Justin26l/VeryExpress.git"
   },
   "dependencies": {
-    "@types/express-session": "^1.17.10",
     "express-session": "^1.17.3",
     "js-yaml": "4.1.0",
     "json-schema-to-openapi-schema": "^0.4.0",
@@ -35,6 +34,7 @@
     "minimist": "^1.2.8"
   },
   "devDependencies": {
+    "@types/express-session": "^1.17.10",
     "@types/express": "^4.17.21",
     "@types/js-yaml": "^4.0.9",
     "@types/minimist": "^1.2.5",
@@ -48,8 +48,7 @@
     "helmet": "^7.1.0",
     "js-yaml": "^4.1.0",
     "json-schema-to-openapi-schema": "^0.4.0",
-    "json2mongoose": "^0.1.5",
-    "ncp": "^2.0.0",
+    "json2mongoose": "^0.1.6",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "swagger-ui-express": "^5.0.0",

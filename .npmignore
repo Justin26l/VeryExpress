@@ -1,8 +1,6 @@
 src/
 plan/
 output/
-openapi/
-jsonSchema/
 
 # Dependency directories
 node_modules/
