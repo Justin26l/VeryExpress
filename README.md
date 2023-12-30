@@ -5,7 +5,19 @@ an generator that generate [Express](https://github.com/expressjs/express) rest-
 doing same things once is good,  
 twice is okay, third times is wasting life.
 
-all you need is define the `JsonSchema` and `openApi` spec.
+all you need is define the `JsonSchema` and `openApi` spec
+
+# Quick Start
+1. create JsonSchmea, can refer to output/jsonSchema put it as cli config file
+2. `npm i -g very-express`  
+    install package globally
+3. `vex -h`  
+    this cmd create the cli config file
+4. `vex `  
+    call cli with vex.config.json setting  
+5. `npm i`
+6. `npm build`
+7. `npm run start`
 
 ## JsonSchmea Setup
 at the root of schema :

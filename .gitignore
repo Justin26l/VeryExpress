@@ -1,8 +1,11 @@
 dist/
+.env
+!src/templates/root/
+!src/templates/root/.env
 
 # generated files
-output/
-openapi/
+output/*
+!output/jsonSchema
 
 # Dependency directories
 node_modules/

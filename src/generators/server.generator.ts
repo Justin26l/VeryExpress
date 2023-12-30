@@ -1,57 +1,60 @@
 import fs from "fs";
+import childProcess from 'child_process';
 
-import templates from "../templates";
+import serverTemplate from "./server.template";
+import packageJson from "./packageJson.generator";
 
 import * as types from "../types/types";
 import log from "../utils/log";
 
 /**
- * write files at root directory
- * - server.ts
- * - .env 
+ * generate required files at root & output directory
  * @param outDir 
+ * @param jsonSchemaDir
+ * @param openapiDir
  * @param options 
  */
 export function compile(
+    schemaDir: string,
+    openapiDir: string,
     outDir: string,
     options?: types.compilerOptions
 ): void {
 
     const serverOutPath = `${outDir}/server.ts`;
-    const envOutPath = `${outDir}/.env`;
-    const gitignoreOutPath = `${outDir}/.gitignore`;
+    const packageOutPath = `./package.json`;
+    const envOutPath = `./.env`;
+    const tsconfigOutPath = `./tsconfig.json`;
+    const gitignoreOutPath = `./.gitignore`;
 
     // write server file
-    log.writing(`Server : ${serverOutPath}`);
-    fs.writeFileSync(outDir + '/server.ts',
-        templates.serverTemplate({
-            options: options,
-        })
-    );
+    if (!fs.existsSync(serverOutPath)) {
+        log.writing(`Server : ${serverOutPath}`);
+        fs.writeFileSync(outDir + '/server.ts',
+            serverTemplate({
+                options: options,
+            })
+        );
+    }
 
-    // write .env file
-    log.writing(`Server : ${envOutPath}`);
-    fs.writeFileSync(`${outDir}/.env`,
-        `# veryExpress generated
-VERYEXPRESS_PORT=3000
-`
-    );
+    // write .env
+    if (!fs.existsSync(envOutPath)) {
+        log.writing(`Project : ${envOutPath}`);
+        fs.copyFileSync(__dirname + '/../templates/root/.env', envOutPath);
+    };
 
-    // write git ignore
-    log.writing(`Server : ${gitignoreOutPath}`);
-    fs.writeFileSync(`${outDir}/.env`,
-        `# veryExpress generated
-node_modules
-dist
-*.gen.ts
-`
-    );
+    // write tsconfig.json
+    if (!fs.existsSync(tsconfigOutPath)) {
+        // try {
+            log.writing(`Project : ${tsconfigOutPath}`);
+            fs.copyFileSync(__dirname + '/../templates/root/tsconfig.json', tsconfigOutPath);
+        //     childProcess.execSync('tsc --init', { cwd: '.', stdio: 'inherit' });
+        // } catch (error) {
+        //     log.error('Failed to execute command: tsc --init');
+        // }
+    };
 
-    // write package.json
-    // log.writing(`Server : ${outDir}/package.json`);
-    // fs.writeFileSync(`${outDir}/package.json`,
-    // '123'
-    // );
-
+    // process package.json
+    packageJson.compile(packageOutPath, schemaDir, openapiDir, outDir);
 
 };
