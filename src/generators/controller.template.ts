@@ -141,41 +141,41 @@ export default new {{interfaceName}}Controller().router;
     template = template.replace(
         /{{getListRoute}}/g, 
         !templateOptions.validator[templateOptions.endpoint].get ? 
-            '' : 
+            '// getListRoute disabled' : 
             `this.router.get('/', ${indent3}[${indent4 + templateOptions.validator[templateOptions.endpoint].get.join(',' + indent4) + indent3}],${indent3}this.getList${templateOptions.interfaceName}.bind(this)${indent2});`
     );
 
     template = template.replace(
         /{{getOneRoute}}/g, 
         !templateOptions.validator[templateOptions.endpoint+'/{id}'].get ? 
-            '' : 
+            '// getOneRoute disabled' : 
             `this.router.get('/:id', ${indent3}[${indent4 + templateOptions.validator[templateOptions.endpoint+'/{id}'].get.join(',' + indent4) + indent3}],${indent3}this.get${templateOptions.interfaceName}.bind(this)${indent2});`
     );
 
     template = template.replace(
         /{{postRoute}}/g, 
         !templateOptions.validator[templateOptions.endpoint].post ? 
-            '' : 
+            '// postRoute disabled' : 
             `this.router.post('/', ${indent3}[${indent4 + templateOptions.validator[templateOptions.endpoint].post.join(',' + indent4) + indent3}],${indent3}this.create${templateOptions.interfaceName}.bind(this)${indent2});`
     );
 
     template = template.replace(
         /{{putRoute}}/g, 
         !templateOptions.validator[templateOptions.endpoint+'/{id}'].put ? 
-            '' : 
+            '// putRoute disabled' : 
             `this.router.put('/:id', ${indent3}[${indent4 + templateOptions.validator[templateOptions.endpoint+'/{id}'].put.join(',' + indent4) + indent3}],${indent3}this.update${templateOptions.interfaceName}.bind(this)${indent2});`
     );
     template = template.replace(
         /{{patchRoute}}/g, 
         !templateOptions.validator[templateOptions.endpoint+'/{id}'].patch ? 
-            '' : 
+            '// patchRoute disabled' : 
             `this.router.patch('/:id', ${indent3}[${indent4 + templateOptions.validator[templateOptions.endpoint+'/{id}'].patch.join(',' + indent4) + indent3}],${indent3}this.update${templateOptions.interfaceName}.bind(this)${indent2});`
     );
 
     template = template.replace(
         /{{deleteRoute}}/g, 
         !templateOptions.validator[templateOptions.endpoint+'/{id}'].delete ? 
-            '' : 
+            '// deleteRoute disabled' : 
             `this.router.delete('/:id', ${indent3}[${indent4 + templateOptions.validator[templateOptions.endpoint+'/{id}'].delete.join(',' + indent4) + indent3}],${indent3}this.delete${templateOptions.interfaceName}.bind(this)${indent2});`
     );
 
