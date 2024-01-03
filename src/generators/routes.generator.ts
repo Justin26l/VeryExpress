@@ -1,6 +1,6 @@
 import fs from "fs";
 
-import templates from "../templates";
+import routesTemplate from "./routes.template";
 
 import * as types from "../types/types";
 import log from "../utils/log";
@@ -26,7 +26,7 @@ export function compile(
     log.writing(`Router : ${outPath}`);
     // rewrite routes file
     fs.writeFileSync(outPath, 
-        templates.routesTemplate({
+        routesTemplate({
             routes: routesArr,
             openapiPath: openapiPath,
             options: options,

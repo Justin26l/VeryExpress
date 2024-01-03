@@ -1,8 +1,7 @@
 import fs from "fs";
-import util from "util";
 import jsYaml from "js-yaml";
 
-import templates from "../templates";
+import controllerTemplate from "./controller.template";
 
 import * as types from "../types/types";
 import * as openapiType from "../types/openapi";
@@ -28,10 +27,11 @@ export function compile(
             [key: string]: string[] // methods
         }
     } = {};
+    let writtedEndpoint :string[] = [];
 
     // loop path
     Object.keys(openApi.paths).forEach((endpoint: string) => {
-        const interfaceName = openApi.paths[endpoint].summary;
+        // const interfaceName = openApi.paths[endpoint].summary;
         endpointsValidator[endpoint] = {};
 
         log.process(`Controller : ${openapiPath} > ${endpoint}`);
@@ -50,8 +50,6 @@ export function compile(
         });
     });
 
-    let writtedEndpoint :string[] = [];
-
     // create and write file
     Object.keys(openApi.paths).forEach((endpoint: string) => {
         // remove '/{id}' from path and check is in writtedEndpoint
@@ -67,19 +65,22 @@ export function compile(
 
         // write controller
         const outPath = `${outDir}/${interfaceName}Controller.gen.ts`;
+        const outPathNoGen = `${outDir}/${interfaceName}Controller.nogen.ts`;
         const controllerToModelPath = `${controllerToModelDir}/${interfaceName}Model.gen`;
 
         log.writing(`Controller : ${outPath}`);
 
-        fs.writeFileSync(outPath,
-            templates.controllerTemplate({
-                endpoint: endpoint,
-                modelPath: controllerToModelPath,
-                interfaceName: interfaceName,
-                validator: endpointsValidator,
-                options: options,
-            })
-        );
+        if( !fs.existsSync(outPathNoGen) ){
+            fs.writeFileSync(outPath,
+                controllerTemplate({
+                    endpoint: endpoint,
+                    modelPath: controllerToModelPath,
+                    interfaceName: interfaceName,
+                    validator: endpointsValidator,
+                    options: options,
+                })
+            );
+        };
     });
 
 };

@@ -123,23 +123,13 @@ function jsonToOpenapiPath(
 
             // GET will have additional route of GET /{id}
             if(method == types.method.get){
-                routes[route+'/{id}'][method] = routes[route][method];
+                routes[route+'/{id}'][method] = Object.assign({},routes[route][method]);
 
                 // god of defining types, please help me fuck this mf asshole
                 // @ts-ignore
                 routes[route+'/{id}'][method].responses[200].content["application/json"].schema.$ref = `#/components/schemas/${method}${interfaceName}Response`;
                 
                 routes[route+'/{id}'][method]!.parameters = [idParameter];
-            };
-        };
-
-        if(useBody){
-            routes[route][method]!.requestBody = {
-                description: `${method} ${documentConfig.documentName}`,
-                required: false,
-                content: {
-                    'application/json': { schema: { $ref: `#/components/schemas/${method}${interfaceName}Body` } },
-                },
             };
         };
 
@@ -151,6 +141,16 @@ function jsonToOpenapiPath(
         }
         else if (method == types.method.delete) {
             delete routes[route][method]!.responses[200].content;
+        };
+
+        if(useBody){
+            routes[route][method]!.requestBody = {
+                description: `${method} ${documentConfig.documentName}`,
+                required: false,
+                content: {
+                    'application/json': { schema: { $ref: `#/components/schemas/${method}${interfaceName}Body` } },
+                },
+            };
         };
 
     });
@@ -189,11 +189,10 @@ function jsonToOpenapiComponentSchema(
         ),
     };
 
-
     methods.forEach((method) => {
         switch (method) {
             case types.method.delete:
-                // no param, no response
+                // no query param, no response
                 break;
             case types.method.get:
                 let parameters : openapiType.parameter[] = [];
