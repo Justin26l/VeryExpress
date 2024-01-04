@@ -13,7 +13,8 @@ export interface openapi {
 
 export interface paths {
     [key:string]: {
-        summary: string,
+        'x-collection'?: string, // 'x-collection' is a custom field for specify db collection
+        summary?: string,
         [types.method.get]?: method,
         [types.method.post]?: method,
         [types.method.put]?: method,
@@ -27,9 +28,10 @@ export interface paths {
 }
 
 export interface method {
-    summary: string,
-    operationId: string,
-    tags: string[],
+    summary?: string,
+    'x-collection'?: string, // 'x-collection' is a custom field for specify db collection
+    operationId: string, // method + interfaceName
+    tags: string[], 
     parameters: parameter[],
     requestBody?: requestBody,
     responses: {
@@ -50,6 +52,7 @@ export interface parameter {
     schema: {
         type: string;
         format?: string;
+        'x-format'?: string;
         required?: string[];
         minLength?: number;
         maxLength?: number;

@@ -1,0 +1,6 @@
+{
+    "commitBeforeGenerate": false,
+    "jsonSchemaDir": "./output/jsonSchema",
+    "openapiDir": "./output/openapi",
+    "outputDir": "./output/src"
+}

@@ -6,7 +6,6 @@
         "methods": [
             "get",
             "post",
-            "put",
             "patch",
             "delete"
         ]
@@ -76,7 +75,12 @@
         "isActive": {
             "type": "boolean",
             "required": true
-        }    
+        },
+        "created": {
+            "type": "number",
+            "x-format": "timestamp",
+            "required": true
+        }
     },
     "additionalProperties": false
 }

@@ -31,7 +31,7 @@ export function compile(
 
     // loop path
     Object.keys(openApi.paths).forEach((endpoint: string) => {
-        // const interfaceName = openApi.paths[endpoint].summary;
+        // const interfaceName = openApi.paths[endpoint]['x-collection'];
         endpointsValidator[endpoint] = {};
 
         log.process(`Controller : ${openapiPath} > ${endpoint}`);
@@ -53,9 +53,13 @@ export function compile(
     // create and write file
     Object.keys(openApi.paths).forEach((endpoint: string) => {
         // remove '/{id}' from path and check is in writtedEndpoint
-        const interfaceName = openApi.paths[endpoint].summary;
+        const interfaceName :string|undefined = openApi.paths[endpoint]['x-collection'];
         const endpointFormatted = endpoint.replace('/{id}', '').toLowerCase();
         
+        if(interfaceName === undefined) {
+            log.error(`'x-collection' not found in ${endpoint}`);
+            return;
+        }
         if (writtedEndpoint.includes(endpointFormatted)) {
             return;
         }

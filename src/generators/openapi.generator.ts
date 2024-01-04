@@ -12,10 +12,10 @@ import log from "../utils/log";
  * @param schemaDir 
  * @param openapiOutDir 
  */
-export function compile(schemaDir: string, outPath: string) :void {
+export function compile(schemaDir: string, outPath: string): void {
 
     // convert to yaml
-    let openapiJson : openapiType.openapi = {
+    let openapiJson: openapiType.openapi = {
         openapi: "3.0.0",
         info: {
             title: "veryExpress generated api server",
@@ -27,17 +27,17 @@ export function compile(schemaDir: string, outPath: string) :void {
             schemas: {},
         },
     };
-        
+
     // loop through all json schema files and compile to openapi paths & components
 
     const files = fs.readdirSync(schemaDir);
     files.forEach((file) => {
         // ignore non json files
-        if(!file.endsWith('.json')) return;
-        log.process(`OpenApi : ${schemaDir+'/'+file}`);
-        
+        if (!file.endsWith('.json')) return;
+        log.process(`OpenApi : ${schemaDir + '/' + file}`);
+
         const jsonSchemaBuffer = fs.readFileSync(`${schemaDir}/${file}`);
-        const jsonSchema :types.jsonSchema = JSON.parse(jsonSchemaBuffer.toString());
+        const jsonSchema: types.jsonSchema = JSON.parse(jsonSchemaBuffer.toString());
         openapiJson = jsonToOpenapiPath(openapiJson, jsonSchema);
         openapiJson = jsonToOpenapiComponentSchema(openapiJson, jsonSchema);
     });
@@ -55,32 +55,31 @@ export function compile(schemaDir: string, outPath: string) :void {
 function jsonToOpenapiPath(
     openapiJson: openapiType.openapi,
     jsonSchema: types.jsonSchema,
-): openapiType.openapi
-{
+): openapiType.openapi {
     // get jsonschema properties
-    const documentConfig : types.documentConfig = jsonSchema["x-documentConfig"];
-    const lowerDocName : string= documentConfig.documentName.toLowerCase();
-    const interfaceName : string= documentConfig.interfaceName;
+    const documentConfig: types.documentConfig = jsonSchema["x-documentConfig"];
+    const lowerDocName: string = documentConfig.documentName.toLowerCase();
+    const interfaceName: string = documentConfig.interfaceName;
 
-    const properties :types.jsonSchema['properties'] = jsonSchema.properties;
+    const properties: types.jsonSchema['properties'] = jsonSchema.properties;
     const methods: types.method[] = documentConfig.methods;
 
     let routes: openapiType.paths = {
-        ['/'+lowerDocName]: {
-            summary: interfaceName,
+        ['/' + lowerDocName]: {
+            'x-collection': documentConfig.documentName,
         },
-        ['/'+lowerDocName+'/{id}']: {
-            summary: interfaceName,
+        ['/' + lowerDocName + '/{id}']: {
+            'x-collection': documentConfig.documentName,
         },
     };
 
     methods.forEach((method) => {
-        const useId :boolean = [types.method.put, types.method.patch, types.method.delete].includes(method);
-        const useBody :boolean = [types.method.post, types.method.put, types.method.patch].includes(method);
-        const route :string = '/'+lowerDocName + ( useId ?'/{id}' : '');
+        const useId: boolean = [types.method.put, types.method.patch, types.method.delete].includes(method);
+        const useBody: boolean = [types.method.post, types.method.put, types.method.patch].includes(method);
+        const route: string = '/' + lowerDocName + (useId ? '/{id}' : '');
 
         routes[route][method] = {
-            summary: interfaceName,
+            "x-collection": interfaceName,
             operationId: method + interfaceName,
             tags: [lowerDocName],
             parameters: [],
@@ -88,7 +87,7 @@ function jsonToOpenapiPath(
             responses: {
                 200: {
                     description: 'OK',
-                    content: { 
+                    content: {
                         'application/json': { schema: { $ref: `#/components/schemas/${method}${interfaceName}Response` } },
                     },
                 },
@@ -107,14 +106,14 @@ function jsonToOpenapiPath(
 
         // update parameters/body & responses
 
-        if( (useId || method == types.method.get) && properties['_id']){
-            const idParameter : openapiType.parameter = {
+        if ((useId || method == types.method.get) && properties['_id']) {
+            const idParameter: openapiType.parameter = {
                 name: 'id',
                 in: 'path',
                 description: properties['_id'].description,
                 required: true,
-                schema: { 
-                    type: properties['_id'].type, 
+                schema: {
+                    type: properties['_id'].type,
                     format: properties['_id'].format,
                 },
             };
@@ -122,14 +121,13 @@ function jsonToOpenapiPath(
             routes[route][method]!.parameters = [idParameter];
 
             // GET will have additional route of GET /{id}
-            if(method == types.method.get){
-                routes[route+'/{id}'][method] = Object.assign({},routes[route][method]);
+            if (method == types.method.get) {
+                routes[route + '/{id}'][method] = Object.assign({}, routes[route][method]);
 
                 // god of defining types, please help me fuck this mf asshole
                 // @ts-ignore
-                routes[route+'/{id}'][method].responses[200].content["application/json"].schema.$ref = `#/components/schemas/${method}${interfaceName}Response`;
-                
-                routes[route+'/{id}'][method]!.parameters = [idParameter];
+                routes[route + '/{id}'][method].responses[200].content["application/json"].schema.$ref = `#/components/schemas/${method}${interfaceName}Response`;
+                routes[route + '/{id}'][method]!.parameters = [idParameter];
             };
         };
 
@@ -143,7 +141,7 @@ function jsonToOpenapiPath(
             delete routes[route][method]!.responses[200].content;
         };
 
-        if(useBody){
+        if (useBody) {
             routes[route][method]!.requestBody = {
                 description: `${method} ${documentConfig.documentName}`,
                 required: false,
@@ -162,9 +160,7 @@ function jsonToOpenapiPath(
 function jsonToOpenapiComponentSchema(
     openapiJson: openapiType.openapi,
     jsonSchema: types.jsonSchema,
-): openapiType.openapi
-{
-    let parameters: openapiType.parameter[] = [];
+): openapiType.openapi {
     let componentSchemaPath: openapiType.components['schemas'] = {};
 
     // get jsonschema properties
@@ -173,18 +169,18 @@ function jsonToOpenapiComponentSchema(
     const interfaceName = documentConfig.interfaceName;
     const methods: types.method[] = documentConfig.methods;
 
-    const componentSchemaResponse : openapiType.componentsSchemaValue = {
+    const componentSchemaResponse: openapiType.componentsSchemaValue = {
         type: 'object',
         properties: json2openapi(
-            utils.cleanXcustomValue(jsonSchema.properties, ['index', 'unique', 'required']), 
+            utils.cleanXcustomValue(jsonSchema.properties, ['index', 'unique', 'required']),
             { version: 3.0 }
         ),
     };
-    
-    const componentSchemaBody : openapiType.componentsSchemaValue = {
+
+    const componentSchemaBody: openapiType.componentsSchemaValue = {
         type: 'object',
         properties: json2openapi(
-            utils.cleanXcustomValue(jsonSchema.properties, ['_id', 'index', 'unique', 'required']), 
+            utils.cleanXcustomValue(jsonSchema.properties, ['_id', 'index', 'unique', 'required']),
             { version: 3.0 }
         ),
     };
@@ -195,44 +191,69 @@ function jsonToOpenapiComponentSchema(
                 // no query param, no response
                 break;
             case types.method.get:
-                let parameters : openapiType.parameter[] = [];
-                Object.keys(jsonSchema.properties).forEach((key)=>{
+                let parameters: openapiType.parameter[] = [];
+                Object.keys(jsonSchema.properties).forEach((key) => {
                     const props = jsonSchema.properties[key];
-                    
-                    // skip object, it should not be in query
-                    if(props.type == 'object') return;
 
-                    let parameter : openapiType.parameter ={
+                    // skip object, it should not be in query
+                    if (props.type == 'object') return;
+
+                    parameters.push({
                         name: key,
                         in: "query",
                         required: props.required,
                         schema: {
                             type: props.type,
                             format: props.format,
+                            'x-format': props['x-format'],
                             minLength: props.minLength,
                             maxLength: props.maxLength,
                             minimum: props.minimum,
                             maximum: props.maximum,
                             enum: props.enum,
                         }
-                    };
-                    parameters.push(parameter);
+                    });
+
+                    switch (props['x-format']) {
+                        case 'timestamp':
+                            // props.type = 'number';
+                            // add filter from, to
+                            parameters.push({
+                                name: key + '_from',
+                                in: "query",
+                                required: false,
+                                schema: {
+                                    type: 'number',
+                                }
+                            });
+                            parameters.push({
+                                name: key + '_to',
+                                in: "query",
+                                required: false,
+                                schema: {
+                                    type: 'number',
+                                }
+                            });
+                            break;
+                        default:
+                            break;
+                    }
                 });
 
                 openapiJson.paths['/' + lowerDocName][method]!.parameters = parameters;
 
                 componentSchemaPath[method + interfaceName + 'Response'] = componentSchemaResponse;
-                componentSchemaPath[method+interfaceName+'ResponseList'] = {
-                    type: 'array', 
+                componentSchemaPath[method + interfaceName + 'ResponseList'] = {
+                    type: 'array',
                     items: componentSchemaResponse,
                 };
                 break;
-                // NO break;
+            // NO break;
             case types.method.post:
             case types.method.put:
             case types.method.patch:
-                componentSchemaPath[method+interfaceName+'Body'] = componentSchemaBody;
-                componentSchemaPath[method+interfaceName+'Response'] = componentSchemaResponse;
+                componentSchemaPath[method + interfaceName + 'Body'] = componentSchemaBody;
+                componentSchemaPath[method + interfaceName + 'Response'] = componentSchemaResponse;
                 break;
             default:
                 break;

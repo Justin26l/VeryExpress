@@ -61,7 +61,7 @@ export function cleanXcustomValue(
     schemaObj: { [key: string]: any },
     additionalKeyArr?: string[]
 ): { [key: string]: any } {
-    let obj = Object.assign(schemaObj);
+    let obj = Object.assign({},schemaObj);
     // filtr out key start with 'x-' and additionalKeyArr recursively
     for (const key in obj) {
         if (key.startsWith("x-")) {
