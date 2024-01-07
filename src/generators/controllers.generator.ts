@@ -15,8 +15,8 @@ import log from "../utils/log";
  * @param options 
  */
 export function compile(
-    openapiPath: string, 
-    controllerToModelDir: string, 
+    openapiPath: string,
+    controllerToModelDir: string,
     outDir: string,
     options?: types.compilerOptions
 ): void {
@@ -27,7 +27,7 @@ export function compile(
             [key: string]: string[] // methods
         }
     } = {};
-    let writtedEndpoint :string[] = [];
+    let writtedEndpoint: string[] = [];
 
     // loop path
     Object.keys(openApi.paths).forEach((endpoint: string) => {
@@ -53,37 +53,40 @@ export function compile(
     // create and write file
     Object.keys(openApi.paths).forEach((endpoint: string) => {
         // remove '/{id}' from path and check is in writtedEndpoint
-        const interfaceName :string|undefined = openApi.paths[endpoint]['x-collection'];
+        const collectionName: string | undefined = openApi.paths[endpoint]['x-collection'];
+        const interfaceName: string | undefined = openApi.paths[endpoint]['x-interface'];
         const endpointFormatted = endpoint.replace('/{id}', '').toLowerCase();
-        
-        if(interfaceName === undefined) {
-            log.error(`'x-collection' not found in ${endpoint}`);
+
+        if (collectionName === undefined) {
+            log.error(`"x-collection" not found in openapi spec's path "${endpoint}"\n     - opanapi source: ${openapiPath}`);
             return;
         }
-        if (writtedEndpoint.includes(endpointFormatted)) {
+        else if (interfaceName === undefined) {
+            log.error(`"x-interface" not found in openapi spec's path "${endpoint}"\n     - opanapi source: ${openapiPath}`);
+            return;
+        }
+        else if (writtedEndpoint.includes(endpointFormatted)) {
             return;
         }
         else {
-            writtedEndpoint.push(endpointFormatted);
-        };
+            // write controller
+            const outPath = `${outDir}/${interfaceName}Controller.gen.ts`;
+            const outPathNoGen = `${outDir}/${interfaceName}Controller.nogen.ts`;
+            const controllerToModelPath = `${controllerToModelDir}/${interfaceName}Model.gen`;
 
-        // write controller
-        const outPath = `${outDir}/${interfaceName}Controller.gen.ts`;
-        const outPathNoGen = `${outDir}/${interfaceName}Controller.nogen.ts`;
-        const controllerToModelPath = `${controllerToModelDir}/${interfaceName}Model.gen`;
-
-        log.writing(`Controller : ${outPath}`);
-
-        if( !fs.existsSync(outPathNoGen) ){
-            fs.writeFileSync(outPath,
-                controllerTemplate({
-                    endpoint: endpoint,
-                    modelPath: controllerToModelPath,
-                    interfaceName: interfaceName,
-                    validator: endpointsValidator,
-                    options: options,
-                })
-            );
+            if (!fs.existsSync(outPathNoGen)) {
+                log.writing(`Controller : ${outPath}`);
+                writtedEndpoint.push(endpointFormatted);
+                fs.writeFileSync(outPath,
+                    controllerTemplate({
+                        endpoint: endpoint,
+                        modelPath: controllerToModelPath,
+                        interfaceName: interfaceName,
+                        validator: endpointsValidator,
+                        options: options,
+                    })
+                );
+            };
         };
     });
 

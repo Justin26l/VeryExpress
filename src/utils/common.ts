@@ -61,7 +61,9 @@ export function cleanXcustomValue(
     schemaObj: { [key: string]: any },
     additionalKeyArr?: string[]
 ): { [key: string]: any } {
-    let obj = Object.assign({},schemaObj);
+    // clone obj but avoid Object.assign cuz it parsed "Array [ a, b ]" to "number index object { 0:a, 1:b }"
+    let obj = JSON.parse(JSON.stringify(schemaObj));
+    
     // filtr out key start with 'x-' and additionalKeyArr recursively
     for (const key in obj) {
         if (key.startsWith("x-")) {
@@ -71,9 +73,10 @@ export function cleanXcustomValue(
             delete obj[key];
         }
         else if (typeof obj[key] === "object") {
-            cleanXcustomValue(obj[key], additionalKeyArr);
-        }
-    }
+            obj[key] = cleanXcustomValue(obj[key], additionalKeyArr);
+        };
+    };
+
     return obj;
 };
 

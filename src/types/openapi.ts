@@ -14,6 +14,7 @@ export interface openapi {
 export interface paths {
     [key:string]: {
         'x-collection'?: string, // 'x-collection' is a custom field for specify db collection
+        'x-interface'?: string, // 'x-interfaceName' is a custom field for specify interfaceName
         summary?: string,
         [types.method.get]?: method,
         [types.method.post]?: method,
@@ -29,7 +30,6 @@ export interface paths {
 
 export interface method {
     summary?: string,
-    'x-collection'?: string, // 'x-collection' is a custom field for specify db collection
     operationId: string, // method + interfaceName
     tags: string[], 
     parameters: parameter[],

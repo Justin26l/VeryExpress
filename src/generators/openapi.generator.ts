@@ -67,9 +67,11 @@ function jsonToOpenapiPath(
     let routes: openapiType.paths = {
         ['/' + lowerDocName]: {
             'x-collection': documentConfig.documentName,
+            "x-interface": interfaceName,
         },
         ['/' + lowerDocName + '/{id}']: {
             'x-collection': documentConfig.documentName,
+            "x-interface": interfaceName,
         },
     };
 
@@ -79,7 +81,6 @@ function jsonToOpenapiPath(
         const route: string = '/' + lowerDocName + (useId ? '/{id}' : '');
 
         routes[route][method] = {
-            "x-collection": interfaceName,
             operationId: method + interfaceName,
             tags: [lowerDocName],
             parameters: [],
@@ -216,7 +217,6 @@ function jsonToOpenapiComponentSchema(
 
                     switch (props['x-format']) {
                         case 'timestamp':
-                            // props.type = 'number';
                             // add filter from, to
                             parameters.push({
                                 name: key + '_from',
@@ -248,7 +248,6 @@ function jsonToOpenapiComponentSchema(
                     items: componentSchemaResponse,
                 };
                 break;
-            // NO break;
             case types.method.post:
             case types.method.put:
             case types.method.patch:
