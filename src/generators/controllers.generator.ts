@@ -98,11 +98,14 @@ function buildParamValidator(
     openapi: openapiType.openapi,
 ): string[] {
 
-    // {path : validator array}
     let validators: string[] = [];
 
     openapi.paths[endpoint][method]!.parameters.forEach((parameter: openapiType.parameter) => {
-        validators = validators.concat(processSchema(parameter.name, parameter, undefined));
+        validators = validators.concat(processSchema({
+            fieldName: parameter.name,
+            required: parameter.required,
+            param: parameter,
+        }));
     });
 
     return validators;
@@ -122,63 +125,69 @@ function buildRequestBodyValidator(
 
     if (components !== undefined) {
         for (let key in components.properties) {
-            validators = validators.concat(processSchema(key, undefined, components.properties[key]));
+            validators = validators.concat(processSchema({
+                fieldName: key,
+                required: components.required?.includes(key),
+                body: components.properties[key],
+            }));
         };
-    }
+    };
 
     return validators;
 }
 
-function processSchema(fieldName: string, paramFields?: openapiType.parameter, bodyFields?: openapiType.fieldsItem): string[] {
+function processSchema(options: {
+    fieldName: string,
+    required?: boolean,
+    param?: openapiType.parameter,
+    body?: openapiType.fieldsItem,
+}): string[] {
+
     let validators: string[] = [];
 
-    const useBody = bodyFields !== undefined && paramFields == undefined;
-    const checkOn = useBody ? 'body' : 'check';
-    const type: string | undefined = useBody ? bodyFields?.type : paramFields?.schema.type;
-    const required = paramFields?.required ? '.exists()' : '.optional()';
+    const useBody = options.body !== undefined && options.param == undefined;
+    const required = options.required; // || options.param?.required;
 
+    const type: string | undefined = useBody ? options.body?.type : options.param?.schema.type;
+    const checkOn: string = useBody ? 'body' : 'check';
+
+    const requiredValidator = required ? `.exists()` : `.optional()`;
     const enumValidator: string =
-        useBody && bodyFields?.enum ? `.isIn(${JSON.stringify(bodyFields.enum)})` :
-            !useBody && paramFields?.schema.enum ? `.isIn(${JSON.stringify(paramFields.schema.enum)})` :
+        useBody && options.body?.enum ? `.isIn(${JSON.stringify(options.body.enum)})` :
+            !useBody && options.param?.schema.enum ? `.isIn(${JSON.stringify(options.param.schema.enum)})` :
                 '';
-
-    const typeValidatorOption: string = JSON.stringify(
-        useBody && bodyFields ? {
-            min: bodyFields.minLength || bodyFields.minimum,
-            max: bodyFields.maxLength || bodyFields.maximum,
-        } :
-            !useBody && paramFields ? {
-                min: paramFields.schema?.minLength || paramFields.schema?.minimum,
-                max: paramFields.schema?.maxLength || paramFields.schema?.maximum,
-            } :
-                undefined
-    );
-
-    const typeValidator: string | undefined = typeValidatorOption !== '{}' ? typeValidatorOption : undefined;
+    const typeValidator: string = JSON.stringify({
+        min: options.param?.schema?.minLength ?? options.param?.schema?.minimum ?? options.body?.minLength ?? options.body?.minimum,
+        max: options.param?.schema?.maxLength ?? options.param?.schema?.maximum ?? options.body?.maxLength ?? options.body?.maximum,
+    });
 
     switch (type) {
         case "string":
-            validators.push(`${checkOn}("${fieldName}")${required}.isString()${typeValidator !== undefined ? `.isLength(${typeValidator})` : ''}${enumValidator}`);
+            validators.push(`${checkOn}("${options.fieldName}")${requiredValidator}.isString()${typeValidator !== undefined ? `.isLength(${typeValidator})` : ''}${enumValidator}`);
             break;
         case "integer":
-            validators.push(`${checkOn}("${fieldName}")${required}.isInt(${typeValidator})`);
+            validators.push(`${checkOn}("${options.fieldName}")${requiredValidator}.isInt(${typeValidator})`);
             break;
         case "float":
-            validators.push(`${checkOn}("${fieldName}")${required}.isFloat(${typeValidator})`);
+            validators.push(`${checkOn}("${options.fieldName}")${requiredValidator}.isFloat(${typeValidator})`);
             break;
         case "number":
-            validators.push(`${checkOn}("${fieldName}")${required}.isNumeric()`);
+            validators.push(`${checkOn}("${options.fieldName}")${requiredValidator}.isNumeric()`);
             break;
         case "boolean":
-            validators.push(`${checkOn}("${fieldName}")${required}.isBoolean()`);
+            validators.push(`${checkOn}("${options.fieldName}")${requiredValidator}.isBoolean()`);
             break;
         case "array":
-            validators.push(`${checkOn}("${fieldName}")${required}.isArray(${typeValidator})`);
+            validators.push(`${checkOn}("${options.fieldName}")${requiredValidator}.isArray(${typeValidator})`);
             break;
         case "object":
             if (useBody) {
-                for (let key in bodyFields?.properties) {
-                    validators = validators.concat(processSchema(fieldName + '.' + key, undefined, bodyFields.properties[key]));
+                for (let key in options.body?.properties) {
+                    validators = validators.concat(processSchema({
+                        fieldName: options.fieldName + '.' + key,
+                        body: options.body.properties[key],
+                        required: required,
+                    }));
                 };
             };
             break;

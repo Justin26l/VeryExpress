@@ -100,6 +100,7 @@ export interface components {
 export interface componentsSchemaValue {
     type: string,
     items?: any,
+    required?: string[],
     properties?: {
         [key:string]: fieldsItem,
     }

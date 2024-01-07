@@ -170,6 +170,12 @@ function jsonToOpenapiComponentSchema(
     const interfaceName = documentConfig.interfaceName;
     const methods: types.method[] = documentConfig.methods;
 
+    const requiredArr: string[] = Object.keys(jsonSchema.properties).filter((key:string) :boolean => {
+        // if type not object then return boolean
+        // if type is object then loop recursively to find required and return as "parent.child"
+        return (jsonSchema.properties[key].required === true || jsonSchema.required?.includes(key) === true);
+    });
+
     const componentSchemaResponse: openapiType.componentsSchemaValue = {
         type: 'object',
         properties: json2openapi(
@@ -189,10 +195,14 @@ function jsonToOpenapiComponentSchema(
     methods.forEach((method) => {
         switch (method) {
             case types.method.delete:
-                // no query param, no response
+                // no param, no response
                 break;
+
             case types.method.get:
+
+                // add query params
                 let parameters: openapiType.parameter[] = [];
+
                 Object.keys(jsonSchema.properties).forEach((key) => {
                     const props = jsonSchema.properties[key];
 
@@ -202,7 +212,7 @@ function jsonToOpenapiComponentSchema(
                     parameters.push({
                         name: key,
                         in: "query",
-                        required: props.required,
+                        required: false,
                         schema: {
                             type: props.type,
                             format: props.format,
@@ -219,7 +229,7 @@ function jsonToOpenapiComponentSchema(
                         case 'timestamp':
                             // add filter from, to
                             parameters.push({
-                                name: key + '_from',
+                                name: key + 'From',
                                 in: "query",
                                 required: false,
                                 schema: {
@@ -227,7 +237,7 @@ function jsonToOpenapiComponentSchema(
                                 }
                             });
                             parameters.push({
-                                name: key + '_to',
+                                name: key + 'To',
                                 in: "query",
                                 required: false,
                                 schema: {
@@ -248,10 +258,16 @@ function jsonToOpenapiComponentSchema(
                     items: componentSchemaResponse,
                 };
                 break;
+
+            case types.method.patch:
+                componentSchemaPath[method + interfaceName + 'Body'] =componentSchemaBody;
+                componentSchemaPath[method + interfaceName + 'Response'] = componentSchemaResponse;
+                break;
+
             case types.method.post:
             case types.method.put:
-            case types.method.patch:
-                componentSchemaPath[method + interfaceName + 'Body'] = componentSchemaBody;
+                const componentSchemaBodyRequired = Object.assign({}, componentSchemaBody, { required: requiredArr});
+                componentSchemaPath[method + interfaceName + 'Body'] = componentSchemaBodyRequired;
                 componentSchemaPath[method + interfaceName + 'Response'] = componentSchemaResponse;
                 break;
             default:
