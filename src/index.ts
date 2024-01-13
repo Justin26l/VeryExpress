@@ -10,6 +10,7 @@ import * as routeGen from './generators/routes.generator';
 import * as serverGen from './generators/server.generator';
 
 import * as types from './types/types';
+import { formatJsonSchema } from './preprocess/jsonschemaFormat';
 
 
 export default function generate(
@@ -57,8 +58,7 @@ export default function generate(
             }
 
             // read schema file config
-            const file = fs.readFileSync(`${schemaPath}`);
-            const jsonSchema: any = JSON.parse(file.toString());
+            const jsonSchema: types.jsonSchema = formatJsonSchema(schemaPath);
             const documentConfig: types.documentConfig = jsonSchema["x-documentConfig"];
 
             if (!documentConfig) log.error(`x-documentConfig not found in ${schemaPath}`);

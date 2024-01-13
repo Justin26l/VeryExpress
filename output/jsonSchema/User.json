@@ -10,7 +10,7 @@
             "delete"
         ]
     },
-    "properties": { 
+    "properties": {
         "_id": {
             "type": "string",
             "format": "uuid",
@@ -22,15 +22,16 @@
             "index": true,
             "required": true
         },
-        "userContact":{
-            "type": "string",
-            "format": "uuid",
-            "required": false,
-            "x-foreignKey": "usercontact"
+        "userContact": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "format": "uuid",
+                "x-foreignKey": "usercontact"
+            }
         },
         "married": {
             "type": "string",
-            "required": true,
             "enum": [
                 "single",
                 "inRelationship",
@@ -39,7 +40,6 @@
         },
         "userAddress": {
             "type": "object",
-            "required": true,
             "properties": {
                 "line1": {
                     "type": "string",

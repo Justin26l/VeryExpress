@@ -2,8 +2,7 @@
 import fs from "fs";
 import path from 'path';
 import childProcess from 'child_process';
-import jsYaml from "js-yaml";
-import { compilerOptions } from "../types/types";
+import * as types from '../types/types';
 import log from "./log";
 
 function getPackageInfo(): {
@@ -29,14 +28,23 @@ export const relativePath = (fromPath: string, toPath: string): string => {
     return path.relative(fromPath, toPath).replace(/\\/g, '/');
 };
 
-export function loadYaml(yamlFilePath: string) {
+export function loadJsonSchema(jsonSchemaPath: string) : types.jsonSchema {
+
+    let json :any = '';
+    if(!fs.existsSync(jsonSchemaPath)){
+        log.error(`loadJsonSchema : File Not Found ${jsonSchemaPath}`);
+    };
+
     try {
-        const doc = jsYaml.load(fs.readFileSync(yamlFilePath, 'utf8'));
-        // console.dir(doc, { depth: null });
-    } catch (e: any) {
-        log.error('Error Load OpenApi File :\n', e.message || e);
+        json = JSON.parse(fs.readFileSync(jsonSchemaPath, 'utf8')) as types.jsonSchema;
     }
+    catch (e: any) {
+        log.error('Error Load JsonSchema File :\n', e.message || e);
+    };
+
+    return json;
 };
+
 
 export function getGenaratorHeaderComment(comment?: string): string {
     const packageInfo = getPackageInfo();
@@ -59,17 +67,28 @@ export function getSimpleHeaderComment(): string {
 
 export function cleanXcustomValue(
     schemaObj: { [key: string]: any },
-    additionalKeyArr?: string[]
+    additionalKeyArr?: string[] | types.additionalKeyObj
 ): { [key: string]: any } {
     // clone obj but avoid Object.assign cuz it parsed "Array [ a, b ]" to "number index object { 0:a, 1:b }"
     let obj = JSON.parse(JSON.stringify(schemaObj));
     
+    const isAddiArrStr: boolean = Array.isArray(additionalKeyArr);
+
+    const addiArrStr: string[] = isAddiArrStr ? additionalKeyArr as string[] : [];
+    const addiArrObj: types.additionalKeyObj = !isAddiArrStr ? additionalKeyArr as types.additionalKeyObj : {};
+
     // filtr out key start with 'x-' and additionalKeyArr recursively
     for (const key in obj) {
         if (key.startsWith("x-")) {
             delete obj[key];
         }
-        else if (additionalKeyArr && additionalKeyArr.includes(key)) {
+        // additionalKeyArr is array, filter with fields name only
+        else if ( isAddiArrStr && addiArrStr.includes(key) ) {
+            delete obj[key];
+        }
+        // additionalKeyArr is object, filter with type
+        else if ( !isAddiArrStr && typeof addiArrObj[key] !== 'undefined' && addiArrObj[key] == typeof obj[key]  ) {
+            log.warn(`cleanXcustomValue : pop ${key} : ${[addiArrObj[key] , typeof obj[key]]}`)
             delete obj[key];
         }
         else if (typeof obj[key] === "object") {
@@ -105,16 +124,16 @@ export function copyDir(source: string, destination: string): void {
     }
 }
 
-export const defaultCompilerOptions: compilerOptions = {
+export const defaultCompilerOptions: types.compilerOptions = {
     headerComment: getGenaratorHeaderComment(),
 };
 
 export default {
+    defaultCompilerOptions,
     getGenaratorHeaderComment,
     getSimpleHeaderComment,
-    defaultCompilerOptions,
     relativePath,
     cleanXcustomValue,
-    loadYaml,
+    loadJsonSchema,
     copyDir,
 };

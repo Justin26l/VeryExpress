@@ -158,6 +158,9 @@ function jsonToOpenapiPath(
     return openapiJson;
 };
 
+/**
+ * convert json schema to openapi component schema
+ */
 function jsonToOpenapiComponentSchema(
     openapiJson: openapiType.openapi,
     jsonSchema: types.jsonSchema,
@@ -170,11 +173,6 @@ function jsonToOpenapiComponentSchema(
     const interfaceName = documentConfig.interfaceName;
     const methods: types.method[] = documentConfig.methods;
 
-    const requiredArr: string[] = Object.keys(jsonSchema.properties).filter((key:string) :boolean => {
-        // if type not object then return boolean
-        // if type is object then loop recursively to find required and return as "parent.child"
-        return (jsonSchema.properties[key].required === true || jsonSchema.required?.includes(key) === true);
-    });
 
     const componentSchemaResponse: openapiType.componentsSchemaValue = {
         type: 'object',
@@ -190,6 +188,15 @@ function jsonToOpenapiComponentSchema(
             utils.cleanXcustomValue(jsonSchema.properties, ['_id', 'index', 'unique', 'required']),
             { version: 3.0 }
         ),
+    };
+
+    const componentSchemaBodyRequired: openapiType.componentsSchemaValue = {
+        type: 'object',
+        properties: json2openapi(
+            utils.cleanXcustomValue(jsonSchema.properties, { _id: 'string', index: 'boolean', unique: 'boolean', required: 'boolean' }),
+            { version: 3.0 }
+        ),
+        required: jsonSchema.required,
     };
 
     methods.forEach((method) => {
@@ -260,13 +267,12 @@ function jsonToOpenapiComponentSchema(
                 break;
 
             case types.method.patch:
-                componentSchemaPath[method + interfaceName + 'Body'] =componentSchemaBody;
+                componentSchemaPath[method + interfaceName + 'Body'] = componentSchemaBody;
                 componentSchemaPath[method + interfaceName + 'Response'] = componentSchemaResponse;
                 break;
 
             case types.method.post:
             case types.method.put:
-                const componentSchemaBodyRequired = Object.assign({}, componentSchemaBody, { required: requiredArr});
                 componentSchemaPath[method + interfaceName + 'Body'] = componentSchemaBodyRequired;
                 componentSchemaPath[method + interfaceName + 'Response'] = componentSchemaResponse;
                 break;
