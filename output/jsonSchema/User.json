@@ -69,13 +69,7 @@
                     "type": "string",
                     "required": true
                 }
-            },
-            "required": [
-                "city",
-                "state",
-                "country",
-                "zip"
-            ]
+            }
         },
         "isActive": {
             "type": "boolean"
@@ -85,10 +79,5 @@
             "x-format": "timestamp"
         }
     },
-    "additionalProperties": false,
-    "required": [
-        "name",
-        "isActive",
-        "created"
-    ]
+    "additionalProperties": false
 }

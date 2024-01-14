@@ -26,10 +26,5 @@
             "default": true
         }
     },
-    "additionalProperties": false,
-    "required": [
-        "_id",
-        "phoneNo",
-        "isActive"
-    ]
+    "additionalProperties": false
 }
