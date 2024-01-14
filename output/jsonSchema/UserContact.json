@@ -15,19 +15,21 @@
             "type": "string",
             "format": "uuid",
             "index": true,
-            "unique": true,
-            "required": true
+            "unique": true
         },
         "phoneNo": {
             "type": "string",
-            "index": true,
-            "required": true
+            "index": true
         },
         "isActive": {
             "type": "boolean",
-            "required": true,
             "default": true
         }
     },
-    "additionalProperties": false
+    "additionalProperties": false,
+    "required": [
+        "_id",
+        "phoneNo",
+        "isActive"
+    ]
 }

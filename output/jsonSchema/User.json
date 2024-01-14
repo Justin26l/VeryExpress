@@ -19,8 +19,7 @@
         "name": {
             "type": "string",
             "maxLength": 64,
-            "index": true,
-            "required": true
+            "index": true
         },
         "userContact": {
             "type": "array",
@@ -70,17 +69,26 @@
                     "type": "string",
                     "required": true
                 }
-            }
+            },
+            "required": [
+                "city",
+                "state",
+                "country",
+                "zip"
+            ]
         },
         "isActive": {
-            "type": "boolean",
-            "required": true
+            "type": "boolean"
         },
         "created": {
             "type": "number",
-            "x-format": "timestamp",
-            "required": true
+            "x-format": "timestamp"
         }
     },
-    "additionalProperties": false
+    "additionalProperties": false,
+    "required": [
+        "name",
+        "isActive",
+        "created"
+    ]
 }

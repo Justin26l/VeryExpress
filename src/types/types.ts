@@ -1,4 +1,8 @@
 export interface compilerOptions {
+    jsonSchemaDir: string,
+    openapiDir: string,
+    rootDir: string,
+    srcDir: string,
     headerComment?: string;
     modelsTemplate?: string;
     controllersTemplate?: string;
@@ -6,7 +10,7 @@ export interface compilerOptions {
 
 export interface jsonSchema {
     type: string;
-    'x-documentConfig': documentConfig;
+    "x-documentConfig": documentConfig;
     properties: {
         [key: string]: jsonSchemaPropsItem;
     };
@@ -27,12 +31,17 @@ export interface jsonSchemaPropsItem {
     required?: boolean | string[];
     index?: boolean;
     example?: any;
-    [key: string]: any
+    "x-format"?: string;
+    minLength?: number;
+    maxLength?: number;
+    minimum?: number;
+    maximum?: number;
+    [key: string]: string | boolean | number | string[] | jsonSchemaPropsItem | { [key: string]: jsonSchemaPropsItem;} | any[] | undefined;
 }
 
 export interface documentConfig {
     documentName: string;
-    documentType?: 'primary' | 'secondary';
+    documentType?: "primary" | "secondary";
     interfaceName: string;
     keyPrefix?: string;
     methods: method[]
@@ -46,12 +55,12 @@ export interface additionalKeyObj {
 }
 
 export enum method {
-    get = 'get',
-    post = 'post',
-    put = 'put',
-    patch = 'patch',
-    delete = 'delete',
-    options = 'options',
-    head = 'head',
-    trace = 'trace'
-};
+    get = "get",
+    post = "post",
+    put = "put",
+    patch = "patch",
+    delete = "delete",
+    options = "options",
+    head = "head",
+    trace = "trace"
+}

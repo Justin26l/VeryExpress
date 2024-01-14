@@ -7,30 +7,29 @@ import log from "../utils/log";
 
 /**
  * compile controllers to route source code
- * @param openapiPath
- * @param controllerToModelDir
- * @param outputPath
+ * @param routesArr
+ * @param routesOutPath output directory file
  * @param options
  */
-export function compile(
+export function compile(options: {
     routesArr: {
         route: string,
         controllerClassName: string,
         controllerPath: string,
     }[],
-    openapiPath: string,
-    outPath: string,
-    options?: types.compilerOptions
-): void {
+    routesOutPath: string,
+    openapiFile: string,
+    compilerOptions: types.compilerOptions
+}): void {
 
-    log.writing(`Router : ${outPath}`);
+    log.writing(`Router : ${options.routesOutPath}`);
     // rewrite routes file
-    fs.writeFileSync(outPath, 
+    fs.writeFileSync(options.routesOutPath, 
         routesTemplate({
-            routes: routesArr,
-            openapiPath: openapiPath,
-            options: options,
+            routes: options.routesArr,
+            openapiFile: options.openapiFile,
+            compilerOptions: options.compilerOptions,
         })
     );
 
-};
+}

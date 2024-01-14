@@ -13,8 +13,8 @@ export interface openapi {
 
 export interface paths {
     [key:string]: {
-        'x-collection'?: string, // 'x-collection' is a custom field for specify db collection
-        'x-interface'?: string, // 'x-interfaceName' is a custom field for specify interfaceName
+        "x-collection"?: string, // 'x-collection' is a custom field for specify db collection
+        "x-interface"?: string, // 'x-interfaceName' is a custom field for specify interfaceName
         summary?: string,
         [types.method.get]?: method,
         [types.method.post]?: method,
@@ -41,7 +41,7 @@ export interface method {
 
 export interface parameter {
     name: string;
-    in: 'query' | 'header' | 'path' | 'cookie';
+    in: "query" | "header" | "path" | "cookie";
     description?: string;
     required?: boolean;
     deprecated?: boolean;
@@ -52,7 +52,7 @@ export interface parameter {
     schema: {
         type: string;
         format?: string;
-        'x-format'?: string;
+        "x-format"?: string;
         required?: string[];
         minLength?: number;
         maxLength?: number;
@@ -68,7 +68,7 @@ export interface requestBody {
     description: string;
     required: boolean;
     content?: {
-        'application/json': {
+        "application/json": {
             schema: {
                 $ref: string;
             };
@@ -79,7 +79,7 @@ export interface requestBody {
 export interface responseItem {
     description: string;
     content?: {
-        'application/json'?: {
+        "application/json"?: {
             schema: {
                 $ref?: string;
                 [key:string]:any

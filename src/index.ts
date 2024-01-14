@@ -1,42 +1,41 @@
-import fs from 'fs';
+import fs from "fs";
 
-import json2mongoose from 'json2mongoose';
-import * as openapiGen from './generators/openapi.generator';
+import json2mongoose from "json2mongoose";
+import * as openapiGen from "./generators/openapi.generator";
 
-import log from './utils/log';
-import utils from './utils/common';
-import * as controllerGen from './generators/controllers.generator';
-import * as routeGen from './generators/routes.generator';
-import * as serverGen from './generators/server.generator';
+import log from "./utils/log";
+import utils from "./utils/common";
+import * as controllerGen from "./generators/controllers.generator";
+import * as routeGen from "./generators/routes.generator";
+import * as serverGen from "./generators/server.generator";
 
-import * as types from './types/types';
-import { formatJsonSchema } from './preprocess/jsonschemaFormat';
+import * as types from "./types/types";
+import { formatJsonSchema } from "./preprocess/jsonschemaFormat";
 
 
 export default function generate(
-    schemaDir: string,
-    openapiDir: string,
-    outDir: string,
-    options?: types.compilerOptions
+    options: types.compilerOptions
 ): void {
 
     const dir = {
-        routeDir: `${outDir}/routes`,
-        middlewareDir: `${outDir}/middlewares`,
-        controllerDir: `${outDir}/controllers`,
-        modelDir: `${outDir}/models`,
-        typeDir: `${outDir}/types`,
-        serviceDir: `${outDir}/services`,
-        utilsDir: `${outDir}/utils`,
+        routeDir: `${options.srcDir}/routes`,
+        middlewareDir: `${options.srcDir}/middlewares`,
+        controllerDir: `${options.srcDir}/controllers`,
+        modelDir: `${options.srcDir}/models`,
+        typeDir: `${options.srcDir}/types`,
+        serviceDir: `${options.srcDir}/services`,
+        utilsDir: `${options.srcDir}/utils`,
     };
 
-    const openapipath = `${openapiDir}/openapi.gen.yaml`;
+    const openapiFile: string = '/openapi.gen.yaml';
+    const openapipath: string = options.openapiDir + openapiFile;
 
     // create all directories if not exist
-    if (!fs.existsSync(outDir)) { fs.mkdirSync(outDir); };
-    if (!fs.existsSync(openapiDir)) { fs.mkdirSync(openapiDir); };
+    if (!fs.existsSync(options.rootDir)) { fs.mkdirSync(options.rootDir); }
+    if (!fs.existsSync(options.srcDir)) { fs.mkdirSync(options.srcDir); }
+    if (!fs.existsSync(options.openapiDir)) { fs.mkdirSync(options.openapiDir); }
     Object.values(dir).forEach((path: string) => {
-        if (!fs.existsSync(path)) { fs.mkdirSync(path); };
+        if (!fs.existsSync(path)) { fs.mkdirSync(path); }
     });
 
     // prepair routerData
@@ -47,12 +46,12 @@ export default function generate(
         controllerPath: string,
     }[] = [];
 
-    const files: string[] = fs.readdirSync(schemaDir);
+    const files: string[] = fs.readdirSync(options.jsonSchemaDir);
     files.forEach((schemaFileName: string) => {
-        const schemaPath = `${schemaDir}/${schemaFileName}`;
+        const schemaPath = `${options.jsonSchemaDir}/${schemaFileName}`;
         try {
             // ignore non json files
-            if (!schemaFileName.endsWith('.json')) {
+            if (!schemaFileName.endsWith(".json")) {
                 log.warn(`Skipping Non Json File : ${schemaPath}`);
                 return;
             }
@@ -67,7 +66,7 @@ export default function generate(
             if (!documentConfig.methods) log.error(`x-documentConfig.methods is not found in ${schemaPath}`);
             if (!Array.isArray(documentConfig.methods)) log.error(`x-documentConfig.methods is invalid in ${schemaPath}`);
 
-            if (typeof jsonSchema.properties !== 'object') log.error(`properties is invalid in ${schemaPath}`);
+            if (typeof jsonSchema.properties !== "object") log.error(`properties is invalid in ${schemaPath}`);
 
             // check if 'fileName.nogen.ts' exist then skip generate of this file
             if (!fs.existsSync(`${schemaPath}.nogen.ts`)) {
@@ -87,57 +86,55 @@ export default function generate(
                     `${dir.modelDir}/${documentConfig.interfaceName}Model.gen.ts`,
                     options || utils.defaultCompilerOptions
                 );
-            };
+            }
 
             // prepair route data
             routeData.push({
                 route: `/${documentConfig.documentName}`,
                 controllerClassName: documentConfig.interfaceName,
-                controllerPath: utils.relativePath(dir.routeDir, dir.controllerDir) + '/' + documentConfig.interfaceName + 'Controller.gen',
+                controllerPath: utils.relativePath(dir.routeDir, dir.controllerDir) + "/" + documentConfig.interfaceName + "Controller.gen",
             });
 
         }
         catch (err: any) {
             log.error(`Processing File : ${schemaPath}\n`, err);
-        };
+        }
     });
 
     // genarate opanapi from json schema
-    if (!fs.existsSync(openapiDir + '/openapi.nogen.yaml')) {
-        openapiGen.compile(schemaDir, openapipath);
-    };
+    if (!fs.existsSync(options.openapiDir + "/openapi.nogen.yaml")) {
+        openapiGen.compile({
+            openapiOutFileName : openapiFile, 
+            compilerOptions : options || utils.defaultCompilerOptions
+        });
+    }
 
     // clone nessasary files
-    utils.copyDir(`${openapiDir}`, outDir + '/openapi');
+    utils.copyDir(`${options.openapiDir}`, options.rootDir + "/openapi");
     utils.copyDir(`${__dirname}/templates/utils`, dir.utilsDir);
 
     // genarate controller from open api
-    controllerGen.compile(
-        openapipath,
-        `${utils.relativePath(dir.controllerDir, dir.modelDir)}`,
-        dir.controllerDir,
-        options || utils.defaultCompilerOptions
-    );
+    controllerGen.compile({
+        openapiFile: openapiFile,
+        controllerOutDir: dir.controllerDir,
+        modelDir: dir.modelDir,
+        compilerOptions: options || utils.defaultCompilerOptions
+    });
 
     // make route from routeData
-    routeGen.compile(
-        routeData,
-        openapipath,
-        `${dir.routeDir}/routes.gen.ts`,
-        options || utils.defaultCompilerOptions
-    );
+    routeGen.compile({
+        routesArr: routeData,
+        openapiFile: openapiFile,
+        routesOutPath: `${dir.routeDir}/routes.gen.ts`,
+        compilerOptions: options || utils.defaultCompilerOptions
+    });
 
     // make middleware
 
     // make service
 
     // make server
-    serverGen.compile(
-        schemaDir,
-        openapiDir,
-        outDir,
-        options || { headerComment: utils.getSimpleHeaderComment() }
-    );
+    serverGen.compile(options)
 
-};
+}
 

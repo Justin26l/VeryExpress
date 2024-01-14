@@ -2,17 +2,20 @@ import json2openapi from "json-schema-to-openapi-schema";
 import yaml from "js-yaml";
 import fs from "fs";
 
-import * as types from '../types/types';
-import * as openapiType from '../types/openapi';
+import * as types from "../types/types";
+import * as openapiType from "../types/openapi";
 import utils from "../utils/common";
 import log from "../utils/log";
 
 /**
  * compile json schema to openapi spec
- * @param schemaDir 
- * @param openapiOutDir 
+ * @param openapiOutFileName output file based on compilerOptions.openapiDir
+ * @param compilerOptions 
  */
-export function compile(schemaDir: string, outPath: string): void {
+export function compile(options:{
+    openapiOutFileName: string, 
+    compilerOptions: types.compilerOptions
+}): void {
 
     // convert to yaml
     let openapiJson: openapiType.openapi = {
@@ -30,13 +33,13 @@ export function compile(schemaDir: string, outPath: string): void {
 
     // loop through all json schema files and compile to openapi paths & components
 
-    const files = fs.readdirSync(schemaDir);
+    const files = fs.readdirSync(options.compilerOptions.jsonSchemaDir);
     files.forEach((file) => {
         // ignore non json files
-        if (!file.endsWith('.json')) return;
-        log.process(`OpenApi : ${schemaDir + '/' + file}`);
+        if (!file.endsWith(".json")) return;
+        log.process(`OpenApi : ${options.compilerOptions.jsonSchemaDir + "/" + file}`);
 
-        const jsonSchemaBuffer = fs.readFileSync(`${schemaDir}/${file}`);
+        const jsonSchemaBuffer = fs.readFileSync(`${options.compilerOptions.jsonSchemaDir}/${file}`);
         const jsonSchema: types.jsonSchema = JSON.parse(jsonSchemaBuffer.toString());
         openapiJson = jsonToOpenapiPath(openapiJson, jsonSchema);
         openapiJson = jsonToOpenapiComponentSchema(openapiJson, jsonSchema);
@@ -46,11 +49,10 @@ export function compile(schemaDir: string, outPath: string): void {
     const openapiYaml = yaml.dump(validOpenApi);
 
     // create and write file
-
-    log.writing(`OpenApi : ${outPath}`);
-
-    fs.writeFileSync(outPath, openapiYaml);
-};
+    const openapiOutFile: string = options.compilerOptions.openapiDir + options.openapiOutFileName;
+    log.writing(`OpenApi : ${openapiOutFile}`);
+    fs.writeFileSync(openapiOutFile, openapiYaml);
+}
 
 function jsonToOpenapiPath(
     openapiJson: openapiType.openapi,
@@ -61,16 +63,16 @@ function jsonToOpenapiPath(
     const lowerDocName: string = documentConfig.documentName.toLowerCase();
     const interfaceName: string = documentConfig.interfaceName;
 
-    const properties: types.jsonSchema['properties'] = jsonSchema.properties;
+    const properties: types.jsonSchema["properties"] = jsonSchema.properties;
     const methods: types.method[] = documentConfig.methods;
 
-    let routes: openapiType.paths = {
-        ['/' + lowerDocName]: {
-            'x-collection': documentConfig.documentName,
+    const routes: openapiType.paths = {
+        ["/" + lowerDocName]: {
+            "x-collection": documentConfig.documentName,
             "x-interface": interfaceName,
         },
-        ['/' + lowerDocName + '/{id}']: {
-            'x-collection': documentConfig.documentName,
+        ["/" + lowerDocName + "/{id}"]: {
+            "x-collection": documentConfig.documentName,
             "x-interface": interfaceName,
         },
     };
@@ -78,7 +80,7 @@ function jsonToOpenapiPath(
     methods.forEach((method) => {
         const useId: boolean = [types.method.put, types.method.patch, types.method.delete].includes(method);
         const useBody: boolean = [types.method.post, types.method.put, types.method.patch].includes(method);
-        const route: string = '/' + lowerDocName + (useId ? '/{id}' : '');
+        const route: string = "/" + lowerDocName + (useId ? "/{id}" : "");
 
         routes[route][method] = {
             operationId: method + interfaceName,
@@ -87,35 +89,35 @@ function jsonToOpenapiPath(
             requestBody: undefined,
             responses: {
                 200: {
-                    description: 'OK',
+                    description: "OK",
                     content: {
-                        'application/json': { schema: { $ref: `#/components/schemas/${method}${interfaceName}Response` } },
+                        "application/json": { schema: { $ref: `#/components/schemas/${method}${interfaceName}Response` } },
                     },
                 },
-                400: { description: 'Bad Request', },
-                401: { description: 'Unauthorized', },
-                403: { description: 'Forbidden', },
-                404: { description: 'Not Found', },
-                405: { description: 'Method Not Allowed', },
-                413: { description: 'Payload Too Large', },
-                429: { description: 'Too Many Requests', },
-                500: { description: 'Internal Server Error', },
-                502: { description: 'Bad Gateway', },
-                503: { description: 'Service Unavailable', },
+                400: { description: "Bad Request", },
+                401: { description: "Unauthorized", },
+                403: { description: "Forbidden", },
+                404: { description: "Not Found", },
+                405: { description: "Method Not Allowed", },
+                413: { description: "Payload Too Large", },
+                429: { description: "Too Many Requests", },
+                500: { description: "Internal Server Error", },
+                502: { description: "Bad Gateway", },
+                503: { description: "Service Unavailable", },
             },
         };
 
         // update parameters/body & responses
 
-        if ((useId || method == types.method.get) && properties['_id']) {
+        if ((useId || method == types.method.get) && properties["_id"]) {
             const idParameter: openapiType.parameter = {
-                name: 'id',
-                in: 'path',
-                description: properties['_id'].description,
+                name: "id",
+                in: "path",
+                description: properties["_id"].description,
                 required: true,
                 schema: {
-                    type: properties['_id'].type,
-                    format: properties['_id'].format,
+                    type: properties["_id"].type,
+                    format: properties["_id"].format,
                 },
             };
 
@@ -123,40 +125,39 @@ function jsonToOpenapiPath(
 
             // GET will have additional route of GET /{id}
             if (method == types.method.get) {
-                routes[route + '/{id}'][method] = Object.assign({}, routes[route][method]);
+                routes[route + "/{id}"][method] = Object.assign({}, routes[route][method]);
 
-                // god of defining types, please help me fuck this mf asshole
-                // @ts-ignore
-                routes[route + '/{id}'][method].responses[200].content["application/json"].schema.$ref = `#/components/schemas/${method}${interfaceName}Response`;
-                routes[route + '/{id}'][method]!.parameters = [idParameter];
-            };
-        };
+
+                routes[route + "/{id}"][method]!.responses[200].content!["application/json"]!.schema.$ref = `#/components/schemas/${method}${interfaceName}Response`;
+                routes[route + "/{id}"][method]!.parameters = [idParameter];
+            }
+        }
 
         // POST will use 201 success response
         if (method == types.method.post) {
             routes[route][method]!.responses[201] = routes[route][method]!.responses[200];
-            routes[route][method]!.responses[201].description = 'Crerated';
+            routes[route][method]!.responses[201].description = "Crerated";
             delete routes[route][method]!.responses[200];
         }
         else if (method == types.method.delete) {
             delete routes[route][method]!.responses[200].content;
-        };
+        }
 
         if (useBody) {
             routes[route][method]!.requestBody = {
                 description: `${method} ${documentConfig.documentName}`,
                 required: false,
                 content: {
-                    'application/json': { schema: { $ref: `#/components/schemas/${method}${interfaceName}Body` } },
+                    "application/json": { schema: { $ref: `#/components/schemas/${method}${interfaceName}Body` } },
                 },
             };
-        };
+        }
 
     });
 
     openapiJson.paths = Object.assign(openapiJson.paths, routes);
     return openapiJson;
-};
+}
 
 /**
  * convert json schema to openapi component schema
@@ -165,7 +166,7 @@ function jsonToOpenapiComponentSchema(
     openapiJson: openapiType.openapi,
     jsonSchema: types.jsonSchema,
 ): openapiType.openapi {
-    let componentSchemaPath: openapiType.components['schemas'] = {};
+    const componentSchemaPath: openapiType.components["schemas"] = {};
 
     // get jsonschema properties
     const documentConfig = jsonSchema["x-documentConfig"];
@@ -175,25 +176,25 @@ function jsonToOpenapiComponentSchema(
 
 
     const componentSchemaResponse: openapiType.componentsSchemaValue = {
-        type: 'object',
+        type: "object",
         properties: json2openapi(
-            utils.cleanXcustomValue(jsonSchema.properties, ['index', 'unique', 'required']),
+            utils.cleanXcustomValue(jsonSchema.properties, ["index", "unique", "required"]),
             { version: 3.0 }
         ),
     };
 
     const componentSchemaBody: openapiType.componentsSchemaValue = {
-        type: 'object',
+        type: "object",
         properties: json2openapi(
-            utils.cleanXcustomValue(jsonSchema.properties, ['_id', 'index', 'unique', 'required']),
+            utils.cleanXcustomValue(jsonSchema.properties, ["_id", "index", "unique", "required"]),
             { version: 3.0 }
         ),
     };
 
     const componentSchemaBodyRequired: openapiType.componentsSchemaValue = {
-        type: 'object',
+        type: "object",
         properties: json2openapi(
-            utils.cleanXcustomValue(jsonSchema.properties, { _id: 'string', index: 'boolean', unique: 'boolean', required: 'boolean' }),
+            utils.cleanXcustomValue(jsonSchema.properties, { _id: "string", index: "boolean", unique: "boolean", required: "boolean" }),
             { version: 3.0 }
         ),
         required: jsonSchema.required,
@@ -201,84 +202,84 @@ function jsonToOpenapiComponentSchema(
 
     methods.forEach((method) => {
         switch (method) {
-            case types.method.delete:
-                // no param, no response
-                break;
+        case types.method.delete:
+            // no param, no response
+            break;
 
-            case types.method.get:
+        case types.method.get:{
 
-                // add query params
-                let parameters: openapiType.parameter[] = [];
+            // add query params
+            const parameters: openapiType.parameter[] = [];
 
-                Object.keys(jsonSchema.properties).forEach((key) => {
-                    const props = jsonSchema.properties[key];
+            Object.keys(jsonSchema.properties).forEach((key) => {
+                const props :types.jsonSchemaPropsItem = jsonSchema.properties[key];
 
-                    // skip object, it should not be in query
-                    if (props.type == 'object') return;
+                // skip object, it should not be in query
+                if (props.type == "object") return;
 
-                    parameters.push({
-                        name: key,
-                        in: "query",
-                        required: false,
-                        schema: {
-                            type: props.type,
-                            format: props.format,
-                            'x-format': props['x-format'],
-                            minLength: props.minLength,
-                            maxLength: props.maxLength,
-                            minimum: props.minimum,
-                            maximum: props.maximum,
-                            enum: props.enum,
-                        }
-                    });
-
-                    switch (props['x-format']) {
-                        case 'timestamp':
-                            // add filter from, to
-                            parameters.push({
-                                name: key + 'From',
-                                in: "query",
-                                required: false,
-                                schema: {
-                                    type: 'number',
-                                }
-                            });
-                            parameters.push({
-                                name: key + 'To',
-                                in: "query",
-                                required: false,
-                                schema: {
-                                    type: 'number',
-                                }
-                            });
-                            break;
-                        default:
-                            break;
+                parameters.push({
+                    name: key,
+                    in: "query",
+                    required: false,
+                    schema: {
+                        type: props.type,
+                        format: props.format,
+                        "x-format": props["x-format"],
+                        minLength: props.minLength,
+                        maxLength: props.maxLength,
+                        minimum: props.minimum,
+                        maximum: props.maximum,
+                        enum: props.enum,
                     }
                 });
 
-                openapiJson.paths['/' + lowerDocName][method]!.parameters = parameters;
+                switch (props["x-format"]) {
+                case "timestamp":
+                    // add filter from, to
+                    parameters.push({
+                        name: key + "From",
+                        in: "query",
+                        required: false,
+                        schema: {
+                            type: "number",
+                        }
+                    });
+                    parameters.push({
+                        name: key + "To",
+                        in: "query",
+                        required: false,
+                        schema: {
+                            type: "number",
+                        }
+                    });
+                    break;
+                default:
+                    break;
+                }
+            });
 
-                componentSchemaPath[method + interfaceName + 'Response'] = componentSchemaResponse;
-                componentSchemaPath[method + interfaceName + 'ResponseList'] = {
-                    type: 'array',
+                openapiJson.paths["/" + lowerDocName][method]!.parameters = parameters;
+
+                componentSchemaPath[method + interfaceName + "Response"] = componentSchemaResponse;
+                componentSchemaPath[method + interfaceName + "ResponseList"] = {
+                    type: "array",
                     items: componentSchemaResponse,
                 };
                 break;
+        }
+        case types.method.patch:
+            componentSchemaPath[method + interfaceName + "Body"] = componentSchemaBody;
+            componentSchemaPath[method + interfaceName + "Response"] = componentSchemaResponse;
+            break;
 
-            case types.method.patch:
-                componentSchemaPath[method + interfaceName + 'Body'] = componentSchemaBody;
-                componentSchemaPath[method + interfaceName + 'Response'] = componentSchemaResponse;
-                break;
-
-            case types.method.post:
-            case types.method.put:
-                componentSchemaPath[method + interfaceName + 'Body'] = componentSchemaBodyRequired;
-                componentSchemaPath[method + interfaceName + 'Response'] = componentSchemaResponse;
-                break;
-            default:
-                break;
-        };
+        case types.method.post:
+        case types.method.put:
+            componentSchemaPath[method + interfaceName + "Body"] = componentSchemaBodyRequired;
+            componentSchemaPath[method + interfaceName + "Response"] = componentSchemaResponse;
+            break;
+        default:
+            break;
+        }
     });
 
     openapiJson.components.schemas = Object.assign(openapiJson.components.schemas, componentSchemaPath);

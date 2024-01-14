@@ -1,12 +1,11 @@
-import * as types from '../types/types';
+import * as types from "../types/types";
 
 export default function serverTemplate(templateOptions: {
-	headerComment?: string,
 	template?: string,
 	options?: types.compilerOptions,
 }): string {
-	let headerComment: string = templateOptions.options?.headerComment || "// generated files by very-express";
-	let template: string = templateOptions.template || `{{headerComment}}
+    const headerComment: string = templateOptions.options?.headerComment || "// generated files by very-express";
+    let template: string = templateOptions.template || `{{headerComment}}
 
 import dotenv from 'dotenv';
 import express from 'express';
@@ -31,7 +30,7 @@ app.listen(process.env.EXPRESS_PORT, () => {
 });
 `;
 
-	template = template.replace(/{{headerComment}}/g, headerComment);
+    template = template.replace(/{{headerComment}}/g, headerComment);
 
-	return template;
-};
+    return template;
+}
