@@ -21,7 +21,7 @@ export function compile(options: {
     modelDir: string,
     compilerOptions: types.compilerOptions
 }): void {
-    const file: string = fs.readFileSync(options.compilerOptions.openapiDir + '/' + options.openapiFile, "utf8");
+    const file: string = fs.readFileSync(options.compilerOptions.openapiDir + "/" + options.openapiFile, "utf8");
     const controllerToModelBasePath: string = utils.relativePath(options.controllerOutDir, options.modelDir);
 
     const openApi: openapiType.openapi = jsYaml.load(file) as openapiType.openapi;
@@ -165,35 +165,35 @@ function processSchema(options: {
     });
 
     switch (type) {
-        case "string":
-            validators.push(`${checkOn}("${options.fieldName}")${requiredValidator}.isString()${typeValidator !== undefined ? `.isLength(${typeValidator})` : ""}${enumValidator}`);
-            break;
-        case "integer":
-            validators.push(`${checkOn}("${options.fieldName}")${requiredValidator}.isInt(${typeValidator})`);
-            break;
-        case "float":
-            validators.push(`${checkOn}("${options.fieldName}")${requiredValidator}.isFloat(${typeValidator})`);
-            break;
-        case "number":
-            validators.push(`${checkOn}("${options.fieldName}")${requiredValidator}.isNumeric()`);
-            break;
-        case "boolean":
-            validators.push(`${checkOn}("${options.fieldName}")${requiredValidator}.isBoolean()`);
-            break;
-        case "array":
-            validators.push(`${checkOn}("${options.fieldName}")${requiredValidator}.isArray(${typeValidator})`);
-            break;
-        case "object":
-            if (useBody) {
-                for (const key in options.body?.properties) {
-                    validators = validators.concat(processSchema({
-                        fieldName: options.fieldName + "." + key,
-                        body: options.body.properties[key],
-                        required: required,
-                    }));
-                }
+    case "string":
+        validators.push(`${checkOn}("${options.fieldName}")${requiredValidator}.isString()${typeValidator !== undefined ? `.isLength(${typeValidator})` : ""}${enumValidator}`);
+        break;
+    case "integer":
+        validators.push(`${checkOn}("${options.fieldName}")${requiredValidator}.isInt(${typeValidator})`);
+        break;
+    case "float":
+        validators.push(`${checkOn}("${options.fieldName}")${requiredValidator}.isFloat(${typeValidator})`);
+        break;
+    case "number":
+        validators.push(`${checkOn}("${options.fieldName}")${requiredValidator}.isNumeric()`);
+        break;
+    case "boolean":
+        validators.push(`${checkOn}("${options.fieldName}")${requiredValidator}.isBoolean()`);
+        break;
+    case "array":
+        validators.push(`${checkOn}("${options.fieldName}")${requiredValidator}.isArray(${typeValidator})`);
+        break;
+    case "object":
+        if (useBody) {
+            for (const key in options.body?.properties) {
+                validators = validators.concat(processSchema({
+                    fieldName: options.fieldName + "." + key,
+                    body: options.body.properties[key],
+                    required: required,
+                }));
             }
-            break;
+        }
+        break;
     }
 
     return validators;

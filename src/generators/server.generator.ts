@@ -14,7 +14,7 @@ export function compile(
     options: types.compilerOptions
 ): void {
 
-    const serverOutPath = options.srcDir + '/server.ts';
+    const serverOutPath = options.srcDir + "/server.ts";
     const packageOutPath = options.rootDir + "/package.json";
     const envOutPath = options.rootDir + "/.env";
     const tsconfigOutPath = options.rootDir + "/tsconfig.json";

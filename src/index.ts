@@ -27,7 +27,7 @@ export default function generate(
         utilsDir: `${options.srcDir}/utils`,
     };
 
-    const openapiFile: string = '/openapi.gen.yaml';
+    const openapiFile: string = "/openapi.gen.yaml";
     const openapipath: string = options.openapiDir + openapiFile;
 
     // create all directories if not exist
@@ -40,7 +40,7 @@ export default function generate(
 
     // prepair routerData
     log.process(`Router : ${openapipath}`);
-    let routeData: {
+    const routeData: {
         route: string,
         controllerClassName: string,
         controllerPath: string,
@@ -134,7 +134,7 @@ export default function generate(
     // make service
 
     // make server
-    serverGen.compile(options)
+    serverGen.compile(options);
 
 }
 

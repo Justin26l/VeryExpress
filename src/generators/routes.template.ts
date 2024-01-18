@@ -41,7 +41,7 @@ const router :Router = Router();
 
 export default router;`;
 
-const openapiPath :string = utils.relativePath(templateOptions.compilerOptions.rootDir, templateOptions.compilerOptions.openapiDir) + (templateOptions.openapiFile || "/openapi.gen.yaml");
+    const openapiPath :string = utils.relativePath(templateOptions.compilerOptions.rootDir, templateOptions.compilerOptions.openapiDir) + (templateOptions.openapiFile || "/openapi.gen.yaml");
     let importRoutes = "";
     let useRoutes = "";
     templateOptions?.routes.forEach((obj) => {

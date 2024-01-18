@@ -13,7 +13,6 @@
     "properties": {
         "_id": {
             "type": "string",
-            "format": "uuid",
             "index": true,
             "unique": true
         },
@@ -26,5 +25,6 @@
             "default": true
         }
     },
-    "additionalProperties": false
+    "additionalProperties": false,
+    "required": []
 }

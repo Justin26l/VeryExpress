@@ -13,7 +13,6 @@
     "properties": {
         "_id": {
             "type": "string",
-            "format": "uuid",
             "index": true
         },
         "name": {
@@ -25,7 +24,6 @@
             "type": "array",
             "items": {
                 "type": "string",
-                "format": "uuid",
                 "x-foreignKey": "usercontact"
             }
         },
@@ -69,7 +67,13 @@
                     "type": "string",
                     "required": true
                 }
-            }
+            },
+            "required": [
+                "city",
+                "state",
+                "country",
+                "zip"
+            ]
         },
         "isActive": {
             "type": "boolean"
@@ -79,5 +83,6 @@
             "x-format": "timestamp"
         }
     },
-    "additionalProperties": false
+    "additionalProperties": false,
+    "required": []
 }
