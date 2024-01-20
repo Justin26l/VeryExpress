@@ -6,6 +6,7 @@ export interface compilerOptions {
     headerComment?: string;
     modelsTemplate?: string;
     controllersTemplate?: string;
+    use_id?: boolean;
 }
 
 export interface jsonSchema {

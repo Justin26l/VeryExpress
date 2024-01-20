@@ -46,7 +46,7 @@ export function compile(options: {
             const methodEnum: types.method = method as types.method;
 
             let validators: string[] = [];
-            validators = buildParamValidator(endpoint, methodEnum, openApi);
+            validators = buildParamValidator(endpoint, methodEnum, openApi, options.compilerOptions);
             validators = validators.concat(buildRequestBodyValidator(endpoint, methodEnum, openApi));
 
             endpointsValidator[endpoint][method] = validators;
@@ -99,11 +99,16 @@ function buildParamValidator(
     endpoint: string,
     method: types.method,
     openapi: openapiType.openapi,
+    compilerOptions: types.compilerOptions,
 ): string[] {
 
     let validators: string[] = [];
 
     openapi.paths[endpoint][method]!.parameters.forEach((parameter: openapiType.parameter) => {
+        if( !compilerOptions.use_id && parameter.name === "_id") {
+            return;
+        }
+        
         validators = validators.concat(processSchema({
             fieldName: parameter.name,
             required: parameter.required,
