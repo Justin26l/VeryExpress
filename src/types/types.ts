@@ -45,7 +45,13 @@ export interface documentConfig {
     documentType?: "primary" | "secondary";
     interfaceName: string;
     keyPrefix?: string;
-    methods: method[]
+    methods: {[key:string]: methodConfig};
+}
+export interface methodConfig {
+    [key:string]: { // fields name
+        targetField: string
+        filter: string // 'regex' | 'min_max_'
+    }
 }
 
 /**
@@ -55,13 +61,11 @@ export interface additionalKeyObj {
     [key: string]: string;
 }
 
-export enum method {
-    get = "get",
-    post = "post",
-    put = "put",
-    patch = "patch",
-    delete = "delete",
-    options = "options",
-    head = "head",
-    trace = "trace"
-}
+/** method key allowed in json schema, httpMethod with extra "getList" */
+export type schemaMethod = "get" | "getList" | "post" | "put" | "patch" | "delete" | "options" | "head" | "trace" ;
+
+export const schemaMethodArr : string[] = [ "get", "getList", "post", "put", "patch", "delete", "options", "head", "trace" ];
+
+/** schemaMethod without "getList" */
+export type httpMethod = "get" | "post" | "put" | "patch" | "delete" | "options" | "head" | "trace" ;
+export const httpMethodArr : string[] = [ "get", "post", "put", "patch", "delete", "options", "head", "trace"];

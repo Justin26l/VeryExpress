@@ -3,12 +3,18 @@
     "x-documentConfig": {
         "documentName": "user",
         "interfaceName": "User",
-        "methods": [
-            "get",
-            "post",
-            "patch",
-            "delete"
-        ]
+        "methods": {
+            "get": {},
+            "getList": {
+                "username": {
+                    "targetField": "user",
+                    "filter": "regex"
+                }
+            },
+            "post": {},
+            "patch": {},
+            "delete": {}
+        }
     },
     "properties": {
         "_id": {
@@ -55,13 +61,20 @@
                     "required": true
                 },
                 "country": {
-                    "type": "string",
-                    "enum": [
-                        "Option1",
-                        "Option2",
-                        "Option3"
-                    ],
-                    "required": true
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "required": false
+                        },
+                        "code": {
+                            "type": "string",
+                            "required": true
+                        }
+                    },
+                    "required": [
+                        "code"
+                    ]
                 },
                 "zip": {
                     "type": "string",
@@ -80,9 +93,13 @@
         },
         "created": {
             "type": "number",
-            "x-format": "timestamp"
+            "x-format": "timestamp",
+            "required": true
         }
     },
     "additionalProperties": false,
-    "required": []
+    "required": [
+        "userAddress",
+        "created"
+    ]
 }

@@ -20,21 +20,24 @@ export function formatJsonSchema(jsonSchemaPath: string): types.jsonSchema {
     else if (!jsonSchema["x-documentConfig"].interfaceName) {
         log.error(`formatJsonSchema : x-documentConfig.interfaceName not found in ${jsonSchemaPath}`);
     }
-    else if (!jsonSchema["x-documentConfig"].methods || !Array.isArray(jsonSchema["x-documentConfig"].methods)) {
+    else if (!jsonSchema["x-documentConfig"].methods) {
         log.error(`formatJsonSchema : x-documentConfig.methods is not found in ${jsonSchemaPath}`);
+    }
+    else if (typeof jsonSchema["x-documentConfig"].methods !== "object") {
+        log.error(`formatJsonSchema : x-documentConfig.methods type "${typeof jsonSchema["x-documentConfig"].methods}" is invalid in ${jsonSchemaPath}`);
+    }
+    else if (Array.isArray(jsonSchema["x-documentConfig"].methods)) {
+        jsonSchema["x-documentConfig"].methods = jsonSchema["x-documentConfig"].methods.reduce((obj:any, key:string) => {
+            obj[key] = {};
+            return obj;
+        }, {});
     }
 
     // format properties boolean "required" into array of string
     jsonSchema.required = getRequiredArrStr(jsonSchema, jsonSchemaPath);
-    Object.keys(jsonSchema.properties).forEach((propKey: string) => {
-        const prop: types.jsonSchemaPropsItem | undefined = jsonSchema.properties[propKey];
-        prop.required = getRequiredArrStr(prop, jsonSchemaPath);
-    });
-
     fs.writeFileSync(jsonSchemaPath, JSON.stringify(jsonSchema, null, 4));
 
     return jsonSchema;
-
 }
 
 function getRequiredArrStr(schema: types.jsonSchemaPropsItem | types.jsonSchema, jsonSchemaPath?: string): string[] | undefined {
@@ -48,7 +51,17 @@ function getRequiredArrStr(schema: types.jsonSchemaPropsItem | types.jsonSchema,
         else {
             Object.keys(properties).forEach((propKey: string) => {
                 const prop: types.jsonSchemaPropsItem | undefined = properties[propKey];
-                if (prop.type !== "object" && prop.required === true && !oriRequiredArr.includes(propKey)) {
+                if ( prop.type == "object" ) {
+                    prop.required = getRequiredArrStr(prop, jsonSchemaPath);
+                    if( 
+                        prop.required !== undefined && 
+                        prop.required.length > 0 &&
+                        !oriRequiredArr.includes(propKey)
+                    ){
+                        oriRequiredArr.push(propKey);
+                    }
+                }
+                else if (prop.required === true && !oriRequiredArr.includes(propKey)) {
                     oriRequiredArr.push(propKey);
                 }
             });

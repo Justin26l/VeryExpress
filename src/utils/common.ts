@@ -95,6 +95,20 @@ export function cleanXcustomValue(
     return obj;
 }
 
+/** filter "getList" which not a http method */
+export function httpMethod(jsonSchemaMethod: string) : types.httpMethod {
+    if (jsonSchemaMethod == "getList"){ 
+        return "get";
+    }
+    else if (types.httpMethodArr.includes(jsonSchemaMethod)){
+        return jsonSchemaMethod as types.httpMethod;
+    }
+    else{
+        log.error(`httpMethod : invalid method "${jsonSchemaMethod}" in jsonSchema`);
+        process.exit();
+    }
+}
+
 export function copyDir(source: string, destination: string): void {
     if (!fs.existsSync(destination)) {
         fs.mkdirSync(destination);
@@ -134,6 +148,7 @@ export default {
     getSimpleHeaderComment,
     relativePath,
     cleanXcustomValue,
+    httpMethod,
     loadJsonSchema,
     copyDir,
 };
