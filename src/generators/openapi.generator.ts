@@ -64,6 +64,7 @@ function jsonToOpenapiPath(
     const interfaceName: string = documentConfig.interfaceName;
 
     const properties: types.jsonSchema["properties"] = jsonSchema.properties;
+    const methods: types.method[] = documentConfig.methods;
 
     const routes: openapiType.paths = {
         ["/" + lowerDocName]: {
@@ -76,25 +77,39 @@ function jsonToOpenapiPath(
         },
     };
 
-    Object.keys(documentConfig.methods).forEach((jsonSchemaMethod) => {
-        const routeWithId: boolean = ["get", "put", "patch", "delete"].includes(jsonSchemaMethod);
-        const useBody: boolean = ["post", "put", "patch"].includes(jsonSchemaMethod);
-        const route: string = "/" + lowerDocName + (routeWithId ? "/{id}" : "");
-        
-        const httpMethod: types.httpMethod = utils.httpMethod(jsonSchemaMethod);
-        const parameters: openapiType.parameter[] = [];
-        let requestBody: openapiType.requestBody | undefined = undefined;
-        const successResponse: openapiType.responses = {
-            200: {
-                description: "OK",
-                content: {
-                    "application/json": { schema: { $ref: `#/components/schemas/${httpMethod}${interfaceName}Response` } },
+    methods.forEach((method) => {
+        const useId: boolean = [types.method.put, types.method.patch, types.method.delete].includes(method);
+        const useBody: boolean = [types.method.post, types.method.put, types.method.patch].includes(method);
+        const route: string = "/" + lowerDocName + (useId ? "/{id}" : "");
+
+        routes[route][method] = {
+            operationId: method + interfaceName,
+            tags: [lowerDocName],
+            parameters: [],
+            requestBody: undefined,
+            responses: {
+                200: {
+                    description: "OK",
+                    content: {
+                        "application/json": { schema: { $ref: `#/components/schemas/${method}${interfaceName}Response` } },
+                    },
                 },
+                400: { description: "Bad Request", },
+                401: { description: "Unauthorized", },
+                403: { description: "Forbidden", },
+                404: { description: "Not Found", },
+                405: { description: "Method Not Allowed", },
+                413: { description: "Payload Too Large", },
+                429: { description: "Too Many Requests", },
+                500: { description: "Internal Server Error", },
+                502: { description: "Bad Gateway", },
+                503: { description: "Service Unavailable", },
             },
         };
-        
+
         // update parameters/body & responses
-        if ( routeWithId && properties["_id"] ) {
+
+        if ((useId || method == types.method.get) && properties["_id"]) {
             const idParameter: openapiType.parameter = {
                 name: "id",
                 in: "path",
@@ -106,50 +121,37 @@ function jsonToOpenapiPath(
                 },
             };
 
-            parameters.push(idParameter);
+            routes[route][method]!.parameters = [idParameter];
+
+            // GET will have additional route of GET /{id}
+            if (method == types.method.get) {
+                routes[route + "/{id}"][method] = Object.assign({}, routes[route][method]);
+
+
+                routes[route + "/{id}"][method]!.responses[200].content!["application/json"]!.schema.$ref = `#/components/schemas/${method}${interfaceName}Response`;
+                routes[route + "/{id}"][method]!.parameters = [idParameter];
+            }
         }
 
         // POST will use 201 success response
-        if (httpMethod == "post") {
-            successResponse[201] = Object.assign({}, successResponse[200]);
-            successResponse[201].description = "Crerated";
-            delete successResponse[200];
+        if (method == types.method.post) {
+            routes[route][method]!.responses[201] = routes[route][method]!.responses[200];
+            routes[route][method]!.responses[201].description = "Crerated";
+            delete routes[route][method]!.responses[200];
         }
-        else if (httpMethod == "delete") {
-            delete successResponse[200].content;
-        }   
-        
+        else if (method == types.method.delete) {
+            delete routes[route][method]!.responses[200].content;
+        }
+
         if (useBody) {
-            requestBody = {
-                description: `${httpMethod} ${documentConfig.documentName}`,
+            routes[route][method]!.requestBody = {
+                description: `${method} ${documentConfig.documentName}`,
                 required: false,
                 content: {
-                    "application/json": { schema: { $ref: `#/components/schemas/${httpMethod}${interfaceName}Body` } },
+                    "application/json": { schema: { $ref: `#/components/schemas/${method}${interfaceName}Body` } },
                 },
             };
         }
-
-        routes[route][httpMethod] = {
-            operationId: httpMethod + interfaceName,
-            tags: [lowerDocName],
-            parameters: parameters,
-            requestBody: requestBody,
-            responses: Object.assign(
-                {
-                    400: { description: "Bad Request", },
-                    401: { description: "Unauthorized", },
-                    403: { description: "Forbidden", },
-                    404: { description: "Not Found", },
-                    405: { description: "Method Not Allowed", },
-                    413: { description: "Payload Too Large", },
-                    429: { description: "Too Many Requests", },
-                    500: { description: "Internal Server Error", },
-                    502: { description: "Bad Gateway", },
-                    503: { description: "Service Unavailable", },
-                }, 
-                successResponse
-            )
-        };
 
     });
 
@@ -170,6 +172,7 @@ function jsonToOpenapiComponentSchema(
     const documentConfig = jsonSchema["x-documentConfig"];
     const lowerDocName = documentConfig.documentName.toLowerCase();
     const interfaceName = documentConfig.interfaceName;
+    const methods: types.method[] = documentConfig.methods;
 
 
     const componentSchemaResponse: openapiType.componentsSchemaValue = {
@@ -197,18 +200,13 @@ function jsonToOpenapiComponentSchema(
         required: jsonSchema.required,
     };
 
-    Object.keys(documentConfig.methods).forEach((jsonSchemaMethod) => {
-        const httpMethod: types.httpMethod = utils.httpMethod(jsonSchemaMethod);
-
-        switch (jsonSchemaMethod) {
-        case "delete":
+    methods.forEach((method) => {
+        switch (method) {
+        case types.method.delete:
             // no param, no response
             break;
 
-        case "get":
-            componentSchemaPath[httpMethod + interfaceName + "Response"] = componentSchemaResponse;
-            break;
-        case "getList":{
+        case types.method.get:{
 
             // add query params
             const parameters: openapiType.parameter[] = [];
@@ -239,7 +237,7 @@ function jsonToOpenapiComponentSchema(
                 case "timestamp":
                     // add filter from, to
                     parameters.push({
-                        name: "min_" + key,
+                        name: key + "From",
                         in: "query",
                         required: false,
                         schema: {
@@ -247,7 +245,7 @@ function jsonToOpenapiComponentSchema(
                         }
                     });
                     parameters.push({
-                        name: "max_" + key,
+                        name: key + "To",
                         in: "query",
                         required: false,
                         schema: {
@@ -260,24 +258,24 @@ function jsonToOpenapiComponentSchema(
                 }
             });
 
-                openapiJson.paths["/" + lowerDocName][httpMethod]!.parameters = parameters;
+                openapiJson.paths["/" + lowerDocName][method]!.parameters = parameters;
 
-                componentSchemaPath[httpMethod + interfaceName + "Response"] = componentSchemaResponse;
-                componentSchemaPath[httpMethod + interfaceName + "ResponseList"] = {
+                componentSchemaPath[method + interfaceName + "Response"] = componentSchemaResponse;
+                componentSchemaPath[method + interfaceName + "ResponseList"] = {
                     type: "array",
                     items: componentSchemaResponse,
                 };
                 break;
         }
-        case "patch":
-            componentSchemaPath[httpMethod + interfaceName + "Body"] = componentSchemaBody;
-            componentSchemaPath[httpMethod + interfaceName + "Response"] = componentSchemaResponse;
+        case types.method.patch:
+            componentSchemaPath[method + interfaceName + "Body"] = componentSchemaBody;
+            componentSchemaPath[method + interfaceName + "Response"] = componentSchemaResponse;
             break;
 
-        case "post":
-        case "put":
-            componentSchemaPath[httpMethod + interfaceName + "Body"] = componentSchemaBodyRequired;
-            componentSchemaPath[httpMethod + interfaceName + "Response"] = componentSchemaResponse;
+        case types.method.post:
+        case types.method.put:
+            componentSchemaPath[method + interfaceName + "Body"] = componentSchemaBodyRequired;
+            componentSchemaPath[method + interfaceName + "Response"] = componentSchemaResponse;
             break;
         default:
             break;
