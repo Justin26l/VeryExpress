@@ -72,13 +72,12 @@ class {{interfaceName}}Controller {
             };
             
             // Get the selected fields from query string
-            const fields = req.query.fields as string | undefined;
-            const selectFields = ! fields ? undefined : await parseFieldsSelect(fields)
+            const selectedFields = await parseFieldsSelect(req.query.select)
             .catch((err) => {
                 return res.status(400).json({ error: err });
             });
 
-            const result = await {{interfaceName}}Model.find({}, selectFields);
+            const result = await {{interfaceName}}Model.find({}, selectedFields);
             if (!result) {
                 return res.status(404).json({ error: "no data found" });
             }
@@ -116,6 +115,24 @@ class {{interfaceName}}Controller {
                 return res.status(400).json(validationError.array());
             };
             const result = await {{interfaceName}}Model.findByIdAndUpdate(req.params.id, req.body, { new: true });
+            if (!result) {
+                return res.status(404).json({ error: "failed to update" });
+            }
+            else {
+                return res.status(200).json(result);
+            };
+        } catch (err:any) {
+            return res.status(500).json({ error: err.message });
+        }
+    }
+
+    public async replace{{interfaceName}}(req: Request, res: Response): Promise<Response> {
+        try {
+            const validationError = validationResult(req);
+            if ( ! validationError.isEmpty() ) {
+                return res.status(400).json(validationError.array());
+            };
+            const result = await {{interfaceName}}Model.replaceOne({_id: req.params.id}, req.body, { new: true });
             if (!result) {
                 return res.status(404).json({ error: "failed to update" });
             }

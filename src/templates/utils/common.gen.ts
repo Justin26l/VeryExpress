@@ -12,12 +12,19 @@ export function loadYaml(yamlFilePath: string) {
 
 /** 
  * build mongoose select object
- * @param fieldsString stringified array of FieldPath
+ * @param fieldsString json stringified array of string
  * @error may throw an error if the fieldsString is not a valid JSON
  */
-export function parseFieldsSelect(fieldsString:string): Promise<{[key:string]:number}> {
+export function parseFieldsSelect(fieldsString: any ): Promise<{[key:string]:number}> {
+
     return new Promise((resolve, reject) => {
+
+        if ( !fieldsString || typeof fieldsString !== "string"){
+            return reject("Invalid fields string : "+typeof fieldsString,);
+        }
+
         let fieldArr: string[] = [];
+
         try {
             fieldArr = JSON.parse(fieldsString);
         } catch (err) {

@@ -162,7 +162,7 @@ function processSchema(options: {
     const validators: Schema = {
         [options.fieldName]: {
             in : options.param ? "params" : options.body ? "body" : [],
-            optional : !options.required ? true : { options: { values: "falsy", checkFalsy: true} },
+            optional : !options.required ? { options: { values: "falsy", checkFalsy: true} } : false,
             notEmpty : true,
         },
     };
