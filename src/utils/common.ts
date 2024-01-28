@@ -13,7 +13,6 @@ function getPackageInfo(): {
     // get local npm package dependencies with npm -g list
     try {
         globalPackages = JSON.parse(childProcess.execSync("npm -g list --json",).toString());
-        // console.log(globalPackages)
     } catch (error) {
         log.error("Failed to execute command: npm -g list --json", error);
     }
@@ -38,7 +37,7 @@ export function loadJsonSchema(jsonSchemaPath: string) : types.jsonSchema | neve
         return JSON.parse(fs.readFileSync(jsonSchemaPath, "utf8")) as types.jsonSchema;
     }
     catch (e: any) {
-        return log.error("Error Load JsonSchema File :\n", e.message || e);
+        return log.error("Error Load JsonSchema File :\n", e.message || e, jsonSchemaPath);
     }
 }
 

@@ -2,11 +2,12 @@ import fs from "fs";
 import jsYaml from "js-yaml";
 
 import controllerTemplate from "./controller.template";
+import log from "../utils/log";
+import * as utils from "../utils/common";
 
 import * as types from "../types/types";
 import * as openapiType from "../types/openapi";
-import log from "../utils/log";
-import * as utils from "../utils/common";
+import { Schema } from "express-validator";
 
 /**
  * compile openapi to controller source code
@@ -27,7 +28,7 @@ export function compile(options: {
     const openApi: openapiType.openapi = jsYaml.load(file) as openapiType.openapi;
     const endpointsValidator: {
         [key: string]: { // path
-            [key: string]: string[] // methods
+            [key: string]: Schema // methods
         }
     } = {};
     const writtedEndpoint: string[] = [];
@@ -45,9 +46,10 @@ export function compile(options: {
             if (!Object.values(types.method).includes(method as types.method)) return;
             const methodEnum: types.method = method as types.method;
 
-            let validators: string[] = [];
-            validators = buildParamValidator(endpoint, methodEnum, openApi, options.compilerOptions);
-            validators = validators.concat(buildRequestBodyValidator(endpoint, methodEnum, openApi));
+            const validators: Schema = Object.assign(
+                buildParamValidator(endpoint, methodEnum, openApi, options.compilerOptions),
+                buildBodyValidator(endpoint, methodEnum, openApi)
+            );
 
             endpointsValidator[endpoint][method] = validators;
         });
@@ -85,7 +87,7 @@ export function compile(options: {
                         endpoint: endpoint,
                         modelPath: controllerToModelPath,
                         interfaceName: interfaceName,
-                        validator: endpointsValidator,
+                        validators: endpointsValidator,
                         compilerOptions: options.compilerOptions,
                     })
                 );
@@ -100,32 +102,35 @@ function buildParamValidator(
     method: types.method,
     openapi: openapiType.openapi,
     compilerOptions: types.compilerOptions,
-): string[] {
+): Schema {
 
-    let validators: string[] = [];
+    const validators: Schema = {};
 
     openapi.paths[endpoint][method]!.parameters.forEach((parameter: openapiType.parameter) => {
         if( !compilerOptions.use_id && parameter.name === "_id") {
             return;
         }
-        
-        validators = validators.concat(processSchema({
-            fieldName: parameter.name,
-            required: parameter.required,
-            param: parameter,
-        }));
+
+        Object.assign(
+            validators, 
+            processSchema({
+                fieldName: parameter.name,
+                required: parameter.required,
+                param: parameter,
+            })
+        );
     });
 
     return validators;
 }
 
-function buildRequestBodyValidator(
+function buildBodyValidator(
     endpoint: string,
     method: types.method,
     openapi: openapiType.openapi,
-): string[] {
+): Schema {
 
-    let validators: string[] = [];
+    const validators: Schema = {};
 
     const referencePath: string | undefined = openapi.paths[endpoint][method]?.requestBody?.content?.["application/json"].schema.$ref;
     const reference: string | undefined = referencePath ? referencePath.split("/").pop() : undefined;
@@ -133,11 +138,14 @@ function buildRequestBodyValidator(
 
     if (components !== undefined) {
         for (const key in components.properties) {
-            validators = validators.concat(processSchema({
-                fieldName: key,
-                required: components.required?.includes(key),
-                body: components.properties[key],
-            }));
+            Object.assign(
+                validators, 
+                processSchema({
+                    fieldName: key,
+                    body: components.properties[key],
+                    required: components.required?.includes(key) || components.properties[key].required,
+                })
+            );
         }
     }
 
@@ -149,53 +157,76 @@ function processSchema(options: {
     required?: boolean,
     param?: openapiType.parameter,
     body?: openapiType.fieldsItem,
-}): string[] {
+}): Schema {
 
-    let validators: string[] = [];
+    const validators: Schema = {
+        [options.fieldName]: {
+            in : options.param ? "params" : options.body ? "body" : [],
+            optional : !options.required ? true : { options: { values: "falsy", checkFalsy: true} },
+            notEmpty : true,
+        },
+    };
+
+    const validatorParam = validators[options.fieldName];
 
     const useBody = options.body !== undefined && options.param == undefined;
-    const required = options.required; // || options.param?.required;
-
     const type: string | undefined = useBody ? options.body?.type : options.param?.schema.type;
-    const checkOn: string = useBody ? "body" : "check";
+    const useEnum = options.param?.schema?.enum ?? options.body?.enum;
 
-    const requiredValidator = required ? ".exists()" : ".optional()";
-    const enumValidator: string =
-        useBody && options.body?.enum ? `.isIn(${JSON.stringify(options.body.enum)})` :
-            !useBody && options.param?.schema.enum ? `.isIn(${JSON.stringify(options.param.schema.enum)})` :
-                "";
-    const typeValidator: string = JSON.stringify({
+    const range : {
+        min: number | undefined;
+        max: number | undefined;
+    } = {
         min: options.param?.schema?.minLength ?? options.param?.schema?.minimum ?? options.body?.minLength ?? options.body?.minimum,
         max: options.param?.schema?.maxLength ?? options.param?.schema?.maximum ?? options.body?.maxLength ?? options.body?.maximum,
-    });
+    };
+    const rangeValidator : undefined | {
+        options: {
+            min: number | undefined;
+            max: number | undefined;
+        }
+    }
+    = range.min && range.max ? { options: range } : undefined;
 
     switch (type) {
     case "string":
-        validators.push(`${checkOn}("${options.fieldName}")${requiredValidator}.isString()${typeValidator !== undefined ? `.isLength(${typeValidator})` : ""}${enumValidator}`);
+        validatorParam.isString = true;
+        if(range.min && range.max){
+            validatorParam.isLength = { options: range };
+        }
+        if(useEnum){
+            validatorParam.isEmpty = false;
+            validatorParam.isIn = {
+                options: useEnum,
+            };
+        }
         break;
     case "integer":
-        validators.push(`${checkOn}("${options.fieldName}")${requiredValidator}.isInt(${typeValidator})`);
+        validatorParam.isInt = rangeValidator;
         break;
     case "float":
-        validators.push(`${checkOn}("${options.fieldName}")${requiredValidator}.isFloat(${typeValidator})`);
+        validatorParam.isFloat = rangeValidator;
         break;
     case "number":
-        validators.push(`${checkOn}("${options.fieldName}")${requiredValidator}.isNumeric()`);
+        validatorParam.isNumeric = true;
         break;
     case "boolean":
-        validators.push(`${checkOn}("${options.fieldName}")${requiredValidator}.isBoolean()`);
+        validatorParam.isBoolean = true;
         break;
     case "array":
-        validators.push(`${checkOn}("${options.fieldName}")${requiredValidator}.isArray(${typeValidator})`);
+        validatorParam.isArray = true;
         break;
     case "object":
         if (useBody) {
             for (const key in options.body?.properties) {
-                validators = validators.concat(processSchema({
-                    fieldName: options.fieldName + "." + key,
-                    body: options.body.properties[key],
-                    required: required,
-                }));
+                Object.assign(
+                    validators, 
+                    processSchema({
+                        fieldName: options.fieldName + "." + key,
+                        body: options.body.properties[key],
+                        required: options.body.required?.includes(key),
+                    }) 
+                );
             }
         }
         break;

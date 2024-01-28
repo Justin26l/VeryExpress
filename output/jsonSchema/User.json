@@ -23,12 +23,26 @@
         "userContact": {
             "type": "array",
             "items": {
-                "type": "string",
-                "x-foreignKey": "usercontact"
+                "type": "object",
+                "x-foreignKey": "usercontact",
+                "properties": {
+                    "contactType": {
+                        "type": "string",
+                        "enum": [
+                            "mobile",
+                            "home",
+                            "office"
+                        ]
+                    },
+                    "_id": {
+                        "type": "string"
+                    }
+                }
             }
         },
         "married": {
             "type": "string",
+            "required": true,
             "enum": [
                 "single",
                 "inRelationship",
@@ -40,11 +54,10 @@
             "properties": {
                 "line1": {
                     "type": "string",
-                    "required": false
+                    "required": true
                 },
                 "line2": {
-                    "type": "string",
-                    "required": false
+                    "type": "string"
                 },
                 "city": {
                     "type": "string",
@@ -56,24 +69,17 @@
                 },
                 "country": {
                     "type": "string",
+                    "required": true,
                     "enum": [
                         "Option1",
                         "Option2",
                         "Option3"
-                    ],
-                    "required": true
+                    ]
                 },
                 "zip": {
-                    "type": "string",
-                    "required": true
+                    "type": "string"
                 }
-            },
-            "required": [
-                "city",
-                "state",
-                "country",
-                "zip"
-            ]
+            }
         },
         "isActive": {
             "type": "boolean"
@@ -83,6 +89,6 @@
             "x-format": "timestamp"
         }
     },
-    "additionalProperties": false,
-    "required": []
+    "additionalProperties": false
+
 }

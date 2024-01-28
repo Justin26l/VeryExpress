@@ -7,7 +7,7 @@ export default function routesTemplate(templateOptions: {
     enableOpenApi?: boolean,
     routes: {
         route: string,
-        controllerClassName: string,
+        interfaceName: string,
         controllerPath: string,
     }[],
     compilerOptions: types.compilerOptions,
@@ -45,8 +45,8 @@ export default router;`;
     let importRoutes = "";
     let useRoutes = "";
     templateOptions?.routes.forEach((obj) => {
-        importRoutes += `import ${obj.controllerClassName} from '${obj.controllerPath}';\n`;
-        useRoutes += `router.use('${obj.route}', ${obj.controllerClassName});\n`;
+        importRoutes += `import ${obj.interfaceName}Controller from '${obj.controllerPath}';\n`;
+        useRoutes += `router.use('${obj.route}', ${obj.interfaceName}Controller);\n`;
     });
 
 

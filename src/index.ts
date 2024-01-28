@@ -42,7 +42,7 @@ export default function generate(
     log.process(`Router : ${openapipath}`);
     const routeData: {
         route: string,
-        controllerClassName: string,
+        interfaceName: string,
         controllerPath: string,
     }[] = [];
 
@@ -91,7 +91,7 @@ export default function generate(
             // prepair route data
             routeData.push({
                 route: `/${documentConfig.documentName}`,
-                controllerClassName: documentConfig.interfaceName,
+                interfaceName: documentConfig.interfaceName,
                 controllerPath: utils.relativePath(dir.routeDir, dir.controllerDir) + "/" + documentConfig.interfaceName + "Controller.gen",
             });
 

@@ -26,10 +26,6 @@ export function formatJsonSchema(jsonSchemaPath: string): types.jsonSchema {
 
     // format properties boolean "required" into array of string
     jsonSchema.required = getRequiredArrStr(jsonSchema, jsonSchemaPath);
-    Object.keys(jsonSchema.properties).forEach((propKey: string) => {
-        const prop: types.jsonSchemaPropsItem | undefined = jsonSchema.properties[propKey];
-        prop.required = getRequiredArrStr(prop, jsonSchemaPath);
-    });
 
     fs.writeFileSync(jsonSchemaPath, JSON.stringify(jsonSchema, null, 4));
 
@@ -38,22 +34,49 @@ export function formatJsonSchema(jsonSchemaPath: string): types.jsonSchema {
 }
 
 function getRequiredArrStr(schema: types.jsonSchemaPropsItem | types.jsonSchema, jsonSchemaPath?: string): string[] | undefined {
-    if (schema.type == "object") {
-        const oriRequiredArr: string[] = (typeof schema.required == "object") ? schema.required : [];
-        const properties: { [key: string]: types.jsonSchemaPropsItem } | undefined = schema.properties;
-
-        if (properties == undefined) {
-            log.error(`formatJsonSchema > formatRequired : invalid schema.properties format in ${jsonSchemaPath}`);
-        }
-        else {
-            Object.keys(properties).forEach((propKey: string) => {
-                const prop: types.jsonSchemaPropsItem | undefined = properties[propKey];
-                if (prop.type !== "object" && prop.required === true && !oriRequiredArr.includes(propKey)) {
-                    oriRequiredArr.push(propKey);
-                }
-            });
-        }
-        return oriRequiredArr;
+    let properties: { [key: string]: types.jsonSchemaPropsItem } | undefined ;
+    let requiredArr: string[] = [];
+    const isArrObj = (props: types.jsonSchemaPropsItem | types.jsonSchema) => Boolean(props.type == "array" && props.items && props.items.type == "object");
+    
+    if (isArrObj(schema)) {
+        properties = schema.items.properties;
+        requiredArr = typeof schema.items.required == "object" ? schema.items.required : [];
     }
-    return;
+    else if (schema.type == "object") {
+        properties = schema.properties;
+        requiredArr = typeof schema.required == "object" ? schema.required : [];
+    }
+    else {
+        return undefined;
+    }
+
+    if (properties == undefined) {
+        log.error(`formatJsonSchema > formatRequired : invalid "schema.properties" in ${jsonSchemaPath}`,schema);
+    }
+    else {
+        Object.keys(properties).forEach((propKey: string) => {
+            const prop: types.jsonSchemaPropsItem | undefined = properties?.[propKey];
+            const keyNotInRequiredArr :boolean = !requiredArr.includes(propKey);
+
+            // value
+            if ( prop && prop.type !== "object" && prop.required === true && keyNotInRequiredArr) {
+                requiredArr.push(propKey);
+            }
+            // array
+            else if ( prop && prop.items && isArrObj(prop)) {
+                prop.items.required = getRequiredArrStr(prop.items, jsonSchemaPath);
+            }
+            // object
+            else if ( prop && prop.type == "object"){
+                prop.required = getRequiredArrStr(prop, jsonSchemaPath);
+                
+                if ( prop.required && prop.required.length > 0  && keyNotInRequiredArr){
+                    requiredArr.push(propKey);
+                }
+            }
+        });
+    }
+
+    return requiredArr;
+    
 }

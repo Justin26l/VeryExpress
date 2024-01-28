@@ -199,7 +199,7 @@ function jsonToOpenapiComponentSchema(
         ),
         required: jsonSchema.required,
     };
-
+    
     methods.forEach((method) => {
         switch (method) {
         case types.method.delete:
@@ -258,14 +258,14 @@ function jsonToOpenapiComponentSchema(
                 }
             });
 
-                openapiJson.paths["/" + lowerDocName][method]!.parameters = parameters;
+            openapiJson.paths["/" + lowerDocName][method]!.parameters = parameters;
 
-                componentSchemaPath[method + interfaceName + "Response"] = componentSchemaResponse;
-                componentSchemaPath[method + interfaceName + "ResponseList"] = {
-                    type: "array",
-                    items: componentSchemaResponse,
-                };
-                break;
+            componentSchemaPath[method + interfaceName + "Response"] = componentSchemaResponse;
+            componentSchemaPath[method + interfaceName + "ResponseList"] = {
+                type: "array",
+                items: componentSchemaResponse,
+            };
+            break;
         }
         case types.method.patch:
             componentSchemaPath[method + interfaceName + "Body"] = componentSchemaBody;

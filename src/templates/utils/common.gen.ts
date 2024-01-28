@@ -9,3 +9,27 @@ export function loadYaml(yamlFilePath: string) {
         process.exit(0);
     }
 }
+
+/** 
+ * build mongoose select object
+ * @param fieldsString stringified array of FieldPath
+ * @error may throw an error if the fieldsString is not a valid JSON
+ */
+export function parseFieldsSelect(fieldsString:string): Promise<{[key:string]:number}> {
+    return new Promise((resolve, reject) => {
+        let fieldArr: string[] = [];
+        try {
+            fieldArr = JSON.parse(fieldsString);
+        } catch (err) {
+            return reject("Invalid fields string");
+        }
+
+        // Convert the fieldArr to an object that can be used in the select method
+        const selectFields = fieldArr.reduce((obj:any, field:string) => {
+            obj[field] = 1;
+            return obj;
+        }, {} as Record<string, number>);
+
+        resolve(selectFields);
+    });
+}

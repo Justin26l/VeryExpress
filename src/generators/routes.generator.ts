@@ -14,7 +14,7 @@ import log from "../utils/log";
 export function compile(options: {
     routesArr: {
         route: string,
-        controllerClassName: string,
+        interfaceName: string,
         controllerPath: string,
     }[],
     routesOutPath: string,

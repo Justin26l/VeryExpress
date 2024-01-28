@@ -1,4 +1,6 @@
+import util from "util";
 import * as types from "../types/types";
+import { Schema } from "express-validator";
 
 export default function controllerTemplate(templateOptions: {
     headerComment?:string, 
@@ -6,7 +8,7 @@ export default function controllerTemplate(templateOptions: {
     endpoint: string,
     modelPath: string,
     interfaceName: string,
-    validator: {[key:string]:{[key:string]:string[]}},
+    validators: {[key:string]:{[key:string]:Schema}},
     compilerOptions: types.compilerOptions,
 }) : string {
     if(!templateOptions.headerComment){
@@ -15,8 +17,9 @@ export default function controllerTemplate(templateOptions: {
 
     let template :string = templateOptions.template || `{{headerComment}}
 import { Router, Request, Response } from 'express';
-import { check, body, validationResult } from 'express-validator';
-import mongoose from 'mongoose';
+import { checkSchema, validationResult } from 'express-validator';
+import { parseFieldsSelect } from '../utils/common.gen';
+
 import { {{interfaceName}}Model } from '{{modelPath}}';
 
 class {{interfaceName}}Controller {
@@ -31,7 +34,7 @@ class {{interfaceName}}Controller {
         
         {{getListRoute}}
 
-        {{getOneRoute}}
+        {{getRoute}}
 
         {{postRoute}}
 
@@ -45,18 +48,17 @@ class {{interfaceName}}Controller {
 
     public async get{{interfaceName}}(req: Request, res: Response): Promise<Response> {
         try {
-            await check('id').custom((value) => mongoose.Types.ObjectId.isValid(value)).withMessage('Invalid user id').run(req);
-
-            const errors = validationResult(req);
-            if (!errors.isEmpty()) {
-                return res.status(400).json({ errors: errors.array() });
+            const validationError = validationResult(req);
+            if ( ! validationError.isEmpty() ) {
+                return res.status(400).json(validationError.array());
+            };
+            const result = await {{interfaceName}}Model.findById(req.params.id);
+            if (!result) {
+                return res.status(404).json({ error: "no data found" });
             }
-
-            const user = await {{interfaceName}}Model.findById(req.params.id);
-            if (!user) {
-                return res.status(404).json({ error: '{{interfaceName}} not found' });
-            }
-            return res.json(user);
+            else {
+                return res.status(200).json(result);
+            };
         } catch (err:any) {
             return res.status(500).json({ error: err.message });
         }
@@ -64,43 +66,62 @@ class {{interfaceName}}Controller {
 
     public async getList{{interfaceName}}(req: Request, res: Response): Promise<Response> {
         try {
-            const user = await {{interfaceName}}Model.find();
-            if (!user) {
-                return res.status(404).json({ error: 'No {{interfaceName}} found' });
+            const validationError = validationResult(req);
+            if ( ! validationError.isEmpty() ) {
+                return res.status(400).json(validationError.array());
+            };
+            
+            // Get the selected fields from query string
+            const fields = req.query.fields as string | undefined;
+            const selectFields = ! fields ? undefined : await parseFieldsSelect(fields)
+            .catch((err) => {
+                return res.status(400).json({ error: err });
+            });
+
+            const result = await {{interfaceName}}Model.find({}, selectFields);
+            if (!result) {
+                return res.status(404).json({ error: "no data found" });
             }
-            return res.json(user);
+            else {
+                return res.status(200).json(result);
+            };
         } catch (err:any) {
             return res.status(500).json({ error: err.message });
         }
     }
 
     public async create{{interfaceName}}(req: Request, res: Response): Promise<Response> {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        };
-
         try {
-            const user = new {{interfaceName}}Model (req.body);
-            await user.save();
-            return res.status(201).json(user);
+            const validationError = validationResult(req);
+            if ( ! validationError.isEmpty() ) {
+                return res.status(400).json(validationError.array());
+            };
+            
+            const result = await {{interfaceName}}Model.create(req.body);
+            if (!result) {
+                return res.status(500).json({ error: 'failed to create data' });
+            }
+            else {
+                return res.status(201).json(result);
+            };
         } catch (err:any) {
             return res.status(500).json({ error: err.message });
         };
     };
 
     public async update{{interfaceName}}(req: Request, res: Response): Promise<Response> {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }
-
         try {
-            const user = await {{interfaceName}}Model.findByIdAndUpdate(req.params.id, req.body, { new: true });
-            if (!user) {
-                return res.status(404).json({ error: '{{interfaceName}} not found' });
+            const validationError = validationResult(req);
+            if ( ! validationError.isEmpty() ) {
+                return res.status(400).json(validationError.array());
+            };
+            const result = await {{interfaceName}}Model.findByIdAndUpdate(req.params.id, req.body, { new: true });
+            if (!result) {
+                return res.status(404).json({ error: "failed to update" });
             }
-            return res.json(user);
+            else {
+                return res.status(200).json(result);
+            };
         } catch (err:any) {
             return res.status(500).json({ error: err.message });
         }
@@ -108,11 +129,17 @@ class {{interfaceName}}Controller {
 
     public async delete{{interfaceName}}(req: Request, res: Response): Promise<Response> {
         try {
-            const user = await {{interfaceName}}Model.findByIdAndDelete(req.params.id);
-            if (!user) {
-                return res.status(404).json({ error: '{{interfaceName}} not found' });
+            const validationError = validationResult(req);
+            if ( ! validationError.isEmpty() ) {
+                return res.status(400).json(validationError.array());
+            };
+            const result = await {{interfaceName}}Model.findByIdAndDelete(req.params.id);
+            if (!result) {
+                return res.status(404).json({ error: "failed to update" });
             }
-            return res.status(204).json();
+            else {
+                return res.status(204).json(result);
+            };
         } catch (err:any) {
             return res.status(500).json({ error: err.message });
         }
@@ -121,10 +148,8 @@ class {{interfaceName}}Controller {
 
 export default new {{interfaceName}}Controller().router;
 `;
-    const indent2 = "\n        ";
-    const indent3 = "\n            ";
-    const indent4 = "\n                ";
       
+    const indent3 = "           ";
     template = template.replace(
         /{{headerComment}}/g, 
         templateOptions.headerComment
@@ -140,43 +165,61 @@ export default new {{interfaceName}}Controller().router;
           
     template = template.replace(
         /{{getListRoute}}/g, 
-        !templateOptions.validator[templateOptions.endpoint].get ? 
-            "// getListRoute disabled" : 
-            `this.router.get('/', ${indent3}[${indent4 + templateOptions.validator[templateOptions.endpoint].get.join("," + indent4) + indent3}],${indent3}this.getList${templateOptions.interfaceName}.bind(this)${indent2});`
+        !templateOptions.validators[templateOptions.endpoint].get ? 
+            "// getListRoute disabled" : `
+        this.router.get('/', 
+            checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint].get, { depth: null }).replace(/^/gm, indent3) }),
+            this.getList${templateOptions.interfaceName}.bind(this)
+        );`
     );
 
     template = template.replace(
-        /{{getOneRoute}}/g, 
-        !templateOptions.validator[templateOptions.endpoint+"/{id}"].get ? 
-            "// getOneRoute disabled" : 
-            `this.router.get('/:id', ${indent3}[${indent4 + templateOptions.validator[templateOptions.endpoint+"/{id}"].get.join("," + indent4) + indent3}],${indent3}this.get${templateOptions.interfaceName}.bind(this)${indent2});`
+        /{{getRoute}}/g, 
+        !templateOptions.validators[templateOptions.endpoint+"/{id}"].get ? 
+            "// getRoute disabled" : `
+        this.router.get('/:id', 
+            checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint+"/{id}"].get, { depth: null }).replace(/^/gm, indent3) }),
+            this.get${templateOptions.interfaceName}.bind(this)
+        );`
     );
 
     template = template.replace(
         /{{postRoute}}/g, 
-        !templateOptions.validator[templateOptions.endpoint].post ? 
-            "// postRoute disabled" : 
-            `this.router.post('/', ${indent3}[${indent4 + templateOptions.validator[templateOptions.endpoint].post.join("," + indent4) + indent3}],${indent3}this.create${templateOptions.interfaceName}.bind(this)${indent2});`
+        !templateOptions.validators[templateOptions.endpoint].post ? 
+            "// postRoute disabled" : `
+        this.router.post('/', 
+            checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint].post, { depth: null }).replace(/^/gm, indent3) }),
+            this.create${templateOptions.interfaceName}.bind(this)
+        );`
     );
 
     template = template.replace(
         /{{putRoute}}/g, 
-        !templateOptions.validator[templateOptions.endpoint+"/{id}"].put ? 
-            "// putRoute disabled" : 
-            `this.router.put('/:id', ${indent3}[${indent4 + templateOptions.validator[templateOptions.endpoint+"/{id}"].put.join("," + indent4) + indent3}],${indent3}this.update${templateOptions.interfaceName}.bind(this)${indent2});`
+        !templateOptions.validators[templateOptions.endpoint+"/{id}"].put ? 
+            "// putRoute disabled" : `
+        this.router.put('/:id', 
+            checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint+"/{id}"].put, { depth: null }).replace(/^/gm, indent3) }),
+            this.replace${templateOptions.interfaceName}.bind(this)
+        );`
     );
     template = template.replace(
         /{{patchRoute}}/g, 
-        !templateOptions.validator[templateOptions.endpoint+"/{id}"].patch ? 
-            "// patchRoute disabled" : 
-            `this.router.patch('/:id', ${indent3}[${indent4 + templateOptions.validator[templateOptions.endpoint+"/{id}"].patch.join("," + indent4) + indent3}],${indent3}this.update${templateOptions.interfaceName}.bind(this)${indent2});`
+        !templateOptions.validators[templateOptions.endpoint+"/{id}"].patch ? 
+            "// patchRoute disabled" : `
+        this.router.patch('/:id', 
+            checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint+"/{id}"].patch, { depth: null }).replace(/^/gm, indent3) }),
+            this.update${templateOptions.interfaceName}.bind(this)
+        );`
     );
 
     template = template.replace(
         /{{deleteRoute}}/g, 
-        !templateOptions.validator[templateOptions.endpoint+"/{id}"].delete ? 
-            "// deleteRoute disabled" : 
-            `this.router.delete('/:id', ${indent3}[${indent4 + templateOptions.validator[templateOptions.endpoint+"/{id}"].delete.join("," + indent4) + indent3}],${indent3}this.delete${templateOptions.interfaceName}.bind(this)${indent2});`
+        !templateOptions.validators[templateOptions.endpoint+"/{id}"].delete ? 
+            "// deleteRoute disabled" : `
+        this.router.delete('/:id', 
+            checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint+"/{id}"].delete, { depth: null }).replace(/^/gm, indent3) }),
+            this.delete${templateOptions.interfaceName}.bind(this)
+        );`
     );
 
     return template;
