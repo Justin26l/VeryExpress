@@ -41,17 +41,17 @@ export function compile(options: {
         log.process(`Controller : ${options.compilerOptions.openapiDir} > ${endpoint}`);
 
         // make validator
-        Object.keys(openApi.paths[endpoint]).forEach((method: string) => {
-            // check method is in enum types.method
-            if (!Object.values(types.method).includes(method as types.method)) return;
-            const methodEnum: types.method = method as types.method;
+        Object.keys(openApi.paths[endpoint]).forEach((httpMethod: string) => {
+            // check method is in enum types.schemaMethod
+            if (!Object.values(types.httpMethodArr).includes(httpMethod)) return;
+            const methodEnum: types.httpMethod = httpMethod as types.httpMethod;
 
             const validators: Schema = Object.assign(
                 buildParamValidator(endpoint, methodEnum, openApi, options.compilerOptions),
                 buildBodyValidator(endpoint, methodEnum, openApi)
             );
 
-            endpointsValidator[endpoint][method] = validators;
+            endpointsValidator[endpoint][httpMethod] = validators;
         });
     });
 
@@ -99,14 +99,14 @@ export function compile(options: {
 
 function buildParamValidator(
     endpoint: string,
-    method: types.method,
+    httpMethod: types.httpMethod,
     openapi: openapiType.openapi,
     compilerOptions: types.compilerOptions,
 ): Schema {
 
     const validators: Schema = {};
 
-    openapi.paths[endpoint][method]!.parameters.forEach((parameter: openapiType.parameter) => {
+    openapi.paths[endpoint][httpMethod]!.parameters.forEach((parameter: openapiType.parameter) => {
         if( !compilerOptions.use_id && parameter.name === "_id") {
             return;
         }
@@ -126,13 +126,13 @@ function buildParamValidator(
 
 function buildBodyValidator(
     endpoint: string,
-    method: types.method,
+    httpMethod: types.httpMethod,
     openapi: openapiType.openapi,
 ): Schema {
 
     const validators: Schema = {};
 
-    const referencePath: string | undefined = openapi.paths[endpoint][method]?.requestBody?.content?.["application/json"].schema.$ref;
+    const referencePath: string | undefined = openapi.paths[endpoint][httpMethod]?.requestBody?.content?.["application/json"].schema.$ref;
     const reference: string | undefined = referencePath ? referencePath.split("/").pop() : undefined;
     const components: openapiType.componentsSchemaValue | undefined = reference ? openapi.components.schemas[reference] : undefined;
 

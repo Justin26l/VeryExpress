@@ -1,4 +1,3 @@
-import * as types from "./types";
 
 export interface openapi {
     openapi: string,
@@ -16,15 +15,15 @@ export interface paths {
         "x-collection"?: string, // 'x-collection' is a custom field for specify db collection
         "x-interface"?: string, // 'x-interfaceName' is a custom field for specify interfaceName
         summary?: string,
-        [types.method.get]?: method,
-        [types.method.post]?: method,
-        [types.method.put]?: method,
-        [types.method.patch]?: method,
-        [types.method.delete]?: method,
-        [types.method.options]?: method,
-        [types.method.head]?: method,
-        [types.method.trace]?: method,
-        [key:string]: method | string | undefined,
+        get?: method,
+        post?: method,
+        put?: method,
+        patch?: method,
+        delete?: method,
+        options?: method,
+        head?: method,
+        trace?: method,
+        // [key:string]: method | string | undefined,
     }
 }
 
@@ -34,9 +33,7 @@ export interface method {
     tags: string[], 
     parameters: parameter[],
     requestBody?: requestBody,
-    responses: {
-        [key:number]: responseItem,
-    },
+    responses: responses,
 }
 
 export interface parameter {
@@ -74,6 +71,10 @@ export interface requestBody {
             };
         };
     };
+}
+
+export interface responses {
+    [key:number]: responseItem,
 }
 
 export interface responseItem {

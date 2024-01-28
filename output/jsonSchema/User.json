@@ -3,12 +3,18 @@
     "x-documentConfig": {
         "documentName": "user",
         "interfaceName": "User",
-        "methods": [
-            "get",
-            "post",
-            "patch",
-            "delete"
-        ]
+        "methods": {
+            "get": {},
+            "getList": {
+                "username": {
+                    "targetField": "user",
+                    "filter": "regex"
+                }
+            },
+            "post": {},
+            "patch": {},
+            "delete": {}
+        }
     },
     "properties": {
         "_id": {
@@ -86,7 +92,8 @@
         },
         "created": {
             "type": "number",
-            "x-format": "timestamp"
+            "x-format": "timestamp",
+            "required": true
         }
     },
     "additionalProperties": false

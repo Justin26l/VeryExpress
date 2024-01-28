@@ -20,8 +20,17 @@ export function formatJsonSchema(jsonSchemaPath: string): types.jsonSchema {
     else if (!jsonSchema["x-documentConfig"].interfaceName) {
         log.error(`formatJsonSchema : x-documentConfig.interfaceName not found in ${jsonSchemaPath}`);
     }
-    else if (!jsonSchema["x-documentConfig"].methods || !Array.isArray(jsonSchema["x-documentConfig"].methods)) {
+    else if (!jsonSchema["x-documentConfig"].methods) {
         log.error(`formatJsonSchema : x-documentConfig.methods is not found in ${jsonSchemaPath}`);
+    }
+    else if (typeof jsonSchema["x-documentConfig"].methods !== "object") {
+        log.error(`formatJsonSchema : x-documentConfig.methods type "${typeof jsonSchema["x-documentConfig"].methods}" is invalid in ${jsonSchemaPath}`);
+    }
+    else if (Array.isArray(jsonSchema["x-documentConfig"].methods)) {
+        jsonSchema["x-documentConfig"].methods = jsonSchema["x-documentConfig"].methods.reduce((obj:any, key:string) => {
+            obj[key] = {};
+            return obj;
+        }, {});
     }
 
     // format properties boolean "required" into array of string
@@ -30,7 +39,6 @@ export function formatJsonSchema(jsonSchemaPath: string): types.jsonSchema {
     fs.writeFileSync(jsonSchemaPath, JSON.stringify(jsonSchema, null, 4));
 
     return jsonSchema;
-
 }
 
 function getRequiredArrStr(schema: types.jsonSchemaPropsItem | types.jsonSchema, jsonSchemaPath?: string): string[] | undefined {
