@@ -37,12 +37,13 @@ export function compile(options:{
     files.forEach((file) => {
         // ignore non json files
         if (!file.endsWith(".json")) return;
-        log.process(`OpenApi : ${options.compilerOptions.jsonSchemaDir + "/" + file}`);
+        const jsonSchemaFilePath: string = options.compilerOptions.jsonSchemaDir + "/" + file;
+        log.process(`OpenApi : ${jsonSchemaFilePath}`);
 
         const jsonSchemaBuffer = fs.readFileSync(`${options.compilerOptions.jsonSchemaDir}/${file}`);
         const jsonSchema: types.jsonSchema = JSON.parse(jsonSchemaBuffer.toString());
-        openapiJson = jsonToOpenapiPath(openapiJson, jsonSchema);
-        openapiJson = jsonToOpenapiComponentSchema(openapiJson, jsonSchema);
+        openapiJson = jsonToOpenapiPath(openapiJson, jsonSchema, { jsonSchemaFilePath: jsonSchemaFilePath });
+        openapiJson = jsonToOpenapiComponentSchema(openapiJson, jsonSchema, { jsonSchemaFilePath: jsonSchemaFilePath });
     });
 
     const validOpenApi = json2openapi(openapiJson, { version: 3.0 });
@@ -57,6 +58,9 @@ export function compile(options:{
 function jsonToOpenapiPath(
     openapiJson: openapiType.openapi,
     jsonSchema: types.jsonSchema,
+    additionalinfo: {
+        jsonSchemaFilePath: string
+    }
 ): openapiType.openapi {
     // get jsonschema properties
     const documentConfig: types.documentConfig = jsonSchema["x-documentConfig"];
@@ -76,12 +80,12 @@ function jsonToOpenapiPath(
         },
     };
 
-    Object.keys(documentConfig.methods).forEach((jsonSchemaMethod) => {
+    documentConfig.methods.forEach((jsonSchemaMethod) => {
         const routeWithId: boolean = ["get", "put", "patch", "delete"].includes(jsonSchemaMethod);
         const useBody: boolean = ["post", "put", "patch"].includes(jsonSchemaMethod);
         const route: string = "/" + lowerDocName + (routeWithId ? "/{id}" : "");
         
-        const httpMethod: types.httpMethod = utils.httpMethod(jsonSchemaMethod);
+        const httpMethod: types.httpMethod = utils.httpMethod(jsonSchemaMethod, additionalinfo.jsonSchemaFilePath);
         const parameters: openapiType.parameter[] = [];
         let requestBody: openapiType.requestBody | undefined = undefined;
         const successResponse: openapiType.responses = {
@@ -163,6 +167,9 @@ function jsonToOpenapiPath(
 function jsonToOpenapiComponentSchema(
     openapiJson: openapiType.openapi,
     jsonSchema: types.jsonSchema,
+    additionalinfo: {
+        jsonSchemaFilePath: string
+    }
 ): openapiType.openapi {
     const componentSchemaPath: openapiType.components["schemas"] = {};
 
@@ -197,8 +204,8 @@ function jsonToOpenapiComponentSchema(
         required: jsonSchema.required,
     };
 
-    Object.keys(documentConfig.methods).forEach((jsonSchemaMethod) => {
-        const httpMethod: types.httpMethod = utils.httpMethod(jsonSchemaMethod);
+    documentConfig.methods.forEach((jsonSchemaMethod) => {
+        const httpMethod: types.httpMethod = utils.httpMethod(jsonSchemaMethod, additionalinfo.jsonSchemaFilePath);
 
         switch (jsonSchemaMethod) {
         case "delete":

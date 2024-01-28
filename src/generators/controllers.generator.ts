@@ -43,7 +43,7 @@ export function compile(options: {
         // make validator
         Object.keys(openApi.paths[endpoint]).forEach((httpMethod: string) => {
             // check method is in enum types.schemaMethod
-            if (!Object.values(types.httpMethodArr).includes(httpMethod)) return;
+            if (!Object.values(types.httpMethodArr).includes(httpMethod as types.httpMethod)) return;
             const methodEnum: types.httpMethod = httpMethod as types.httpMethod;
 
             const validators: Schema = Object.assign(

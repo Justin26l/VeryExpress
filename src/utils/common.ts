@@ -95,16 +95,16 @@ export function cleanXcustomValue(
 }
 
 /** filter "getList" which not a http method */
-export function httpMethod(jsonSchemaMethod: string) : types.httpMethod {
+export function httpMethod(jsonSchemaMethod: string, documentName: string) : types.httpMethod {
     if (jsonSchemaMethod == "getList"){ 
         return "get";
     }
-    else if (types.httpMethodArr.includes(jsonSchemaMethod)){
+    else if (types.httpMethodArr.includes(jsonSchemaMethod as types.httpMethod)){
         return jsonSchemaMethod as types.httpMethod;
     }
     else{
-        log.error(`httpMethod : invalid method "${jsonSchemaMethod}" in jsonSchema`);
-        process.exit();
+        log.error(`httpMethod : invalid method "${jsonSchemaMethod}" in "${documentName}".`);
+        process.exit(1);
     }
 }
 
@@ -127,7 +127,7 @@ export function copyDir(source: string, destination: string): void {
         }
         else {
             const outPath: string = destination + "/" + files[i];
-            log.writing(`Utils : ${outPath}`);
+            log.writing(outPath);
             fs.copyFileSync(source + "/" + files[i], outPath);
         }
     }
