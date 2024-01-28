@@ -130,7 +130,7 @@ function jsonToOpenapiPath(
         }
 
         routes[route][httpMethod] = {
-            operationId: httpMethod + interfaceName,
+            operationId: jsonSchemaMethod + interfaceName,
             tags: [lowerDocName],
             parameters: parameters,
             requestBody: requestBody,
@@ -236,7 +236,7 @@ function jsonToOpenapiComponentSchema(
                 });
 
                 switch (props["x-format"]) {
-                case "timestamp":
+                case "minMax":
                     // add filter from, to
                     parameters.push({
                         name: "min_" + key,

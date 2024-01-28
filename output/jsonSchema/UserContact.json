@@ -3,12 +3,14 @@
     "x-documentConfig": {
         "documentName": "usercontact",
         "interfaceName": "UserContact",
-        "methods": {
-            "get": {},
-            "post": {},
-            "patch": {},
-            "delete": {}
-        }
+        "methods": [
+            "get",
+            "getList",
+            "post",
+            "put",
+            "patch",
+            "delete"
+        ]
     },
     "properties": {
         "_id": {

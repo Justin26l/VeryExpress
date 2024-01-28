@@ -3,18 +3,14 @@
     "x-documentConfig": {
         "documentName": "user",
         "interfaceName": "User",
-        "methods": {
-            "get": {},
-            "getList": {
-                "username": {
-                    "targetField": "user",
-                    "filter": "regex"
-                }
-            },
-            "post": {},
-            "patch": {},
-            "delete": {}
-        }
+        "methods": [
+            "get",
+            "getList",
+            "post",
+            "put",
+            "patch",
+            "delete"
+        ]
     },
     "properties": {
         "_id": {

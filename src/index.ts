@@ -60,12 +60,6 @@ export default function generate(
             const jsonSchema: types.jsonSchema = formatJsonSchema(schemaPath);
             const documentConfig: types.documentConfig = jsonSchema["x-documentConfig"];
 
-            if (!documentConfig) log.error(`x-documentConfig not found in ${schemaPath}`);
-            if (!documentConfig.documentName) log.error(`x-documentConfig.documentName not found in ${schemaPath}`);
-            if (!documentConfig.interfaceName) log.error(`x-documentConfig.interfaceName not found in ${schemaPath}`);
-            if (!documentConfig.methods) log.error(`x-documentConfig.methods is not found in ${schemaPath}`);
-            if (!Array.isArray(documentConfig.methods)) log.error(`x-documentConfig.methods is invalid in ${schemaPath}`);
-
             if (typeof jsonSchema.properties !== "object") log.error(`properties is invalid in ${schemaPath}`);
 
             // check if 'fileName.nogen.ts' exist then skip generate of this file
