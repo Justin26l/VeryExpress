@@ -19,6 +19,7 @@ export default function controllerTemplate(templateOptions: {
 import { Router, Request, Response } from 'express';
 import { checkSchema, validationResult } from 'express-validator';
 import { parseFieldsSelect } from '../utils/common.gen';
+import MongoQs from 'mongo-ts-querystring';
 
 import { {{interfaceName}}Model } from '{{modelPath}}';
 
@@ -52,6 +53,16 @@ class {{interfaceName}}Controller {
             if ( ! validationError.isEmpty() ) {
                 return res.status(400).json(validationError.array());
             };
+
+            // Get the filter query
+            const searchFilter = new MongoQS().parse(req.query);
+            console.log('searchFilter',searchFilter);
+
+            // Get the selected fields from query string
+            const selectedFields = await parseFieldsSelect(req.query.select);
+
+            const result = await UserModel.find(searchFilter, selectedFields);
+            
             const result = await {{interfaceName}}Model.findById(req.params.id);
             if (!result) {
                 return res.status(404).json({ error: "no data found" });
