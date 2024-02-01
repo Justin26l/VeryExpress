@@ -5,6 +5,7 @@
         "interfaceName": "UserContact",
         "methods": [
             "get",
+            "getList",
             "post",
             "put",
             "patch",
@@ -14,19 +15,15 @@
     "properties": {
         "_id": {
             "type": "string",
-            "format": "uuid",
             "index": true,
-            "unique": true,
-            "required": true
+            "unique": true
         },
         "phoneNo": {
             "type": "string",
-            "index": true,
-            "required": true
+            "index": true
         },
         "isActive": {
             "type": "boolean",
-            "required": true,
             "default": true
         }
     },

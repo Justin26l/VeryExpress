@@ -54,43 +54,23 @@ at the properites :
 
 ## Road Map
 - [ ] dockernize
-- [x] generate express server 
-- [x] gen. routes
-- [x] gen. controllers based on openapi spec
-    - [ ] define fields searching method
-- [x] gen. openapi based on json schema
-- [x] gen. mongoose model
-- [ ] gen. sql model
-- [ ] database connection
-    - [ ] implement sensitive data encryption & hash (PDPA)
-- [x] TS interface based on json schema
+- [x] generate express app
+    - [x] gen. openapi based on json schema
+    - [x] gen. controllers based on openapi
+        - [x] CRUD + Search api
+- [ ] database
+    - [x] mongodb
+    - [ ] sql
+    - [ ] db encrtption [PDPA](https://en.wikipedia.org/wiki/Personal_Data_Protection_Act_2012)
+- [ ] oauth2
+    - [ ] google
+    - [ ] microsoft
+    - [ ] github
+- [ ] Role Base Access Control
 
 ## Enhancement To Do
-- avoid mongo `_id` , instead using custom index `id` for db compatibilities,
-    - at JsonSchmea.x-documentConfig, add fields  
-    `index: string` point to index fields,  
-    `indexPrefix: string` for easier to identify if its is a foreignKey value.
 
 - Implement data encryption & hash (PDPA)
-    - at JsonSchmea.Properties, add attribute
-    `x-dataSecure: sting` while accessing data, perform hash or encryption.
-
-- `* TBC *` Controller > define fields searching method 
-    - at JsonSchmea.x-Properties, add attribute  
-    `x-filterType: obejct` method will be array of [ "equal", "like", "between", "gratherThan", "smallerThen" ] default "equal" :
-
-            "date":{
-                "type": "string",
-                "format": "date-time",
-
-                "x-filterType": {
-                    method : "between",
-                    from : 'startDate', // additinal fields at openapi /get
-                    to : 'endDate', // additinal fields at openapi /get
-                },
-
-                "x-filterType": {
-                    method : "like",
-                },
-            }
+    - at JsonSchmea fields, add attribute
+    `x-dataSecure: "method"` while accessing data, perform encryption based on method selected.
 

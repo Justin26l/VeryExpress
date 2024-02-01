@@ -1,4 +1,3 @@
-import * as types from "./types";
 
 export interface openapi {
     openapi: string,
@@ -13,33 +12,33 @@ export interface openapi {
 
 export interface paths {
     [key:string]: {
-        summary: string,
-        [types.method.get]?: method,
-        [types.method.post]?: method,
-        [types.method.put]?: method,
-        [types.method.patch]?: method,
-        [types.method.delete]?: method,
-        [types.method.options]?: method,
-        [types.method.head]?: method,
-        [types.method.trace]?: method,
-        [key:string]: method | string | undefined,
+        "x-collection"?: string, // 'x-collection' is a custom field for specify db collection
+        "x-interface"?: string, // 'x-interfaceName' is a custom field for specify interfaceName
+        summary?: string,
+        get?: method,
+        post?: method,
+        put?: method,
+        patch?: method,
+        delete?: method,
+        options?: method,
+        head?: method,
+        trace?: method,
+        // [key:string]: method | string | undefined,
     }
 }
 
 export interface method {
-    summary: string,
-    operationId: string,
-    tags: string[],
+    summary?: string,
+    operationId: string, // method + interfaceName
+    tags: string[], 
     parameters: parameter[],
     requestBody?: requestBody,
-    responses: {
-        [key:number]: responseItem,
-    },
+    responses: responses,
 }
 
 export interface parameter {
     name: string;
-    in: 'query' | 'header' | 'path' | 'cookie';
+    in: "query" | "header" | "path" | "cookie";
     description?: string;
     required?: boolean;
     deprecated?: boolean;
@@ -50,6 +49,7 @@ export interface parameter {
     schema: {
         type: string;
         format?: string;
+        "x-format"?: string;
         required?: string[];
         minLength?: number;
         maxLength?: number;
@@ -65,7 +65,7 @@ export interface requestBody {
     description: string;
     required: boolean;
     content?: {
-        'application/json': {
+        "application/json": {
             schema: {
                 $ref: string;
             };
@@ -73,10 +73,14 @@ export interface requestBody {
     };
 }
 
+export interface responses {
+    [key:number]: responseItem,
+}
+
 export interface responseItem {
     description: string;
     content?: {
-        'application/json'?: {
+        "application/json"?: {
             schema: {
                 $ref?: string;
                 [key:string]:any
@@ -97,6 +101,7 @@ export interface components {
 export interface componentsSchemaValue {
     type: string,
     items?: any,
+    required?: string[],
     properties?: {
         [key:string]: fieldsItem,
     }

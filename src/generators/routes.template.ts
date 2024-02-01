@@ -1,30 +1,30 @@
-import * as types from '../types/types';
+import * as types from "../types/types";
+import * as utils from "../utils/common";
 
 export default function routesTemplate(templateOptions: {
-    headerComment?: string,
     template?: string,
+    openapiFile?: string,
     enableOpenApi?: boolean,
-    openapiPath?: string,
     routes: {
         route: string,
-        controllerClassName: string,
+        interfaceName: string,
         controllerPath: string,
     }[],
-    options?: types.compilerOptions,
+    compilerOptions: types.compilerOptions,
 }): string {
-    if (!templateOptions.headerComment) {
-        templateOptions.headerComment = templateOptions.options?.headerComment || "// generated files by very-express";
-    };
+    if (!templateOptions.compilerOptions.headerComment) {
+        templateOptions.compilerOptions.headerComment = templateOptions.compilerOptions.headerComment || "// generated files by very-express";
+    }
 
-    let enableOpenApi = templateOptions.enableOpenApi || true;
+    const enableOpenApi = templateOptions.enableOpenApi || true;
     // required openapiPath if enableOpenApi is true
-    if (enableOpenApi && !templateOptions.openapiPath) {
+    if (enableOpenApi && !templateOptions.compilerOptions.openapiDir) {
         // log red
-        console.log('\x1b[31m%s\x1b[0m', '[Error]', 'OpenApi : routers.generator > compile() : Args "openapiPath" is required while enableOpenApi is true.');
-        throw new Error('OpenApi : routers.generator > compile() : Args "openapiPath" is required while enableOpenApi is true.');
-    };
+        console.log("\x1b[31m%s\x1b[0m", "[Error]", "OpenApi : routers.generator > compile() : Args \"openapiPath\" is required while enableOpenApi is true.");
+        throw new Error("OpenApi : routers.generator > compile() : Args \"openapiPath\" is required while enableOpenApi is true.");
+    }
 
-    let headerComment : string = templateOptions.options?.headerComment || "// generated files by very-express";
+    const headerComment : string = templateOptions.compilerOptions?.headerComment || "// generated files by very-express";
 
     let template: string = templateOptions.template || `{{headerComment}}
 import { Router } from 'express';
@@ -41,17 +41,19 @@ const router :Router = Router();
 
 export default router;`;
 
+    const openapiPath :string = utils.relativePath(templateOptions.compilerOptions.rootDir, templateOptions.compilerOptions.openapiDir) + (templateOptions.openapiFile || "/openapi.gen.yaml");
     let importRoutes = "";
     let useRoutes = "";
     templateOptions?.routes.forEach((obj) => {
-        importRoutes += `import ${obj.controllerClassName} from '${obj.controllerPath}';\n`;
-        useRoutes += `router.use('${obj.route}', ${obj.controllerClassName});\n`;
+        importRoutes += `import ${obj.interfaceName}Controller from '${obj.controllerPath}';\n`;
+        useRoutes += `router.use('${obj.route}', ${obj.interfaceName}Controller);\n`;
     });
+
 
     template = template.replace(/{{headerComment}}/g, headerComment);
     template = template.replace(/{{importRoutes}}/g, importRoutes);
-    template = template.replace(/{{openapiRoute}}/g, enableOpenApi ? `router.use('/api', swaggerUi.serve, swaggerUi.setup(loadYaml('${templateOptions.openapiPath}') as JsonObject));` : '');
+    template = template.replace(/{{openapiRoute}}/g, enableOpenApi ? `router.use('/api', swaggerUi.serve, swaggerUi.setup(loadYaml('./${openapiPath}') as JsonObject));` : "");
     template = template.replace(/{{useRoutes}}/g, useRoutes);
 
     return template;
-};
+}

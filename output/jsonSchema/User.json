@@ -5,29 +5,42 @@
         "interfaceName": "User",
         "methods": [
             "get",
+            "getList",
             "post",
             "put",
             "patch",
             "delete"
         ]
     },
-    "properties": { 
+    "properties": {
         "_id": {
             "type": "string",
-            "format": "uuid",
             "index": true
         },
         "name": {
             "type": "string",
             "maxLength": 64,
-            "index": true,
-            "required": true
+            "index": true
         },
-        "userContact":{
-            "type": "string",
-            "format": "uuid",
-            "required": false,
-            "x-foreignKey": "usercontact"
+        "userContact": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "x-foreignKey": "usercontact",
+                "properties": {
+                    "contactType": {
+                        "type": "string",
+                        "enum": [
+                            "mobile",
+                            "home",
+                            "office"
+                        ]
+                    },
+                    "_id": {
+                        "type": "string"
+                    }
+                }
+            }
         },
         "married": {
             "type": "string",
@@ -40,15 +53,13 @@
         },
         "userAddress": {
             "type": "object",
-            "required": true,
             "properties": {
                 "line1": {
                     "type": "string",
-                    "required": false
+                    "required": true
                 },
                 "line2": {
-                    "type": "string",
-                    "required": false
+                    "type": "string"
                 },
                 "city": {
                     "type": "string",
@@ -60,23 +71,27 @@
                 },
                 "country": {
                     "type": "string",
+                    "required": true,
                     "enum": [
                         "Option1",
                         "Option2",
                         "Option3"
-                    ],
-                    "required": true
+                    ]
                 },
                 "zip": {
-                    "type": "string",
-                    "required": true
+                    "type": "string"
                 }
             }
         },
         "isActive": {
-            "type": "boolean",
+            "type": "boolean"
+        },
+        "created": {
+            "type": "number",
+            "x-format": "timestamp",
             "required": true
-        }    
+        }
     },
     "additionalProperties": false
+
 }

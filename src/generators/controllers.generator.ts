@@ -2,180 +2,235 @@ import fs from "fs";
 import jsYaml from "js-yaml";
 
 import controllerTemplate from "./controller.template";
+import log from "../utils/log";
+import * as utils from "../utils/common";
 
 import * as types from "../types/types";
 import * as openapiType from "../types/openapi";
-import log from "../utils/log";
+import { Schema } from "express-validator";
 
 /**
  * compile openapi to controller source code
- * @param openapiPath 
- * @param controllerToModelDir
- * @param outputPath 
+ * @param controllerOutDir output directory
+ * @param modelDir
+ * @param openapiFile
  * @param options 
  */
-export function compile(
-    openapiPath: string, 
-    controllerToModelDir: string, 
-    outDir: string,
-    options?: types.compilerOptions
-): void {
-    const file = fs.readFileSync(openapiPath, 'utf8');
+export function compile(options: {
+    openapiFile: string,
+    controllerOutDir: string,
+    modelDir: string,
+    compilerOptions: types.compilerOptions
+}): void {
+    const file: string = fs.readFileSync(options.compilerOptions.openapiDir + "/" + options.openapiFile, "utf8");
+    const controllerToModelBasePath: string = utils.relativePath(options.controllerOutDir, options.modelDir);
+
     const openApi: openapiType.openapi = jsYaml.load(file) as openapiType.openapi;
     const endpointsValidator: {
         [key: string]: { // path
-            [key: string]: string[] // methods
+            [key: string]: Schema // methods
         }
     } = {};
-    let writtedEndpoint :string[] = [];
+    const writtedEndpoint: string[] = [];
 
     // loop path
     Object.keys(openApi.paths).forEach((endpoint: string) => {
-        // const interfaceName = openApi.paths[endpoint].summary;
+        // const interfaceName = openApi.paths[endpoint]['x-collection'];
         endpointsValidator[endpoint] = {};
 
-        log.process(`Controller : ${openapiPath} > ${endpoint}`);
+        log.process(`Controller : ${options.compilerOptions.openapiDir} > ${endpoint}`);
 
         // make validator
-        Object.keys(openApi.paths[endpoint]).forEach((method: string) => {
-            // check method is in enum types.method
-            if (!Object.values(types.method).includes(method as types.method)) return;
-            let methodEnum: types.method = method as types.method;
+        Object.keys(openApi.paths[endpoint]).forEach((httpMethod: string) => {
+            // check method is in enum types.schemaMethod
+            if (!Object.values(types.httpMethodArr).includes(httpMethod as types.httpMethod)) return;
+            const methodEnum: types.httpMethod = httpMethod as types.httpMethod;
 
-            let validators: any[] = [];
-            validators = buildParamValidator(endpoint, methodEnum, openApi);
-            validators = validators.concat(buildRequestBodyValidator(endpoint, methodEnum, openApi));
+            const validators: Schema = Object.assign(
+                buildParamValidator(endpoint, methodEnum, openApi, options.compilerOptions),
+                buildBodyValidator(endpoint, methodEnum, openApi)
+            );
 
-            endpointsValidator[endpoint][method] = validators;
+            endpointsValidator[endpoint][httpMethod] = validators;
         });
     });
 
     // create and write file
     Object.keys(openApi.paths).forEach((endpoint: string) => {
         // remove '/{id}' from path and check is in writtedEndpoint
-        const interfaceName = openApi.paths[endpoint].summary;
-        const endpointFormatted = endpoint.replace('/{id}', '').toLowerCase();
-        
-        if (writtedEndpoint.includes(endpointFormatted)) {
+        const collectionName: string | undefined = openApi.paths[endpoint]["x-collection"];
+        const interfaceName: string | undefined = openApi.paths[endpoint]["x-interface"];
+        const endpointFormatted = endpoint.replace("/{id}", "").toLowerCase();
+
+        if (collectionName === undefined) {
+            log.error(`"x-collection" not found in openapi spec's path "${endpoint}"\n     - opanapi source: ${options.compilerOptions.openapiDir}`);
+            return;
+        }
+        else if (interfaceName === undefined) {
+            log.error(`"x-interface" not found in openapi spec's path "${endpoint}"\n     - opanapi source: ${options.compilerOptions.openapiDir}`);
+            return;
+        }
+        else if (writtedEndpoint.includes(endpointFormatted)) {
             return;
         }
         else {
-            writtedEndpoint.push(endpointFormatted);
-        };
+            // write controller
+            const outPath = `${options.controllerOutDir}/${interfaceName}Controller.gen.ts`;
+            const outPathNoGen = `${options.controllerOutDir}/${interfaceName}Controller.nogen.ts`;
+            const controllerToModelPath = `${controllerToModelBasePath}/${interfaceName}Model.gen`;
 
-        // write controller
-        const outPath = `${outDir}/${interfaceName}Controller.gen.ts`;
-        const outPathNoGen = `${outDir}/${interfaceName}Controller.nogen.ts`;
-        const controllerToModelPath = `${controllerToModelDir}/${interfaceName}Model.gen`;
-
-        log.writing(`Controller : ${outPath}`);
-
-        if( !fs.existsSync(outPathNoGen) ){
-            fs.writeFileSync(outPath,
-                controllerTemplate({
-                    endpoint: endpoint,
-                    modelPath: controllerToModelPath,
-                    interfaceName: interfaceName,
-                    validator: endpointsValidator,
-                    options: options,
-                })
-            );
-        };
+            if (!fs.existsSync(outPathNoGen)) {
+                log.writing(`Controller : ${outPath}`);
+                writtedEndpoint.push(endpointFormatted);
+                fs.writeFileSync(outPath,
+                    controllerTemplate({
+                        endpoint: endpoint,
+                        modelPath: controllerToModelPath,
+                        interfaceName: interfaceName,
+                        validators: endpointsValidator,
+                        compilerOptions: options.compilerOptions,
+                    })
+                );
+            }
+        }
     });
 
-};
+}
 
 function buildParamValidator(
     endpoint: string,
-    method: types.method,
+    httpMethod: types.httpMethod,
     openapi: openapiType.openapi,
-): string[] {
+    compilerOptions: types.compilerOptions,
+): Schema {
 
-    // {path : validator array}
-    let validators: string[] = [];
+    const validators: Schema = {};
 
-    openapi.paths[endpoint][method]!.parameters.forEach((parameter: openapiType.parameter) => {
-        validators = validators.concat(processSchema(parameter.name, parameter, undefined));
+    openapi.paths[endpoint][httpMethod]!.parameters.forEach((parameter: openapiType.parameter) => {
+        if( !compilerOptions.use_id && parameter.name === "_id") {
+            return;
+        }
+
+        Object.assign(
+            validators, 
+            processSchema({
+                fieldName: parameter.name,
+                required: parameter.required,
+                param: parameter,
+            })
+        );
     });
 
     return validators;
-};
+}
 
-function buildRequestBodyValidator(
+function buildBodyValidator(
     endpoint: string,
-    method: types.method,
+    httpMethod: types.httpMethod,
     openapi: openapiType.openapi,
-): string[] {
+): Schema {
 
-    let validators: string[] = [];
+    const validators: Schema = {};
 
-    const referencePath: string | undefined = openapi.paths[endpoint][method]?.requestBody?.content?.['application/json'].schema.$ref;
-    const reference: string | undefined = referencePath ? referencePath.split('/').pop() : undefined;
+    const referencePath: string | undefined = openapi.paths[endpoint][httpMethod]?.requestBody?.content?.["application/json"].schema.$ref;
+    const reference: string | undefined = referencePath ? referencePath.split("/").pop() : undefined;
     const components: openapiType.componentsSchemaValue | undefined = reference ? openapi.components.schemas[reference] : undefined;
 
     if (components !== undefined) {
-        for (let key in components.properties) {
-            validators = validators.concat(processSchema(key, undefined, components.properties[key]));
-        };
+        for (const key in components.properties) {
+            Object.assign(
+                validators, 
+                processSchema({
+                    fieldName: key,
+                    body: components.properties[key],
+                    required: components.required?.includes(key) || components.properties[key].required,
+                })
+            );
+        }
     }
 
     return validators;
 }
 
-function processSchema(fieldName: string, paramFields?: openapiType.parameter, bodyFields?: openapiType.fieldsItem): string[] {
-    let validators: string[] = [];
+function processSchema(options: {
+    fieldName: string,
+    required?: boolean,
+    param?: openapiType.parameter,
+    body?: openapiType.fieldsItem,
+}): Schema {
 
-    const useBody = bodyFields !== undefined && paramFields == undefined;
-    const checkOn = useBody ? 'body' : 'check';
-    const type: string | undefined = useBody ? bodyFields?.type : paramFields?.schema.type;
-    const required = paramFields?.required ? '.exists()' : '.optional()';
-
-    const enumValidator: string =
-        useBody && bodyFields?.enum ? `.isIn(${JSON.stringify(bodyFields.enum)})` :
-            !useBody && paramFields?.schema.enum ? `.isIn(${JSON.stringify(paramFields.schema.enum)})` :
-                '';
-
-    const typeValidatorOption: string = JSON.stringify(
-        useBody && bodyFields ? {
-            min: bodyFields.minLength || bodyFields.minimum,
-            max: bodyFields.maxLength || bodyFields.maximum,
-        } :
-            !useBody && paramFields ? {
-                min: paramFields.schema?.minLength || paramFields.schema?.minimum,
-                max: paramFields.schema?.maxLength || paramFields.schema?.maximum,
-            } :
-                undefined
-    );
-
-    const typeValidator: string | undefined = typeValidatorOption !== '{}' ? typeValidatorOption : undefined;
-
-    switch (type) {
-        case "string":
-            validators.push(`${checkOn}("${fieldName}")${required}.isString()${typeValidator !== undefined ? `.isLength(${typeValidator})` : ''}${enumValidator}`);
-            break;
-        case "integer":
-            validators.push(`${checkOn}("${fieldName}")${required}.isInt(${typeValidator})`);
-            break;
-        case "float":
-            validators.push(`${checkOn}("${fieldName}")${required}.isFloat(${typeValidator})`);
-            break;
-        case "number":
-            validators.push(`${checkOn}("${fieldName}")${required}.isNumeric()`);
-            break;
-        case "boolean":
-            validators.push(`${checkOn}("${fieldName}")${required}.isBoolean()`);
-            break;
-        case "array":
-            validators.push(`${checkOn}("${fieldName}")${required}.isArray(${typeValidator})`);
-            break;
-        case "object":
-            if (useBody) {
-                for (let key in bodyFields?.properties) {
-                    validators = validators.concat(processSchema(fieldName + '.' + key, undefined, bodyFields.properties[key]));
-                };
-            };
-            break;
+    const validators: Schema = {
+        [options.fieldName]: {
+            in : options.param ? "params" : options.body ? "body" : [],
+            optional : !options.required ? { options: { values: "falsy", checkFalsy: true} } : false,
+            notEmpty : true,
+        },
     };
 
+    const validatorParam = validators[options.fieldName];
+
+    const useBody = options.body !== undefined && options.param == undefined;
+    const type: string | undefined = useBody ? options.body?.type : options.param?.schema.type;
+    const useEnum = options.param?.schema?.enum ?? options.body?.enum;
+
+    const range : {
+        min: number | undefined;
+        max: number | undefined;
+    } = {
+        min: options.param?.schema?.minLength ?? options.param?.schema?.minimum ?? options.body?.minLength ?? options.body?.minimum,
+        max: options.param?.schema?.maxLength ?? options.param?.schema?.maximum ?? options.body?.maxLength ?? options.body?.maximum,
+    };
+    const rangeValidator : undefined | {
+        options: {
+            min: number | undefined;
+            max: number | undefined;
+        }
+    }
+    = range.min && range.max ? { options: range } : undefined;
+
+    switch (type) {
+    case "string":
+        validatorParam.isString = true;
+        if(range.min && range.max){
+            validatorParam.isLength = { options: range };
+        }
+        if(useEnum){
+            validatorParam.isEmpty = false;
+            validatorParam.isIn = {
+                options: useEnum,
+            };
+        }
+        break;
+    case "integer":
+        validatorParam.isInt = rangeValidator;
+        break;
+    case "float":
+        validatorParam.isFloat = rangeValidator;
+        break;
+    case "number":
+        validatorParam.isNumeric = true;
+        break;
+    case "boolean":
+        validatorParam.isBoolean = true;
+        break;
+    case "array":
+        validatorParam.isArray = true;
+        break;
+    case "object":
+        if (useBody) {
+            for (const key in options.body?.properties) {
+                Object.assign(
+                    validators, 
+                    processSchema({
+                        fieldName: options.fieldName + "." + key,
+                        body: options.body.properties[key],
+                        required: options.body.required?.includes(key),
+                    }) 
+                );
+            }
+        }
+        break;
+    }
+
     return validators;
-};
+}

@@ -2,20 +2,23 @@ import json2openapi from "json-schema-to-openapi-schema";
 import yaml from "js-yaml";
 import fs from "fs";
 
-import * as types from '../types/types';
-import * as openapiType from '../types/openapi';
+import * as types from "../types/types";
+import * as openapiType from "../types/openapi";
 import utils from "../utils/common";
 import log from "../utils/log";
 
 /**
  * compile json schema to openapi spec
- * @param schemaDir 
- * @param openapiOutDir 
+ * @param openapiOutFileName output file based on compilerOptions.openapiDir
+ * @param compilerOptions 
  */
-export function compile(schemaDir: string, outPath: string) :void {
+export function compile(options:{
+    openapiOutFileName: string, 
+    compilerOptions: types.compilerOptions
+}): void {
 
     // convert to yaml
-    let openapiJson : openapiType.openapi = {
+    let openapiJson: openapiType.openapi = {
         openapi: "3.0.0",
         info: {
             title: "veryExpress generated api server",
@@ -27,217 +30,265 @@ export function compile(schemaDir: string, outPath: string) :void {
             schemas: {},
         },
     };
-        
+
     // loop through all json schema files and compile to openapi paths & components
 
-    const files = fs.readdirSync(schemaDir);
+    const files = fs.readdirSync(options.compilerOptions.jsonSchemaDir);
     files.forEach((file) => {
         // ignore non json files
-        if(!file.endsWith('.json')) return;
-        log.process(`OpenApi : ${schemaDir+'/'+file}`);
-        
-        const jsonSchemaBuffer = fs.readFileSync(`${schemaDir}/${file}`);
-        const jsonSchema :types.jsonSchema = JSON.parse(jsonSchemaBuffer.toString());
-        openapiJson = jsonToOpenapiPath(openapiJson, jsonSchema);
-        openapiJson = jsonToOpenapiComponentSchema(openapiJson, jsonSchema);
+        if (!file.endsWith(".json")) return;
+        const jsonSchemaFilePath: string = options.compilerOptions.jsonSchemaDir + "/" + file;
+        log.process(`OpenApi : ${jsonSchemaFilePath}`);
+
+        const jsonSchemaBuffer = fs.readFileSync(`${options.compilerOptions.jsonSchemaDir}/${file}`);
+        const jsonSchema: types.jsonSchema = JSON.parse(jsonSchemaBuffer.toString());
+        openapiJson = jsonToOpenapiPath(openapiJson, jsonSchema, { jsonSchemaFilePath: jsonSchemaFilePath });
+        openapiJson = jsonToOpenapiComponentSchema(openapiJson, jsonSchema, { jsonSchemaFilePath: jsonSchemaFilePath });
     });
 
     const validOpenApi = json2openapi(openapiJson, { version: 3.0 });
     const openapiYaml = yaml.dump(validOpenApi);
 
     // create and write file
-
-    log.writing(`OpenApi : ${outPath}`);
-
-    fs.writeFileSync(outPath, openapiYaml);
-};
+    const openapiOutFile: string = options.compilerOptions.openapiDir + options.openapiOutFileName;
+    log.writing(`OpenApi : ${openapiOutFile}`);
+    fs.writeFileSync(openapiOutFile, openapiYaml);
+}
 
 function jsonToOpenapiPath(
     openapiJson: openapiType.openapi,
     jsonSchema: types.jsonSchema,
-): openapiType.openapi
-{
+    additionalinfo: {
+        jsonSchemaFilePath: string
+    }
+): openapiType.openapi {
     // get jsonschema properties
-    const documentConfig : types.documentConfig = jsonSchema["x-documentConfig"];
-    const lowerDocName : string= documentConfig.documentName.toLowerCase();
-    const interfaceName : string= documentConfig.interfaceName;
+    const documentConfig: types.documentConfig = jsonSchema["x-documentConfig"];
+    const lowerDocName: string = documentConfig.documentName.toLowerCase();
+    const interfaceName: string = documentConfig.interfaceName;
 
-    const properties :types.jsonSchema['properties'] = jsonSchema.properties;
-    const methods: types.method[] = documentConfig.methods;
+    const properties: types.jsonSchema["properties"] = jsonSchema.properties;
 
-    let routes: openapiType.paths = {
-        ['/'+lowerDocName]: {
-            summary: interfaceName,
+    const routes: openapiType.paths = {
+        ["/" + lowerDocName]: {
+            "x-collection": documentConfig.documentName,
+            "x-interface": interfaceName,
         },
-        ['/'+lowerDocName+'/{id}']: {
-            summary: interfaceName,
+        ["/" + lowerDocName + "/{id}"]: {
+            "x-collection": documentConfig.documentName,
+            "x-interface": interfaceName,
         },
     };
 
-    methods.forEach((method) => {
-        const useId :boolean = [types.method.put, types.method.patch, types.method.delete].includes(method);
-        const useBody :boolean = [types.method.post, types.method.put, types.method.patch].includes(method);
-        const route :string = '/'+lowerDocName + ( useId ?'/{id}' : '');
-
-        routes[route][method] = {
-            summary: interfaceName,
-            operationId: method + interfaceName,
-            tags: [lowerDocName],
-            parameters: [],
-            requestBody: undefined,
-            responses: {
-                200: {
-                    description: 'OK',
-                    content: { 
-                        'application/json': { schema: { $ref: `#/components/schemas/${method}${interfaceName}Response` } },
-                    },
+    documentConfig.methods.forEach((jsonSchemaMethod) => {
+        const routeWithId: boolean = ["get", "put", "patch", "delete"].includes(jsonSchemaMethod);
+        const useBody: boolean = ["post", "put", "patch"].includes(jsonSchemaMethod);
+        const route: string = "/" + lowerDocName + (routeWithId ? "/{id}" : "");
+        
+        const httpMethod: types.httpMethod = utils.httpMethod(jsonSchemaMethod, additionalinfo.jsonSchemaFilePath);
+        const parameters: openapiType.parameter[] = [];
+        let requestBody: openapiType.requestBody | undefined = undefined;
+        const successResponse: openapiType.responses = {
+            200: {
+                description: "OK",
+                content: {
+                    "application/json": { schema: { $ref: `#/components/schemas/${httpMethod}${interfaceName}Response` } },
                 },
-                400: { description: 'Bad Request', },
-                401: { description: 'Unauthorized', },
-                403: { description: 'Forbidden', },
-                404: { description: 'Not Found', },
-                405: { description: 'Method Not Allowed', },
-                413: { description: 'Payload Too Large', },
-                429: { description: 'Too Many Requests', },
-                500: { description: 'Internal Server Error', },
-                502: { description: 'Bad Gateway', },
-                503: { description: 'Service Unavailable', },
             },
         };
-
+        
         // update parameters/body & responses
-
-        if( (useId || method == types.method.get) && properties['_id']){
-            const idParameter : openapiType.parameter = {
-                name: 'id',
-                in: 'path',
-                description: properties['_id'].description,
+        if ( routeWithId && properties["_id"] ) {
+            const idParameter: openapiType.parameter = {
+                name: "id",
+                in: "path",
+                description: properties["_id"].description,
                 required: true,
-                schema: { 
-                    type: properties['_id'].type, 
-                    format: properties['_id'].format,
+                schema: {
+                    type: properties["_id"].type,
+                    format: properties["_id"].format,
                 },
             };
 
-            routes[route][method]!.parameters = [idParameter];
-
-            // GET will have additional route of GET /{id}
-            if(method == types.method.get){
-                routes[route+'/{id}'][method] = routes[route][method];
-
-                // god of defining types, please help me fuck this mf asshole
-                // @ts-ignore
-                routes[route+'/{id}'][method].responses[200].content["application/json"].schema.$ref = `#/components/schemas/${method}${interfaceName}Response`;
-                
-                routes[route+'/{id}'][method]!.parameters = [idParameter];
-            };
-        };
-
-        if(useBody){
-            routes[route][method]!.requestBody = {
-                description: `${method} ${documentConfig.documentName}`,
-                required: false,
-                content: {
-                    'application/json': { schema: { $ref: `#/components/schemas/${method}${interfaceName}Body` } },
-                },
-            };
-        };
+            parameters.push(idParameter);
+        }
 
         // POST will use 201 success response
-        if (method == types.method.post) {
-            routes[route][method]!.responses[201] = routes[route][method]!.responses[200];
-            routes[route][method]!.responses[201].description = 'Crerated';
-            delete routes[route][method]!.responses[200];
+        if (httpMethod == "post") {
+            successResponse[201] = Object.assign({}, successResponse[200]);
+            successResponse[201].description = "Crerated";
+            delete successResponse[200];
         }
-        else if (method == types.method.delete) {
-            delete routes[route][method]!.responses[200].content;
+        else if (httpMethod == "delete") {
+            delete successResponse[200].content;
+        }   
+        
+        if (useBody) {
+            requestBody = {
+                description: `${httpMethod} ${documentConfig.documentName}`,
+                required: false,
+                content: {
+                    "application/json": { schema: { $ref: `#/components/schemas/${httpMethod}${interfaceName}Body` } },
+                },
+            };
+        }
+
+        routes[route][httpMethod] = {
+            operationId: jsonSchemaMethod + interfaceName,
+            tags: [lowerDocName],
+            parameters: parameters,
+            requestBody: requestBody,
+            responses: Object.assign(
+                {
+                    400: { description: "Bad Request", },
+                    401: { description: "Unauthorized", },
+                    403: { description: "Forbidden", },
+                    404: { description: "Not Found", },
+                    405: { description: "Method Not Allowed", },
+                    413: { description: "Payload Too Large", },
+                    429: { description: "Too Many Requests", },
+                    500: { description: "Internal Server Error", },
+                    502: { description: "Bad Gateway", },
+                    503: { description: "Service Unavailable", },
+                }, 
+                successResponse
+            )
         };
 
     });
 
     openapiJson.paths = Object.assign(openapiJson.paths, routes);
     return openapiJson;
-};
+}
 
+/**
+ * convert json schema to openapi component schema
+ */
 function jsonToOpenapiComponentSchema(
     openapiJson: openapiType.openapi,
     jsonSchema: types.jsonSchema,
-): openapiType.openapi
-{
-    let parameters: openapiType.parameter[] = [];
-    let componentSchemaPath: openapiType.components['schemas'] = {};
+    additionalinfo: {
+        jsonSchemaFilePath: string
+    }
+): openapiType.openapi {
+    const componentSchemaPath: openapiType.components["schemas"] = {};
 
     // get jsonschema properties
     const documentConfig = jsonSchema["x-documentConfig"];
     const lowerDocName = documentConfig.documentName.toLowerCase();
     const interfaceName = documentConfig.interfaceName;
-    const methods: types.method[] = documentConfig.methods;
 
-    const componentSchemaResponse : openapiType.componentsSchemaValue = {
-        type: 'object',
+
+    const componentSchemaResponse: openapiType.componentsSchemaValue = {
+        type: "object",
         properties: json2openapi(
-            utils.cleanXcustomValue(jsonSchema.properties, ['index', 'unique', 'required']), 
-            { version: 3.0 }
-        ),
-    };
-    
-    const componentSchemaBody : openapiType.componentsSchemaValue = {
-        type: 'object',
-        properties: json2openapi(
-            utils.cleanXcustomValue(jsonSchema.properties, ['_id', 'index', 'unique', 'required']), 
+            utils.cleanXcustomValue(jsonSchema.properties, ["index", "unique", "required"]),
             { version: 3.0 }
         ),
     };
 
+    const componentSchemaBody: openapiType.componentsSchemaValue = {
+        type: "object",
+        properties: json2openapi(
+            utils.cleanXcustomValue(jsonSchema.properties, ["_id", "index", "unique", "required"]),
+            { version: 3.0 }
+        ),
+    };
 
-    methods.forEach((method) => {
-        switch (method) {
-            case types.method.delete:
-                // no param, no response
-                break;
-            case types.method.get:
-                let parameters : openapiType.parameter[] = [];
-                Object.keys(jsonSchema.properties).forEach((key)=>{
-                    const props = jsonSchema.properties[key];
-                    
-                    // skip object, it should not be in query
-                    if(props.type == 'object') return;
+    const componentSchemaBodyRequired: openapiType.componentsSchemaValue = {
+        type: "object",
+        properties: json2openapi(
+            utils.cleanXcustomValue(jsonSchema.properties, { _id: "string", index: "boolean", unique: "boolean", required: "boolean" }),
+            { version: 3.0 }
+        ),
+        required: jsonSchema.required,
+    };
 
-                    let parameter : openapiType.parameter ={
-                        name: key,
-                        in: "query",
-                        required: props.required,
-                        schema: {
-                            type: props.type,
-                            format: props.format,
-                            minLength: props.minLength,
-                            maxLength: props.maxLength,
-                            minimum: props.minimum,
-                            maximum: props.maximum,
-                            enum: props.enum,
-                        }
-                    };
-                    parameters.push(parameter);
+    documentConfig.methods.forEach((jsonSchemaMethod) => {
+        const httpMethod: types.httpMethod = utils.httpMethod(jsonSchemaMethod, additionalinfo.jsonSchemaFilePath);
+
+        switch (jsonSchemaMethod) {
+        case "delete":
+            // no param, no response
+            break;
+
+        case "get":
+            componentSchemaPath[httpMethod + interfaceName + "Response"] = componentSchemaResponse;
+            break;
+        case "getList":{
+
+            // add query params
+            const parameters: openapiType.parameter[] = [];
+
+            Object.keys(jsonSchema.properties).forEach((key) => {
+                const props :types.jsonSchemaPropsItem = jsonSchema.properties[key];
+
+                // skip object, it should not be in query
+                if (props.type == "object") return;
+
+                parameters.push({
+                    name: key,
+                    in: "query",
+                    required: false,
+                    schema: {
+                        type: props.type,
+                        format: props.format,
+                        "x-format": props["x-format"],
+                        minLength: props.minLength,
+                        maxLength: props.maxLength,
+                        minimum: props.minimum,
+                        maximum: props.maximum,
+                        enum: props.enum,
+                    }
                 });
 
-                openapiJson.paths['/' + lowerDocName][method]!.parameters = parameters;
+                switch (props["x-format"]) {
+                case "minMax":
+                    // add filter from, to
+                    parameters.push({
+                        name: "min_" + key,
+                        in: "query",
+                        required: false,
+                        schema: {
+                            type: "number",
+                        }
+                    });
+                    parameters.push({
+                        name: "max_" + key,
+                        in: "query",
+                        required: false,
+                        schema: {
+                            type: "number",
+                        }
+                    });
+                    break;
+                default:
+                    break;
+                }
+            });
 
-                componentSchemaPath[method + interfaceName + 'Response'] = componentSchemaResponse;
-                componentSchemaPath[method+interfaceName+'ResponseList'] = {
-                    type: 'array', 
+                openapiJson.paths["/" + lowerDocName][httpMethod]!.parameters = parameters;
+
+                componentSchemaPath[httpMethod + interfaceName + "Response"] = componentSchemaResponse;
+                componentSchemaPath[httpMethod + interfaceName + "ResponseList"] = {
+                    type: "array",
                     items: componentSchemaResponse,
                 };
                 break;
-                // NO break;
-            case types.method.post:
-            case types.method.put:
-            case types.method.patch:
-                componentSchemaPath[method+interfaceName+'Body'] = componentSchemaBody;
-                componentSchemaPath[method+interfaceName+'Response'] = componentSchemaResponse;
-                break;
-            default:
-                break;
-        };
+        }
+        case "patch":
+            componentSchemaPath[httpMethod + interfaceName + "Body"] = componentSchemaBody;
+            componentSchemaPath[httpMethod + interfaceName + "Response"] = componentSchemaResponse;
+            break;
+
+        case "post":
+        case "put":
+            componentSchemaPath[httpMethod + interfaceName + "Body"] = componentSchemaBodyRequired;
+            componentSchemaPath[httpMethod + interfaceName + "Response"] = componentSchemaResponse;
+            break;
+        default:
+            break;
+        }
     });
 
     openapiJson.components.schemas = Object.assign(openapiJson.components.schemas, componentSchemaPath);
