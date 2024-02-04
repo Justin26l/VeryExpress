@@ -95,6 +95,9 @@ class {{interfaceName}}Controller {
             else {
                 return res.status(200).json(result);
             };
+            else {
+                return res.status(200).json(result);
+            };
         } catch (err:any) {
             return res.status(500).json({ error: err.message });
         }

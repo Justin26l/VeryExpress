@@ -16,7 +16,6 @@ import { formatJsonSchema } from "./preprocess/jsonschemaFormat";
 export default function generate(
     options: types.compilerOptions
 ): void {
-
     const dir = {
         routeDir: `${options.srcDir}/routes`,
         middlewareDir: `${options.srcDir}/middlewares`,
@@ -24,6 +23,7 @@ export default function generate(
         modelDir: `${options.srcDir}/models`,
         typeDir: `${options.srcDir}/types`,
         serviceDir: `${options.srcDir}/services`,
+        pluginDir: `${options.srcDir}/plugins`,
         utilsDir: `${options.srcDir}/utils`,
     };
 
@@ -37,6 +37,16 @@ export default function generate(
     Object.values(dir).forEach((path: string) => {
         if (!fs.existsSync(path)) { fs.mkdirSync(path); }
     });
+
+    // genarate opanapi from json schema
+    openapiGen.compile(schemaDir, openapipath);
+
+    // copy nessasary files
+    utils.copyDir(`${options.jsonSchemaDir}`, options.rootDir + "/openapi");
+    utils.copyDir(`${__dirname}/templates/utils`, dir.utilsDir);
+    utils.copyDir(`${__dirname}/templates/services`, dir.serviceDir);
+    utils.copyDir(`${__dirname}/templates/plugins`, dir.pluginDir);
+    utils.copyDir(`${__dirname}/templates/routes`, dir.routeDir);
 
     // prepair routerData
     log.process(`Router : ${openapipath}`);

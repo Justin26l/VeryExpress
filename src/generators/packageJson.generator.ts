@@ -5,7 +5,6 @@ import log from "../utils/log";
 export function compile(
     packageOutPath: string,
     schemaDir: string,
-    openapiDir: string,
     outDir: string,
 ): void {
     // read package.json and add script section
@@ -21,7 +20,7 @@ export function compile(
     }
 
     const packageJson = JSON.parse(packjson);
-    const vexgenScript = `vex -j ${schemaDir} -a ${openapiDir} -o ${outDir}`;
+    const vexgenScript = `vex -j ${schemaDir} -o ${outDir}`;
 
     if (packageJson.scripts.vexgen !== vexgenScript) {
         packageJson.scripts.vexgen = vexgenScript;

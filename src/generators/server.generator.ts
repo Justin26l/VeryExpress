@@ -48,6 +48,6 @@ export function compile(
     }
 
     // process package.json
-    packageJson.compile(packageOutPath, options.jsonSchemaDir, options.openapiDir, options.rootDir);
+    packageJson.compile(packageOutPath, options.jsonSchemaDir, options.rootDir);
 
 }

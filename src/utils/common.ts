@@ -121,11 +121,18 @@ export function copyDir(source: string, destination: string): void {
         if (current.isDirectory()) {
             copyDir(source + "/" + files[i], destination + "/" + files[i]);
         }
+        // check file exist
+        else if (fs.existsSync(destination + '/' + files[i])) {
+            log.info(`Project : ${destination + '/' + files[i]} exist, skip`);
+        }
         else if (current.isSymbolicLink()) {
             const symlink = fs.readlinkSync(source + "/" + files[i]);
             fs.symlinkSync(symlink, destination + "/" + files[i]);
         }
         else {
+            const outPath: string = destination + '/' + files[i];
+            log.writing(`File : ${outPath}`);
+            fs.copyFileSync(source + '/' + files[i], outPath);
             const outPath: string = destination + "/" + files[i];
             log.writing(outPath);
             fs.copyFileSync(source + "/" + files[i], outPath);
