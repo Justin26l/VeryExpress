@@ -10,10 +10,10 @@
     },
     "scripts": {
         "build": "npm run test && tsc -p . && node ./src/copyDir.js",
-        "dev": "ts-node ./src/cli.ts -j ./output/jsonSchema -a ./output/openapi -o ./output -s ./output/src",
+        "dev": "ts-node ./src/cli.ts -j ./output/jsonSchema -o ./output -s ./output/src",
         "prod": "node ./dist/cli.js",
         "test": "eslint ./src --ext .ts --fix",
-        "vexgen": "vex -j ./output/jsonSchema -a ./output/openapi -o ./output/src",
+        "vexgen": "vex -j ./output/jsonSchema -o ./output/src",
         "start": "node ./dist/server.js"
     },
     "keywords": [
