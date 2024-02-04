@@ -39,10 +39,9 @@ export default function generate(
     });
 
     // genarate opanapi from json schema
-    openapiGen.compile(schemaDir, openapipath);
+    openapiGen.compile(openapiFile, options);
 
     // copy nessasary files
-    utils.copyDir(`${options.jsonSchemaDir}`, options.rootDir + "/openapi");
     utils.copyDir(`${__dirname}/templates/utils`, dir.utilsDir);
     utils.copyDir(`${__dirname}/templates/services`, dir.serviceDir);
     utils.copyDir(`${__dirname}/templates/plugins`, dir.pluginDir);
@@ -107,10 +106,10 @@ export default function generate(
 
     // genarate opanapi from json schema
     if (!fs.existsSync(options.openapiDir + "/openapi.nogen.yaml")) {
-        openapiGen.compile({
-            openapiOutFileName : openapiFile, 
-            compilerOptions : options || utils.defaultCompilerOptions
-        });
+        openapiGen.compile(
+            openapiFile, 
+            options || utils.defaultCompilerOptions
+        );
     }
 
     // clone nessasary files

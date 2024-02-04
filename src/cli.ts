@@ -25,9 +25,9 @@ if (fs.existsSync("vex.config.json")) {
 // record input args or use default
 config.commitBeforeGenerate = config.commitBeforeGenerate ?? false;
 config.jsonSchemaDir = args.j || args.jsonSchemaDir || config.jsonSchemaDir || "./jsonSchema";
-config.openapiDir = args.a || args.openapiDir || config.openapiDir || "./openapi";
 config.rootDir = args.o || args.rootDir || config.rootDir || ".";
-config.srcDir = (args.s || args.srcDir || config.srcDir || (args.o || args.rootDir || config.rootDir || ".") + "/src" );
+config.srcDir = config.srcDir || config.rootDir + "/src" ;
+config.openapiDir = config.openapiDir || config.rootDir + "./openapi";
 
 console.log("\x1b[35m%s\x1b[0m", "\n========== veryExpress CLI (vex) Start ==========\n");
 log.writing("vex.config.json");
@@ -43,7 +43,6 @@ if ("h" in args) {
 Usage: vex [jsonSchemaDir] [openapiDir] [rootDir]
     -h : Help
     -j : jsonSchemaDir (config: ${config.jsonSchemaDir})
-    -a : openapiDir (config: ${config.openapiDir})
     -o : rootDir (config: ${config.rootDir})
 `);
     process.exit(0);
@@ -78,9 +77,9 @@ if (config.commitBeforeGenerate === true) {
 // run main process
 generate({
     jsonSchemaDir : config.jsonSchemaDir,
-    openapiDir : config.openapiDir,
     rootDir : config.rootDir,
     srcDir : config.srcDir,
+    openapiDir : config.openapiDir,
 });
 
 console.log("\x1b[35m%s\x1b[0m", "\n========== veryExpress CLI (vex) Complete ==========\n");

@@ -12,10 +12,10 @@ import log from "../utils/log";
  * @param openapiOutFileName output file based on compilerOptions.openapiDir
  * @param compilerOptions 
  */
-export function compile(options:{
+export function compile(
     openapiOutFileName: string, 
     compilerOptions: types.compilerOptions
-}): void {
+): void {
 
     // convert to yaml
     let openapiJson: openapiType.openapi = {
@@ -33,14 +33,14 @@ export function compile(options:{
 
     // loop through all json schema files and compile to openapi paths & components
 
-    const files = fs.readdirSync(options.compilerOptions.jsonSchemaDir);
+    const files = fs.readdirSync(compilerOptions.jsonSchemaDir);
     files.forEach((file) => {
         // ignore non json files
         if (!file.endsWith(".json")) return;
-        const jsonSchemaFilePath: string = options.compilerOptions.jsonSchemaDir + "/" + file;
+        const jsonSchemaFilePath: string = compilerOptions.jsonSchemaDir + "/" + file;
         log.process(`OpenApi : ${jsonSchemaFilePath}`);
 
-        const jsonSchemaBuffer = fs.readFileSync(`${options.compilerOptions.jsonSchemaDir}/${file}`);
+        const jsonSchemaBuffer = fs.readFileSync(`${compilerOptions.jsonSchemaDir}/${file}`);
         const jsonSchema: types.jsonSchema = JSON.parse(jsonSchemaBuffer.toString());
         openapiJson = jsonToOpenapiPath(openapiJson, jsonSchema, { jsonSchemaFilePath: jsonSchemaFilePath });
         openapiJson = jsonToOpenapiComponentSchema(openapiJson, jsonSchema, { jsonSchemaFilePath: jsonSchemaFilePath });
@@ -50,7 +50,7 @@ export function compile(options:{
     const openapiYaml = yaml.dump(validOpenApi);
 
     // create and write file
-    const openapiOutFile: string = options.compilerOptions.openapiDir + options.openapiOutFileName;
+    const openapiOutFile: string = compilerOptions.openapiDir + openapiOutFileName;
     log.writing(`OpenApi : ${openapiOutFile}`);
     fs.writeFileSync(openapiOutFile, openapiYaml);
 }

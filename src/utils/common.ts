@@ -133,9 +133,6 @@ export function copyDir(source: string, destination: string): void {
             const outPath: string = destination + '/' + files[i];
             log.writing(`File : ${outPath}`);
             fs.copyFileSync(source + '/' + files[i], outPath);
-            const outPath: string = destination + "/" + files[i];
-            log.writing(outPath);
-            fs.copyFileSync(source + "/" + files[i], outPath);
         }
     }
 }

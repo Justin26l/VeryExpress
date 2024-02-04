@@ -19,7 +19,7 @@ export default function controllerTemplate(templateOptions: {
 import { Router, Request, Response } from 'express';
 import { checkSchema, validationResult } from 'express-validator';
 import { parseFieldsSelect } from '../utils/common.gen';
-import MongoQs from 'mongo-ts-querystring';
+import MongoQS from 'mongo-ts-querystring';
 
 import { {{interfaceName}}Model } from '{{modelPath}}';
 
@@ -54,15 +54,6 @@ class {{interfaceName}}Controller {
                 return res.status(400).json(validationError.array());
             };
 
-            // Get the filter query
-            const searchFilter = new MongoQS().parse(req.query);
-            console.log('searchFilter',searchFilter);
-
-            // Get the selected fields from query string
-            const selectedFields = await parseFieldsSelect(req.query.select);
-
-            const result = await UserModel.find(searchFilter, selectedFields);
-            
             const result = await {{interfaceName}}Model.findById(req.params.id);
             if (!result) {
                 return res.status(404).json({ error: "no data found" });
@@ -82,19 +73,16 @@ class {{interfaceName}}Controller {
                 return res.status(400).json(validationError.array());
             };
             
-            // Get the selected fields from query string
-            const selectedFields = await parseFieldsSelect(req.query.select)
-            .catch((err) => {
-                return res.status(400).json({ error: err });
-            });
+            // Get mongoose filter query
+            const searchFilter = new MongoQS().parse(req.query);
 
-            const result = await {{interfaceName}}Model.find({}, selectedFields);
+            // Get selected fields from query string
+            const selectedFields = await parseFieldsSelect(req.query.select);
+
+            const result = await {{interfaceName}}Model.find(searchFilter, selectedFields);
             if (!result) {
                 return res.status(404).json({ error: "no data found" });
             }
-            else {
-                return res.status(200).json(result);
-            };
             else {
                 return res.status(200).json(result);
             };
@@ -146,7 +134,7 @@ class {{interfaceName}}Controller {
             if ( ! validationError.isEmpty() ) {
                 return res.status(400).json(validationError.array());
             };
-            const result = await {{interfaceName}}Model.replaceOne({_id: req.params.id}, req.body, { new: true });
+            const result = await {{interfaceName}}Model.replaceOne({_id: req.params.id}, req.body);
             if (!result) {
                 return res.status(404).json({ error: "failed to update" });
             }
