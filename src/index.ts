@@ -14,29 +14,42 @@ import * as types from './types/types';
 
 export default function generate(
     schemaDir: string,
-    openapiDir: string,
     outDir: string,
     options?: types.compilerOptions
 ): void {
-
+    const srcDir = outDir + '/src';
+    const openapiDir = outDir + '/openapi';
     const dir = {
-        routeDir: `${outDir}/routes`,
-        middlewareDir: `${outDir}/middlewares`,
-        controllerDir: `${outDir}/controllers`,
-        modelDir: `${outDir}/models`,
-        typeDir: `${outDir}/types`,
-        serviceDir: `${outDir}/services`,
-        utilsDir: `${outDir}/utils`,
+        routeDir: srcDir + '/routes',
+        middlewareDir: srcDir + '/middlewares',
+        controllerDir: srcDir + '/controllers',
+        modelDir: srcDir + '/models',
+        typeDir: srcDir + '/types',
+        serviceDir: srcDir + '/services',
+        pluginDir: srcDir + '/plugins',
+        utilsDir: srcDir + '/utils',
     };
 
     const openapipath = `${openapiDir}/openapi.gen.yaml`;
 
     // create all directories if not exist
     if (!fs.existsSync(outDir)) { fs.mkdirSync(outDir); };
+    if (!fs.existsSync(srcDir)) { fs.mkdirSync(srcDir); };
     if (!fs.existsSync(openapiDir)) { fs.mkdirSync(openapiDir); };
     Object.values(dir).forEach((path: string) => {
         if (!fs.existsSync(path)) { fs.mkdirSync(path); };
     });
+
+    // genarate opanapi from json schema
+    openapiGen.compile(schemaDir, openapipath);
+
+    // copy nessasary files
+    utils.copyDir(`${schemaDir}`, outDir + '/jsonSchema');
+    utils.copyDir(`${openapiDir}`, outDir + '/openapi');
+    utils.copyDir(`${__dirname}/templates/utils`, dir.utilsDir);
+    utils.copyDir(`${__dirname}/templates/services`, dir.serviceDir);
+    utils.copyDir(`${__dirname}/templates/plugins`, dir.pluginDir);
+    utils.copyDir(`${__dirname}/templates/routes`, dir.routeDir);
 
     // prepair routerData
     log.process(`Router : ${openapipath}`);
@@ -102,15 +115,6 @@ export default function generate(
         };
     });
 
-    // genarate opanapi from json schema
-    if (!fs.existsSync(openapiDir + '/openapi.nogen.yaml')) {
-        openapiGen.compile(schemaDir, openapipath);
-    };
-
-    // clone nessasary files
-    utils.copyDir(`${openapiDir}`, outDir + '/openapi');
-    utils.copyDir(`${__dirname}/templates/utils`, dir.utilsDir);
-
     // genarate controller from open api
     controllerGen.compile(
         openapipath,
@@ -127,17 +131,12 @@ export default function generate(
         options || utils.defaultCompilerOptions
     );
 
-    // make middleware
-
-    // make service
-
     // make server
     serverGen.compile(
         schemaDir,
-        openapiDir,
         outDir,
+        srcDir,
         options || { headerComment: utils.getSimpleHeaderComment() }
     );
 
 };
-

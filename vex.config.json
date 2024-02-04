@@ -1,0 +1,5 @@
+{
+    "commitBeforeGenerate": false,
+    "jsonSchemaDir": "./jsonSchema",
+    "outputDir": "./output"
+}

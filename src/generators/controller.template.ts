@@ -16,7 +16,9 @@ export default function controllerTemplate(templateOptions: {
     let template :string = templateOptions.template || `{{headerComment}}
 import { Router, Request, Response } from 'express';
 import { check, body, validationResult } from 'express-validator';
-import mongoose from 'mongoose';
+import { check, body, validationResult } from 'express-validator';
+
+import MongoQS from 'mongo-ts-querystring';
 import { {{interfaceName}}Model } from '{{modelPath}}';
 
 class {{interfaceName}}Controller {
@@ -45,30 +47,45 @@ class {{interfaceName}}Controller {
 
     public async get{{interfaceName}}(req: Request, res: Response): Promise<Response> {
         try {
-            await check('id').custom((value) => mongoose.Types.ObjectId.isValid(value)).withMessage('Invalid user id').run(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            };
 
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
                 return res.status(400).json({ errors: errors.array() });
             }
 
-            const user = await {{interfaceName}}Model.findById(req.params.id);
-            if (!user) {
+            const result = await {{interfaceName}}Model.findById(req.params.id);
+            if (!result) {
                 return res.status(404).json({ error: '{{interfaceName}} not found' });
             }
-            return res.json(user);
+            return res.json(result);
         } catch (err:any) {
             return res.status(500).json({ error: err.message });
         }
     }
 
     public async getList{{interfaceName}}(req: Request, res: Response): Promise<Response> {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        };
+
         try {
-            const user = await {{interfaceName}}Model.find();
-            if (!user) {
-                return res.status(404).json({ error: 'No {{interfaceName}} found' });
+            // Get the filter query
+            const searchFilter = new MongoQS().parse(req.query);
+
+            // Get the selected fields from query string
+            const selectedFields = await parseFieldsSelect(req.query.select);
+
+            const result = await UserModel.find(searchFilter, selectedFields);
+            if (!result) {
+                return res.status(404).json({ error: "no data found" });
             }
-            return res.json(user);
+            else {
+                return res.status(200).json(result);
+            };
         } catch (err:any) {
             return res.status(500).json({ error: err.message });
         }
@@ -81,9 +98,9 @@ class {{interfaceName}}Controller {
         };
 
         try {
-            const user = new {{interfaceName}}Model (req.body);
-            await user.save();
-            return res.status(201).json(user);
+            const result = new {{interfaceName}}Model (req.body);
+            await result.save();
+            return res.status(201).json(result);
         } catch (err:any) {
             return res.status(500).json({ error: err.message });
         };
@@ -96,11 +113,11 @@ class {{interfaceName}}Controller {
         }
 
         try {
-            const user = await {{interfaceName}}Model.findByIdAndUpdate(req.params.id, req.body, { new: true });
-            if (!user) {
+            const result = await {{interfaceName}}Model.findByIdAndUpdate(req.params.id, req.body, { new: true });
+            if (!result) {
                 return res.status(404).json({ error: '{{interfaceName}} not found' });
             }
-            return res.json(user);
+            return res.json(result);
         } catch (err:any) {
             return res.status(500).json({ error: err.message });
         }
@@ -108,8 +125,8 @@ class {{interfaceName}}Controller {
 
     public async delete{{interfaceName}}(req: Request, res: Response): Promise<Response> {
         try {
-            const user = await {{interfaceName}}Model.findByIdAndDelete(req.params.id);
-            if (!user) {
+            const result = await {{interfaceName}}Model.findByIdAndDelete(req.params.id);
+            if (!result) {
                 return res.status(404).json({ error: '{{interfaceName}} not found' });
             }
             return res.status(204).json();
