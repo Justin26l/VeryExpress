@@ -14,21 +14,18 @@ export function compile(
     options: types.compilerOptions
 ): void {
 
-    const serverOutPath = options.srcDir + "/server.ts";
+    const serverOutPath = options.srcDir + "/server.gen.ts";
     const packageOutPath = options.rootDir + "/package.json";
     const envOutPath = options.rootDir + "/.env";
     const tsconfigOutPath = options.rootDir + "/tsconfig.json";
     // const gitignoreOutPath = options.rootDir +  ".gitignore";
 
     // write server file
-    if (!fs.existsSync(serverOutPath)) {
-        log.writing(`Server : ${serverOutPath}`);
-        fs.writeFileSync(serverOutPath,
-            serverTemplate({
-                options: options,
-            })
-        );
-    }
+    fs.writeFileSync(serverOutPath,
+        serverTemplate({
+            options: options,
+        })
+    );
 
     // write .env
     if (!fs.existsSync(envOutPath)) {

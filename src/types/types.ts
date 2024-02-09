@@ -1,12 +1,20 @@
 export interface compilerOptions {
+    commitBeforeGenerate: boolean;
     jsonSchemaDir: string,
     openapiDir: string,
     rootDir: string,
     srcDir: string,
+    useOauth: {
+        google?: boolean,
+        microsoft?: boolean,
+        apple?: boolean,
+        github?: boolean,
+        [key: string]: boolean | undefined;
+    };
+
     headerComment?: string;
     modelsTemplate?: string;
     controllersTemplate?: string;
-    use_id?: boolean;
 }
 
 export interface jsonSchema {

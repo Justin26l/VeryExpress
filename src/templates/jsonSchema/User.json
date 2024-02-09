@@ -1,0 +1,51 @@
+{
+    "type": "object",
+    "x-documentConfig": {
+        "documentName": "user",
+        "interfaceName": "User",
+        "methods": [
+            "get",
+            "getList",
+            "post",
+            "patch"
+        ]
+    },
+    "properties": {
+        "_id": {
+            "type": "string",
+            "index": true
+        },
+        "authProvider": {
+            "type": "string"
+        },
+        "email": {
+            "type": "string",
+            "format": "email",
+            "index": true,
+            "required": true
+        },
+        "emailVerified": {
+            "type": "boolean",
+            "required": true,
+            "default": false
+        },
+        "authId": {
+            "type": "string",
+            "index": true
+        },
+        "name": {
+            "type": "string",
+            "maxLength": 64,
+            "required": true
+        },
+        "locale": {
+            "type": "string",
+            "maxLength": 8,
+            "required": true
+        },
+        "isActive": {
+            "type": "boolean",
+            "required": true
+        }
+    }
+}

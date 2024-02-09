@@ -107,7 +107,7 @@ function buildParamValidator(
     const validators: Schema = {};
 
     openapi.paths[endpoint][httpMethod]!.parameters.forEach((parameter: openapiType.parameter) => {
-        if( !compilerOptions.use_id && parameter.name === "_id") {
+        if( parameter.name === "_id") {
             return;
         }
 

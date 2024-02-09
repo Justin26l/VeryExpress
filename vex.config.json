@@ -1,5 +1,11 @@
 {
     "commitBeforeGenerate": false,
+    "useOauth": {
+        "google": true,
+        "microsoft": false,
+        "apple": false,
+        "github": false
+    },
     "jsonSchemaDir": "./output/jsonSchema",
     "rootDir": "./output",
     "srcDir": "./output/src",

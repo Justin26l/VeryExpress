@@ -12,8 +12,14 @@ import * as serverGen from "./generators/server.generator";
 import * as types from "./types/types";
 import { formatJsonSchema } from "./preprocess/jsonschemaFormat";
 
+export function initialize(
+    options: types.compilerOptions
+): void {
+    log.process("Basic jsonSchema");
+    utils.copyDir(`${__dirname}/templates/jsonSchema`, options.jsonSchemaDir);
+}
 
-export default function generate(
+export function generate(
     options: types.compilerOptions
 ): void {
     const dir = {

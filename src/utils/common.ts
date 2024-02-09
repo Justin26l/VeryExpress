@@ -108,7 +108,7 @@ export function httpMethod(jsonSchemaMethod: string, documentName: string) : typ
     }
 }
 
-export function copyDir(source: string, destination: string): void {
+export function copyDir(source: string, destination: string, overwrite?:boolean): void {
     if (!fs.existsSync(destination)) {
         fs.mkdirSync(destination);
     }
@@ -121,13 +121,9 @@ export function copyDir(source: string, destination: string): void {
         if (current.isDirectory()) {
             copyDir(source + "/" + files[i], destination + "/" + files[i]);
         }
-        // check file exist
-        else if (fs.existsSync(destination + '/' + files[i])) {
+        // avoid overwrite
+        else if ( !overwrite && fs.existsSync(destination + '/' + files[i])) {
             log.info(`Project : ${destination + '/' + files[i]} exist, skip`);
-        }
-        else if (current.isSymbolicLink()) {
-            const symlink = fs.readlinkSync(source + "/" + files[i]);
-            fs.symlinkSync(symlink, destination + "/" + files[i]);
         }
         else {
             const outPath: string = destination + '/' + files[i];
@@ -139,10 +135,18 @@ export function copyDir(source: string, destination: string): void {
 
 export const defaultCompilerOptions: types.compilerOptions = {
     headerComment: getGenaratorHeaderComment(),
+    commitBeforeGenerate: false,
     rootDir: ".",
     srcDir: "./src",
     jsonSchemaDir: "./jsonSchema",
     openapiDir: "./openapi",
+    useOauth: {
+        google: false,
+        microsoft: false,
+        apple: false,
+        github: false,
+    },
+
 };
 
 export default {
