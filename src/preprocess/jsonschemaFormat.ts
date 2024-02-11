@@ -21,9 +21,14 @@ export function formatJsonSchema(jsonSchemaPath: string): types.jsonSchema {
         log.error(`formatJsonSchema : x-documentConfig.interfaceName not found in ${jsonSchemaPath}`);
     }
     else if (!jsonSchema["x-documentConfig"].methods) {
-        log.warn(`formatJsonSchema : x-documentConfig.methods is not found in ${jsonSchemaPath}, initialize all supported methods.`);
+        log.warn(`formatJsonSchema : x-documentConfig.methods is not found in ${jsonSchemaPath}, supported methods added.`);
         jsonSchema["x-documentConfig"].methods = Object.assign([], types.schemaMethodArr);
     }
+
+    // json schema structure check 
+    if (typeof jsonSchema.properties !== "object") {
+        log.error(`properties is invalid in ${jsonSchemaPath}`);
+    };
 
     // format properties boolean "required" into array of string
     jsonSchema.required = getRequiredArrStr(jsonSchema, jsonSchemaPath);

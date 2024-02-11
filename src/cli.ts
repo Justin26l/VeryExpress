@@ -3,7 +3,7 @@ import fs from "fs";
 import childProcess from "child_process";
 import minimist from "minimist";
 
-import { generate, initialize } from "./index";
+import { generate } from "./index";
 import log from "./utils/log";
 
 import { compilerOptions } from "./types/types";
@@ -52,7 +52,7 @@ if (["help", "-h", "h"].includes(String(args._[0]).toLowerCase())) {
     console.log(`Very Express CLI Usage :
 vex [flag]
     -h | help : Help
-    -i | init : Init
+    -i | init : Create generator config etc. 
 to generate app :
     vex [jsonSchemaDir] [rootDir]
     -j : jsonSchemaDir (configured: ${config.jsonSchemaDir})
@@ -64,7 +64,6 @@ to generate app :
 /** Initialization */
 else if (["init", "-i", "i"].includes(String(args._[0]).toLowerCase())) {
     console.log("Very Express CLI : Initialization ...");
-    initialize(config);
     process.exit(0);
 }
 /** Generation */

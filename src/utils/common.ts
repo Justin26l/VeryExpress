@@ -123,23 +123,33 @@ export function copyDir(source: string, destination: string, overwrite?:boolean)
         }
         // avoid overwrite
         else if ( !overwrite && fs.existsSync(destination + '/' + files[i])) {
-            log.info(`Project : ${destination + '/' + files[i]} exist, skip`);
+            log.info(`FILE : ${destination + '/' + files[i]} exist, skip`);
         }
         else {
             const outPath: string = destination + '/' + files[i];
-            log.writing(`File : ${outPath}`);
+            log.writing(`FILE : ${outPath}`);
             fs.copyFileSync(source + '/' + files[i], outPath);
         }
     }
 }
 
+export function isUseOAuth(compilerOptions: types.compilerOptions):string[] {
+    return Object.keys(compilerOptions.useOauth).filter((key) => {
+        return compilerOptions.useOauth[key] === true;
+    });
+}
+
 export const defaultCompilerOptions: types.compilerOptions = {
     headerComment: getGenaratorHeaderComment(),
     commitBeforeGenerate: false,
+
     rootDir: ".",
     srcDir: "./src",
     jsonSchemaDir: "./jsonSchema",
     openapiDir: "./openapi",
+
+    enableSwagger: true,
+    useUserSchema: true,
     useOauth: {
         google: false,
         microsoft: false,
@@ -158,4 +168,5 @@ export default {
     httpMethod,
     loadJsonSchema,
     copyDir,
+    isUseOAuth,
 };

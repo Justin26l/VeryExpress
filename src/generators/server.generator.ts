@@ -8,22 +8,21 @@ import log from "../utils/log";
 
 /**
  * generate required files at root & output directory
- * @param options 
+ * @param compilerOptions 
  */
 export function compile(
-    options: types.compilerOptions
+    compilerOptions: types.compilerOptions
 ): void {
 
-    const serverOutPath = options.srcDir + "/server.gen.ts";
-    const packageOutPath = options.rootDir + "/package.json";
-    const envOutPath = options.rootDir + "/.env";
-    const tsconfigOutPath = options.rootDir + "/tsconfig.json";
-    // const gitignoreOutPath = options.rootDir +  ".gitignore";
+    const serverOutPath = compilerOptions.srcDir + "/server.gen.ts";
+    const packageOutPath = compilerOptions.rootDir + "/package.json";
+    const envOutPath = compilerOptions.rootDir + "/.env";
+    const tsconfigOutPath = compilerOptions.rootDir + "/tsconfig.json";
 
     // write server file
     fs.writeFileSync(serverOutPath,
         serverTemplate({
-            options: options,
+            compilerOptions: compilerOptions,
         })
     );
 
@@ -45,6 +44,6 @@ export function compile(
     }
 
     // process package.json
-    packageJson.compile(packageOutPath, options.jsonSchemaDir, options.rootDir);
+    packageJson.compile(packageOutPath, compilerOptions.jsonSchemaDir, compilerOptions.rootDir);
 
 }

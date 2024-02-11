@@ -28,31 +28,33 @@ export default function routesTemplate(templateOptions: {
 
     let template: string = templateOptions.template || `{{headerComment}}
 import { Router } from 'express';
-import swaggerUi, { JsonObject } from 'swagger-ui-express';
 import { loadYaml } from '../utils/common.gen';
 
 {{importRoutes}}
 
-const router :Router = Router();
+export default class ApiRouter{
 
-{{openapiRoute}}
+    public router: Router = Router();
 
-{{useRoutes}}
+    constructor() {}
 
-export default router;`;
+    public initRoutes() {
 
-    const openapiPath :string = utils.relativePath(templateOptions.compilerOptions.rootDir, templateOptions.compilerOptions.openapiDir) + (templateOptions.openapiFile || "/openapi.gen.yaml");
+        {{useRoutes}}
+
+    }
+
+}`
+
     let importRoutes = "";
     let useRoutes = "";
     templateOptions?.routes.forEach((obj) => {
         importRoutes += `import ${obj.interfaceName}Controller from '${obj.controllerPath}';\n`;
-        useRoutes += `router.use('${obj.route}', ${obj.interfaceName}Controller);\n`;
+        useRoutes += `this.router.use('${obj.route}', ${obj.interfaceName}Controller);\n`;
     });
-
 
     template = template.replace(/{{headerComment}}/g, headerComment);
     template = template.replace(/{{importRoutes}}/g, importRoutes);
-    template = template.replace(/{{openapiRoute}}/g, enableOpenApi ? `router.use('/api', swaggerUi.serve, swaggerUi.setup(loadYaml('./${openapiPath}') as JsonObject));` : "");
     template = template.replace(/{{useRoutes}}/g, useRoutes);
 
     return template;

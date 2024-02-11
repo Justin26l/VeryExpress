@@ -12,12 +12,6 @@ import * as serverGen from "./generators/server.generator";
 import * as types from "./types/types";
 import { formatJsonSchema } from "./preprocess/jsonschemaFormat";
 
-export function initialize(
-    options: types.compilerOptions
-): void {
-    log.process("Basic jsonSchema");
-    utils.copyDir(`${__dirname}/templates/jsonSchema`, options.jsonSchemaDir);
-}
 
 export function generate(
     options: types.compilerOptions
@@ -34,7 +28,6 @@ export function generate(
     };
 
     const openapiFile: string = "/openapi.gen.yaml";
-    const openapipath: string = options.openapiDir + openapiFile;
 
     // create all directories if not exist
     if (!fs.existsSync(options.rootDir)) { fs.mkdirSync(options.rootDir); }
@@ -48,13 +41,12 @@ export function generate(
     openapiGen.compile(openapiFile, options);
 
     // copy nessasary files
-    utils.copyDir(`${__dirname}/templates/utils`, dir.utilsDir);
-    utils.copyDir(`${__dirname}/templates/services`, dir.serviceDir);
-    utils.copyDir(`${__dirname}/templates/plugins`, dir.pluginDir);
-    utils.copyDir(`${__dirname}/templates/routes`, dir.routeDir);
+    utils.copyDir(`${__dirname}/templates/utils`, dir.utilsDir, true);
+    utils.copyDir(`${__dirname}/templates/services`, dir.serviceDir, true);
+    utils.copyDir(`${__dirname}/templates/plugins`, dir.pluginDir, true);
+    
 
     // prepair routerData
-    log.process(`Router : ${openapipath}`);
     const routeData: {
         route: string,
         interfaceName: string,
@@ -75,27 +67,20 @@ export function generate(
             const jsonSchema: types.jsonSchema = formatJsonSchema(schemaPath);
             const documentConfig: types.documentConfig = jsonSchema["x-documentConfig"];
 
-            if (typeof jsonSchema.properties !== "object") log.error(`properties is invalid in ${schemaPath}`);
-
-            // check if 'fileName.nogen.ts' exist then skip generate of this file
-            if (!fs.existsSync(`${schemaPath}.nogen.ts`)) {
-                // make interface
-                json2mongoose.typesGen.compileFromFile(
-                    `${schemaPath}`,
-                    `${dir.typeDir}/${documentConfig.interfaceName}.gen.ts`,
-                    options || utils.defaultCompilerOptions
-                );
-            }
-
+            // make interface
+            json2mongoose.typesGen.compileFromFile(
+                `${schemaPath}`,
+                `${dir.typeDir}/${documentConfig.interfaceName}.gen.ts`,
+                options || utils.defaultCompilerOptions
+            );
+            
             // make model
-            if (!fs.existsSync(`${schemaPath}Model.nogen.ts`)) {
-                json2mongoose.modelsGen.compileFromFile(
-                    `${schemaPath}`,
-                    `${utils.relativePath(dir.modelDir, dir.typeDir)}/${documentConfig.interfaceName}.gen`,
-                    `${dir.modelDir}/${documentConfig.interfaceName}Model.gen.ts`,
-                    options || utils.defaultCompilerOptions
-                );
-            }
+            json2mongoose.modelsGen.compileFromFile(
+                `${schemaPath}`,
+                `${utils.relativePath(dir.modelDir, dir.typeDir)}/${documentConfig.interfaceName}.gen`,
+                `${dir.modelDir}/${documentConfig.interfaceName}Model.gen.ts`,
+                options || utils.defaultCompilerOptions
+            );
 
             // prepair route data
             routeData.push({
@@ -111,16 +96,11 @@ export function generate(
     });
 
     // genarate opanapi from json schema
-    if (!fs.existsSync(options.openapiDir + "/openapi.nogen.yaml")) {
-        openapiGen.compile(
-            openapiFile, 
-            options || utils.defaultCompilerOptions
-        );
-    }
-
-    // clone nessasary files
-    utils.copyDir(`${options.openapiDir}`, options.rootDir + "/openapi");
-    utils.copyDir(`${__dirname}/templates/utils`, dir.utilsDir);
+    openapiGen.compile(
+        openapiFile, 
+        options || utils.defaultCompilerOptions
+    );
+    utils.copyDir(`${options.openapiDir}`, options.rootDir + "/openapi", true);
 
     // genarate controller from open api
     controllerGen.compile({
@@ -134,9 +114,10 @@ export function generate(
     routeGen.compile({
         routesArr: routeData,
         openapiFile: openapiFile,
-        routesOutPath: `${dir.routeDir}/routes.gen.ts`,
+        routesDir: dir.routeDir,
         compilerOptions: options || utils.defaultCompilerOptions
     });
+
 
     // make middleware
 

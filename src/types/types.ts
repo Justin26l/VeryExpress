@@ -1,9 +1,16 @@
 export interface compilerOptions {
     commitBeforeGenerate: boolean;
+    headerComment?: string;
+    modelsTemplate?: string;
+    controllersTemplate?: string;
+
     jsonSchemaDir: string,
     openapiDir: string,
     rootDir: string,
     srcDir: string,
+
+    enableSwagger: true,
+    useUserSchema: true,
     useOauth: {
         google?: boolean,
         microsoft?: boolean,
@@ -11,10 +18,6 @@ export interface compilerOptions {
         github?: boolean,
         [key: string]: boolean | undefined;
     };
-
-    headerComment?: string;
-    modelsTemplate?: string;
-    controllersTemplate?: string;
 }
 
 export interface jsonSchema {

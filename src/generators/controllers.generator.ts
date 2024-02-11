@@ -76,22 +76,19 @@ export function compile(options: {
         else {
             // write controller
             const outPath = `${options.controllerOutDir}/${interfaceName}Controller.gen.ts`;
-            const outPathNoGen = `${options.controllerOutDir}/${interfaceName}Controller.nogen.ts`;
             const controllerToModelPath = `${controllerToModelBasePath}/${interfaceName}Model.gen`;
 
-            if (!fs.existsSync(outPathNoGen)) {
-                log.writing(`Controller : ${outPath}`);
-                writtedEndpoint.push(endpointFormatted);
-                fs.writeFileSync(outPath,
-                    controllerTemplate({
-                        endpoint: endpoint,
-                        modelPath: controllerToModelPath,
-                        interfaceName: interfaceName,
-                        validators: endpointsValidator,
-                        compilerOptions: options.compilerOptions,
-                    })
-                );
-            }
+            log.writing(`Controller : ${outPath}`);
+            fs.writeFileSync(outPath,
+                controllerTemplate({
+                    endpoint: endpoint,
+                    modelPath: controllerToModelPath,
+                    interfaceName: interfaceName,
+                    validators: endpointsValidator,
+                    compilerOptions: options.compilerOptions,
+                })
+            );
+            writtedEndpoint.push(endpointFormatted);
         }
     });
 

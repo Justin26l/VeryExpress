@@ -1,5 +1,7 @@
 {
     "commitBeforeGenerate": false,
+    "enableSwagger": true,
+    "useUserSchema": true,
     "useOauth": {
         "google": true,
         "microsoft": false,
