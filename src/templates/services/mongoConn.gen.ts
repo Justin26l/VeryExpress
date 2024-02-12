@@ -1,25 +1,25 @@
-import mongoose from 'mongoose';
-import log from '../utils/logger.gen';
+import mongoose from "mongoose";
+import log from "../utils/logger.gen";
 
 export function connect(mongoUrl:string): mongoose.Connection {
-  mongoose.connect(mongoUrl, {
-    autoCreate: true,
-  });
+    mongoose.connect(mongoUrl, {
+        autoCreate: true,
+    });
 
-  mongoose.connection.on('open', () => {
-    log.ok('MongoDB Connection open : ' + mongoUrl);
-  });
+    mongoose.connection.on("open", () => {
+        log.ok("MongoDB Connection open : " + mongoUrl);
+    });
 
-  mongoose.connection.on('error', (err: any) => {
-    log.error('MongoDB Connection error:', err.message, err)
-  });
+    mongoose.connection.on("error", (err: any) => {
+        log.error("MongoDB Connection error:", err.message, err);
+    });
 
-  return mongoose.connection;
+    return mongoose.connection;
 }
 
 
 const mongo = {
-  connect,
-}
+    connect,
+};
 
 export default mongo;

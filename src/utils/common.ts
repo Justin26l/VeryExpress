@@ -122,13 +122,13 @@ export function copyDir(source: string, destination: string, overwrite?:boolean)
             copyDir(source + "/" + files[i], destination + "/" + files[i]);
         }
         // avoid overwrite
-        else if ( !overwrite && fs.existsSync(destination + '/' + files[i])) {
-            log.info(`FILE : existed, skip file ${destination + '/' + files[i]} exist, skip`);
+        else if ( !overwrite && fs.existsSync(destination + "/" + files[i])) {
+            log.info(`FILE : existed, skip file ${destination + "/" + files[i]} exist, skip`);
         }
         else {
-            const outPath: string = destination + '/' + files[i];
+            const outPath: string = destination + "/" + files[i];
             log.writing(`FILE : ${outPath}`);
-            fs.copyFileSync(source + '/' + files[i], outPath);
+            fs.copyFileSync(source + "/" + files[i], outPath);
         }
     }
 }

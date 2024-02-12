@@ -47,7 +47,7 @@ export function compile(options: {
             const methodEnum: types.httpMethod = httpMethod as types.httpMethod;
 
             const validators: Schema = Object.assign(
-                buildParamValidator(endpoint, methodEnum, openApi, options.compilerOptions),
+                buildParamValidator(endpoint, methodEnum, openApi),
                 buildBodyValidator(endpoint, methodEnum, openApi)
             );
 
@@ -98,7 +98,6 @@ function buildParamValidator(
     endpoint: string,
     httpMethod: types.httpMethod,
     openapi: openapiType.openapi,
-    compilerOptions: types.compilerOptions,
 ): Schema {
 
     const validators: Schema = {};

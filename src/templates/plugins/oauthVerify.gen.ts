@@ -1,6 +1,6 @@
 // import log from '../utils/logger.gen';
-import { Profile } from 'passport';
-import { UserModel } from '../models/UserModel.gen';
+import { Profile } from "passport";
+import { UserModel } from "../models/UserModel.gen";
 
 interface IProfile extends Profile {
     [key: string]: any;
@@ -19,7 +19,7 @@ export async function oauthVerify(accessToken: string, refreshToken: string, pro
         // log.info('OAuthVerify NewUser');
         const newUser = new UserModel({
             authProvider: profile.provider,
-            email: profile.emails?.[0].value || '',
+            email: profile.emails?.[0].value || "",
             authId: profile.id,
             name: profile.displayName,
             familyName: profile.name?.familyName, 

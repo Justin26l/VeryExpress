@@ -1,6 +1,6 @@
-import { Router } from 'express';
-import passport, { PassportStatic, Profile } from 'passport';
-import { AuthenticateOptionsGoogle, Strategy as GoogleStrategy, StrategyOptions, VerifyCallback } from 'passport-google-oauth20';
+import { Router } from "express";
+import passport, { PassportStatic, Profile } from "passport";
+import { AuthenticateOptionsGoogle, Strategy as GoogleStrategy, StrategyOptions, VerifyCallback } from "passport-google-oauth20";
 // import log from '../utils/logger.gen';
 
 export type { Profile };
@@ -11,7 +11,7 @@ export interface passportGoogleConfig {
         verify: (accessToken: string, refreshToken: string, profile: Profile, done: VerifyCallback) => void
     },
     authenticateOptionsGoogle?: AuthenticateOptionsGoogle,
-};
+}
 
 /** Provides a router and passport instance for Google OAuth */
 export default class PassportGoogle {
@@ -26,27 +26,27 @@ export default class PassportGoogle {
 
         this.passport.use(new GoogleStrategy(
             this.config.strategyConfig.options || {
-                clientID: process.env.OAUTH_GOOGLE_CLIENTID || '',
-                clientSecret: process.env.OAUTH_GOOGLE_CLIENTSECRET || '',
+                clientID: process.env.OAUTH_GOOGLE_CLIENTID || "",
+                clientSecret: process.env.OAUTH_GOOGLE_CLIENTSECRET || "",
                 callbackURL: `${process.env.APP_HOST}:${process.env.APP_PORT}/auth/google/callback`,
             },
             this.config.strategyConfig.verify
         ));
 
         // redirect to google login
-        this.router.get('/auth/google',
-            this.passport.authenticate('google', this.config.authenticateOptionsGoogle || { scope: ['profile', 'email'] })
+        this.router.get("/auth/google",
+            this.passport.authenticate("google", this.config.authenticateOptionsGoogle || { scope: ["profile", "email"] })
         );
 
         // back from google login
-        this.router.get('/auth/google/callback', 
-            this.passport.authenticate('google', { failureRedirect: '/login' }), 
+        this.router.get("/auth/google/callback", 
+            this.passport.authenticate("google", { failureRedirect: "/login" }), 
             (req, res) => {
                 // res.send(`Hello, user <pre>${req.user}</pre>`);
-                res.redirect('/profile');
+                res.redirect("/profile");
             }
         );
-    };
+    }
 
     public async passportSerializeUser() {
 
@@ -59,6 +59,6 @@ export default class PassportGoogle {
             // log.info('passportGoogle().deserializeUser', id)
             done(null, { id });
         });
-    };
+    }
 
-};
+}

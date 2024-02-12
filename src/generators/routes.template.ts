@@ -1,5 +1,4 @@
 import * as types from "../types/types";
-import * as utils from "../utils/common";
 
 export default function routesTemplate(templateOptions: {
     template?: string,
@@ -44,7 +43,7 @@ export default class ApiRouter{
 
     }
 
-}`
+}`;
 
     let importRoutes = "";
     let useRoutes = "";

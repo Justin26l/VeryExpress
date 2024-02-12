@@ -46,7 +46,7 @@ export function compile(options: {
                 compilerOptions: options.compilerOptions || utils.defaultCompilerOptions
             })
         );
-    };
+    }
 
     // use swagger
     if (options.compilerOptions.enableSwagger) {

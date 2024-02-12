@@ -1,13 +1,13 @@
-import * as types from '../../types/types';
+import * as types from "../../types/types";
 import utils from "./../../utils/common";
 
 function loginHtml(providers: string[]) {
     let html = "<p> login with : </p>";
     providers.forEach((pp) => {
-        html += `<a href="\${process.env.APP_HOST}:\${process.env.APP_PORT}/auth/${pp}">${pp}</a>`
+        html += `<a href="\${process.env.APP_HOST}:\${process.env.APP_PORT}/auth/${pp}">${pp}</a>`;
     });
     return `\`${html}\``;
-};
+}
 
 export function compile(options: {
     compilerOptions: types.compilerOptions

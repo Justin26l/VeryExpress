@@ -1,6 +1,6 @@
-import { Router } from 'express';
-import swaggerUi, { JsonObject } from 'swagger-ui-express';
-import { loadYaml } from '../utils/common.gen';
+import { Router } from "express";
+import swaggerUi, { JsonObject } from "swagger-ui-express";
+import { loadYaml } from "../utils/common.gen";
 
 
 export default class SwaggerRouter{
@@ -10,7 +10,7 @@ export default class SwaggerRouter{
     constructor() {}
 
     public initRoutes() {
-        this.router.use('/api', swaggerUi.serve, swaggerUi.setup(loadYaml('./openapi/openapi.gen.yaml') as JsonObject));
+        this.router.use("/api", swaggerUi.serve, swaggerUi.setup(loadYaml("./openapi/openapi.gen.yaml") as JsonObject));
 
     }
 

@@ -28,7 +28,7 @@ export function formatJsonSchema(jsonSchemaPath: string): types.jsonSchema {
     // json schema structure check 
     if (typeof jsonSchema.properties !== "object") {
         log.error(`properties is invalid in ${jsonSchemaPath}`);
-    };
+    }
 
     // format properties boolean "required" into array of string
     jsonSchema.required = getRequiredArrStr(jsonSchema, jsonSchemaPath);
