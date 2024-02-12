@@ -3,7 +3,7 @@ import utils from "./../utils/common";
 
 // import
 const importExpressSession = `import session from 'express-session';`;
-const importPassportGoogle = `import passportGoogle from "./plugins/passportGoogle.gen"`;
+const importPassportGoogle = `import PassportGoogle from "./plugins/PassportGoogle.gen"`;
 const importSwaggerRouter = `import SwaggerRouter from './routes/SwaggerRouter.gen';`;
 const importOAuthRouter = `import OAuthRouter from './routes/OAuthRouter.gen';`;
 
@@ -19,7 +19,7 @@ const ConfigSwaggerRouter = `const SwaggerRoute = new SwaggerRouter(); SwaggerRo
 const ConfigOAuthRouter = `const OAuthRoute = new OAuthRouter(); OAuthRoute.initRoutes();`;
 
 const ConfigPassportGoogle = `
-const OAuthGoogle = new passportGoogle({
+const OAuthGoogle = new PassportGoogle({
   strategyConfig: {
     // @ts-ignore
     verify: (accessToken: string, refreshToken: string, profile: Profile, done: (error: any, user?: any) => void) => {
@@ -53,7 +53,7 @@ import dotenv from 'dotenv';
 import helmet from 'helmet';
 
 import mongoConn from './services/mongoConn.gen';
-import log from './utils/log.gen';
+import log from './utils/logger.gen';
 
 import ApiRouter from './routes/ApiRouter.gen';
 {{Import}}

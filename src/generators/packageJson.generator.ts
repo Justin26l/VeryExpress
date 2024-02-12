@@ -1,5 +1,5 @@
 import fs from "fs";
-import log from "../utils/log";
+import log from "../utils/logger";
 
 
 export function compile(

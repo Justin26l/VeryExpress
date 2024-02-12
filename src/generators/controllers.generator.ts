@@ -2,7 +2,7 @@ import fs from "fs";
 import jsYaml from "js-yaml";
 
 import controllerTemplate from "./controller.template";
-import log from "../utils/log";
+import log from "../utils/logger";
 import * as utils from "../utils/common";
 
 import * as types from "../types/types";

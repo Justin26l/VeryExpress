@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import log from '../utils/log.gen';
+import log from '../utils/logger.gen';
 
 export function connect(mongoUrl:string): mongoose.Connection {
   mongoose.connect(mongoUrl, {

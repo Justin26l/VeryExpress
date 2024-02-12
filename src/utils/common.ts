@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import childProcess from "child_process";
 import * as types from "../types/types";
-import log from "./log";
+import log from "./logger";
 
 function getPackageInfo(): {
     version: string,
@@ -123,7 +123,7 @@ export function copyDir(source: string, destination: string, overwrite?:boolean)
         }
         // avoid overwrite
         else if ( !overwrite && fs.existsSync(destination + '/' + files[i])) {
-            log.info(`FILE : ${destination + '/' + files[i]} exist, skip`);
+            log.info(`FILE : existed, skip file ${destination + '/' + files[i]} exist, skip`);
         }
         else {
             const outPath: string = destination + '/' + files[i];

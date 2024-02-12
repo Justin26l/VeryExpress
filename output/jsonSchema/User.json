@@ -26,10 +26,6 @@
             "index": true,
             "required": true
         },
-        "email_verified": {
-            "type": "boolean",
-            "required": true
-        },
         "authId": {
             "type": "string",
             "index": true
@@ -49,18 +45,19 @@
         },
         "locale": {
             "type": "string",
-            "maxLength": 8,
+            "default": "en-US",
+            "maxLength": 6,
             "required": true
         },
         "isActive": {
             "type": "boolean",
+            "default": true,
             "required": true
         }
     },
     "additionalProperties": false,
     "required": [
         "email",
-        "email_verified",
         "name",
         "locale",
         "isActive"

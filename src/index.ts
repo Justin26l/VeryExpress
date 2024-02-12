@@ -3,7 +3,7 @@ import fs from "fs";
 import json2mongoose from "json2mongoose";
 import * as openapiGen from "./generators/openapi.generator";
 
-import log from "./utils/log";
+import log from "./utils/logger";
 import utils from "./utils/common";
 import * as controllerGen from "./generators/controllers.generator";
 import * as routeGen from "./generators/routes.generator";

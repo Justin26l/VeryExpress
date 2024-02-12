@@ -16,6 +16,7 @@ export function compile(options: {
     const providers: string[] = utils.isUseOAuth(options.compilerOptions);
     return `${options.compilerOptions.headerComment}
 import { Router } from 'express';
+import util from 'util';
 
 export default class OAuthRouter{
 
@@ -32,8 +33,9 @@ export default class OAuthRouter{
 
         this.router.get('/profile', (req, res) => {
             if (req.isAuthenticated()) {
-                res.send(\`<pre>\${JSON.stringify(req.user)}</pre>\`);
-            } else {
+                res.send(\`<p>Session Data</p><pre>\${util.inspect(req.user, undefined, null)}</pre>\`);
+            } 
+            else {
                 res.redirect('/login');
             };
         });

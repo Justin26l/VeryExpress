@@ -1,7 +1,7 @@
 import fs from "fs";
 import * as types from "../types/types";
 import * as common from "../utils/common";
-import log from "../utils/log";
+import log from "../utils/logger";
 
 export function formatJsonSchema(jsonSchemaPath: string): types.jsonSchema {
     // read json schema

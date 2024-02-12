@@ -4,7 +4,7 @@ import childProcess from "child_process";
 import minimist from "minimist";
 
 import { generate } from "./index";
-import log from "./utils/log";
+import log from "./utils/logger";
 
 import { compilerOptions } from "./types/types";
 import { defaultCompilerOptions } from "./utils/common";

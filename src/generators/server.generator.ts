@@ -4,7 +4,7 @@ import serverTemplate from "./server.template";
 import packageJson from "./packageJson.generator";
 
 import * as types from "../types/types";
-import log from "../utils/log";
+import log from "../utils/logger";
 
 /**
  * generate required files at root & output directory

@@ -6,7 +6,7 @@ import * as routesOAuthGen from "./routes/oauth.generator";
 import * as types from "../types/types";
 
 import * as utils from "../utils/common";
-import log from "../utils/log";
+import log from "../utils/logger";
 
 /**
  * compile controllers to route source code

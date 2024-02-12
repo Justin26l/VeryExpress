@@ -1,9 +1,7 @@
 import { Router } from 'express';
 import passport, { PassportStatic, Profile } from 'passport';
 import { AuthenticateOptionsGoogle, Strategy as GoogleStrategy, StrategyOptions, VerifyCallback } from 'passport-google-oauth20';
-
-import { UserModel } from '../models/UserModel.gen';
-import log from '../utils/logger.gen';
+// import log from '../utils/logger.gen';
 
 export type { Profile };
 
@@ -16,7 +14,7 @@ export interface passportGoogleConfig {
 };
 
 /** Provides a router and passport instance for Google OAuth */
-export default class passportGoogle {
+export default class PassportGoogle {
 
     private config: passportGoogleConfig;
     public router: Router = Router();

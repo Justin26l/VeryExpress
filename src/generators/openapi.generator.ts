@@ -5,7 +5,7 @@ import fs from "fs";
 import * as types from "../types/types";
 import * as openapiType from "../types/openapi";
 import utils from "../utils/common";
-import log from "../utils/log";
+import log from "../utils/logger";
 
 /**
  * compile json schema to openapi spec
