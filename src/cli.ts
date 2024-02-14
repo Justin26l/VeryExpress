@@ -48,7 +48,7 @@ fs.writeFileSync("vex.config.json", JSON.stringify(config, null, 4));
  */
 
 /** Help */
-if (["help", "-h", "h"].includes(String(args._[0]).toLowerCase())) {
+if ( String(args._[0]).toLowerCase() === "h" || args["h"] ) {
     console.log(`Very Express CLI Usage :
 vex [flag]
     -h | help : Help
@@ -62,7 +62,7 @@ to generate app :
 }
 
 /** Initialization */
-else if (["init", "-i", "i"].includes(String(args._[0]).toLowerCase())) {
+else if ( String(args._[0]).toLowerCase() === "i" || args["i"] ) {
     console.log("Very Express CLI : Initialization ...");
     process.exit(0);
 }
