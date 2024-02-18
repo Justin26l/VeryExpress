@@ -27,6 +27,8 @@ if (fs.existsSync("vex.config.json")) {
 
 // record last generation args or set default values
 config.commitBeforeGenerate = config.commitBeforeGenerate ?? false;
+config.enableSwagger = config.enableSwagger || true,
+config.useUserSchema = config.useUserSchema || true,
 config.jsonSchemaDir = args.j || args.jsonSchemaDir || config.jsonSchemaDir || "./jsonSchema";
 config.rootDir = args.o || args.rootDir || config.rootDir || ".";
 config.srcDir = config.srcDir || config.rootDir + "/src" ;
@@ -38,7 +40,7 @@ config.useOauth = config.useOauth || {
     github: false
 };
 
-log.writing("vex.config.json");
+log.process("vex.config.json");
 fs.writeFileSync("vex.config.json", JSON.stringify(config, null, 4));
 
 /** 
@@ -51,8 +53,8 @@ fs.writeFileSync("vex.config.json", JSON.stringify(config, null, 4));
 if ( String(args._[0]).toLowerCase() === "h" || args["h"] ) {
     console.log(`Very Express CLI Usage :
 vex [flag]
-    -h | help : Help
-    -i | init : Create generator config etc. 
+    -h : Help
+    -i : Create generator config etc. 
 to generate app :
     vex [jsonSchemaDir] [rootDir]
     -j : jsonSchemaDir (configured: ${config.jsonSchemaDir})
@@ -66,6 +68,7 @@ else if ( String(args._[0]).toLowerCase() === "i" || args["i"] ) {
     console.log("Very Express CLI : Initialization ...");
     process.exit(0);
 }
+
 /** Generation */
 else {
     if (!fs.existsSync(config.jsonSchemaDir)) {
