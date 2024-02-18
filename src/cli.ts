@@ -45,8 +45,8 @@ config.useOauth = config.useOauth || {
 };
 
 if ( config.useObjectID && config.allowApiCreateUpdate_id ){
-    log.warn(`Not recommended to use "useObjectID" with "allowApiCreateUpdate_id",\nthis may cause security issues`);
-};
+    log.warn("Not recommended to use \"useObjectID\" with \"allowApiCreateUpdate_id\",\nthis may cause security issues");
+}
 
 log.process("vex.config.json");
 fs.writeFileSync("vex.config.json", JSON.stringify(config, null, 4));
