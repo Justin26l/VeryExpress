@@ -17,28 +17,32 @@ export function loadYaml(yamlFilePath: string) {
  * @param fieldsString json stringified array of string
  * @error may throw an error if the fieldsString is not a valid JSON
  */
-export function parseFieldsSelect(fieldsString: any ): Promise<{[key:string]:number}> {
+export function parseFieldsSelect(selectString: any) : { [key: string]: number } | undefined {
+    const ErrorArrStrMsg = "Invalid select string, only array of string accepted";
 
-    return new Promise((resolve, reject) => {
+    if (typeof selectString === "undefined" || selectString === "") {
+        return undefined;
+    }
+    else if (typeof selectString !== "string") {
+        throw new Error(ErrorArrStrMsg);
+    }
 
-        if ( !fieldsString || typeof fieldsString !== "string"){
-            return reject("Invalid fields string : "+typeof fieldsString,);
+    const fieldArr: string[] = JSON.parse(selectString);
+
+    if (!Array.isArray(fieldArr)) {
+        throw new Error(ErrorArrStrMsg);
+    }
+
+    for (let i = 0; i < fieldArr.length; i++) {
+        if (typeof fieldArr[i] !== "string") {
+            throw new Error(ErrorArrStrMsg);
         }
+    }
+    // Convert the fieldArr to an object that can be used in the select method
+    const selectFields = fieldArr.reduce((obj: any, field: string) => {
+        obj[field] = 1;
+        return obj;
+    }, {} as Record<string, number>);
 
-        let fieldArr: string[] = [];
-
-        try {
-            fieldArr = JSON.parse(fieldsString);
-        } catch (err) {
-            return reject("Invalid fields string");
-        }
-
-        // Convert the fieldArr to an object that can be used in the select method
-        const selectFields = fieldArr.reduce((obj:any, field:string) => {
-            obj[field] = 1;
-            return obj;
-        }, {} as Record<string, number>);
-
-        resolve(selectFields);
-    });
+    return selectFields;
 }

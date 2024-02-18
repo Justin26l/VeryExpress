@@ -69,19 +69,14 @@ class {{interfaceName}}Controller {
                 return res.status(400).json(validationError.array());
             };
             
-            // Get mongoose filter query
             const searchFilter = new MongoQS().parse(req.query);
+            let selectedFields : {[key: string]: number} | undefined = undefined;
 
-            // Get selected fields from query string
-            const selectedFields = await parseFieldsSelect(req.query.select);
+            try { selectedFields = parseFieldsSelect(req.query.select || '');} 
+            catch (err:any) { return res.status(400).json({ error: err.message });};
 
             const result = await {{interfaceName}}Model.find(searchFilter, selectedFields);
-            if (!result) {
-                return res.status(404).json({ error: "no data found" });
-            }
-            else {
-                return res.status(200).json(result);
-            };
+            return res.status(200).json(result);
         } catch (err:any) {
             return res.status(500).json({ error: err.message });
         }
