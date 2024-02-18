@@ -30,6 +30,9 @@ export function formatJsonSchema(jsonSchemaPath: string): types.jsonSchema {
         log.error(`properties is invalid in ${jsonSchemaPath}`);
     }
 
+    // _id fields check
+    checkField_id(jsonSchema, jsonSchemaPath);
+
     // format properties boolean "required" into array of string
     jsonSchema.required = getRequiredArrStr(jsonSchema, jsonSchemaPath);
 
@@ -84,4 +87,16 @@ function getRequiredArrStr(schema: types.jsonSchemaPropsItem | types.jsonSchema,
 
     return requiredArr;
     
+}
+
+function checkField_id(schema: types.jsonSchemaPropsItem | types.jsonSchema, jsonSchemaPath?: string){
+    // check if _id field is not exist, add it
+    if (schema.properties && !schema.properties._id) {
+        schema.properties._id = {
+            type: "string",
+            description: "Unique Identifier",
+            example: "60c8c9d2b2b4f2c3e8d6f3e1",
+        };
+        log.info(`formatJsonSchema : "_id" field added to ${jsonSchemaPath}`);
+    }
 }
