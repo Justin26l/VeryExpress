@@ -59,6 +59,14 @@ export function loadJsonSchema(jsonSchemaPath: string) : types.jsonSchema | neve
     }
 }
 
+/** remove "x-" and additionalKeyArr from schemaObj 
+ * @param schemaObj - json schema object
+ * @param additionalKeyArr - array of string or object of string
+ * additionalKeyArr can be array of string or an object of { "fieldName": "fieldType" }
+ * 
+ * @example cleanXcustomValue( jsonSchema, ["fieldName1", "fieldName2"]);
+ * @example cleanXcustomValue( jsonSchema, { "fieldName1": "string", "fieldName2": "object" });
+*/
 export function cleanXcustomValue(
     schemaObj: { [key: string]: any },
     additionalKeyArr?: string[] | types.additionalKeyObj
@@ -78,6 +86,7 @@ export function cleanXcustomValue(
         }
         // additionalKeyArr is array, filter with fields name only
         else if ( isAddiArrStr && addiArrStr.includes(key) ) {
+            console.log("delete", key, obj[key])
             delete obj[key];
         }
         // additionalKeyArr is object, filter with type
