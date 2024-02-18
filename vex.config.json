@@ -6,6 +6,8 @@
     "openapiDir": "./output/openapi",
     "enableSwagger": true,
     "useUserSchema": true,
+    "useObjectID": true,
+    "allowApiCreateUpdate_id": false,
     "useOauth": {
         "google": true,
         "microsoft": false,

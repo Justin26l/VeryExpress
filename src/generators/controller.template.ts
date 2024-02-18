@@ -87,7 +87,7 @@ class {{interfaceName}}Controller {
             const validationError = validationResult(req);
             if ( ! validationError.isEmpty() ) {
                 return res.status(400).json(validationError.array());
-            };
+            };{{check_id}}
             
             const result = await {{interfaceName}}Model.create(req.body);
             if (!result) {
@@ -106,7 +106,8 @@ class {{interfaceName}}Controller {
             const validationError = validationResult(req);
             if ( ! validationError.isEmpty() ) {
                 return res.status(400).json(validationError.array());
-            };
+            };{{check_id}}
+
             const result = await {{interfaceName}}Model.findByIdAndUpdate(req.params.id, req.body, { new: true });
             if (!result) {
                 return res.status(404).json({ error: "failed to update" });
@@ -124,7 +125,8 @@ class {{interfaceName}}Controller {
             const validationError = validationResult(req);
             if ( ! validationError.isEmpty() ) {
                 return res.status(400).json(validationError.array());
-            };
+            };{{check_id}}
+
             const result = await {{interfaceName}}Model.replaceOne({_id: req.params.id}, req.body);
             if (!result) {
                 return res.status(404).json({ error: "failed to update" });
@@ -143,6 +145,7 @@ class {{interfaceName}}Controller {
             if ( ! validationError.isEmpty() ) {
                 return res.status(400).json(validationError.array());
             };
+
             const result = await {{interfaceName}}Model.findByIdAndDelete(req.params.id);
             if (!result) {
                 return res.status(404).json({ error: "failed to update" });
@@ -222,6 +225,14 @@ export default new {{interfaceName}}Controller().router;
             checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint+"/{id}"].delete, { depth: null }).replace(/^/gm, indent3) }),
             this.delete${templateOptions.interfaceName}.bind(this)
         );`
+    );
+
+    template = template.replace(
+        /{{check_id}}/g, 
+        templateOptions.compilerOptions.allowApiCreateUpdate_id ? "" : `
+            if (req.body._id) {
+                delete req.body._id;
+            };`
     );
 
     return template;

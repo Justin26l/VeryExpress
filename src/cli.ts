@@ -35,11 +35,17 @@ config.openapiDir = config.openapiDir || config.rootDir + "./openapi";
 
 config.enableSwagger = config.enableSwagger || true,
 config.useUserSchema = config.useUserSchema || true,
+config.useObjectID = config.useObjectID || true,
+config.allowApiCreateUpdate_id = config.allowApiCreateUpdate_id || false,
 config.useOauth = config.useOauth || {
     google: false,
     microsoft: false,
     apple: false,
     github: false
+};
+
+if ( config.useObjectID && config.allowApiCreateUpdate_id ){
+    log.warn(`Not recommended to use "useObjectID" with "allowApiCreateUpdate_id",\nthis may cause security issues`);
 };
 
 log.process("vex.config.json");

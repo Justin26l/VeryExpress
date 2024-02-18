@@ -3,7 +3,7 @@ import * as types from "../types/types";
 import * as common from "../utils/common";
 import log from "../utils/logger";
 
-export function formatJsonSchema(jsonSchemaPath: string): types.jsonSchema {
+export function formatJsonSchema(jsonSchemaPath: string, compilerOptions: types.compilerOptions): types.jsonSchema {
     // read json schema
     const jsonSchema: types.jsonSchema = common.loadJsonSchema(jsonSchemaPath);
     if (jsonSchema == undefined) {
@@ -31,7 +31,9 @@ export function formatJsonSchema(jsonSchemaPath: string): types.jsonSchema {
     }
 
     // _id fields check
-    checkField_id(jsonSchema, jsonSchemaPath);
+    if (compilerOptions.useObjectID){
+        checkField_id(jsonSchema, jsonSchemaPath);
+    }
 
     // format properties boolean "required" into array of string
     jsonSchema.required = getRequiredArrStr(jsonSchema, jsonSchemaPath);

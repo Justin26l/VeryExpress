@@ -70,7 +70,7 @@ export function generate(
             }
 
             // read schema file config
-            const jsonSchema: types.jsonSchema = formatJsonSchema(schemaPath);
+            const jsonSchema: types.jsonSchema = formatJsonSchema(schemaPath, options);
             const documentConfig: types.documentConfig = jsonSchema["x-documentConfig"];
 
             // make interface

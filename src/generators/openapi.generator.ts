@@ -43,7 +43,7 @@ export function compile(
         const jsonSchemaBuffer = fs.readFileSync(`${compilerOptions.jsonSchemaDir}/${file}`);
         const jsonSchema: types.jsonSchema = JSON.parse(jsonSchemaBuffer.toString());
         openapiJson = jsonToOpenapiPath(openapiJson, jsonSchema, { jsonSchemaFilePath: jsonSchemaFilePath });
-        openapiJson = jsonToOpenapiComponentSchema(openapiJson, jsonSchema, { jsonSchemaFilePath: jsonSchemaFilePath });
+        openapiJson = jsonToOpenapiComponentSchema(openapiJson, jsonSchema, { jsonSchemaFilePath: jsonSchemaFilePath }, compilerOptions);
     });
 
     const validOpenApi = json2openapi(openapiJson, { version: 3.0 });
@@ -169,7 +169,8 @@ function jsonToOpenapiComponentSchema(
     jsonSchema: types.jsonSchema,
     additionalinfo: {
         jsonSchemaFilePath: string
-    }
+    },
+    compilerOptions: types.compilerOptions
 ): openapiType.openapi {
     const componentSchemaPath: openapiType.components["schemas"] = {};
 
@@ -198,7 +199,7 @@ function jsonToOpenapiComponentSchema(
     };
     
     // without [ _id:obj, index:bool, unique:bool, required:bool ]
-    const componentSchemaBodyRequiredPopId: openapiType.componentsSchemaValue = {
+    const componentSchemaBodyRequiredWithoutId: openapiType.componentsSchemaValue = {
         type: "object",
         properties: json2openapi(
             utils.cleanXcustomValue(componentSchemaBodyRequired.properties as any, { _id: "object"}),
@@ -211,7 +212,7 @@ function jsonToOpenapiComponentSchema(
     const componentSchemaBody: openapiType.componentsSchemaValue = {
         type: "object",
         properties: json2openapi(
-            utils.cleanXcustomValue(componentSchemaBodyRequiredPopId.properties as any, ["required"]),
+            utils.cleanXcustomValue(componentSchemaBodyRequiredWithoutId.properties as any, ["required"]),
             { version: 3.0 }
         ),
     };   
@@ -293,7 +294,7 @@ function jsonToOpenapiComponentSchema(
             break;
 
         case "post":
-            componentSchemaPath[httpMethod + interfaceName + "Body"] = componentSchemaBodyRequiredPopId;
+            componentSchemaPath[httpMethod + interfaceName + "Body"] = compilerOptions.allowApiCreateUpdate_id ? componentSchemaBodyRequired : componentSchemaBodyRequiredWithoutId ;
             componentSchemaPath[httpMethod + interfaceName + "Response"] = componentSchemaResponse;
             break;
         case "put":

@@ -7,8 +7,10 @@ export interface compilerOptions {
     rootDir: string,
     srcDir: string,
 
-    enableSwagger: true,
-    useUserSchema: true,
+    enableSwagger: boolean,
+    useUserSchema: boolean,
+    useObjectID: boolean,
+    allowApiCreateUpdate_id: boolean,
     useOauth: {
         google?: boolean,
         microsoft?: boolean,

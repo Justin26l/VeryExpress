@@ -86,7 +86,6 @@ export function cleanXcustomValue(
         }
         // additionalKeyArr is array, filter with fields name only
         else if ( isAddiArrStr && addiArrStr.includes(key) ) {
-            console.log("delete", key, obj[key])
             delete obj[key];
         }
         // additionalKeyArr is object, filter with type
@@ -158,8 +157,11 @@ export const defaultCompilerOptions: types.compilerOptions = {
     jsonSchemaDir: "./jsonSchema",
     openapiDir: "./openapi",
 
+    
     enableSwagger: true,
     useUserSchema: true,
+    useObjectID: true,
+    allowApiCreateUpdate_id: false,
     useOauth: {
         google: false,
         microsoft: false,
