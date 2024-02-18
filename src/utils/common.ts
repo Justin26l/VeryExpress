@@ -23,7 +23,7 @@ function getPackageInfo(): {
     };
 }
 
-export function getGenaratorHeaderComment(comment?: string): string {
+export function getGenaratorHeaderComment(): string {
     const packageInfo = getPackageInfo();
     return `/* eslint-disable */
 /**
