@@ -1,9 +1,8 @@
 import * as types from "../types/types";
 
-export default function routesTemplate(templateOptions: {
+export default function routesTemplate(options: {
     template?: string,
     openapiFile?: string,
-    enableOpenApi?: boolean,
     routes: {
         route: string,
         interfaceName: string,
@@ -11,21 +10,8 @@ export default function routesTemplate(templateOptions: {
     }[],
     compilerOptions: types.compilerOptions,
 }): string {
-    if (!templateOptions.compilerOptions.headerComment) {
-        templateOptions.compilerOptions.headerComment = templateOptions.compilerOptions.headerComment || "// generated files by very-express";
-    }
 
-    const enableOpenApi = templateOptions.enableOpenApi || true;
-    // required openapiPath if enableOpenApi is true
-    if (enableOpenApi && !templateOptions.compilerOptions.openapiDir) {
-        // log red
-        console.log("\x1b[31m%s\x1b[0m", "[Error]", "OpenApi : routers.generator > compile() : Args \"openapiPath\" is required while enableOpenApi is true.");
-        throw new Error("OpenApi : routers.generator > compile() : Args \"openapiPath\" is required while enableOpenApi is true.");
-    }
-
-    const headerComment : string = templateOptions.compilerOptions?.headerComment || "// generated files by very-express";
-
-    let template: string = templateOptions.template || `{{headerComment}}
+    let template: string = options.template || `{{headerComment}}
 import { Router } from 'express';
 
 {{importRoutes}}
@@ -46,12 +32,12 @@ export default class ApiRouter{
 
     let importRoutes = "";
     let useRoutes = "";
-    templateOptions?.routes.forEach((obj) => {
+    options.routes.forEach((obj) => {
         importRoutes += `import ${obj.interfaceName}Controller from '${obj.controllerPath}';\n`;
         useRoutes += `this.router.use('${obj.route}', ${obj.interfaceName}Controller);\n`;
     });
 
-    template = template.replace(/{{headerComment}}/g, headerComment);
+    template = template.replace(/{{headerComment}}/g, options.compilerOptions.headerComment || "// generated files by very-express");
     template = template.replace(/{{importRoutes}}/g, importRoutes);
     template = template.replace(/{{useRoutes}}/g, useRoutes);
 

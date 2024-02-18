@@ -1,3 +1,5 @@
+// {{headerComment}}
+
 import mongoose from "mongoose";
 import log from "../utils/logger.gen";
 

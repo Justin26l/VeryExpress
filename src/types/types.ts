@@ -1,8 +1,6 @@
 export interface compilerOptions {
     commitBeforeGenerate: boolean;
-    headerComment?: string;
-    modelsTemplate?: string;
-    controllersTemplate?: string;
+    headerComment: string;
 
     jsonSchemaDir: string,
     openapiDir: string,

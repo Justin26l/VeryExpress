@@ -3,7 +3,6 @@ import * as types from "../types/types";
 import { Schema } from "express-validator";
 
 export default function controllerTemplate(templateOptions: {
-    headerComment?:string, 
     template?:string, 
     endpoint: string,
     modelPath: string,
@@ -11,9 +10,6 @@ export default function controllerTemplate(templateOptions: {
     validators: {[key:string]:{[key:string]:Schema}},
     compilerOptions: types.compilerOptions,
 }) : string {
-    if(!templateOptions.headerComment){
-        templateOptions.headerComment = templateOptions.compilerOptions?.headerComment || "// generated files by very-express";
-    }
 
     let template :string = templateOptions.template || `{{headerComment}}
 import { Router, Request, Response } from 'express';
@@ -169,23 +165,15 @@ export default new {{interfaceName}}Controller().router;
 `;
       
     const indent3 = "           ";
-    template = template.replace(
-        /{{headerComment}}/g, 
-        templateOptions.headerComment
-    );
-    template = template.replace(
-        /{{interfaceName}}/g, 
-        templateOptions.interfaceName
-    );
-    template = template.replace(
-        /{{modelPath}}/g, 
-        templateOptions.modelPath
-    );
-          
+
+    template = template.replace(/{{headerComment}}/g, templateOptions.compilerOptions.headerComment || "// generated files by very-express");
+    template = template.replace(/{{interfaceName}}/g, templateOptions.interfaceName);
+    template = template.replace(/{{modelPath}}/g, templateOptions.modelPath);
+
     template = template.replace(
         /{{getListRoute}}/g, 
-        !templateOptions.validators[templateOptions.endpoint].get ? 
-            "// getListRoute disabled" : `
+        !templateOptions.validators[templateOptions.endpoint].get ? `
+        // getListRoute disabled` : `
         this.router.get('/', 
             checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint].get, { depth: null }).replace(/^/gm, indent3) }),
             this.getList${templateOptions.interfaceName}.bind(this)
@@ -194,8 +182,8 @@ export default new {{interfaceName}}Controller().router;
 
     template = template.replace(
         /{{getRoute}}/g, 
-        !templateOptions.validators[templateOptions.endpoint+"/{id}"].get ? 
-            "// getRoute disabled" : `
+        !templateOptions.validators[templateOptions.endpoint+"/{id}"].get ? `
+        // getRoute disabled` : `
         this.router.get('/:id', 
             checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint+"/{id}"].get, { depth: null }).replace(/^/gm, indent3) }),
             this.get${templateOptions.interfaceName}.bind(this)
@@ -204,8 +192,8 @@ export default new {{interfaceName}}Controller().router;
 
     template = template.replace(
         /{{postRoute}}/g, 
-        !templateOptions.validators[templateOptions.endpoint].post ? 
-            "// postRoute disabled" : `
+        !templateOptions.validators[templateOptions.endpoint].post ? `
+        // postRoute disabled` : `
         this.router.post('/', 
             checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint].post, { depth: null }).replace(/^/gm, indent3) }),
             this.create${templateOptions.interfaceName}.bind(this)
@@ -214,8 +202,8 @@ export default new {{interfaceName}}Controller().router;
 
     template = template.replace(
         /{{putRoute}}/g, 
-        !templateOptions.validators[templateOptions.endpoint+"/{id}"].put ? 
-            "// putRoute disabled" : `
+        !templateOptions.validators[templateOptions.endpoint+"/{id}"].put ? `
+        // putRoute disabled` : `
         this.router.put('/:id', 
             checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint+"/{id}"].put, { depth: null }).replace(/^/gm, indent3) }),
             this.replace${templateOptions.interfaceName}.bind(this)
@@ -223,8 +211,8 @@ export default new {{interfaceName}}Controller().router;
     );
     template = template.replace(
         /{{patchRoute}}/g, 
-        !templateOptions.validators[templateOptions.endpoint+"/{id}"].patch ? 
-            "// patchRoute disabled" : `
+        !templateOptions.validators[templateOptions.endpoint+"/{id}"].patch ? `
+        // patchRoute disabled` : `
         this.router.patch('/:id', 
             checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint+"/{id}"].patch, { depth: null }).replace(/^/gm, indent3) }),
             this.update${templateOptions.interfaceName}.bind(this)
@@ -233,8 +221,8 @@ export default new {{interfaceName}}Controller().router;
 
     template = template.replace(
         /{{deleteRoute}}/g, 
-        !templateOptions.validators[templateOptions.endpoint+"/{id}"].delete ? 
-            "// deleteRoute disabled" : `
+        !templateOptions.validators[templateOptions.endpoint+"/{id}"].delete ? `
+        // deleteRoute disabled` : `
         this.router.delete('/:id', 
             checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint+"/{id}"].delete, { depth: null }).replace(/^/gm, indent3) }),
             this.delete${templateOptions.interfaceName}.bind(this)

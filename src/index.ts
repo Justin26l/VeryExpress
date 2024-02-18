@@ -41,9 +41,9 @@ export function generate(
     openapiGen.compile(openapiFile, options);
 
     // copy nessasary files
-    utils.copyDir(`${__dirname}/templates/utils`, dir.utilsDir, true);
-    utils.copyDir(`${__dirname}/templates/services`, dir.serviceDir, true);
-    utils.copyDir(`${__dirname}/templates/plugins`, dir.pluginDir, true);
+    utils.copyDir(`${__dirname}/templates/utils`, dir.utilsDir, options, true);
+    utils.copyDir(`${__dirname}/templates/services`, dir.serviceDir, options, true);
+    utils.copyDir(`${__dirname}/templates/plugins`, dir.pluginDir, options, true);
     
 
     // prepair routerData
@@ -100,7 +100,7 @@ export function generate(
         openapiFile, 
         options || utils.defaultCompilerOptions
     );
-    utils.copyDir(`${options.openapiDir}`, options.rootDir + "/openapi", true);
+    utils.copyDir(`${options.openapiDir}`, options.rootDir + "/openapi", options, true);
 
     // genarate controller from open api
     controllerGen.compile({

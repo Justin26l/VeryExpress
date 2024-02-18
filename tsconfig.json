@@ -108,11 +108,11 @@
   },
   "include": [
     "src/**/*.ts", 
-    "src/generators/routes.generator.ts", "src/test.js", "src/copyDir.js"  ],
+    "src/generators/routes.generator.ts", "src/test.js", "src/copyTsTemplates.js"  ],
   "exclude": [
     "node_modules",
     "output",
-    "src/copyDir.js",
+    "src/copyTsTemplates.js",
     "src/templates/**/*.gen.ts",
     ".env",
   ]

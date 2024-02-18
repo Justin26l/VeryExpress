@@ -1,3 +1,5 @@
+// {{headerComment}}
+
 import jsYaml from "js-yaml";
 import fs from "fs";
 

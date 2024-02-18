@@ -1,3 +1,5 @@
+// {{headerComment}}
+
 export function ok(msg: any, ...optionalParams: any[]): void {
     console.log("\x1b[32m%s\x1b[0m", "[OK]", msg, optionalParams.length > 0 ? optionalParams : "");
 }

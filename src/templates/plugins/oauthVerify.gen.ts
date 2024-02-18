@@ -1,4 +1,5 @@
-// import log from '../utils/logger.gen';
+// {{headerComment}}
+
 import { Profile } from "passport";
 import { UserModel } from "../models/UserModel.gen";
 
