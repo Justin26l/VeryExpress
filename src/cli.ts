@@ -27,12 +27,14 @@ if (fs.existsSync("vex.config.json")) {
 
 // record last generation args or set default values
 config.commitBeforeGenerate = config.commitBeforeGenerate ?? false;
-config.enableSwagger = config.enableSwagger || true,
-config.useUserSchema = config.useUserSchema || true,
+
 config.jsonSchemaDir = args.j || args.jsonSchemaDir || config.jsonSchemaDir || "./jsonSchema";
 config.rootDir = args.o || args.rootDir || config.rootDir || ".";
 config.srcDir = config.srcDir || config.rootDir + "/src" ;
 config.openapiDir = config.openapiDir || config.rootDir + "./openapi";
+
+config.enableSwagger = config.enableSwagger || true,
+config.useUserSchema = config.useUserSchema || true,
 config.useOauth = config.useOauth || {
     google: false,
     microsoft: false,
@@ -88,6 +90,7 @@ else {
     }
 
     // run main process
+    console.log(config);
     generate(config);
 
     console.log("\x1b[36m%s\x1b[0m", "\nnext step:\n", `cd ${config.rootDir}\n`, "npm install\n", "npm run dev");

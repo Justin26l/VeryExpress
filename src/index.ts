@@ -16,6 +16,9 @@ import { formatJsonSchema } from "./preprocess/jsonschemaFormat";
 export function generate(
     options: types.compilerOptions
 ): void {
+
+    const openapiFile: string = "/openapi.gen.yaml";
+
     const dir = {
         routeDir: `${options.srcDir}/routes`,
         middlewareDir: `${options.srcDir}/middlewares`,
@@ -27,7 +30,16 @@ export function generate(
         utilsDir: `${options.srcDir}/utils`,
     };
 
-    const openapiFile: string = "/openapi.gen.yaml";
+    const routeData: {
+        route: string,
+        interfaceName: string,
+        controllerPath: string,
+    }[] = [];
+
+    // set default header comment
+    if ( !options.headerComment ) {
+        options.headerComment = utils.getGenaratorHeaderComment();
+    };
 
     // create all directories if not exist
     if (!fs.existsSync(options.rootDir)) { fs.mkdirSync(options.rootDir); }
@@ -37,22 +49,16 @@ export function generate(
         if (!fs.existsSync(path)) { fs.mkdirSync(path); }
     });
 
-    // genarate opanapi from json schema
-    openapiGen.compile(openapiFile, options);
 
-    // copy nessasary files
+    // copy static files
     utils.copyDir(`${__dirname}/templates/utils`, dir.utilsDir, options, true);
     utils.copyDir(`${__dirname}/templates/services`, dir.serviceDir, options, true);
     utils.copyDir(`${__dirname}/templates/plugins`, dir.pluginDir, options, true);
+
+    // genarate opanapi from json schema
+    openapiGen.compile(openapiFile, options);
     
-
-    // prepair routerData
-    const routeData: {
-        route: string,
-        interfaceName: string,
-        controllerPath: string,
-    }[] = [];
-
+    // generate dynamic files
     const files: string[] = fs.readdirSync(options.jsonSchemaDir);
     files.forEach((schemaFileName: string) => {
         const schemaPath = `${options.jsonSchemaDir}/${schemaFileName}`;
