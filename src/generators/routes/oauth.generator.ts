@@ -9,12 +9,10 @@ function loginHtml(providers: string[]) {
     return `\`${html}\``;
 }
 
-export function compile(options: {
-    compilerOptions: types.compilerOptions
-}): string {
+export function compile( compilerOptions: types.compilerOptions ): string {
 
-    const providers: string[] = utils.isUseOAuth(options.compilerOptions);
-    return `${options.compilerOptions.headerComment}
+    const providers: string[] = utils.isUseOAuth(compilerOptions);
+    return `${compilerOptions.headerComment}
 import { Router } from 'express';
 import util from 'util';
 

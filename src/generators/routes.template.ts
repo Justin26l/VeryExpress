@@ -27,7 +27,6 @@ export default function routesTemplate(templateOptions: {
 
     let template: string = templateOptions.template || `{{headerComment}}
 import { Router } from 'express';
-import { loadYaml } from '../utils/common.gen';
 
 {{importRoutes}}
 

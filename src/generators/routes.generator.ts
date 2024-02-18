@@ -2,6 +2,7 @@ import fs from "fs";
 
 import routesTemplate from "./routes.template";
 import * as routesOAuthGen from "./routes/oauth.generator";
+import * as routesSwaggerGen from "./routes/swagger.generator";
 
 import * as types from "../types/types";
 
@@ -42,15 +43,15 @@ export function compile(options: {
     // use oauth
     if ( utils.isUseOAuth(options.compilerOptions).length > 0 ) {
         fs.writeFileSync(routesOAuthOutPath,
-            routesOAuthGen.compile({
-                compilerOptions: options.compilerOptions || utils.defaultCompilerOptions
-            })
+            routesOAuthGen.compile(options.compilerOptions)
         );
     }
 
     // use swagger
     if (options.compilerOptions.enableSwagger) {
-        fs.copyFileSync(`${__dirname}/../templates/routes/swagger.gen.ts`, routesSwaggerOutPath);
+        fs.writeFileSync(routesSwaggerOutPath, 
+            routesSwaggerGen.compile(options.compilerOptions)
+        );
     }
 
 }
