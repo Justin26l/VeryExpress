@@ -4,7 +4,7 @@ import json2mongoose from "json2mongoose";
 import * as openapiGen from "./generators/openapi.generator";
 
 import log from "./utils/logger";
-import utils from "./utils/common";
+import * as utils from "./utils";
 import * as controllerGen from "./generators/controllers.generator";
 import * as routeGen from "./generators/routes.generator";
 import * as serverGen from "./generators/server.generator";
@@ -54,6 +54,7 @@ export function generate(
     utils.copyDir(`${__dirname}/templates/utils`, dir.utilsDir, options, true);
     utils.copyDir(`${__dirname}/templates/services`, dir.serviceDir, options, true);
     utils.copyDir(`${__dirname}/templates/plugins`, dir.pluginDir, options, true);
+    utils.copyDir(`${__dirname}/templates/middleware`, dir.middlewareDir, options, true);
 
     // genarate opanapi from json schema
     openapiGen.compile(openapiFile, options);

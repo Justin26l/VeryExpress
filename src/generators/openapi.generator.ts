@@ -4,7 +4,7 @@ import fs from "fs";
 
 import * as types from "../types/types";
 import * as openapiType from "../types/openapi";
-import utils from "../utils/common";
+import utilsJsonSchema from "../utils/jsonSchema";
 import log from "../utils/logger";
 
 /**
@@ -85,7 +85,7 @@ function jsonToOpenapiPath(
         const useBody: boolean = ["post", "put", "patch"].includes(jsonSchemaMethod);
         const route: string = "/" + lowerDocName + (routeWithId ? "/{id}" : "");
         
-        const httpMethod: types.httpMethod = utils.httpMethod(jsonSchemaMethod, additionalinfo.jsonSchemaFilePath);
+        const httpMethod: types.httpMethod = utilsJsonSchema.httpMethod(jsonSchemaMethod, additionalinfo.jsonSchemaFilePath);
         const parameters: openapiType.parameter[] = [];
         let requestBody: openapiType.requestBody | undefined = undefined;
         const successResponse: openapiType.responses = {
@@ -183,7 +183,7 @@ function jsonToOpenapiComponentSchema(
     const componentSchemaResponse: openapiType.componentsSchemaValue = {
         type: "object",
         properties: json2openapi(
-            utils.cleanXcustomValue(jsonSchema.properties, ["index", "unique", "required"]),
+            utilsJsonSchema.cleanXcustomValue(jsonSchema.properties, ["index", "unique", "required"]),
             { version: 3.0 }
         ),
     };
@@ -192,7 +192,7 @@ function jsonToOpenapiComponentSchema(
     const componentSchemaBodyRequired: openapiType.componentsSchemaValue = {
         type: "object",
         properties: json2openapi(
-            utils.cleanXcustomValue(jsonSchema.properties, { index: "boolean", unique: "boolean", required: "boolean" }),
+            utilsJsonSchema.cleanXcustomValue(jsonSchema.properties, { index: "boolean", unique: "boolean", required: "boolean" }),
             { version: 3.0 }
         ),
         required: jsonSchema.required,
@@ -202,7 +202,7 @@ function jsonToOpenapiComponentSchema(
     const componentSchemaBodyRequiredWithoutId: openapiType.componentsSchemaValue = {
         type: "object",
         properties: json2openapi(
-            utils.cleanXcustomValue(componentSchemaBodyRequired.properties as any, { _id: "object"}),
+            utilsJsonSchema.cleanXcustomValue(componentSchemaBodyRequired.properties as any, { _id: "object"}),
             { version: 3.0 }
         ),
         required: jsonSchema.required,
@@ -212,13 +212,13 @@ function jsonToOpenapiComponentSchema(
     const componentSchemaBody: openapiType.componentsSchemaValue = {
         type: "object",
         properties: json2openapi(
-            utils.cleanXcustomValue(componentSchemaBodyRequiredWithoutId.properties as any, ["required"]),
+            utilsJsonSchema.cleanXcustomValue(componentSchemaBodyRequiredWithoutId.properties as any, ["required"]),
             { version: 3.0 }
         ),
     };   
 
     documentConfig.methods.forEach((jsonSchemaMethod) => {
-        const httpMethod: types.httpMethod = utils.httpMethod(jsonSchemaMethod, additionalinfo.jsonSchemaFilePath);
+        const httpMethod: types.httpMethod = utilsJsonSchema.httpMethod(jsonSchemaMethod, additionalinfo.jsonSchemaFilePath);
 
         switch (jsonSchemaMethod) {
         case "delete":

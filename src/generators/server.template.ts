@@ -1,9 +1,10 @@
 import * as types from "../types/types";
-import utils from "./../utils/common";
+import * as utilsGenerator from "./../utils/generator";
 
 // import
 const importExpressSession = "import session from 'express-session';";
-const importPassportGoogle = "import PassportGoogle from \"./plugins/PassportGoogle.gen\"";
+const importOAuthVerifyPlugin = "import oauthVerify from './plugins/oauthVerify.gen';";
+const importPassportGoogle = "import PassportGoogle from './plugins/PassportGoogle.gen'";
 const importSwaggerRouter = "import SwaggerRouter from './routes/SwaggerRouter.gen';";
 const importOAuthRouter = "import OAuthRouter from './routes/OAuthRouter.gen';";
 
@@ -22,9 +23,7 @@ const ConfigPassportGoogle = `
 const OAuthGoogle = new PassportGoogle({
   strategyConfig: {
     // @ts-ignore
-    verify: (accessToken: string, refreshToken: string, profile: Profile, done: (error: any, user?: any) => void) => {
-      return done(null, profile);
-    }
+    verify: oauthVerify
   }
 });`;
 
@@ -50,9 +49,8 @@ export default function serverTemplate(options: {
 import express from 'express';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
-
-import mongoConn from './services/mongoConn.gen';
 import log from './utils/logger.gen';
+import mongoConn from './services/mongoConn.gen';
 
 import ApiRouter from './routes/ApiRouter.gen';
 {{Import}}
@@ -79,8 +77,11 @@ async function main(): Promise<void> {
 
   const app = express();
   app.disable("x-powered-by");
+
+  // UseMiddleware
   app.use(express.json());
   app.use(helmet(helmetConfig));
+  app.use(mongoConn.middleware);
 
   // UsePlugins
   {{AppUse}}
@@ -105,16 +106,15 @@ async function main(): Promise<void> {
 main();
 `;
 
-    const usedProvider : string[] = utils.isUseOAuth(options.compilerOptions);
+    const usedProvider : string[] = utilsGenerator.isUseOAuth(options.compilerOptions);
     const Import : string[] = [];
     const Config : string[] = [];
     const AppUse : string[] = [];
     const AppRoute : string[] = [];
 
-  
-
     if(usedProvider.length > 0) {
         Import.push(importExpressSession);
+        Import.push(importOAuthVerifyPlugin);
         Config.push(ConfigExpressSession);
         AppUse.push(UseSession);
 
@@ -133,7 +133,6 @@ main();
             Config.push(ConfigPassportGoogle);
             AppUse.push(UsePassportGoogle);
             AppRoute.push(UseOAuthGoogleRouter);
-
         }
     }
   

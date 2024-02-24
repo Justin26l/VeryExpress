@@ -1,5 +1,5 @@
 import * as types from "../../types/types";
-import utils from "./../../utils/common";
+import * as utilsGenerator from "./../../utils/generator";
 
 function loginHtml(providers: string[]) {
     let html = "<p> login with : </p>";
@@ -11,7 +11,7 @@ function loginHtml(providers: string[]) {
 
 export function compile( compilerOptions: types.compilerOptions ): string {
 
-    const providers: string[] = utils.isUseOAuth(compilerOptions);
+    const providers: string[] = utilsGenerator.isUseOAuth(compilerOptions);
     return `${compilerOptions.headerComment}
 import { Router } from 'express';
 import util from 'util';

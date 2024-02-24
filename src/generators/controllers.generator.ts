@@ -3,7 +3,7 @@ import jsYaml from "js-yaml";
 
 import controllerTemplate from "./controller.template";
 import log from "../utils/logger";
-import * as utils from "../utils/common";
+import utilsCommon from "../utils/common";
 
 import * as types from "../types/types";
 import * as openapiType from "../types/openapi";
@@ -23,7 +23,7 @@ export function compile(options: {
     compilerOptions: types.compilerOptions
 }): void {
     const file: string = fs.readFileSync(options.compilerOptions.openapiDir + "/" + options.openapiFile, "utf8");
-    const controllerToModelBasePath: string = utils.relativePath(options.controllerOutDir, options.modelDir);
+    const controllerToModelBasePath: string = utilsCommon.relativePath(options.controllerOutDir, options.modelDir);
 
     const openApi: openapiType.openapi = jsYaml.load(file) as openapiType.openapi;
     const endpointsValidator: {

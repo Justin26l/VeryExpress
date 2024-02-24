@@ -6,7 +6,7 @@ import * as routesSwaggerGen from "./routes/swagger.generator";
 
 import * as types from "../types/types";
 
-import * as utils from "../utils/common";
+import * as utilsGenerator from "../utils/generator";
 import log from "../utils/logger";
 
 /**
@@ -41,7 +41,7 @@ export function compile(options: {
     );
 
     // use oauth
-    if ( utils.isUseOAuth(options.compilerOptions).length > 0 ) {
+    if ( utilsGenerator.isUseOAuth(options.compilerOptions).length > 0 ) {
         fs.writeFileSync(routesOAuthOutPath,
             routesOAuthGen.compile(options.compilerOptions)
         );

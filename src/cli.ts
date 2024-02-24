@@ -7,7 +7,7 @@ import { generate } from "./index";
 import log from "./utils/logger";
 
 import { compilerOptions } from "./types/types";
-import { defaultCompilerOptions } from "./utils/common";
+import { defaultCompilerOptions } from "./utils";
 
 console.log("\x1b[35m%s\x1b[0m", "\n========== veryExpress CLI (vex) Start ==========\n");
 
