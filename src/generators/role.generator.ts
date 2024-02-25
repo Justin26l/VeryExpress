@@ -1,17 +1,25 @@
 import fs from "fs";
-import util from "util";
 
 import * as types from "../types/types";
 import * as roleBase from "../templates/roles/Role";
 
 import log from "../utils/logger";
-import { loadJson } from "../utils";
+import { loadJson, writeFile } from "../utils";
+import { roleSetupFile } from "../preprocess/roleSetupFile";
 
 export function compile(options: {
+    collectionList: string[],
+    roleSourceDir: string,
     roleOutDir: string,
     compilerOptions: types.compilerOptions,
 }){
-    options.compilerOptions.app.roles.forEach((role) => {
+    roleSetupFile({
+        collectionList: options.collectionList,
+        roleSetupDir: options.roleSourceDir,
+        compilerOptions: options.compilerOptions
+    });
+
+    options.compilerOptions.useRBAC?.roles.forEach((role) => {
         log.process(`RBAC Class : ${role}`);
 
         // 1. get role custom access action not in crud
@@ -49,7 +57,6 @@ export default class Role${role} extends role.Role<accessAction${role}> {
     }
 }`;
 
-        log.writing(`RBAC Class : ${roleOutFile}`);
-        fs.writeFileSync(`${roleOutFile}`, content);
+        writeFile(`RBAC Class`, roleOutFile, content);
     });
 }

@@ -7,7 +7,7 @@ import { generate } from "./index";
 import log from "./utils/logger";
 
 import { compilerOptions } from "./types/types";
-import { defaultCompilerOptions } from "./utils";
+import { defaultCompilerOptions, writeFile } from "./utils";
 
 console.log("\x1b[35m%s\x1b[0m", "\n========== veryExpress CLI (vex) Start ==========\n");
 
@@ -38,7 +38,9 @@ config.app.useUserSchema = config.app.useUserSchema || true,
 config.app.useObjectID = config.app.useObjectID || true,
 config.app.allowApiCreateUpdate_id = config.app.allowApiCreateUpdate_id || false,
 
-config.app.roles = config.app.roles || ["user"];
+config.useRBAC = config.useRBAC || {
+    roles : ["user"]
+};
 config.useOauth = config.useOauth || {
     google: false,
     microsoft: false,
@@ -51,7 +53,7 @@ if ( config.app.useObjectID && config.app.allowApiCreateUpdate_id ){
 }
 
 log.process("vex.config.json");
-fs.writeFileSync("vex.config.json", JSON.stringify(config, null, 4));
+writeFile("vex.config", "vex.config.json", JSON.stringify(config, null, 4));
 
 /** 
  * ==================== 

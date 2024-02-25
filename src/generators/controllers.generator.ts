@@ -3,7 +3,7 @@ import jsYaml from "js-yaml";
 
 import controllerTemplate from "./controller.template";
 import log from "../utils/logger";
-import utilsCommon from "../utils/common";
+import { relativePath, writeFile } from "../utils/common";
 
 import * as types from "../types/types";
 import * as openapiType from "../types/openapi";
@@ -23,7 +23,7 @@ export function compile(options: {
     compilerOptions: types.compilerOptions
 }): void {
     const file: string = fs.readFileSync(options.compilerOptions.openapiDir + "/" + options.openapiFile, "utf8");
-    const controllerToModelBasePath: string = utilsCommon.relativePath(options.controllerOutDir, options.modelDir);
+    const controllerToModelBasePath: string = relativePath(options.controllerOutDir, options.modelDir);
 
     const openApi: openapiType.openapi = jsYaml.load(file) as openapiType.openapi;
     const endpointsValidator: {
@@ -35,13 +35,13 @@ export function compile(options: {
 
     // loop path
     Object.keys(openApi.paths).forEach((endpoint: string) => {
-        // const interfaceName = openApi.paths[endpoint]['x-collection'];
-        endpointsValidator[endpoint] = {};
-
         log.process(`Controller : ${options.compilerOptions.openapiDir} > ${endpoint}`);
+        
+        endpointsValidator[endpoint] = {};
 
         // make validator
         Object.keys(openApi.paths[endpoint]).forEach((httpMethod: string) => {
+            
             // check method is in enum types.schemaMethod
             if (!Object.values(types.httpMethodArr).includes(httpMethod as types.httpMethod)) return;
             const methodEnum: types.httpMethod = httpMethod as types.httpMethod;
@@ -78,8 +78,8 @@ export function compile(options: {
             const outPath = `${options.controllerOutDir}/${interfaceName}Controller.gen.ts`;
             const controllerToModelPath = `${controllerToModelBasePath}/${interfaceName}Model.gen`;
 
-            log.writing(`Controller : ${outPath}`);
-            fs.writeFileSync(outPath,
+            writeFile(`Controller`,
+                outPath,
                 controllerTemplate({
                     endpoint: endpoint,
                     modelPath: controllerToModelPath,

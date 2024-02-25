@@ -12,7 +12,6 @@ import * as serverGen from "./generators/server.generator";
 
 import * as types from "./types/types";
 import { formatJsonSchema } from "./preprocess/jsonschemaFormat";
-import { roleSetupFile } from "./preprocess/roleSetupFile";
 
 
 export function generate(
@@ -77,18 +76,15 @@ export function generate(
         }
     });
 
-    // generate Roles setup file
-    roleSetupFile({
-        documentName: documents.map((doc) => doc.config.documentName),
-        roleOutDir: roleSourceDir,
-        compilerOptions: options
-    });
+    if ( options.useRBAC && options.useRBAC.roles.length > 0){
+        roleGen.compile({
+            collectionList: documents.map((doc) => doc.config.documentName),
+            roleSourceDir: roleSourceDir,
+            roleOutDir: dir.roleDir, 
+            compilerOptions: options || utils.defaultCompilerOptions
+        });
+    }
 
-    roleGen.compile({
-        roleOutDir: dir.roleDir, 
-        compilerOptions: options || utils.defaultCompilerOptions
-    });
-    
     // genarate opanapi from jsonSchema
     openapiGen.compile(
         openapiFile, 

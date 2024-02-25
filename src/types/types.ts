@@ -12,9 +12,12 @@ export interface compilerOptions {
         useUserSchema: boolean,
         useObjectID: boolean,
         allowApiCreateUpdate_id: boolean,
-        roles: string[],
-    }
-    useOauth: {
+    },
+
+    useRBAC?: {
+        roles: string[]
+    },
+    useOauth?: {
         google?: boolean,
         microsoft?: boolean,
         apple?: boolean,

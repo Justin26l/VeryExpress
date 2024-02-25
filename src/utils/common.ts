@@ -28,6 +28,19 @@ export function loadJson<T = any>(filePath: string): T {
     }
 }
 
+export function writeFile(title: string, destination: string, newContent: string): void {
+    // read file, check difference, if yes write file
+    const oldContent = fs.readFileSync(destination, "utf8");
+    if (oldContent === newContent) {
+        log.info(`${title} : "${destination}" No changes`);
+        return;
+    }
+    else{
+        log.writing(`${title} : "${destination}"`);
+        fs.writeFileSync(destination, newContent);
+    }
+}
+
 export function copyDir(source: string, destination: string, compilerOptions: types.compilerOptions, overwrite?: boolean): void {
     if (!fs.existsSync(destination)) {
         fs.mkdirSync(destination);

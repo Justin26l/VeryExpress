@@ -19,5 +19,10 @@
         "microsoft": false,
         "apple": false,
         "github": false
+    },
+    "useRBAC": {
+        "roles": [
+            "user"
+        ]
     }
 }

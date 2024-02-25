@@ -39,8 +39,8 @@ export function getSimpleHeaderComment(): string {
 }
 
 export function isUseOAuth(compilerOptions: types.compilerOptions):string[] {
-    return Object.keys(compilerOptions.useOauth).filter((key) => {
-        return compilerOptions.useOauth[key] === true;
+    return Object.keys(compilerOptions.useOauth!).filter((key) => {
+        return compilerOptions.useOauth![key] === true;
     });
 }
 
@@ -57,6 +57,8 @@ export const defaultCompilerOptions: types.compilerOptions = {
         useUserSchema: true,
         useObjectID: true,
         allowApiCreateUpdate_id: false,
+    },
+    useRBAC: {
         roles: ["user"],
     },
     useOauth: {

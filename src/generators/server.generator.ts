@@ -5,6 +5,7 @@ import packageJson from "./packageJson.generator";
 
 import * as types from "../types/types";
 import log from "../utils/logger";
+import { writeFile } from "../utils";
 
 /**
  * generate required files at root & output directory
@@ -20,7 +21,9 @@ export function compile(
     const tsconfigOutPath = compilerOptions.rootDir + "/tsconfig.json";
 
     // write server file
-    fs.writeFileSync(serverOutPath,
+    writeFile(
+        "Server",
+        serverOutPath,
         serverTemplate({
             compilerOptions: compilerOptions,
         })

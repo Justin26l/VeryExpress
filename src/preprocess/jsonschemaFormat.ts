@@ -2,6 +2,7 @@ import fs from "fs";
 import * as types from "../types/types";
 import * as utilsJsonSchema from "../utils/jsonSchema";
 import log from "../utils/logger";
+import { writeFile } from "../utils";
 
 /** format the schema and create role file (RBAC) */
 export function formatJsonSchema(jsonSchemaPath: string, compilerOptions: types.compilerOptions): types.jsonSchema {
@@ -36,7 +37,7 @@ export function formatJsonSchema(jsonSchemaPath: string, compilerOptions: types.
     // format properties boolean "required" into array of string
     jsonSchema.required = getRequiredArrStr(jsonSchema, jsonSchemaPath);
 
-    fs.writeFileSync(jsonSchemaPath, JSON.stringify(jsonSchema, null, 4));
+    writeFile(`Format JsonSchema : ${jsonSchemaPath.split('/').at(-1)}`, jsonSchemaPath, JSON.stringify(jsonSchema, null, 4));
 
     return jsonSchema;
 }

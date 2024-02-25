@@ -8,6 +8,7 @@ import * as types from "../../types/types";
 
 import * as utilsGenerator from "../../utils/generator";
 import log from "../../utils/logger";
+import { writeFile } from "../../utils";
 
 /**
  * compile controllers to route source code
@@ -26,32 +27,39 @@ export function compile(options: {
     compilerOptions: types.compilerOptions
 }): void {
 
+    log.process("Route");
+    
     const routesApiOutPath: string = `${options.routesDir}/ApiRouter.gen.ts`;
     const routesOAuthOutPath: string = `${options.routesDir}/OAuthRouter.gen.ts`;
     const routesSwaggerOutPath: string = `${options.routesDir}/SwaggerRouter.gen.ts`;
-    log.writing(`Router : ${routesApiOutPath}`);
-
-    // write json schema api routes
-    fs.writeFileSync(routesApiOutPath, 
-        routesTemplate({
-            routes: options.routesArr,
-            openapiFile: options.openapiFile,
-            compilerOptions: options.compilerOptions,
-        })
-    );
 
     // use oauth
     if ( utilsGenerator.isUseOAuth(options.compilerOptions).length > 0 ) {
-        fs.writeFileSync(routesOAuthOutPath,
+        writeFile(
+            "Route OAuth", 
+            routesOAuthOutPath,
             routesOAuthGen.compile(options.compilerOptions)
         );
     }
 
     // use swagger
     if (options.compilerOptions.app.enableSwagger) {
-        fs.writeFileSync(routesSwaggerOutPath, 
+        writeFile(
+            "Route Swagger", 
+            routesSwaggerOutPath, 
             routesSwaggerGen.compile(options.compilerOptions)
         );
     }
+
+    // write json schema api routes
+    writeFile(
+        "Route API", 
+        routesApiOutPath, 
+        routesTemplate({
+            routes: options.routesArr,
+            openapiFile: options.openapiFile,
+            compilerOptions: options.compilerOptions,
+        })
+    );
 
 }
