@@ -24,8 +24,7 @@ export default class ApiRouter{
 
     public initRoutes() {
 
-        {{useRoutes}}
-
+{{useRoutes}}
     }
 
 }`;
@@ -34,7 +33,7 @@ export default class ApiRouter{
     let useRoutes = "";
     options.routes.forEach((obj) => {
         importRoutes += `import ${obj.interfaceName}Controller from '${obj.controllerPath}';\n`;
-        useRoutes += `this.router.use('${obj.route}', ${obj.interfaceName}Controller);\n`;
+        useRoutes += `        this.router.use('${obj.route}', ${obj.interfaceName}Controller);\n`;
     });
 
     template = template.replace(/{{headerComment}}/g, options.compilerOptions.headerComment || "// generated files by very-express");

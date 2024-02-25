@@ -21,6 +21,9 @@ export function compile(options: {
     Object.keys(templateSchema.properties).forEach((key)=>{
         if(!userSchema.properties[key]){
             userSchema.properties[key] = templateSchema.properties[key];
+            if ( key == "role" ){
+                userSchema.properties[key].enum = options.compilerOptions.useRBAC?.roles || ["user"];
+            }
         }
     })
 
