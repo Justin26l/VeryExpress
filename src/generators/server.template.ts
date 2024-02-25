@@ -30,6 +30,7 @@ const OAuthGoogle = new PassportGoogle({
 const UseSession = "app.use(session(expressSessionConfig));";
 const UsePassportGoogle = `
     await OAuthGoogle.passportSerializeUser();
+    await OAuthGoogle.passportDeserializeUser();
     app.use(OAuthGoogle.passport.initialize());
     app.use(OAuthGoogle.passport.session());`;
 

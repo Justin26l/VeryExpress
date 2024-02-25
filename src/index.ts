@@ -5,6 +5,7 @@ import * as openapiGen from "./generators/openapi.generator";
 
 import log from "./utils/logger";
 import * as utils from "./utils";
+import * as userSchemaGen from "./generators/userSchema.generator"
 import * as roleGen from "./generators/role.generator";
 import * as controllerGen from "./generators/controllers.generator";
 import * as routeGen from "./generators/routes/routes.generator";
@@ -53,6 +54,13 @@ export function generate(
         if (!fs.existsSync(path)) { fs.mkdirSync(path); }
     });
 
+    // update userSchema
+    if ( options.app.useUserSchema ){
+        userSchemaGen.compile({
+            compilerOptions: options || utils.defaultCompilerOptions
+        });
+    }
+
     // prepair schema files
     const files: string[] = fs.readdirSync(options.jsonSchemaDir);
     files.forEach((schemaFileName: string) => {
@@ -76,6 +84,7 @@ export function generate(
         }
     });
 
+    // generate roles
     if ( options.useRBAC && options.useRBAC.roles.length > 0){
         roleGen.compile({
             collectionList: documents.map((doc) => doc.config.documentName),

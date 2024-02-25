@@ -37,7 +37,7 @@ export function formatJsonSchema(jsonSchemaPath: string, compilerOptions: types.
     // format properties boolean "required" into array of string
     jsonSchema.required = getRequiredArrStr(jsonSchema, jsonSchemaPath);
 
-    writeFile(`Format JsonSchema : ${jsonSchemaPath.split('/').at(-1)}`, jsonSchemaPath, JSON.stringify(jsonSchema, null, 4));
+    writeFile(`Format JsonSchema`, jsonSchemaPath, JSON.stringify(jsonSchema, null, 4));
 
     return jsonSchema;
 }

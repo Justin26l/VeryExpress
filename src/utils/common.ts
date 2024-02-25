@@ -9,33 +9,34 @@ export const relativePath = (fromPath: string, toPath: string): string => {
     return path.relative(fromPath, toPath).replace(/\\/g, "/");
 };
 
-export function loadJson<T = any>(filePath: string): T {
-    if (!fs.existsSync(filePath)) {
-        log.error(`FILE : ${filePath} not found`);
-        return {} as T;
+export function loadJson<T = any>(filePath: string, fileNotExistHandler?: () => T): T {
+    // handle file not found
+    const fileExist = fs.existsSync(filePath);
+    if ( !fileExist && fileNotExistHandler ){
+        return fileNotExistHandler();
     }
-    try {
-        const content = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-        if (content) {
-            return content;
-        }
-        else {
-            return log.error(`FILE JSON : Invalid Json Format ${filePath}`);
-        }
+    else if ( !fileExist ){
+        return log.error(`FILE : ${filePath} not found`);
     }
-    catch (err: any) {
-        return log.error(`FILE : ${filePath}\n`, err);
+    else{
+        try {
+            const content = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+            return content ? content : log.error(`FILE JSON : Read Error ${filePath}`);
+        }
+        catch (err: any) {
+            return log.error(`FILE : ${filePath}\n`, err.message);
+        }
     }
 }
 
 export function writeFile(title: string, destination: string, newContent: string): void {
     // read file, check difference, if yes write file
-    const oldContent = fs.readFileSync(destination, "utf8");
+    const oldContent = fs.existsSync(destination) ? fs.readFileSync(destination, "utf8") : '';
     if (oldContent === newContent) {
         log.info(`${title} : "${destination}" No changes`);
         return;
     }
-    else{
+    else {
         log.writing(`${title} : "${destination}"`);
         fs.writeFileSync(destination, newContent);
     }

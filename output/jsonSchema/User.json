@@ -5,10 +5,9 @@
         "interfaceName": "User",
         "methods": [
             "get",
+            "getList",
             "post",
-            "put",
-            "patch",
-            "delete"
+            "patch"
         ]
     },
     "properties": {
@@ -16,7 +15,18 @@
             "type": "string",
             "index": true
         },
+        "role": {
+            "type": "string",
+            "enum": [
+                "user"
+            ],
+            "default": "user",
+            "required": true
+        },
         "authProvider": {
+            "type": "string"
+        },
+        "authId": {
             "type": "string",
             "index": true
         },
@@ -26,37 +36,23 @@
             "index": true,
             "required": true
         },
-        "authId": {
-            "type": "string",
-            "index": true
-        },
         "name": {
             "type": "string",
             "maxLength": 64,
             "required": true
         },
-        "familyName": {
-            "type": "string",
-            "maxLength": 64
-        },
-        "givenName": {
-            "type": "string",
-            "maxLength": 64
-        },
         "locale": {
             "type": "string",
-            "default": "en-US",
-            "maxLength": 6,
+            "maxLength": 8,
             "required": true
         },
         "isActive": {
             "type": "boolean",
-            "default": true,
             "required": true
         }
     },
-    "additionalProperties": false,
     "required": [
+        "role",
         "email",
         "name",
         "locale",
