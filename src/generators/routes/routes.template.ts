@@ -1,4 +1,4 @@
-import * as types from "../types/types";
+import * as types from "../../types/types";
 
 export default function routesTemplate(options: {
     template?: string,

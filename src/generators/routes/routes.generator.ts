@@ -1,13 +1,13 @@
 import fs from "fs";
 
 import routesTemplate from "./routes.template";
-import * as routesOAuthGen from "./routes/oauth.generator";
-import * as routesSwaggerGen from "./routes/swagger.generator";
+import * as routesOAuthGen from "./oauth.generator";
+import * as routesSwaggerGen from "./swagger.generator";
 
-import * as types from "../types/types";
+import * as types from "../../types/types";
 
-import * as utilsGenerator from "../utils/generator";
-import log from "../utils/logger";
+import * as utilsGenerator from "../../utils/generator";
+import log from "../../utils/logger";
 
 /**
  * compile controllers to route source code
@@ -48,7 +48,7 @@ export function compile(options: {
     }
 
     // use swagger
-    if (options.compilerOptions.enableSwagger) {
+    if (options.compilerOptions.app.enableSwagger) {
         fs.writeFileSync(routesSwaggerOutPath, 
             routesSwaggerGen.compile(options.compilerOptions)
         );

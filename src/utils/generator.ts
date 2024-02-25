@@ -52,12 +52,13 @@ export const defaultCompilerOptions: types.compilerOptions = {
     srcDir: "./src",
     jsonSchemaDir: "./jsonSchema",
     openapiDir: "./openapi",
-
-    
-    enableSwagger: true,
-    useUserSchema: true,
-    useObjectID: true,
-    allowApiCreateUpdate_id: false,
+    app: {
+        enableSwagger: true,
+        useUserSchema: true,
+        useObjectID: true,
+        allowApiCreateUpdate_id: false,
+        roles: ["user"],
+    },
     useOauth: {
         google: false,
         microsoft: false,

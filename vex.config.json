@@ -4,10 +4,16 @@
     "rootDir": "./output",
     "srcDir": "./output/src",
     "openapiDir": "./output/openapi",
-    "enableSwagger": true,
-    "useUserSchema": true,
-    "useObjectID": true,
-    "allowApiCreateUpdate_id": false,
+    "app": {
+        "roles": [
+            "admin",
+            "user"
+        ],
+        "enableSwagger": true,
+        "useUserSchema": true,
+        "useObjectID": true,
+        "allowApiCreateUpdate_id": false
+    },
     "useOauth": {
         "google": true,
         "microsoft": false,

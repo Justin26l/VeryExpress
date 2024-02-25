@@ -7,10 +7,13 @@ export interface compilerOptions {
     rootDir: string,
     srcDir: string,
 
-    enableSwagger: boolean,
-    useUserSchema: boolean,
-    useObjectID: boolean,
-    allowApiCreateUpdate_id: boolean,
+    app: {
+        enableSwagger: boolean,
+        useUserSchema: boolean,
+        useObjectID: boolean,
+        allowApiCreateUpdate_id: boolean,
+        roles: string[],
+    }
     useOauth: {
         google?: boolean,
         microsoft?: boolean,
@@ -18,6 +21,10 @@ export interface compilerOptions {
         github?: boolean,
         [key: string]: boolean | undefined;
     };
+}
+
+export interface roleJson {
+    [key: string]: string[];
 }
 
 export interface jsonSchema {
@@ -53,7 +60,6 @@ export interface jsonSchemaPropsItem {
 
 export interface documentConfig {
     documentName: string;
-    documentType?: "primary" | "secondary";
     interfaceName: string;
     keyPrefix?: string;
     methods: schemaMethod[];

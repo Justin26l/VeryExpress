@@ -15,23 +15,24 @@
             "type": "string",
             "index": true
         },
+        "role":{
+            "type": "string",
+            "enum": ["admin", "user"],
+            "default": "user",
+            "required": true
+        },
         "authProvider": {
             "type": "string"
+        },
+        "authId": {
+            "type": "string",
+            "index": true
         },
         "email": {
             "type": "string",
             "format": "email",
             "index": true,
             "required": true
-        },
-        "emailVerified": {
-            "type": "boolean",
-            "required": true,
-            "default": false
-        },
-        "authId": {
-            "type": "string",
-            "index": true
         },
         "name": {
             "type": "string",

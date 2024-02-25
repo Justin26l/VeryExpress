@@ -33,10 +33,12 @@ config.rootDir = args.o || args.rootDir || config.rootDir || ".";
 config.srcDir = config.srcDir || config.rootDir + "/src" ;
 config.openapiDir = config.openapiDir || config.rootDir + "./openapi";
 
-config.enableSwagger = config.enableSwagger || true,
-config.useUserSchema = config.useUserSchema || true,
-config.useObjectID = config.useObjectID || true,
-config.allowApiCreateUpdate_id = config.allowApiCreateUpdate_id || false,
+config.app.enableSwagger = config.app.enableSwagger || true,
+config.app.useUserSchema = config.app.useUserSchema || true,
+config.app.useObjectID = config.app.useObjectID || true,
+config.app.allowApiCreateUpdate_id = config.app.allowApiCreateUpdate_id || false,
+
+config.app.roles = config.app.roles || ["user"];
 config.useOauth = config.useOauth || {
     google: false,
     microsoft: false,
@@ -44,7 +46,7 @@ config.useOauth = config.useOauth || {
     github: false
 };
 
-if ( config.useObjectID && config.allowApiCreateUpdate_id ){
+if ( config.app.useObjectID && config.app.allowApiCreateUpdate_id ){
     log.warn("Not recommended to use \"useObjectID\" with \"allowApiCreateUpdate_id\",\nthis may cause security issues");
 }
 

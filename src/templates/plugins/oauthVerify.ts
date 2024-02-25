@@ -30,7 +30,7 @@ export default async function oauthVerify(accessToken: string, refreshToken: str
                 locale: profile._json?.locale,
             });
             newUser.save();
-            return done(null, profile);
+            return done(null, newUser);
         };
     }
     catch(err) { 

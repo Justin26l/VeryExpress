@@ -9,7 +9,26 @@ export const relativePath = (fromPath: string, toPath: string): string => {
     return path.relative(fromPath, toPath).replace(/\\/g, "/");
 };
 
-export function copyDir(source: string, destination: string, compilerOptions: types.compilerOptions, overwrite?:boolean ): void {
+export function loadJson<T = any>(filePath: string): T {
+    if (!fs.existsSync(filePath)) {
+        log.error(`FILE : ${filePath} not found`);
+        return {} as T;
+    }
+    try {
+        const content = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        if (content) {
+            return content;
+        }
+        else {
+            return log.error(`FILE JSON : Invalid Json Format ${filePath}`);
+        }
+    }
+    catch (err: any) {
+        return log.error(`FILE : ${filePath}\n`, err);
+    }
+}
+
+export function copyDir(source: string, destination: string, compilerOptions: types.compilerOptions, overwrite?: boolean): void {
     if (!fs.existsSync(destination)) {
         fs.mkdirSync(destination);
     }
@@ -23,7 +42,7 @@ export function copyDir(source: string, destination: string, compilerOptions: ty
             copyDir(source + "/" + files[i], destination + "/" + files[i], compilerOptions, overwrite);
         }
         // avoid overwrite
-        else if ( !overwrite && fs.existsSync(destination + "/" + files[i])) {
+        else if (!overwrite && fs.existsSync(destination + "/" + files[i])) {
             log.info(`FILE : existed, skip file ${destination + "/" + files[i]} exist, skip`);
         }
         else {

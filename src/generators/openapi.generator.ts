@@ -294,7 +294,7 @@ function jsonToOpenapiComponentSchema(
             break;
 
         case "post":
-            componentSchemaPath[httpMethod + interfaceName + "Body"] = compilerOptions.allowApiCreateUpdate_id ? componentSchemaBodyRequired : componentSchemaBodyRequiredWithoutId ;
+            componentSchemaPath[httpMethod + interfaceName + "Body"] = compilerOptions.app.allowApiCreateUpdate_id ? componentSchemaBodyRequired : componentSchemaBodyRequiredWithoutId ;
             componentSchemaPath[httpMethod + interfaceName + "Response"] = componentSchemaResponse;
             break;
         case "put":

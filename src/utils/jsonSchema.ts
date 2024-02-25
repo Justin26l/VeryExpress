@@ -13,7 +13,7 @@ export function loadJsonSchema(jsonSchemaPath: string) : types.jsonSchema | neve
         return JSON.parse(fs.readFileSync(jsonSchemaPath, "utf8")) as types.jsonSchema;
     }
     catch (e: any) {
-        return log.error("Error Load JsonSchema File :\n", e.message || e, jsonSchemaPath);
+        return log.error("Error Load JsonSchema :\n", e.message || e, jsonSchemaPath);
     }
 }
 

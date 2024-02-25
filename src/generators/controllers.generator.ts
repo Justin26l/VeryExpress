@@ -58,11 +58,11 @@ export function compile(options: {
     // create and write file
     Object.keys(openApi.paths).forEach((endpoint: string) => {
         // remove '/{id}' from path and check is in writtedEndpoint
-        const collectionName: string | undefined = openApi.paths[endpoint]["x-collection"];
+        const documentName: string | undefined = openApi.paths[endpoint]["x-collection"];
         const interfaceName: string | undefined = openApi.paths[endpoint]["x-interface"];
         const endpointFormatted = endpoint.replace("/{id}", "").toLowerCase();
 
-        if (collectionName === undefined) {
+        if (documentName === undefined) {
             log.error(`"x-collection" not found in openapi spec's path "${endpoint}"\n     - opanapi source: ${options.compilerOptions.openapiDir}`);
             return;
         }

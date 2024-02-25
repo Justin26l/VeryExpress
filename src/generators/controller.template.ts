@@ -229,7 +229,7 @@ export default new {{interfaceName}}Controller().router;
 
     template = template.replace(
         /{{check_id}}/g, 
-        templateOptions.compilerOptions.allowApiCreateUpdate_id ? "" : `
+        templateOptions.compilerOptions.app.allowApiCreateUpdate_id ? "" : `
             if (req.body._id) {
                 delete req.body._id;
             };`

@@ -3,12 +3,10 @@ import * as types from "../types/types";
 import * as utilsJsonSchema from "../utils/jsonSchema";
 import log from "../utils/logger";
 
+/** format the schema and create role file (RBAC) */
 export function formatJsonSchema(jsonSchemaPath: string, compilerOptions: types.compilerOptions): types.jsonSchema {
     // read json schema
     const jsonSchema: types.jsonSchema = utilsJsonSchema.loadJsonSchema(jsonSchemaPath);
-    if (jsonSchema == undefined) {
-        log.error("formatJsonSchema : error at loadJsonSchema()");
-    }
 
     // check props exist
     if (!jsonSchema["x-documentConfig"]) {
@@ -31,7 +29,7 @@ export function formatJsonSchema(jsonSchemaPath: string, compilerOptions: types.
     }
 
     // _id fields check
-    if (compilerOptions.useObjectID){
+    if (compilerOptions.app.useObjectID){
         checkField_id(jsonSchema, jsonSchemaPath);
     }
 

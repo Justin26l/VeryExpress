@@ -3,7 +3,8 @@
 import { Router } from "express";
 import passport, { PassportStatic, Profile } from "passport";
 import { AuthenticateOptionsGoogle, Strategy as GoogleStrategy, StrategyOptions, VerifyCallback } from "passport-google-oauth20";
-// import log from '../utils/logger.gen';
+import log from '../utils/logger.gen';
+import { UserModel } from "../models/UserModel.gen";
 
 export type { Profile };
 
@@ -44,22 +45,42 @@ export default class PassportGoogle {
         this.router.get("/auth/google/callback", 
             this.passport.authenticate("google", { failureRedirect: "/login" }), 
             (req, res) => {
-                // res.send(`Hello, user <pre>${req.user}</pre>`);
                 res.redirect("/profile");
             }
         );
     }
 
-    public async passportSerializeUser() {
+    public passportSerializeUser() {
+        this.passport.serializeUser(async (user, done) => {
+            log.info('passportGoogle().serializeUser', user)
+            // Here, you can choose what data to store in the session.
+            // This data will be used in `deserializeUser` to retrieve the full user object.
+            // This is typically just the user's ID.
 
-        await this.passport.serializeUser((user, done) => {
-            // log.info('passportGoogle().serializeUser', user)
+            // store role in session for access control
+            const DbUser = await UserModel.findById(user)
+            if (DbUser) {
+                done(null, DbUser);
+            } else {
+                done(new Error('User not found'));
+            }
+
             done(null, user);
         });
+    }
 
-        await this.passport.deserializeUser((id, done) => {
-            // log.info('passportGoogle().deserializeUser', id)
-            done(null, { id });
+    public async passportDeserializeUser() {
+        this.passport.deserializeUser(async (id, done) => {
+            log.info('passportGoogle().deserializeUser', id)
+
+            const user = await UserModel.findById(id);
+            if (user) {
+              done(null, user);
+            } 
+            else {
+              done(new Error('User not found'));
+            }
+            
         });
     }
 

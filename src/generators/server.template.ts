@@ -11,9 +11,9 @@ const importOAuthRouter = "import OAuthRouter from './routes/OAuthRouter.gen';";
 // configure
 const ConfigExpressSession = `
 const expressSessionConfig = {
-  secret: 'your session secret', 
-  resave: false, 
-  saveUninitialized: false 
+    secret: 'your session secret', 
+    resave: false, 
+    saveUninitialized: false 
 }`;
 
 const ConfigSwaggerRouter = "const SwaggerRoute = new SwaggerRouter(); SwaggerRoute.initRoutes();";
@@ -21,18 +21,17 @@ const ConfigOAuthRouter = "const OAuthRoute = new OAuthRouter(); OAuthRoute.init
 
 const ConfigPassportGoogle = `
 const OAuthGoogle = new PassportGoogle({
-  strategyConfig: {
-    // @ts-ignore
-    verify: oauthVerify
-  }
+    strategyConfig: {
+        verify: oauthVerify
+    }
 });`;
 
 // app.use 
 const UseSession = "app.use(session(expressSessionConfig));";
 const UsePassportGoogle = `
-  await OAuthGoogle.passportSerializeUser();
-  app.use(OAuthGoogle.passport.initialize());
-  app.use(OAuthGoogle.passport.session());`;
+    await OAuthGoogle.passportSerializeUser();
+    app.use(OAuthGoogle.passport.initialize());
+    app.use(OAuthGoogle.passport.session());`;
 
 // routes
 const UseOAuthRouter = "app.use(OAuthRoute.router);";
@@ -41,8 +40,8 @@ const UseOAuthGoogleRouter = "app.use(OAuthGoogle.router);";
 
 
 export default function serverTemplate(options: {
-  compilerOptions: types.compilerOptions,
-  template?: string,
+    compilerOptions: types.compilerOptions,
+    template?: string,
 }): string {
     let template: string = options.template || `${options.compilerOptions.headerComment || "// generated files by very-express"}
 
@@ -62,8 +61,8 @@ import ApiRouter from './routes/ApiRouter.gen';
 dotenv.config();
 
 const helmetConfig = {
-  xPoweredBy: false,
-  xDnsPrefetchControl: { allow: false },
+    xPoweredBy: false,
+    xDnsPrefetchControl: { allow: false },
 };
 
 const ApiRoute = new ApiRouter(); ApiRoute.initRoutes();
@@ -75,50 +74,50 @@ const ApiRoute = new ApiRouter(); ApiRoute.initRoutes();
  */
 async function main(): Promise<void> {
 
-  const app = express();
-  app.disable("x-powered-by");
+    const app = express();
+    app.disable("x-powered-by");
 
-  // UseMiddleware
-  app.use(express.json());
-  app.use(helmet(helmetConfig));
-  app.use(mongoConn.middleware);
+    // UseMiddleware
+    app.use(express.json());
+    app.use(helmet(helmetConfig));
+    app.use(mongoConn.middleware);
 
-  // UsePlugins
-  {{AppUse}}
+    // UsePlugins
+    {{AppUse}}
 
-  // Routes
-  {{AppRouter}}
+    // Routes
+    {{AppRouter}}
 
-  app.use(ApiRoute.router);
+    app.use(ApiRoute.router);
 
-  app.get('/', (req, res) => {
-    res.send('Hello World');
-  });
+    app.get('/', (req, res) => {
+        res.send('Hello World');
+    });
 
-  app.listen(3000, () => {
-    if(!process.env.MONGODB_URI) throw new Error('MONGODB_URI is not defined');
-    mongoConn.connect(process.env.MONGODB_URI);
-    log.ok(\`Server is running on : \${process.env.APP_HOST}:\${process.env.APP_PORT}\`);
-  });
+    app.listen(3000, () => {
+        if(!process.env.MONGODB_URI) throw new Error('MONGODB_URI is not defined');
+        mongoConn.connect(process.env.MONGODB_URI);
+        log.ok(\`Server is running on : \${process.env.APP_HOST}:\${process.env.APP_PORT}\`);
+    });
 
 }
 
 main();
 `;
 
-    const usedProvider : string[] = utilsGenerator.isUseOAuth(options.compilerOptions);
-    const Import : string[] = [];
-    const Config : string[] = [];
-    const AppUse : string[] = [];
-    const AppRoute : string[] = [];
+    const usedProvider: string[] = utilsGenerator.isUseOAuth(options.compilerOptions);
+    const Import: string[] = [];
+    const Config: string[] = [];
+    const AppUse: string[] = [];
+    const AppRoute: string[] = [];
 
-    if(usedProvider.length > 0) {
+    if (usedProvider.length > 0) {
         Import.push(importExpressSession);
         Import.push(importOAuthVerifyPlugin);
         Config.push(ConfigExpressSession);
         AppUse.push(UseSession);
 
-        if (options.compilerOptions.enableSwagger) {
+        if (options.compilerOptions.app.enableSwagger) {
             Import.push(importSwaggerRouter);
             Config.push(ConfigSwaggerRouter);
             AppRoute.push(UseSwaggerRouter);
@@ -128,19 +127,19 @@ main();
         Config.push(ConfigOAuthRouter);
         AppRoute.push(UseOAuthRouter);
 
-        if(usedProvider.includes("google")) {
+        if (usedProvider.includes("google")) {
             Import.push(importPassportGoogle);
             Config.push(ConfigPassportGoogle);
             AppUse.push(UsePassportGoogle);
             AppRoute.push(UseOAuthGoogleRouter);
         }
     }
-  
+
     template = template.replace(/{{headerComment}}/g, options.compilerOptions.headerComment || "// generated files by very-express");
     template = template.replace(/{{Import}}/g, Import.join("\n"));
     template = template.replace(/{{Config}}/g, Config.join("\n"));
-    template = template.replace(/{{AppUse}}/g, AppUse.join("\n  "));
-    template = template.replace(/{{AppRouter}}/g, AppRoute.join("\n  "));
+    template = template.replace(/{{AppUse}}/g, AppUse.join("\n    "));
+    template = template.replace(/{{AppRouter}}/g, AppRoute.join("\n    "));
 
     return template;
 }
