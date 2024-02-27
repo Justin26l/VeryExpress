@@ -52,6 +52,8 @@ export const defaultCompilerOptions: types.compilerOptions = {
     srcDir: "./src",
     jsonSchemaDir: "./jsonSchema",
     openapiDir: "./openapi",
+    writtedDir: [],
+    
     app: {
         enableSwagger: true,
         useUserSchema: true,

@@ -1,9 +1,10 @@
 // read package.json and get version
 import fs from "fs";
 import path from "path";
-import childProcess from "child_process";
 import * as types from "../types/types";
 import log from "./logger";
+
+export const writtedFiles: string[] = [];
 
 export const relativePath = (fromPath: string, toPath: string): string => {
     return path.relative(fromPath, toPath).replace(/\\/g, "/");
@@ -39,6 +40,7 @@ export function writeFile(title: string, destination: string, newContent: string
     else {
         log.writing(`${title} : "${destination}"`);
         fs.writeFileSync(destination, newContent);
+        writtedFiles.push(destination);
     }
 }
 

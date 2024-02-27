@@ -14,7 +14,6 @@ import * as serverGen from "./generators/server.generator";
 import * as types from "./types/types";
 import { formatJsonSchema } from "./preprocess/jsonschemaFormat";
 
-
 export function generate(
     options: types.compilerOptions
 ): void {
@@ -54,10 +53,18 @@ export function generate(
         if (!fs.existsSync(path)) { fs.mkdirSync(path); }
     });
 
+    // copy static files
+    utils.copyDir(`${__dirname}/templates/utils`, dir.utilsDir, options, true);
+    utils.copyDir(`${__dirname}/templates/services`, dir.serviceDir, options, true);
+    utils.copyDir(`${__dirname}/templates/plugins`, dir.pluginDir, options, true);
+    utils.copyDir(`${__dirname}/templates/roles`, dir.roleDir, options, true);
+    utils.copyDir(`${__dirname}/templates/middleware`, dir.middlewareDir, options, true);
+    
+
     // update userSchema
     if ( options.app.useUserSchema ){
         userSchemaGen.compile({
-            compilerOptions: options || utils.defaultCompilerOptions
+            compilerOptions: options || utils.defaultCompilerOptions,
         });
     }
 
@@ -144,13 +151,6 @@ export function generate(
 
     // make server
     serverGen.compile(options);
-
-    // copy static files
-    utils.copyDir(`${__dirname}/templates/utils`, dir.utilsDir, options, true);
-    utils.copyDir(`${__dirname}/templates/services`, dir.serviceDir, options, true);
-    utils.copyDir(`${__dirname}/templates/plugins`, dir.pluginDir, options, true);
-    utils.copyDir(`${__dirname}/templates/roles`, dir.roleDir, options, true);
-    // utils.copyDir(`${__dirname}/templates/middleware`, dir.middlewareDir, options, true);
 
 }
 

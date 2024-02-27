@@ -47,6 +47,6 @@ export function compile(
     }
 
     // process package.json
-    packageJson.compile(packageOutPath, compilerOptions.jsonSchemaDir, compilerOptions.rootDir);
+    packageJson.compile(packageOutPath, compilerOptions.jsonSchemaDir, compilerOptions.rootDir, compilerOptions);
 
 }
