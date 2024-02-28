@@ -57,7 +57,7 @@ at the properites :
 - [x] generate express app
     - [x] gen. openapi based on json schema
     - [x] gen. controllers based on openapi
-        - [x] CRUD + Search api
+        - [x] CRUD API
 - [ ] database
     - [x] mongodb
     - [ ] sql
@@ -68,6 +68,7 @@ at the properites :
     - [ ] github
 - [x] Role Base Access Control
     - [x] API access control
+    - [ ] data validation based on Role
 
 ## Enhancement To Do
 
