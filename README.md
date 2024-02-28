@@ -63,10 +63,11 @@ at the properites :
     - [ ] sql
     - [ ] db encrtption [PDPA](https://en.wikipedia.org/wiki/Personal_Data_Protection_Act_2012)
 - [ ] oauth2
-    - [ ] google
+    - [x] google
     - [ ] microsoft
     - [ ] github
-- [ ] Role Base Access Control
+- [x] Role Base Access Control
+    - [x] API access control
 
 ## Enhancement To Do
 
