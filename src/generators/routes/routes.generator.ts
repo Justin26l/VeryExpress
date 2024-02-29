@@ -1,5 +1,3 @@
-import fs from "fs";
-
 import routesTemplate from "./routes.template";
 import * as routesOAuthGen from "./oauth.generator";
 import * as routesSwaggerGen from "./swagger.generator";

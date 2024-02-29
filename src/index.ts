@@ -5,7 +5,7 @@ import * as openapiGen from "./generators/openapi.generator";
 
 import log from "./utils/logger";
 import * as utils from "./utils";
-import * as userSchemaGen from "./generators/userSchema.generator"
+import * as userSchemaGen from "./generators/userSchema.generator";
 import * as roleGen from "./generators/role.generator";
 import * as controllerGen from "./generators/controllers.generator";
 import * as routeGen from "./generators/routes/routes.generator";

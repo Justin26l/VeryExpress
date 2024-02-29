@@ -3,7 +3,7 @@
 import { Router } from "express";
 import passport, { PassportStatic, Profile } from "passport";
 import { AuthenticateOptionsGoogle, Strategy as GoogleStrategy, StrategyOptions, VerifyCallback } from "passport-google-oauth20";
-import log from '../utils/logger.gen';
+import log from "../utils/logger.gen";
 import { UserModel } from "../models/UserModel.gen";
 
 export type { Profile };
@@ -52,17 +52,17 @@ export default class PassportGoogle {
 
     public passportSerializeUser() {
         this.passport.serializeUser(async (user, done) => {
-            log.info('passportGoogle().serializeUser', user)
+            log.info("passportGoogle().serializeUser", user);
             // Here, you can choose what data to store in the session.
             // This data will be used in `deserializeUser` to retrieve the full user object.
             // This is typically just the user's ID.
 
             // store role in session for access control
-            const DbUser = await UserModel.findById(user)
+            const DbUser = await UserModel.findById(user);
             if (DbUser) {
                 done(null, DbUser);
             } else {
-                done(new Error('User not found'));
+                done(new Error("User not found"));
             }
 
             done(null, user);
@@ -71,14 +71,14 @@ export default class PassportGoogle {
 
     public async passportDeserializeUser() {
         this.passport.deserializeUser(async (id, done) => {
-            log.info('passportGoogle().deserializeUser', id)
+            log.info("passportGoogle().deserializeUser", id);
 
             const user = await UserModel.findById(id);
             if (user) {
-              done(null, user);
+                done(null, user);
             } 
             else {
-              done(new Error('User not found'));
+                done(new Error("User not found"));
             }
             
         });

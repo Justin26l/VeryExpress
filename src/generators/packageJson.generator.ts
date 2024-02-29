@@ -1,13 +1,13 @@
 import fs from "fs";
 import log from "../utils/logger";
-import * as types from "../types/types";
+// import * as types from "../types/types";
 import { writeFile } from "../utils";
 
 export function compile(
     packageOutPath: string,
     schemaDir: string,
     outDir: string,
-    compilerOptions: types.compilerOptions
+    // compilerOptions: types.compilerOptions
 ): void {
     // read package.json and add script section
     log.process(`Project : ${packageOutPath}`);

@@ -1,6 +1,3 @@
-// read package.json and get version
-import fs from "fs";
-import path from "path";
 import childProcess from "child_process";
 import * as types from "../types/types";
 import log from "./logger";

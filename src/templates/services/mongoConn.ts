@@ -23,7 +23,7 @@ export function connect(mongoUrl:string): mongoose.Connection {
 export function middleware(req: Request, res: Response, next: NextFunction) {
     const db = mongoose.connection;
     if (db.readyState !== 1) { 
-        return res.status(503).json({ error: 'Database connection issue' });
+        return res.status(503).json({ error: "Database connection issue" });
     }
     else {
         next();
