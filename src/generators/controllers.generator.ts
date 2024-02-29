@@ -2,8 +2,8 @@ import fs from "fs";
 import jsYaml from "js-yaml";
 
 import controllerTemplate from "./controller.template";
-import log from "../utils/log";
-import * as utils from "../utils/common";
+import log from "../utils/logger";
+import { relativePath, writeFile } from "../utils/common";
 
 import * as types from "../types/types";
 import * as openapiType from "../types/openapi";
@@ -23,7 +23,7 @@ export function compile(options: {
     compilerOptions: types.compilerOptions
 }): void {
     const file: string = fs.readFileSync(options.compilerOptions.openapiDir + "/" + options.openapiFile, "utf8");
-    const controllerToModelBasePath: string = utils.relativePath(options.controllerOutDir, options.modelDir);
+    const controllerToModelBasePath: string = relativePath(options.controllerOutDir, options.modelDir);
 
     const openApi: openapiType.openapi = jsYaml.load(file) as openapiType.openapi;
     const endpointsValidator: {
@@ -35,19 +35,19 @@ export function compile(options: {
 
     // loop path
     Object.keys(openApi.paths).forEach((endpoint: string) => {
-        // const interfaceName = openApi.paths[endpoint]['x-collection'];
-        endpointsValidator[endpoint] = {};
-
         log.process(`Controller : ${options.compilerOptions.openapiDir} > ${endpoint}`);
+        
+        endpointsValidator[endpoint] = {};
 
         // make validator
         Object.keys(openApi.paths[endpoint]).forEach((httpMethod: string) => {
+            
             // check method is in enum types.schemaMethod
             if (!Object.values(types.httpMethodArr).includes(httpMethod as types.httpMethod)) return;
             const methodEnum: types.httpMethod = httpMethod as types.httpMethod;
 
             const validators: Schema = Object.assign(
-                buildParamValidator(endpoint, methodEnum, openApi, options.compilerOptions),
+                buildParamValidator(endpoint, methodEnum, openApi),
                 buildBodyValidator(endpoint, methodEnum, openApi)
             );
 
@@ -58,11 +58,11 @@ export function compile(options: {
     // create and write file
     Object.keys(openApi.paths).forEach((endpoint: string) => {
         // remove '/{id}' from path and check is in writtedEndpoint
-        const collectionName: string | undefined = openApi.paths[endpoint]["x-collection"];
+        const documentName: string | undefined = openApi.paths[endpoint]["x-collection"];
         const interfaceName: string | undefined = openApi.paths[endpoint]["x-interface"];
         const endpointFormatted = endpoint.replace("/{id}", "").toLowerCase();
 
-        if (collectionName === undefined) {
+        if (documentName === undefined) {
             log.error(`"x-collection" not found in openapi spec's path "${endpoint}"\n     - opanapi source: ${options.compilerOptions.openapiDir}`);
             return;
         }
@@ -76,22 +76,19 @@ export function compile(options: {
         else {
             // write controller
             const outPath = `${options.controllerOutDir}/${interfaceName}Controller.gen.ts`;
-            const outPathNoGen = `${options.controllerOutDir}/${interfaceName}Controller.nogen.ts`;
             const controllerToModelPath = `${controllerToModelBasePath}/${interfaceName}Model.gen`;
 
-            if (!fs.existsSync(outPathNoGen)) {
-                log.writing(`Controller : ${outPath}`);
-                writtedEndpoint.push(endpointFormatted);
-                fs.writeFileSync(outPath,
-                    controllerTemplate({
-                        endpoint: endpoint,
-                        modelPath: controllerToModelPath,
-                        interfaceName: interfaceName,
-                        validators: endpointsValidator,
-                        compilerOptions: options.compilerOptions,
-                    })
-                );
-            }
+            writeFile(`Controller`,
+                outPath,
+                controllerTemplate({
+                    endpoint: endpoint,
+                    modelPath: controllerToModelPath,
+                    interfaceName: interfaceName,
+                    validators: endpointsValidator,
+                    compilerOptions: options.compilerOptions,
+                })
+            );
+            writtedEndpoint.push(endpointFormatted);
         }
     });
 
@@ -101,13 +98,12 @@ function buildParamValidator(
     endpoint: string,
     httpMethod: types.httpMethod,
     openapi: openapiType.openapi,
-    compilerOptions: types.compilerOptions,
 ): Schema {
 
     const validators: Schema = {};
 
     openapi.paths[endpoint][httpMethod]!.parameters.forEach((parameter: openapiType.parameter) => {
-        if( !compilerOptions.use_id && parameter.name === "_id") {
+        if( parameter.name === "_id") {
             return;
         }
 

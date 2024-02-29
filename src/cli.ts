@@ -1,16 +1,19 @@
 #!/usr/bin/env node
-import generate from "./index";
 import fs from "fs";
 import childProcess from "child_process";
 import minimist from "minimist";
 
-import log from "./utils/log";
+import { generate } from "./index";
+import log from "./utils/logger";
 
-/**
- * configuration process
- */
+import { compilerOptions } from "./types/types";
+import { defaultCompilerOptions, writeFile } from "./utils";
+
+console.log("\x1b[35m%s\x1b[0m", "\n========== veryExpress CLI (vex) Start ==========\n");
+
+/** configuration process */
 const args: minimist.ParsedArgs = minimist(process.argv.slice(2));
-let config: {[key:string]:any} = {};
+let config: compilerOptions = defaultCompilerOptions; 
 
 if (fs.existsSync("vex.config.json")) {
     try {
@@ -22,66 +25,85 @@ if (fs.existsSync("vex.config.json")) {
     }
 }
 
-// record input args or use default
+// record last generation args or set default values
 config.commitBeforeGenerate = config.commitBeforeGenerate ?? false;
+
 config.jsonSchemaDir = args.j || args.jsonSchemaDir || config.jsonSchemaDir || "./jsonSchema";
-config.openapiDir = args.a || args.openapiDir || config.openapiDir || "./openapi";
 config.rootDir = args.o || args.rootDir || config.rootDir || ".";
-config.srcDir = (args.s || args.srcDir || config.srcDir || (args.o || args.rootDir || config.rootDir || ".") + "/src" );
+config.srcDir = config.srcDir || config.rootDir + "/src" ;
+config.openapiDir = config.openapiDir || config.rootDir + "./openapi";
 
-console.log("\x1b[35m%s\x1b[0m", "\n========== veryExpress CLI (vex) Start ==========\n");
-log.writing("vex.config.json");
-fs.writeFileSync("vex.config.json", JSON.stringify(config, null, 4));
+config.app.enableSwagger = config.app.enableSwagger || true,
+config.app.useUserSchema = config.app.useUserSchema || true,
+config.app.useObjectID = config.app.useObjectID || true,
+config.app.allowApiCreateUpdate_id = config.app.allowApiCreateUpdate_id || false,
 
-/**
- * Cli handler
+config.useRBAC = config.useRBAC || {
+    roles : ["user"]
+};
+config.useOauth = config.useOauth || {
+    google: false,
+    microsoft: false,
+    apple: false,
+    github: false
+};
+
+if ( config.app.useObjectID && config.app.allowApiCreateUpdate_id ){
+    log.warn("Not recommended to use \"useObjectID\" with \"allowApiCreateUpdate_id\",\nthis may cause security issues");
+}
+
+log.process("vex.config.json");
+writeFile("vex.config", "vex.config.json", JSON.stringify(config, null, 4));
+
+/** 
+ * ==================== 
+ *     CLI Handler
+ * ====================
  */
 
-// -h : Help
-if ("h" in args) {
-    console.log(`
-Usage: vex [jsonSchemaDir] [openapiDir] [rootDir]
+/** Help */
+if ( String(args._[0]).toLowerCase() === "h" || args["h"] ) {
+    console.log(`Very Express CLI Usage :
+vex [flag]
     -h : Help
-    -j : jsonSchemaDir (config: ${config.jsonSchemaDir})
-    -a : openapiDir (config: ${config.openapiDir})
-    -o : rootDir (config: ${config.rootDir})
+    -i : Create generator config etc. 
+to generate app :
+    vex [jsonSchemaDir] [rootDir]
+    -j : jsonSchemaDir (configured: ${config.jsonSchemaDir})
+    -o : rootDir (configured: ${config.rootDir})
 `);
     process.exit(0);
 }
 
-// check dir exists
-if (!fs.existsSync(config.jsonSchemaDir)) {
-    log.error("Schema Dir Not Found:", config.jsonSchemaDir);
-    process.exit(1);
+/** Initialization */
+else if ( String(args._[0]).toLowerCase() === "i" || args["i"] ) {
+    console.log("Very Express CLI : Initialization ...");
+    process.exit(0);
 }
 
-if (!fs.existsSync(config.rootDir)) {
-    fs.mkdirSync(config.rootDir);
-}
-
-if (!fs.existsSync(config.srcDir)) {
-    fs.mkdirSync(config.srcDir);
-}
-
-
-// commit before generate
-if (config.commitBeforeGenerate === true) {
-    try {
-        log.info("git commit \"before vex-gen\"");
-        childProcess.execSync("git add . && git commit -m \"before vex-gen\"", { stdio: "inherit" });
+/** Generation */
+else {
+    if (!fs.existsSync(config.jsonSchemaDir)) {
+        log.error("Schema Dir Not Found:", config.jsonSchemaDir);
+        process.exit(1);
     }
-    catch (err) {
-        log.error("git commit \"before vex-gen\" failed", err);
-    }
-}
 
-// run main process
-generate({
-    jsonSchemaDir : config.jsonSchemaDir,
-    openapiDir : config.openapiDir,
-    rootDir : config.rootDir,
-    srcDir : config.srcDir,
-});
+    // commit before generate
+    if (config.commitBeforeGenerate === true) {
+        try {
+            log.info("git commit \"before vex-gen\"");
+            childProcess.execSync("git add . && git commit -m \"before vex-gen\"", { stdio: "inherit" });
+        }
+        catch (err) {
+            log.error("git commit \"before vex-gen\" failed", err);
+        }
+    }
+
+    // run main process
+    console.log(config);
+    generate(config);
+
+    console.log("\x1b[36m%s\x1b[0m", "\nnext step:\n", `cd ${config.rootDir}\n`, "npm install\n", "npm run dev");
+}
 
 console.log("\x1b[35m%s\x1b[0m", "\n========== veryExpress CLI (vex) Complete ==========\n");
-console.log("\x1b[36m%s\x1b[0m", "\nnext step:\n", `cd ${config.rootDir}\n`, "npm install\n", "npm run dev");

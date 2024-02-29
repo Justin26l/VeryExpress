@@ -57,16 +57,18 @@ at the properites :
 - [x] generate express app
     - [x] gen. openapi based on json schema
     - [x] gen. controllers based on openapi
-        - [x] CRUD + Search api
+        - [x] CRUD API
 - [ ] database
     - [x] mongodb
     - [ ] sql
     - [ ] db encrtption [PDPA](https://en.wikipedia.org/wiki/Personal_Data_Protection_Act_2012)
 - [ ] oauth2
-    - [ ] google
+    - [x] google
     - [ ] microsoft
     - [ ] github
-- [ ] Role Base Access Control
+- [x] Role Base Access Control
+    - [x] API access control
+    - [ ] data validation based on Role
 
 ## Enhancement To Do
 

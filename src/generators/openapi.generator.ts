@@ -4,18 +4,19 @@ import fs from "fs";
 
 import * as types from "../types/types";
 import * as openapiType from "../types/openapi";
-import utils from "../utils/common";
-import log from "../utils/log";
+import utilsJsonSchema from "../utils/jsonSchema";
+import log from "../utils/logger";
+import { writeFile } from "../utils";
 
 /**
  * compile json schema to openapi spec
  * @param openapiOutFileName output file based on compilerOptions.openapiDir
  * @param compilerOptions 
  */
-export function compile(options:{
+export function compile(
     openapiOutFileName: string, 
     compilerOptions: types.compilerOptions
-}): void {
+): void {
 
     // convert to yaml
     let openapiJson: openapiType.openapi = {
@@ -33,26 +34,25 @@ export function compile(options:{
 
     // loop through all json schema files and compile to openapi paths & components
 
-    const files = fs.readdirSync(options.compilerOptions.jsonSchemaDir);
+    const files = fs.readdirSync(compilerOptions.jsonSchemaDir);
     files.forEach((file) => {
         // ignore non json files
         if (!file.endsWith(".json")) return;
-        const jsonSchemaFilePath: string = options.compilerOptions.jsonSchemaDir + "/" + file;
+        const jsonSchemaFilePath: string = compilerOptions.jsonSchemaDir + "/" + file;
         log.process(`OpenApi : ${jsonSchemaFilePath}`);
 
-        const jsonSchemaBuffer = fs.readFileSync(`${options.compilerOptions.jsonSchemaDir}/${file}`);
+        const jsonSchemaBuffer = fs.readFileSync(`${compilerOptions.jsonSchemaDir}/${file}`);
         const jsonSchema: types.jsonSchema = JSON.parse(jsonSchemaBuffer.toString());
         openapiJson = jsonToOpenapiPath(openapiJson, jsonSchema, { jsonSchemaFilePath: jsonSchemaFilePath });
-        openapiJson = jsonToOpenapiComponentSchema(openapiJson, jsonSchema, { jsonSchemaFilePath: jsonSchemaFilePath });
+        openapiJson = jsonToOpenapiComponentSchema(openapiJson, jsonSchema, { jsonSchemaFilePath: jsonSchemaFilePath }, compilerOptions);
     });
 
     const validOpenApi = json2openapi(openapiJson, { version: 3.0 });
     const openapiYaml = yaml.dump(validOpenApi);
 
     // create and write file
-    const openapiOutFile: string = options.compilerOptions.openapiDir + options.openapiOutFileName;
-    log.writing(`OpenApi : ${openapiOutFile}`);
-    fs.writeFileSync(openapiOutFile, openapiYaml);
+    const openapiOutFile: string = compilerOptions.openapiDir + openapiOutFileName;
+    writeFile(`OpenApi`, openapiOutFile, openapiYaml);
 }
 
 function jsonToOpenapiPath(
@@ -85,7 +85,7 @@ function jsonToOpenapiPath(
         const useBody: boolean = ["post", "put", "patch"].includes(jsonSchemaMethod);
         const route: string = "/" + lowerDocName + (routeWithId ? "/{id}" : "");
         
-        const httpMethod: types.httpMethod = utils.httpMethod(jsonSchemaMethod, additionalinfo.jsonSchemaFilePath);
+        const httpMethod: types.httpMethod = utilsJsonSchema.httpMethod(jsonSchemaMethod, additionalinfo.jsonSchemaFilePath);
         const parameters: openapiType.parameter[] = [];
         let requestBody: openapiType.requestBody | undefined = undefined;
         const successResponse: openapiType.responses = {
@@ -169,7 +169,8 @@ function jsonToOpenapiComponentSchema(
     jsonSchema: types.jsonSchema,
     additionalinfo: {
         jsonSchemaFilePath: string
-    }
+    },
+    compilerOptions: types.compilerOptions
 ): openapiType.openapi {
     const componentSchemaPath: openapiType.components["schemas"] = {};
 
@@ -182,36 +183,47 @@ function jsonToOpenapiComponentSchema(
     const componentSchemaResponse: openapiType.componentsSchemaValue = {
         type: "object",
         properties: json2openapi(
-            utils.cleanXcustomValue(jsonSchema.properties, ["index", "unique", "required"]),
+            utilsJsonSchema.cleanXcustomValue(jsonSchema.properties, ["index", "unique", "required"]),
             { version: 3.0 }
         ),
     };
 
-    const componentSchemaBody: openapiType.componentsSchemaValue = {
-        type: "object",
-        properties: json2openapi(
-            utils.cleanXcustomValue(jsonSchema.properties, ["_id", "index", "unique", "required"]),
-            { version: 3.0 }
-        ),
-    };
-
+    // without [ index:bool, unique:bool, required:bool ]
     const componentSchemaBodyRequired: openapiType.componentsSchemaValue = {
         type: "object",
         properties: json2openapi(
-            utils.cleanXcustomValue(jsonSchema.properties, { _id: "string", index: "boolean", unique: "boolean", required: "boolean" }),
+            utilsJsonSchema.cleanXcustomValue(jsonSchema.properties, { index: "boolean", unique: "boolean", required: "boolean" }),
             { version: 3.0 }
         ),
         required: jsonSchema.required,
     };
+    
+    // without [ _id:obj, index:bool, unique:bool, required:bool ]
+    const componentSchemaBodyRequiredWithoutId: openapiType.componentsSchemaValue = {
+        type: "object",
+        properties: json2openapi(
+            utilsJsonSchema.cleanXcustomValue(componentSchemaBodyRequired.properties as any, { _id: "object"}),
+            { version: 3.0 }
+        ),
+        required: jsonSchema.required,
+    }; 
+
+    // without [ _id, index, unique, required:any ]
+    const componentSchemaBody: openapiType.componentsSchemaValue = {
+        type: "object",
+        properties: json2openapi(
+            utilsJsonSchema.cleanXcustomValue(componentSchemaBodyRequiredWithoutId.properties as any, ["required"]),
+            { version: 3.0 }
+        ),
+    };   
 
     documentConfig.methods.forEach((jsonSchemaMethod) => {
-        const httpMethod: types.httpMethod = utils.httpMethod(jsonSchemaMethod, additionalinfo.jsonSchemaFilePath);
+        const httpMethod: types.httpMethod = utilsJsonSchema.httpMethod(jsonSchemaMethod, additionalinfo.jsonSchemaFilePath);
 
         switch (jsonSchemaMethod) {
         case "delete":
             // no param, no response
             break;
-
         case "get":
             componentSchemaPath[httpMethod + interfaceName + "Response"] = componentSchemaResponse;
             break;
@@ -276,12 +288,15 @@ function jsonToOpenapiComponentSchema(
                 };
                 break;
         }
-        case "patch":
+        case "patch":    
             componentSchemaPath[httpMethod + interfaceName + "Body"] = componentSchemaBody;
             componentSchemaPath[httpMethod + interfaceName + "Response"] = componentSchemaResponse;
             break;
 
         case "post":
+            componentSchemaPath[httpMethod + interfaceName + "Body"] = compilerOptions.app.allowApiCreateUpdate_id ? componentSchemaBodyRequired : componentSchemaBodyRequiredWithoutId ;
+            componentSchemaPath[httpMethod + interfaceName + "Response"] = componentSchemaResponse;
+            break;
         case "put":
             componentSchemaPath[httpMethod + interfaceName + "Body"] = componentSchemaBodyRequired;
             componentSchemaPath[httpMethod + interfaceName + "Response"] = componentSchemaResponse;

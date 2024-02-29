@@ -1,5 +1,5 @@
 import controllerTemplate from "./controller.template";
-import routesTemplate from "./routes.template";
+import routesTemplate from "./routes/routes.template";
 import serverTemplate from "./server.template";
 
 export default {

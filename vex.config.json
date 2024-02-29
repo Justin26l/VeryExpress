@@ -1,7 +1,28 @@
 {
     "commitBeforeGenerate": false,
     "jsonSchemaDir": "./output/jsonSchema",
-    "openapiDir": "./output/openapi",
     "rootDir": "./output",
-    "srcDir": "./output/src"
+    "srcDir": "./output/src",
+    "openapiDir": "./output/openapi",
+    "app": {
+        "roles": [
+            "admin",
+            "user"
+        ],
+        "enableSwagger": true,
+        "useUserSchema": true,
+        "useObjectID": true,
+        "allowApiCreateUpdate_id": false
+    },
+    "useOauth": {
+        "google": true,
+        "microsoft": false,
+        "apple": false,
+        "github": false
+    },
+    "useRBAC": {
+        "roles": [
+            "user"
+        ]
+    }
 }

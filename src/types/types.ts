@@ -1,12 +1,34 @@
 export interface compilerOptions {
+    commitBeforeGenerate: boolean;
+    headerComment: string;
+
     jsonSchemaDir: string,
     openapiDir: string,
     rootDir: string,
     srcDir: string,
-    headerComment?: string;
-    modelsTemplate?: string;
-    controllersTemplate?: string;
-    use_id?: boolean;
+    writtedDir: string[],
+
+    app: {
+        enableSwagger: boolean,
+        useUserSchema: boolean,
+        useObjectID: boolean,
+        allowApiCreateUpdate_id: boolean,
+    },
+
+    useRBAC?: {
+        roles: string[]
+    },
+    useOauth?: {
+        google?: boolean,
+        microsoft?: boolean,
+        apple?: boolean,
+        github?: boolean,
+        [key: string]: boolean | undefined;
+    };
+}
+
+export interface roleJson {
+    [key: string]: string[];
 }
 
 export interface jsonSchema {
@@ -42,7 +64,6 @@ export interface jsonSchemaPropsItem {
 
 export interface documentConfig {
     documentName: string;
-    documentType?: "primary" | "secondary";
     interfaceName: string;
     keyPrefix?: string;
     methods: schemaMethod[];

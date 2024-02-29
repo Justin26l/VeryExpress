@@ -15,11 +15,9 @@
             "type": "string",
             "index": true
         },
-        "role": {
+        "role":{
             "type": "string",
-            "enum": [
-                "user"
-            ],
+            "enum": ["user"],
             "default": "user",
             "required": true
         },
@@ -43,19 +41,12 @@
         },
         "locale": {
             "type": "string",
-            "maxLength": 8,
-            "required": true
+            "maxLength": 8
         },
         "isActive": {
             "type": "boolean",
+            "default": true,
             "required": true
         }
-    },
-    "required": [
-        "role",
-        "email",
-        "name",
-        "locale",
-        "isActive"
-    ]
+    }
 }

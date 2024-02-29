@@ -4,31 +4,30 @@ import serverTemplate from "./server.template";
 import packageJson from "./packageJson.generator";
 
 import * as types from "../types/types";
-import log from "../utils/log";
+import log from "../utils/logger";
+import { writeFile } from "../utils";
 
 /**
  * generate required files at root & output directory
- * @param options 
+ * @param compilerOptions 
  */
 export function compile(
-    options: types.compilerOptions
+    compilerOptions: types.compilerOptions
 ): void {
 
-    const serverOutPath = options.srcDir + "/server.ts";
-    const packageOutPath = options.rootDir + "/package.json";
-    const envOutPath = options.rootDir + "/.env";
-    const tsconfigOutPath = options.rootDir + "/tsconfig.json";
-    // const gitignoreOutPath = options.rootDir +  ".gitignore";
+    const serverOutPath = compilerOptions.srcDir + "/server.ts";
+    const packageOutPath = compilerOptions.rootDir + "/package.json";
+    const envOutPath = compilerOptions.rootDir + "/.env";
+    const tsconfigOutPath = compilerOptions.rootDir + "/tsconfig.json";
 
     // write server file
-    if (!fs.existsSync(serverOutPath)) {
-        log.writing(`Server : ${serverOutPath}`);
-        fs.writeFileSync(serverOutPath,
-            serverTemplate({
-                options: options,
-            })
-        );
-    }
+    writeFile(
+        "Server",
+        serverOutPath,
+        serverTemplate({
+            compilerOptions: compilerOptions,
+        })
+    );
 
     // write .env
     if (!fs.existsSync(envOutPath)) {
@@ -48,6 +47,6 @@ export function compile(
     }
 
     // process package.json
-    packageJson.compile(packageOutPath, options.jsonSchemaDir, options.openapiDir, options.rootDir);
+    packageJson.compile(packageOutPath, compilerOptions.jsonSchemaDir, compilerOptions.rootDir, compilerOptions);
 
 }
