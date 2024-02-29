@@ -61,7 +61,7 @@ export default class Role${role} extends roleFt._RoleFactory<accessAction${role}
 }
 `;
 
-        writeFile(`RBAC Role`, roleOutFile, content);
+        writeFile("RBAC Role", roleOutFile, content);
         indexFileData.push({
             name: role, 
             from: roleOutFile,
@@ -70,8 +70,8 @@ export default class Role${role} extends roleFt._RoleFactory<accessAction${role}
 
     // 2. generate index file
     const indexFile = `${options.roleOutDir}/index.gen.ts`;
-    const indexFileContent = indexFileData.map((data) => `export { default as ${data.name} } from "./${data.from.replace('.ts','')}";`).join("\n");
-    writeFile(`RBAC Index`, indexFile, `${options.compilerOptions.headerComment}\n${indexFileContent}`);
+    const indexFileContent = indexFileData.map((data) => `export { default as ${data.name} } from "./${data.from.replace(".ts","")}";`).join("\n");
+    writeFile("RBAC Index", indexFile, `${options.compilerOptions.headerComment}\n${indexFileContent}`);
 
     // 3. generate middleware
     // 3.1. create if middeleware dir not exist
@@ -101,6 +101,6 @@ export function roleBaseAccessControl(
         }
     };
 }`;
-    writeFile(`RBAC Middleware`, middlewareFile, middlewareContent);
+    writeFile("RBAC Middleware", middlewareFile, middlewareContent);
 
 }

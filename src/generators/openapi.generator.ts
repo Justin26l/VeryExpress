@@ -52,7 +52,7 @@ export function compile(
 
     // create and write file
     const openapiOutFile: string = compilerOptions.openapiDir + openapiOutFileName;
-    writeFile(`OpenApi`, openapiOutFile, openapiYaml);
+    writeFile("OpenApi", openapiOutFile, openapiYaml);
 }
 
 function jsonToOpenapiPath(

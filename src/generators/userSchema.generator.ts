@@ -1,5 +1,3 @@
-import fs from "fs";
-
 import * as types from "../types/types";
 
 import log from "../utils/logger";
@@ -25,7 +23,7 @@ export function compile(options: {
                 userSchema.properties[key].enum = options.compilerOptions.useRBAC?.roles || ["user"];
             }
         }
-    })
+    });
 
     // 3. write userSchema file
     writeFile("UserSchmea", schemaOutPath, JSON.stringify(userSchema, null, 4));

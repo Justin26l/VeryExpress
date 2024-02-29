@@ -21,7 +21,7 @@ export function loadJson<T = any>(filePath: string, fileNotExistHandler?: () => 
     }
     else{
         try {
-            const content = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+            const content = JSON.parse(fs.readFileSync(filePath, "utf8"));
             return content ? content : log.error(`FILE JSON : Read Error ${filePath}`);
         }
         catch (err: any) {
@@ -30,17 +30,17 @@ export function loadJson<T = any>(filePath: string, fileNotExistHandler?: () => 
     }
 }
 
-export function writeFile(title: string, destination: string, newContent: string): void {
+export function writeFile(title: string, destination: string, newContent: string): boolean {
     // read file, check difference, if yes write file
-    const oldContent = fs.existsSync(destination) ? fs.readFileSync(destination, "utf8") : '';
+    const oldContent = fs.existsSync(destination) ? fs.readFileSync(destination, "utf8") : "";
     if (oldContent === newContent) {
         log.info(`${title} : "${destination}" No changes`);
-        return;
+        return false;
     }
     else {
         log.writing(`${title} : "${destination}"`);
         fs.writeFileSync(destination, newContent);
-        writtedFiles.push(destination);
+        return true;
     }
 }
 
@@ -62,7 +62,7 @@ export function copyDir(source: string, destination: string, compilerOptions: ty
             log.info(`FILE : existed, skip file ${destination + "/" + files[i]} exist, skip`);
         }
         else {
-            const fileNameGen = files[i].replace('.ts', '.gen.ts');
+            const fileNameGen = files[i].replace(".ts", ".gen.ts");
             const outPath: string = destination + "/" + fileNameGen;
             // read file, replace header, write file
             log.writing(`FILE : ${outPath}`);

@@ -78,7 +78,7 @@ export function compile(options: {
             const outPath = `${options.controllerOutDir}/${interfaceName}Controller.gen.ts`;
             const controllerToModelPath = `${controllerToModelBasePath}/${interfaceName}Model.gen`;
 
-            writeFile(`Controller`,
+            writeFile("Controller",
                 outPath,
                 controllerTemplate({
                     endpoint: endpoint,

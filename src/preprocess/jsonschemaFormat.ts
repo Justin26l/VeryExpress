@@ -1,4 +1,3 @@
-import fs from "fs";
 import * as types from "../types/types";
 import * as utilsJsonSchema from "../utils/jsonSchema";
 import log from "../utils/logger";
@@ -37,7 +36,7 @@ export function formatJsonSchema(jsonSchemaPath: string, compilerOptions: types.
     // format properties boolean "required" into array of string
     jsonSchema.required = getRequiredArrStr(jsonSchema, jsonSchemaPath);
 
-    writeFile(`Format JsonSchema`, jsonSchemaPath, JSON.stringify(jsonSchema, null, 4));
+    writeFile("Format JsonSchema", jsonSchemaPath, JSON.stringify(jsonSchema, null, 4));
 
     return jsonSchema;
 }

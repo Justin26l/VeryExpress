@@ -31,9 +31,9 @@ export default async function oauthVerify(accessToken: string, refreshToken: str
             });
             newUser.save();
             return done(null, newUser);
-        };
+        }
     }
     catch(err) { 
         return done(err); 
-    };
-};
+    }
+}

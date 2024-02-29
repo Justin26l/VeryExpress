@@ -1,7 +1,7 @@
-import fs from 'fs'
-import * as types from '../types/types'
-import { loadJson, writeFile } from '../utils'
-import log from '../utils/logger';
+import fs from "fs";
+import * as types from "../types/types";
+import { loadJson, writeFile } from "../utils";
+import log from "../utils/logger";
 
 export function roleSetupFile(options: {
     collectionList: string[],
@@ -16,10 +16,10 @@ export function roleSetupFile(options: {
         log.process(`RBAC Setting : ${role}`);
 
         // 1. check role file exist, if not create it
-        const roleFilePath = `${options.roleSetupDir}/${role}.json`
+        const roleFilePath = `${options.roleSetupDir}/${role}.json`;
         if (!fs.existsSync(roleFilePath)) {
             writeFile(`Role Setup : ${role}`, roleFilePath, JSON.stringify({}, null, 4));
-        };
+        }
 
         // 2. check role obejct exist, if not add it in content
         const content = loadJson<types.roleJson>(roleFilePath);
@@ -33,4 +33,4 @@ export function roleSetupFile(options: {
 
     });
 
-};
+}
