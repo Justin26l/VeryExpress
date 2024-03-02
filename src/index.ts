@@ -58,7 +58,7 @@ export function generate(
     utils.copyDir(`${__dirname}/templates/services`, dir.serviceDir, options, true);
     utils.copyDir(`${__dirname}/templates/plugins`, dir.pluginDir, options, true);
     utils.copyDir(`${__dirname}/templates/roles`, dir.roleDir, options, true);
-    utils.copyDir(`${__dirname}/templates/middleware`, dir.middlewareDir, options, true);
+    // utils.copyDir(`${__dirname}/templates/middleware`, dir.middlewareDir, options, true);
     
 
     // update userSchema

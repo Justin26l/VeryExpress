@@ -33,6 +33,7 @@ config.rootDir = args.o || args.rootDir || config.rootDir || ".";
 config.srcDir = config.srcDir || config.rootDir + "/src" ;
 config.openapiDir = config.openapiDir || config.rootDir + "./openapi";
 
+config.app = config.app || {},
 config.app.enableSwagger = config.app.enableSwagger || true,
 config.app.useUserSchema = config.app.useUserSchema || true,
 config.app.useObjectID = config.app.useObjectID || true,
@@ -49,7 +50,7 @@ config.useOauth = config.useOauth || {
 };
 
 if ( config.app.useObjectID && config.app.allowApiCreateUpdate_id ){
-    log.warn("Not recommended to use \"useObjectID\" with \"allowApiCreateUpdate_id\",\nthis may cause security issues");
+    log.warn("Not recommended to use \"useObjectID\" with \"allowApiCreateUpdate_id\",\nthis may cause some logic issues");
 }
 
 log.process("vex.config.json");
