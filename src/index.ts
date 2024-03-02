@@ -49,6 +49,7 @@ export function generate(
     if (!fs.existsSync(options.rootDir)) { fs.mkdirSync(options.rootDir); }
     if (!fs.existsSync(options.srcDir)) { fs.mkdirSync(options.srcDir); }
     if (!fs.existsSync(options.openapiDir)) { fs.mkdirSync(options.openapiDir); }
+    if (!fs.existsSync(roleSourceDir)) { fs.mkdirSync(roleSourceDir); }
     Object.values(dir).forEach((path: string) => {
         if (!fs.existsSync(path)) { fs.mkdirSync(path); }
     });
