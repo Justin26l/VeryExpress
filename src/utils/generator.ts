@@ -59,6 +59,8 @@ export const defaultCompilerOptions: types.compilerOptions = {
     },
     useRBAC: {
         roles: ["user"],
+        default: "user",
+        schemaIncluded: ["user"],
     },
     useOauth: {
         google: false,

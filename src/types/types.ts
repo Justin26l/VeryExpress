@@ -17,6 +17,8 @@ export interface compilerOptions {
 
     useRBAC?: {
         roles: string[]
+        default: string,
+        schemaIncluded: string[]
     },
     useOauth?: {
         google?: boolean,
@@ -54,11 +56,12 @@ export interface jsonSchemaPropsItem {
     required?: boolean | string[];
     index?: boolean;
     example?: any;
-    "x-format"?: string;
     minLength?: number;
     maxLength?: number;
     minimum?: number;
     maximum?: number;
+    "x-format"?: string;
+    "x-vexData"?: string;
     [key: string]: string | boolean | number | string[] | jsonSchemaPropsItem | { [key: string]: jsonSchemaPropsItem;} | any[] | undefined;
 }
 

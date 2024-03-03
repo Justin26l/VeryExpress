@@ -28,27 +28,33 @@ if (fs.existsSync("vex.config.json")) {
 // record last generation args or set default values
 config.commitBeforeGenerate = config.commitBeforeGenerate ?? false;
 
+// generator
 config.jsonSchemaDir = args.j || args.jsonSchemaDir || config.jsonSchemaDir || "./jsonSchema";
 config.rootDir = args.o || args.rootDir || config.rootDir || ".";
 config.srcDir = config.srcDir || config.rootDir + "/src" ;
 config.openapiDir = config.openapiDir || config.rootDir + "./openapi";
 
+// app
 config.app = config.app || {},
 config.app.enableSwagger = config.app.enableSwagger || true,
 config.app.useUserSchema = config.app.useUserSchema || true,
 config.app.useObjectID = config.app.useObjectID || true,
 config.app.allowApiCreateUpdate_id = config.app.allowApiCreateUpdate_id || false,
 
-config.useRBAC = config.useRBAC || {
-    roles : ["user"]
-};
-config.useOauth = config.useOauth || {
-    google: false,
-    microsoft: false,
-    apple: false,
-    github: false
-};
+// RBAC
+config.useRBAC = config.useRBAC || { roles : [], default : "", schemaIncluded:[] };
+config.useRBAC.roles = config.useRBAC.roles || ["user"];
+config.useRBAC.default = config.useRBAC.default || "user";
+config.useRBAC.schemaIncluded = config.useRBAC.schemaIncluded || ["user"];
 
+// oauth
+config.useOauth = config.useOauth || {};
+config.useOauth.google = config.useOauth.google || false;
+config.useOauth.facebook = config.useOauth.facebook || false;
+config.useOauth.github = config.useOauth.github || false;
+config.useOauth.microsoft = config.useOauth.microsoft || false;
+
+// warning
 if ( config.app.useObjectID && config.app.allowApiCreateUpdate_id ){
     log.warn("Not recommended to use \"useObjectID\" with \"allowApiCreateUpdate_id\",\nthis may cause some logic issues");
 }
