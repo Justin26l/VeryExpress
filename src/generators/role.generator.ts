@@ -47,16 +47,16 @@ export function compile(options: {
 
         // make templates
         const RoleAccessActionString = Object.keys(RoleAccessAction).map((key) => `"${key}"`);
-        RoleAccessActionString.push("roleFt.accessAction");
+        RoleAccessActionString.push("roleFactory.accessAction");
 
         const content = `${options.compilerOptions.headerComment}
-import * as role from "./_RoleFactory.gen";
+import * as roleFactory from "./_RoleFactory.gen";
 
 export type accessAction${role} = ${RoleAccessActionString.join(" | ")};
 
-const ${role}AccessControl: roleFt.accessControl<accessAction${role}> = ${JSON.stringify(roleContent, null, 4)};
+const ${role}AccessControl: roleFactory.accessControl<accessAction${role}> = ${JSON.stringify(roleContent, null, 4)};
 
-export default class Role${role} extends roleFt._RoleFactory<accessAction${role}> {
+export default class Role${role} extends roleFactory._RoleFactory<accessAction${role}> {
     constructor() {
         super(${role}AccessControl);
     }
@@ -71,18 +71,18 @@ export default class Role${role} extends roleFt._RoleFactory<accessAction${role}
     });
 
     // 2. generate index file
-    const indexFile = `${options.roleOutDir}/index.gen.ts`;
-    const indexFileContent = indexFileData.map((data) => `export { default as ${data.name} } from "./${data.from.replace(".ts","")}";`).join("\n");
+    const indexFile = `${options.roleOutDir}/index.ts`;
+    const indexFileContent = indexFileData.map((data) => `export { default as ${data.name} } from "./${data.name}.gen";`).join("\n");
     writeFile("RBAC Index", indexFile, `${options.compilerOptions.headerComment}\n${indexFileContent}`);
 
     // 3. generate middleware
     // 3.1. create if middeleware dir not exist
-    if (!fs.existsSync(`${options.compilerOptions.srcDir}/middleware`)) {
-        fs.mkdirSync(`${options.compilerOptions.srcDir}/middleware`);
+    if (!fs.existsSync(`${options.compilerOptions.srcDir}/middlewares`)) {
+        fs.mkdirSync(`${options.compilerOptions.srcDir}/middlewares`);
     }
     // 3.2. generate middleware file
-    const middlewareFile = `${options.compilerOptions.srcDir}/middleware/RoleBaseAccessControl.gen.ts`;
-    const roleTypes = indexFileData.map((data) => `typeof ${data.name}`).join(" | ");
+    const middlewareFile = `${options.compilerOptions.srcDir}/middlewares/RoleBaseAccessControl.gen.ts`;
+    const roleTypes = indexFileData.map((data) => `typeof roles.${data.name}`).join(" | ");
     const middlewareContent = `${options.compilerOptions.headerComment}
 import { Request, Response, NextFunction } from "express";
 import * as roles from "../roles";
