@@ -8,6 +8,7 @@ export function roleSetupFile(options: {
     roleSetupDir: string,
     compilerOptions: types.compilerOptions
 }): void {
+    if(!options.compilerOptions.useRBAC){ return; }
 
     const actionArray = [ "create", "search", "read", "update", "delete"];
 
@@ -40,6 +41,7 @@ export function roleSetupFile(options: {
 export function roleSchemaFormat(options: {
     compilerOptions: types.compilerOptions
 }): void {
+    if(!options.compilerOptions.useRBAC){ return; }
 
     // find schema props with "x-vexData" = "role"
     // if found, update prop format & enum of roles

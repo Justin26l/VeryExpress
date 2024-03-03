@@ -13,6 +13,7 @@ import * as serverGen from "./generators/server.generator";
 
 import * as types from "./types/types";
 import { formatJsonSchema } from "./preprocess/jsonschemaFormat";
+import { roleSchemaFormat } from "./preprocess/roleSetupFile";
 
 export function generate(
     options: types.compilerOptions
@@ -61,14 +62,12 @@ export function generate(
     utils.copyDir(`${__dirname}/templates/roles`, dir.roleDir, options, true);
     // utils.copyDir(`${__dirname}/templates/middleware`, dir.middlewareDir, options, true);
     
-
     // update userSchema
-    if ( options.app.useUserSchema ){
-        userSchemaGen.compile({
-            compilerOptions: options || utils.defaultCompilerOptions,
-        });
-    }
+    userSchemaGen.compile({ compilerOptions: options || utils.defaultCompilerOptions });
 
+    // format role schema
+    roleSchemaFormat({ compilerOptions: options || utils.defaultCompilerOptions });
+    
     // prepair schema files
     const files: string[] = fs.readdirSync(options.jsonSchemaDir);
     files.forEach((schemaFileName: string) => {

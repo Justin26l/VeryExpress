@@ -5,7 +5,7 @@ import * as roleBase from "../templates/roles/_RoleFactory";
 
 import log from "../utils/logger";
 import { loadJson, writeFile } from "../utils";
-import { roleSetupFile, roleSchemaFormat} from "../preprocess/roleSetupFile";
+import { roleSetupFile } from "../preprocess/roleSetupFile";
 
 export function compile(options: {
     collectionList: string[],
@@ -13,7 +13,7 @@ export function compile(options: {
     roleOutDir: string,
     compilerOptions: types.compilerOptions,
 }){
-    roleSchemaFormat({ compilerOptions: options.compilerOptions });
+    if(!options.compilerOptions.useRBAC){ return; }
 
     roleSetupFile({
         collectionList: options.collectionList,

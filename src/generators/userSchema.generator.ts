@@ -6,6 +6,8 @@ import { loadJson, writeFile } from "../utils";
 export function compile(options: {
     compilerOptions: types.compilerOptions,
 }){
+    if(!options.compilerOptions.app.useUserSchema){ return; }
+
     log.process("UserSchmea");
     
     // 1. read userSchema file
