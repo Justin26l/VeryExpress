@@ -48,7 +48,6 @@
             "x-vexData": "role",
             "items": {
                 "type": "string",
-                "default": "visitor",
                 "required": true,
                 "enum": [
                     "visitor",
@@ -56,7 +55,10 @@
                     "admin"
                 ]
             },
-            "required": true
+            "required": true,
+            "default": [
+                "visitor"
+            ]
         }
     },
     "required": [

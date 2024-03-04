@@ -56,6 +56,7 @@ export function roleSchemaFormat(options: {
             if (prop["x-vexData"] === "role") {
                 prop.type = "array";
                 prop.required = true;
+                prop.default = [options.compilerOptions.useRBAC?.default];
 
                 if (!prop.items){
                     prop.items = { type: "" };
@@ -63,7 +64,6 @@ export function roleSchemaFormat(options: {
                 
                 prop.items.type = "string";
                 prop.items.required = true;
-                prop.items.default = options.compilerOptions.useRBAC?.default;
                 prop.items.enum = options.compilerOptions.useRBAC?.roles;
                 break;
             }
