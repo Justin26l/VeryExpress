@@ -20,7 +20,7 @@ all you need is define the `JsonSchema` and `openApi` spec
 7. `npm run start`
 
 ## JsonSchmea Setup
-at the root of schema :
+x-documentConfig: 
 
 | Fields | Description | 
 | - | - | 
@@ -28,7 +28,8 @@ at the root of schema :
 | interfaceName  | used at endpoint and naming `Class`, `Interface`, `Files`. | 
 | methods | available method of rest api. |
 
-
+```JSON
+{
     "x-documentConfig": {
         "documentName": "user",
         "interfaceName": "User",
@@ -39,30 +40,31 @@ at the root of schema :
             "patch",
             "delete"
         ]
+    },
+    "properties": {
+        "invoiceId": {
+            "type": "string",
+            "format": "uuid",
+            "required": false,
+            "x-foreignKey": "invoice"
+        }
     }
-
-at the properites :
-
-    "userContact":{
-        "type": "string",
-        "format": "uuid",
-        "required": false,
-        "x-foreignKey": "usercontact"
-    }
-
-
+}
+```
 
 ## Road Map
 - [ ] dockernize
+- [ ] Schema Definition
+    - [ ] data join
+    - [ ] data encryption (PDPA)
 - [x] generate express app
     - [x] gen. openapi based on json schema
     - [x] gen. controllers based on openapi
         - [x] CRUD API
-- [ ] database
+- [ ] database support
     - [x] mongodb
-    - [ ] sql
-    - [ ] db encrtption [PDPA](https://en.wikipedia.org/wiki/Personal_Data_Protection_Act_2012)
-- [ ] oauth2
+    - [ ] ~sql~
+- [ ] oauth2 Implement
     - [x] google
     - [ ] microsoft
     - [ ] github
@@ -70,9 +72,29 @@ at the properites :
     - [x] API access control
     - [ ] data validation based on Role
 
-## Enhancement To Do
+# To Do
 
-- Implement data encryption & hash (PDPA)
+- data join
     - at JsonSchmea fields, add attribute
-    `x-dataSecure: "method"` while accessing data, perform encryption based on method selected.
+    `x-foreignKey: "collectionName"` use this column value to math with target collection "_id" fields.
+    ```JSON
+    {
+         "invoiceId": {
+            "type" : "string",
+            "x-foreignKey" : "invoice"
+        },
+         "orderId": {
+            "type" : "string",
+            "x-foreignKey" : "order"
+        }
+    }
+    ```
+    - at REST API, to query with join:  
+        add field name as stringified array into querystring "join"
+        example `/myDataApi?join=[invoiceId,orderId]`
+
+- data encryption
+    - at JsonSchmea fields, add attribute
+    `x-dataSecure: "SHA256/MD5/..."` while accessing data, perform encryption based on method selected.
+
 
