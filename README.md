@@ -2,10 +2,9 @@
 an generator that generate [Express](https://github.com/expressjs/express) rest-api app based on [jsonSchema](https://github.com/json-schema-org) and [openApi](https://github.com/OAI) 
 
 ## Idea
-doing same things once is good,  
-twice is okay, third times is wasting life.
-
-all you need is define the `JsonSchema` and `openApi` spec
+bored on writing crud source code ?  
+then this tool is made for it,  
+all you need is define the `JsonSchema`  
 
 # Quick Start
 1. create JsonSchmea, can refer to output/jsonSchema put it as cli config file
