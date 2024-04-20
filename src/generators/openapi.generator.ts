@@ -1,5 +1,5 @@
 import json2openapi from "json-schema-to-openapi-schema";
-import yaml from "js-yaml";
+import jsYaml from "js-yaml";
 import fs from "fs";
 
 import * as types from "../types/types";
@@ -48,7 +48,7 @@ export function compile(
     });
 
     const validOpenApi = json2openapi(openapiJson, { version: 3.0 });
-    const openapiYaml = yaml.dump(validOpenApi);
+    const openapiYaml = jsYaml.dump(validOpenApi);
 
     // create and write file
     const openapiOutFile: string = compilerOptions.openapiDir + openapiOutFileName;
