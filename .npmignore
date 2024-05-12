@@ -1,6 +1,7 @@
 src/
 plan/
 output/
+tsc_out/
 
 # Dependency directories
 node_modules/

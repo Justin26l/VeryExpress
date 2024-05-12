@@ -3,7 +3,7 @@
     "jsonSchemaDir": "./output/jsonSchema",
     "rootDir": "./output",
     "srcDir": "./output/src",
-    "openapiDir": "./output/openapi",
+    "openapiDir": "./output/src/openapi",
     "app": {
         "enableSwagger": true,
         "useUserSchema": true,

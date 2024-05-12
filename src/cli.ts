@@ -32,7 +32,7 @@ config.commitBeforeGenerate = config.commitBeforeGenerate ?? false;
 config.jsonSchemaDir = args.j || args.jsonSchemaDir || config.jsonSchemaDir || "./jsonSchema";
 config.rootDir = args.o || args.rootDir || config.rootDir || ".";
 config.srcDir = config.srcDir || config.rootDir + "/src" ;
-config.openapiDir = config.openapiDir || config.rootDir + "./openapi";
+config.openapiDir = config.srcDir + "/openapi";
 
 // app
 config.app = config.app || {},
@@ -59,7 +59,7 @@ if ( config.app.useObjectID && config.app.allowApiCreateUpdate_id ){
     log.warn("Not recommended to use \"useObjectID\" with \"allowApiCreateUpdate_id\",\nthis may cause some logic issues");
 }
 
-log.process("vex.config.json");
+log.process("validate vex.config.json");
 writeFile("vex.config", "vex.config.json", JSON.stringify(config, null, 4));
 
 /** 
@@ -70,7 +70,7 @@ writeFile("vex.config", "vex.config.json", JSON.stringify(config, null, 4));
 
 /** Help */
 if ( String(args._[0]).toLowerCase() === "h" || args["h"] ) {
-    console.log(`Very Express CLI Usage :
+    log.info(`Very Express CLI Usage :
 vex [flag]
     -h : Help
     -i : Create generator config etc. 
@@ -84,8 +84,7 @@ to generate app :
 
 /** Initialization */
 else if ( String(args._[0]).toLowerCase() === "i" || args["i"] ) {
-    console.log("Very Express CLI : Initialization ...");
-    process.exit(0);
+    processEnd("Very Express CLI : Initialization Complete.");
 }
 
 /** Generation */
@@ -107,10 +106,21 @@ else {
     }
 
     // run main process
-    console.log(config);
+    log.process("generate with config",config);
     generate(config);
 
-    console.log("\x1b[36m%s\x1b[0m", "\nnext step:\n", `cd ${config.rootDir}\n`, "npm install\n", "npm run dev");
+    console.log(`next step:
+    cd ${config.rootDir}
+    npm install
+    npm run dev
+    `);
+    processEnd();
 }
 
-console.log("\x1b[35m%s\x1b[0m", "\n========== veryExpress CLI (vex) Complete ==========\n");
+function processEnd(msg?: string){
+    if(msg){
+        console.log("\x1b[36m%s\x1b[0m", msg);
+    }
+    console.log("\x1b[35m%s\x1b[0m", "\n========== veryExpress CLI (vex) Complete ==========\n");
+    process.exit(0);
+}
