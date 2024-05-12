@@ -1,7 +1,7 @@
-import * as types from "../types/types";
-import * as utilsJsonSchema from "../utils/jsonSchema";
-import log from "../utils/logger";
-import { writeFile } from "../utils";
+import * as types from "./../types/types";
+import * as utilsJsonSchema from "./../utils/jsonSchema";
+import log from "./../utils/logger";
+import { writeFile } from "./../utils";
 
 /** format the schema and create role file (RBAC) */
 export function formatJsonSchema(jsonSchemaPath: string, compilerOptions: types.compilerOptions): types.jsonSchema {

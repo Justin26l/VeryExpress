@@ -1,7 +1,7 @@
 import fs from "fs";
-import * as types from "../types/types";
-import { loadJson, writeFile } from "../utils";
-import log from "../utils/logger";
+import * as types from "./../types/types";
+import { loadJson, writeFile } from "./../utils";
+import log from "./../utils/logger";
 
 export function roleSetupFile(options: {
     collectionList: string[],

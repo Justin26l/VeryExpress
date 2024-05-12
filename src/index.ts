@@ -25,15 +25,15 @@ export function generate(
 
     const dir = {
         roleSrcDir: `${options.srcDir}/roles`,
-        roleDir: `${options.sysDir}/roles`,
-        routeDir: `${options.sysDir}/routes`,
-        middlewareDir: `${options.sysDir}/middlewares`,
-        controllerDir: `${options.sysDir}/controllers`,
-        modelDir: `${options.sysDir}/models`,
-        typeDir: `${options.sysDir}/types`,
-        serviceDir: `${options.sysDir}/services`,
-        pluginDir: `${options.sysDir}/plugins`,
-        utilsDir: `${options.sysDir}/utils`,
+        roleDir: `${options.sysDir}/_roles`,
+        routeDir: `${options.sysDir}/_routes`,
+        middlewareDir: `${options.sysDir}/_middlewares`,
+        controllerDir: `${options.sysDir}/_controllers`,
+        modelDir: `${options.sysDir}/_models`,
+        typeDir: `${options.sysDir}/_types`,
+        serviceDir: `${options.sysDir}/_services`,
+        pluginDir: `${options.sysDir}/_plugins`,
+        utilsDir: `${options.sysDir}/_utils`,
     };
 
     const routeData: {
@@ -58,11 +58,12 @@ export function generate(
     });
 
     // copy static files
-    utils.copyDir(`${__dirname}/templates/utils`, dir.utilsDir, options, true);
-    utils.copyDir(`${__dirname}/templates/services`, dir.serviceDir, options, true);
-    utils.copyDir(`${__dirname}/templates/plugins`, dir.pluginDir, options, true);
-    utils.copyDir(`${__dirname}/templates/roles`, dir.roleDir, options, true);
-    // utils.copyDir(`${__dirname}/templates/middleware`, dir.middlewareDir, options, true);
+    utils.copyDir(`${__dirname}/templates/_utils`, dir.utilsDir, options, true);
+    utils.copyDir(`${__dirname}/templates/_types`, dir.typeDir, options, true);
+    utils.copyDir(`${__dirname}/templates/_services`, dir.serviceDir, options, true);
+    utils.copyDir(`${__dirname}/templates/_plugins`, dir.pluginDir, options, true);
+    utils.copyDir(`${__dirname}/templates/_roles`, dir.roleDir, options, true);
+    // utils.copyDir(`${__dirname}/templates/_middleware`, dir.middlewareDir, options, true);
     
     // update userSchema
     userSchemaGen.compile({ compilerOptions: options || utils.defaultCompilerOptions });
@@ -111,16 +112,18 @@ export function generate(
     utils.copyDir(`${options.openapiDir}`, options.srcDir + "/openapi", options, true);
 
     // generate dynamic files
-    documents.forEach((doc: { path: string, config: types.documentConfig }) => {
+    documents.forEach(async (doc: { path: string, config: types.documentConfig }) => {
         // make interface
-        json2mongoose.typesGen.compileFromFile(
+        await json2mongoose.typesGen.compileFromFile(
             `${doc.path}`,
             `${dir.typeDir}/${doc.config.interfaceName}.gen.ts`,
-            options || utils.defaultCompilerOptions
+            {
+                headerComment: '//sadsd',
+            }
         );
         
         // make model
-        json2mongoose.modelsGen.compileFromFile(
+        await json2mongoose.modelsGen.compileFromFile(
             `${doc.path}`,
             `${utils.relativePath(dir.modelDir, dir.typeDir)}/${doc.config.interfaceName}.gen`,
             `${dir.modelDir}/${doc.config.interfaceName}Model.gen.ts`,

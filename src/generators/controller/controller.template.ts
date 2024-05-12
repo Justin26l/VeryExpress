@@ -15,7 +15,7 @@ export default function controllerTemplate(templateOptions: {
 import { Router, Request, Response } from 'express';
 
 import { checkSchema, validationResult } from 'express-validator';
-import vex from "../system/utils";
+import vex from "./../../system/_utils/index.gen";
 import MongoQS from 'mongo-ts-querystring';
 
 import { {{interfaceName}}Model } from '{{modelPath}}';

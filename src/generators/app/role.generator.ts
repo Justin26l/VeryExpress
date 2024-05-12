@@ -1,7 +1,7 @@
 import fs from "fs";
 
 import * as types from "../../types/types";
-import * as roleBase from "../../templates/roles/_RoleFactory";
+import * as roleBase from "../../templates/_roles/_RoleFactory";
 
 import log from "../../utils/logger";
 import { loadJson, writeFile } from "../../utils";
@@ -50,7 +50,7 @@ export function compile(options: {
         RoleAccessActionString.push("roleFactory.accessAction");
 
         const content = `${options.compilerOptions.headerComment}
-import * as roleFactory from "./_RoleFactory.gen";
+import * as roleFactory from "./../system/_RoleFactory.gen";
 
 export type accessAction${role} = ${RoleAccessActionString.join(" | ")};
 
@@ -77,15 +77,15 @@ export default class Role${role} extends roleFactory._RoleFactory<accessAction${
 
     // 3. generate middleware
     // 3.1. create if middeleware dir not exist
-    if (!fs.existsSync(`${options.compilerOptions.sysDir}/middlewares`)) {
-        fs.mkdirSync(`${options.compilerOptions.sysDir}/middlewares`);
+    if (!fs.existsSync(`${options.compilerOptions.sysDir}/_middlewares`)) {
+        fs.mkdirSync(`${options.compilerOptions.sysDir}/_middlewares`);
     }
     // 3.2. generate middleware file
-    const middlewareFile = `${options.compilerOptions.sysDir}/middlewares/RoleBaseAccessControl.gen.ts`;
+    const middlewareFile = `${options.compilerOptions.sysDir}/_middlewares/RoleBaseAccessControl.gen.ts`;
     const roleTypes = indexFileData.map((data) => `typeof roles.${data.name}`).join(" | ");
     const middlewareContent = `${options.compilerOptions.headerComment}
 import { Request, Response, NextFunction } from "express";
-import * as roles from "../roles";
+import * as roles from "../_roles";
 
 export { roles };
 

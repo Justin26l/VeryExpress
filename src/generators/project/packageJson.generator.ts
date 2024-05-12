@@ -1,9 +1,9 @@
 import fs from "fs";
-import log from "../../utils/logger";
-import * as types from "../../types/types";
-import { writeFile } from "../../utils";
+import log from "./../../utils/logger";
+import * as types from "./../../types/types";
+import { writeFile } from "./../../utils";
 
-import packangeJsonTemplate from "../../templates/root/package.json";
+import packangeJsonTemplate from "./../../templates/root/package.json";
 
 export function compile(
     packageOutPath: string,

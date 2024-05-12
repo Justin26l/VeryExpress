@@ -32,7 +32,7 @@ export function compile(
     // write .env
     if (!fs.existsSync(envOutPath)) {
         log.writing(`Project : ${envOutPath}`);
-        fs.copyFileSync(__dirname+"/templates/root/tsconfig.json", envOutPath);
+        fs.copyFileSync(__dirname+"/templates/root/.env", envOutPath);
     }
 
     // write tsconfig.json

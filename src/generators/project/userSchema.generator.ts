@@ -1,7 +1,7 @@
-import * as types from "../../types/types";
+import * as types from "./../../types/types";
 
-import log from "../../utils/logger";
-import { loadJson, writeFile } from "../../utils";
+import log from "./../../utils/logger";
+import { loadJson, writeFile } from "./../../utils";
 
 export function compile(options: {
     compilerOptions: types.compilerOptions,

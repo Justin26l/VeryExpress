@@ -2,7 +2,7 @@
 
 import mongoose from "mongoose";
 import { Request, Response, NextFunction } from "express";
-import log from "../utils/logger.gen";
+import log from "./../../system/_utils/logger.gen";
 
 export function connect(mongoUrl:string): mongoose.Connection {
     mongoose.connect(mongoUrl, {

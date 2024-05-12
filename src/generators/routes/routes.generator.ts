@@ -2,11 +2,11 @@ import routesTemplate from "./routes.template";
 import * as routesOAuthGen from "./oauth.generator";
 import * as routesSwaggerGen from "./swagger.generator";
 
-import * as types from "../../types/types";
+import * as types from "./../../types/types";
 
-import * as utilsGenerator from "../../utils/generator";
-import log from "../../utils/logger";
-import { writeFile } from "../../utils";
+import * as utilsGenerator from "./../../utils/generator";
+import log from "./../../utils/logger";
+import { writeFile } from "./../../utils";
 
 /**
  * compile controllers to route source code

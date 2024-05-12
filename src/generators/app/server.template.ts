@@ -3,10 +3,10 @@ import * as utilsGenerator from "../../utils/generator";
 
 // import
 const importExpressSession = "import session from 'express-session';";
-const importOAuthVerifyPlugin = "import oauthVerify from './plugins/oauthVerify.gen';";
-const importPassportGoogle = "import PassportGoogle from './plugins/PassportGoogle.gen'";
-const importSwaggerRouter = "import SwaggerRouter from './routes/SwaggerRouter.gen';";
-const importOAuthRouter = "import OAuthRouter from './routes/OAuthRouter.gen';";
+const importOAuthVerifyPlugin = "import oauthVerify from './system/_plugins/oauthVerify.gen';";
+const importPassportGoogle = "import PassportGoogle from './system/_plugins/PassportGoogle.gen'";
+const importSwaggerRouter = "import SwaggerRouter from './system/_routes/SwaggerRouter.gen';";
+const importOAuthRouter = "import OAuthRouter from './system/_routes/OAuthRouter.gen';";
 
 // configure
 const ConfigExpressSession = `
@@ -49,10 +49,10 @@ export default function serverTemplate(options: {
 import express from 'express';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
-import log from './utils/logger.gen';
-import mongoConn from './services/mongoConn.gen';
+import log from './system/_utils/logger.gen';
+import mongoConn from './system/_services/mongoConn.gen';
 
-import ApiRouter from './routes/ApiRouter.gen';
+import ApiRouter from './system/_routes/ApiRouter.gen';
 {{Import}}
 
 
