@@ -1,5 +1,5 @@
-import * as types from "../types/types";
-import * as utilsGenerator from "./../utils/generator";
+import * as types from "../../types/types";
+import * as utilsGenerator from "../../utils/generator";
 
 // import
 const importExpressSession = "import session from 'express-session';";

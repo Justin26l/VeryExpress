@@ -2,11 +2,11 @@ import fs from "fs";
 import jsYaml from "js-yaml";
 
 import controllerTemplate from "./controller.template";
-import log from "../utils/logger";
-import { relativePath, writeFile } from "../utils/common";
+import log from "../../utils/logger";
+import { relativePath, writeFile } from "../../utils/common";
 
-import * as types from "../types/types";
-import * as openapiType from "../types/openapi";
+import * as types from "../../types/types";
+import * as openapiType from "../../types/openapi";
 import { Schema } from "express-validator";
 
 /**
@@ -23,7 +23,7 @@ export function compile(options: {
     compilerOptions: types.compilerOptions
 }): void {
     const file: string = fs.readFileSync(options.compilerOptions.openapiDir + "/" + options.openapiFile, "utf8");
-    const controllerToModelBasePath: string = relativePath(options.controllerOutDir, options.modelDir);
+    const controllerToModelBasePath: string = relativePath(options.compilerOptions.srcDir, options.modelDir);
 
     const openApi: openapiType.openapi = jsYaml.load(file) as openapiType.openapi;
     const endpointsValidator: {
@@ -76,7 +76,7 @@ export function compile(options: {
         else {
             // write controller
             const outPath = `${options.controllerOutDir}/${interfaceName}Controller.gen.ts`;
-            const controllerToModelPath = `${controllerToModelBasePath}/${interfaceName}Model.gen`;
+            const controllerToModelPath = `~/${controllerToModelBasePath}/${interfaceName}Model.gen`;
 
             writeFile("Controller",
                 outPath,

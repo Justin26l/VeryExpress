@@ -1,5 +1,5 @@
 import util from "util";
-import * as types from "../types/types";
+import * as types from "../../types/types";
 import { Schema } from "express-validator";
 
 export default function controllerTemplate(templateOptions: {

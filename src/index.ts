@@ -1,15 +1,15 @@
 import fs from "fs";
 
 import json2mongoose from "json2mongoose";
-import * as openapiGen from "./generators/openapi.generator";
+import * as openapiGen from "./generators/system/openapi.generator";
 
 import log from "./utils/logger";
 import * as utils from "./utils";
-import * as userSchemaGen from "./generators/userSchema.generator";
-import * as roleGen from "./generators/role.generator";
-import * as controllerGen from "./generators/controllers.generator";
+import * as userSchemaGen from "./generators/project/userSchema.generator";
+import * as roleGen from "./generators/system/role.generator";
+import * as controllerGen from "./generators/controller/controllers.generator";
 import * as routeGen from "./generators/routes/routes.generator";
-import * as serverGen from "./generators/server.generator";
+import * as serverGen from "./generators/system/server.generator";
 
 import * as types from "./types/types";
 import { formatJsonSchema } from "./preprocess/jsonschemaFormat";
@@ -20,7 +20,7 @@ export function generate(
 ): void {
 
     const openapiFile: string = "/openapi.gen.yaml";
-    const roleSourceDir: string = `${options.rootDir}/roles`;
+    const roleSourceDir: string = `${options.srcDir}/roles`;
     const documents: { path: string, config: types.documentConfig }[] = [];
 
     const dir = {
@@ -106,7 +106,7 @@ export function generate(
         openapiFile, 
         options || utils.defaultCompilerOptions
     );
-    utils.copyDir(`${options.openapiDir}`, options.rootDir + "/openapi", options, true);
+    utils.copyDir(`${options.openapiDir}`, options.srcDir + "/openapi", options, true);
 
     // generate dynamic files
     documents.forEach((doc: { path: string, config: types.documentConfig }) => {

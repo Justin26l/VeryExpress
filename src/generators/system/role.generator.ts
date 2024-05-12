@@ -1,11 +1,11 @@
 import fs from "fs";
 
-import * as types from "../types/types";
-import * as roleBase from "../templates/roles/_RoleFactory";
+import * as types from "../../types/types";
+import * as roleBase from "../../templates/roles/_RoleFactory";
 
-import log from "../utils/logger";
-import { loadJson, writeFile } from "../utils";
-import { roleSetupFile } from "../preprocess/roleSetupFile";
+import log from "../../utils/logger";
+import { loadJson, writeFile } from "../../utils";
+import { roleSetupFile } from "../../preprocess/roleSetupFile";
 
 export function compile(options: {
     collectionList: string[],
@@ -30,7 +30,7 @@ export function compile(options: {
         // 1. get role custom access action not in crud
         const RoleAccessAction : string[] = [];
 
-        const roleSrcFile = `${options.compilerOptions.rootDir}/roles/${role}.json`;
+        const roleSrcFile = `${options.compilerOptions.srcDir}/rolesSettings/${role}.json`;
         const roleOutFile = `${options.roleOutDir}/${role}.gen.ts`;
         const roleContent = loadJson(roleSrcFile);
 

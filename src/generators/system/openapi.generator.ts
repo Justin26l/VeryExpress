@@ -2,11 +2,11 @@ import json2openapi from "json-schema-to-openapi-schema";
 import jsYaml from "js-yaml";
 import fs from "fs";
 
-import * as types from "../types/types";
-import * as openapiType from "../types/openapi";
-import utilsJsonSchema from "../utils/jsonSchema";
-import log from "../utils/logger";
-import { writeFile } from "../utils";
+import * as types from "../../types/types";
+import * as openapiType from "../../types/openapi";
+import utilsJsonSchema from "../../utils/jsonSchema";
+import log from "../../utils/logger";
+import { writeFile } from "../../utils";
 
 /**
  * compile json schema to openapi spec

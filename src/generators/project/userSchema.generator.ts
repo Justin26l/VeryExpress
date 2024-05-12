@@ -1,7 +1,7 @@
-import * as types from "../types/types";
+import * as types from "../../types/types";
 
-import log from "../utils/logger";
-import { loadJson, writeFile } from "../utils";
+import log from "../../utils/logger";
+import { loadJson, relativePath, writeFile } from "../../utils";
 
 export function compile(options: {
     compilerOptions: types.compilerOptions,
@@ -12,7 +12,7 @@ export function compile(options: {
     
     // 1. read userSchema file
     const schemaOutPath = `${options.compilerOptions.jsonSchemaDir}/User.json`;
-    const templateSchema = loadJson(`${__dirname}/../templates/jsonSchema/User.json`);
+    const templateSchema = loadJson(relativePath(options.compilerOptions.rootDir, "~/templates/jsonSchema/User.json"));
     const userSchema = loadJson(schemaOutPath, ()=>{
         return templateSchema;
     });
