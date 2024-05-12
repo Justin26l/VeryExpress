@@ -59,7 +59,7 @@ export function generate(
 
     // copy static files
     utils.copyDir(`${__dirname}/templates/_utils`, dir.utilsDir, options, true);
-    utils.copyDir(`${__dirname}/templates/_types`, dir.typeDir, options, true);
+    // utils.copyDir(`${__dirname}/templates/_types`, dir.typeDir, options, true);
     utils.copyDir(`${__dirname}/templates/_services`, dir.serviceDir, options, true);
     utils.copyDir(`${__dirname}/templates/_plugins`, dir.pluginDir, options, true);
     utils.copyDir(`${__dirname}/templates/_roles`, dir.roleDir, options, true);
@@ -112,18 +112,16 @@ export function generate(
     utils.copyDir(`${options.openapiDir}`, options.srcDir + "/openapi", options, true);
 
     // generate dynamic files
-    documents.forEach(async (doc: { path: string, config: types.documentConfig }) => {
+    documents.forEach((doc: { path: string, config: types.documentConfig }) => {
         // make interface
-        await json2mongoose.typesGen.compileFromFile(
+        json2mongoose.typesGen.compileFromFile(
             `${doc.path}`,
             `${dir.typeDir}/${doc.config.interfaceName}.gen.ts`,
-            {
-                headerComment: '//sadsd',
-            }
+            options || utils.defaultCompilerOptions
         );
         
         // make model
-        await json2mongoose.modelsGen.compileFromFile(
+        json2mongoose.modelsGen.compileFromFile(
             `${doc.path}`,
             `${utils.relativePath(dir.modelDir, dir.typeDir)}/${doc.config.interfaceName}.gen`,
             `${dir.modelDir}/${doc.config.interfaceName}Model.gen.ts`,
