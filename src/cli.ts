@@ -32,6 +32,7 @@ config.commitBeforeGenerate = config.commitBeforeGenerate ?? false;
 config.jsonSchemaDir = args.j || args.jsonSchemaDir || config.jsonSchemaDir || "./jsonSchema";
 config.rootDir = args.o || args.rootDir || config.rootDir || ".";
 config.srcDir = config.srcDir || config.rootDir + "/src" ;
+config.sysDir = config.sysDir || config.srcDir + "/system";
 config.openapiDir = config.srcDir + "/openapi";
 
 // app

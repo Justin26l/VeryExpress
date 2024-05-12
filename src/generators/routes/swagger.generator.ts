@@ -2,7 +2,7 @@ import * as types from "../../types/types";
 import * as utils from "../../utils/common";
 
 export function compile( compilerOptions: types.compilerOptions ): string {
-    const yamlPath = utils.relativePath(compilerOptions.srcDir+"/routes",compilerOptions.openapiDir+"/openapi.gen.yaml");
+    const yamlPath = utils.relativePath(compilerOptions.sysDir+"/routes",compilerOptions.openapiDir+"/openapi.gen.yaml");
     return `${compilerOptions.headerComment}
 import { Router } from "express";
 import swaggerUi, { JsonObject } from "swagger-ui-express";

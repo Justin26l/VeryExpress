@@ -7,7 +7,6 @@ import * as types from "../../types/types";
 import log from "../../utils/logger";
 import { writeFile } from "../../utils";
 
-import envtemplate from "../../templates/root/.env";
 /**
  * generate required files at root & output directory
  * @param compilerOptions 
@@ -33,14 +32,14 @@ export function compile(
     // write .env
     if (!fs.existsSync(envOutPath)) {
         log.writing(`Project : ${envOutPath}`);
-        fs.copyFileSync(envtemplate, envOutPath);
+        fs.copyFileSync(__dirname+"/templates/root/tsconfig.json", envOutPath);
     }
 
     // write tsconfig.json
     if (!fs.existsSync(tsconfigOutPath)) {
         // try {
         log.writing(`Project : ${tsconfigOutPath}`);
-        fs.copyFileSync("./../../templates/root/tsconfig.json", tsconfigOutPath);
+        fs.copyFileSync(__dirname+"/templates/root/tsconfig.json", tsconfigOutPath);
         //     childProcess.execSync('tsc --init', { cwd: '.', stdio: 'inherit' });
         // } catch (error) {
         //     log.error('Failed to execute command: tsc --init');

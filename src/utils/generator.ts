@@ -47,6 +47,7 @@ export const defaultCompilerOptions: types.compilerOptions = {
 
     rootDir: ".",
     srcDir: "./src",
+    sysDir: "./src/system",
     jsonSchemaDir: "./jsonSchema",
     openapiDir: "./openapi",
     writtedDir: [],

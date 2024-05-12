@@ -27,5 +27,6 @@
         "schemaIncluded": [
             "user"
         ]
-    }
+    },
+    "sysDir": "./output/src/system"
 }

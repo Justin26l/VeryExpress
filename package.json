@@ -12,7 +12,6 @@
         "build": "npm run lint && npm run compile && npm run minify && node ./src/copyTsTemplates.js",
         "dev": "ts-node ./src/cli.ts",
         "test": "node ./dist/index.js",
-
         "lint": "eslint ./src --ext .ts --fix",
         "compile": "ncc build ./src/cli.ts -o dist",
         "minify": "uglifyjs ./dist/index.js -c -m -o ./dist/index.js"
@@ -60,6 +59,6 @@
         "swagger-ui-express": "^5.0.0",
         "ts-node": "^10.9.2",
         "typescript": "^5.3.3",
-        "uglifyjs": "^2.4.11"
+        "uglify-js": "^3.17.4"
     }
 }

@@ -6,6 +6,7 @@ export interface compilerOptions {
     openapiDir: string,
     rootDir: string,
     srcDir: string,
+    sysDir: string,
     writtedDir: string[],
 
     app: {

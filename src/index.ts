@@ -1,38 +1,39 @@
 import fs from "fs";
 
 import json2mongoose from "json2mongoose";
-import * as openapiGen from "./generators/system/openapi.generator";
+import * as openapiGen from "./generators/app/openapi.generator";
 
 import log from "./utils/logger";
 import * as utils from "./utils";
 import * as userSchemaGen from "./generators/project/userSchema.generator";
-import * as roleGen from "./generators/system/role.generator";
+import * as roleGen from "./generators/app/role.generator";
 import * as controllerGen from "./generators/controller/controllers.generator";
 import * as routeGen from "./generators/routes/routes.generator";
-import * as serverGen from "./generators/system/server.generator";
+import * as serverGen from "./generators/app/server.generator";
 
 import * as types from "./types/types";
+import { checkConfigValid } from "./utils/configChecker";
 import { formatJsonSchema } from "./preprocess/jsonschemaFormat";
 import { roleSchemaFormat } from "./preprocess/roleSetupFile";
 
 export function generate(
     options: types.compilerOptions
 ): void {
-
+    checkConfigValid(options);
     const openapiFile: string = "/openapi.gen.yaml";
-    const roleSourceDir: string = `${options.srcDir}/roles`;
     const documents: { path: string, config: types.documentConfig }[] = [];
 
     const dir = {
-        roleDir: `${options.srcDir}/roles`,
-        routeDir: `${options.srcDir}/routes`,
-        middlewareDir: `${options.srcDir}/middlewares`,
-        controllerDir: `${options.srcDir}/controllers`,
-        modelDir: `${options.srcDir}/models`,
-        typeDir: `${options.srcDir}/types`,
-        serviceDir: `${options.srcDir}/services`,
-        pluginDir: `${options.srcDir}/plugins`,
-        utilsDir: `${options.srcDir}/utils`,
+        roleSrcDir: `${options.srcDir}/roles`,
+        roleDir: `${options.sysDir}/roles`,
+        routeDir: `${options.sysDir}/routes`,
+        middlewareDir: `${options.sysDir}/middlewares`,
+        controllerDir: `${options.sysDir}/controllers`,
+        modelDir: `${options.sysDir}/models`,
+        typeDir: `${options.sysDir}/types`,
+        serviceDir: `${options.sysDir}/services`,
+        pluginDir: `${options.sysDir}/plugins`,
+        utilsDir: `${options.sysDir}/utils`,
     };
 
     const routeData: {
@@ -49,8 +50,9 @@ export function generate(
     // create all directories if not exist
     if (!fs.existsSync(options.rootDir)) { fs.mkdirSync(options.rootDir); }
     if (!fs.existsSync(options.srcDir)) { fs.mkdirSync(options.srcDir); }
+    if (!fs.existsSync(options.sysDir)) { fs.mkdirSync(options.sysDir); }
     if (!fs.existsSync(options.openapiDir)) { fs.mkdirSync(options.openapiDir); }
-    if (!fs.existsSync(roleSourceDir)) { fs.mkdirSync(roleSourceDir); }
+    if (!fs.existsSync(dir.roleSrcDir)) { fs.mkdirSync(dir.roleSrcDir); }
     Object.values(dir).forEach((path: string) => {
         if (!fs.existsSync(path)) { fs.mkdirSync(path); }
     });
@@ -95,7 +97,7 @@ export function generate(
     if ( options.useRBAC && options.useRBAC.roles.length > 0){
         roleGen.compile({
             collectionList: documents.map((doc) => doc.config.documentName),
-            roleSourceDir: roleSourceDir,
+            roleSourceDir: dir.roleSrcDir,
             roleOutDir: dir.roleDir, 
             compilerOptions: options || utils.defaultCompilerOptions
         });

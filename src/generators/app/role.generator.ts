@@ -30,7 +30,7 @@ export function compile(options: {
         // 1. get role custom access action not in crud
         const RoleAccessAction : string[] = [];
 
-        const roleSrcFile = `${options.compilerOptions.srcDir}/rolesSettings/${role}.json`;
+        const roleSrcFile = `${options.compilerOptions.srcDir}/roles/${role}.json`;
         const roleOutFile = `${options.roleOutDir}/${role}.gen.ts`;
         const roleContent = loadJson(roleSrcFile);
 
@@ -77,11 +77,11 @@ export default class Role${role} extends roleFactory._RoleFactory<accessAction${
 
     // 3. generate middleware
     // 3.1. create if middeleware dir not exist
-    if (!fs.existsSync(`${options.compilerOptions.srcDir}/middlewares`)) {
-        fs.mkdirSync(`${options.compilerOptions.srcDir}/middlewares`);
+    if (!fs.existsSync(`${options.compilerOptions.sysDir}/middlewares`)) {
+        fs.mkdirSync(`${options.compilerOptions.sysDir}/middlewares`);
     }
     // 3.2. generate middleware file
-    const middlewareFile = `${options.compilerOptions.srcDir}/middlewares/RoleBaseAccessControl.gen.ts`;
+    const middlewareFile = `${options.compilerOptions.sysDir}/middlewares/RoleBaseAccessControl.gen.ts`;
     const roleTypes = indexFileData.map((data) => `typeof roles.${data.name}`).join(" | ");
     const middlewareContent = `${options.compilerOptions.headerComment}
 import { Request, Response, NextFunction } from "express";
