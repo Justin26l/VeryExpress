@@ -3,7 +3,7 @@ import * as types from "./../../types/types";
 import log from "./../../utils/logger";
 import { loadJson, writeFile } from "./../../utils";
 
-export function compile(options: {
+export async function compile(options: {
     compilerOptions: types.compilerOptions,
 }){
     if(!options.compilerOptions.app.useUserSchema){ return; }
@@ -29,4 +29,6 @@ export function compile(options: {
 
     // 3. write userSchema file
     writeFile("UserSchmea", schemaOutPath, JSON.stringify(userSchema, null, 4));
+
+    return;
 }

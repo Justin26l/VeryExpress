@@ -16,9 +16,9 @@ import { checkConfigValid } from "./utils/configChecker";
 import { formatJsonSchema } from "./preprocess/jsonschemaFormat";
 import { roleSchemaFormat } from "./preprocess/roleSetupFile";
 
-export function generate(
+export async function generate(
     options: types.compilerOptions
-): void {
+): Promise<void> {
     checkConfigValid(options);
     const openapiFile: string = "/openapi.gen.yaml";
     const documents: { path: string, config: types.documentConfig }[] = [];
@@ -66,7 +66,7 @@ export function generate(
     // utils.copyDir(`${__dirname}/templates/_middleware`, dir.middlewareDir, options, true);
     
     // update userSchema
-    userSchemaGen.compile({ compilerOptions: options || utils.defaultCompilerOptions });
+    await userSchemaGen.compile({ compilerOptions: options || utils.defaultCompilerOptions });
 
     // format role schema
     roleSchemaFormat({ compilerOptions: options || utils.defaultCompilerOptions });
@@ -96,7 +96,7 @@ export function generate(
 
     // generate roles
     if ( options.useRBAC && options.useRBAC.roles.length > 0){
-        roleGen.compile({
+        await roleGen.compile({
             collectionList: documents.map((doc) => doc.config.documentName),
             roleSourceDir: dir.roleSrcDir,
             roleOutDir: dir.roleDir, 
@@ -105,20 +105,14 @@ export function generate(
     }
 
     // genarate opanapi from jsonSchema
-    openapiGen.compile(
+    await openapiGen.compile(
         openapiFile, 
         options || utils.defaultCompilerOptions
     );
     utils.copyDir(`${options.openapiDir}`, options.srcDir + "/openapi", options, true);
 
     // generate dynamic files
-    documents.forEach((doc: { path: string, config: types.documentConfig }) => {
-        // make interface
-        json2mongoose.typesGen.compileFromFile(
-            `${doc.path}`,
-            `${dir.typeDir}/${doc.config.interfaceName}.gen.ts`,
-            options || utils.defaultCompilerOptions
-        );
+    await Promise.all(documents.map( async (doc: { path: string, config: types.documentConfig }) => {
         
         // make model
         json2mongoose.modelsGen.compileFromFile(
@@ -128,16 +122,25 @@ export function generate(
             options || utils.defaultCompilerOptions
         );
 
+        // make interface
+        await json2mongoose.typesGen.compileFromFile(
+            `${doc.path}`,
+            `${dir.typeDir}/${doc.config.interfaceName}.gen.ts`,
+            options || utils.defaultCompilerOptions
+        );
+
         // prepair route data
         routeData.push({
             route: `/${doc.config.documentName}`,
             interfaceName: doc.config.interfaceName,
             controllerPath: utils.relativePath(dir.routeDir, dir.controllerDir) + "/" + doc.config.interfaceName + "Controller.gen",
         });
-    });
+        
+        return;
+    }));
 
     // genarate controller from open api
-    controllerGen.compile({
+    await controllerGen.compile({
         openapiFile: openapiFile,
         controllerOutDir: dir.controllerDir,
         modelDir: dir.modelDir,
@@ -145,7 +148,7 @@ export function generate(
     });
 
     // make route from routeData
-    routeGen.compile({
+    await routeGen.compile({
         routesArr: routeData,
         openapiFile: openapiFile,
         routesDir: dir.routeDir,
@@ -153,7 +156,8 @@ export function generate(
     });
 
     // make server
-    serverGen.compile(options);
+    await serverGen.compile(options);
 
+    return ;
 }
 

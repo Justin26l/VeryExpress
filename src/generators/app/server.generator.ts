@@ -11,9 +11,9 @@ import { writeFile } from "../../utils";
  * generate required files at root & output directory
  * @param compilerOptions 
  */
-export function compile(
+export async function compile(
     compilerOptions: types.compilerOptions
-): void {
+): Promise<void> {
 
     const serverOutPath = compilerOptions.srcDir + "/server.ts";
     const packageOutPath = compilerOptions.rootDir + "/package.json";
@@ -49,4 +49,5 @@ export function compile(
     // process package.json
     packageJson.compile(packageOutPath, compilerOptions);
 
+    return;
 }

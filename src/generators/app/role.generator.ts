@@ -7,12 +7,12 @@ import log from "../../utils/logger";
 import { loadJson, writeFile } from "../../utils";
 import { roleSetupFile } from "../../preprocess/roleSetupFile";
 
-export function compile(options: {
+export async function compile(options: {
     collectionList: string[],
     roleSourceDir: string,
     roleOutDir: string,
     compilerOptions: types.compilerOptions,
-}){
+}): Promise<void> {
     if(!options.compilerOptions.useRBAC){ return; }
 
     roleSetupFile({
@@ -105,4 +105,5 @@ export function roleBaseAccessControl(
 }`;
     writeFile("RBAC Middleware", middlewareFile, middlewareContent);
 
+    return;
 }

@@ -14,7 +14,7 @@ import { writeFile } from "./../../utils";
  * @param routesDir output directory of routes
  * @param options
  */
-export function compile(options: {
+export async function compile(options: {
     routesArr: {
         route: string,
         interfaceName: string,
@@ -23,7 +23,7 @@ export function compile(options: {
     routesDir: string,
     openapiFile: string,
     compilerOptions: types.compilerOptions
-}): void {
+}): Promise<void> {
 
     log.process("Route");
     
@@ -60,4 +60,5 @@ export function compile(options: {
         })
     );
 
+    return;
 }

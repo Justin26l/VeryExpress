@@ -13,10 +13,10 @@ import { writeFile } from "./../../utils";
  * @param openapiOutFileName output file based on compilerOptions.openapiDir
  * @param compilerOptions 
  */
-export function compile(
+export async function compile(
     openapiOutFileName: string, 
     compilerOptions: types.compilerOptions
-): void {
+): Promise<void> {
 
     // convert to yaml
     let openapiJson: openapiType.openapi = {
@@ -53,6 +53,8 @@ export function compile(
     // create and write file
     const openapiOutFile: string = compilerOptions.openapiDir + openapiOutFileName;
     writeFile("OpenApi", openapiOutFile, openapiYaml);
+
+    return;
 }
 
 function jsonToOpenapiPath(

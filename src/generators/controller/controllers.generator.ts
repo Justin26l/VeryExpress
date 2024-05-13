@@ -16,12 +16,12 @@ import { Schema } from "express-validator";
  * @param openapiFile
  * @param options 
  */
-export function compile(options: {
+export async function compile(options: {
     openapiFile: string,
     controllerOutDir: string,
     modelDir: string,
     compilerOptions: types.compilerOptions
-}): void {
+}): Promise<void> {
     const file: string = fs.readFileSync(options.compilerOptions.openapiDir + "/" + options.openapiFile, "utf8");
     const controllerToModelBasePath: string = relativePath(options.compilerOptions.sysDir, options.modelDir);
 
@@ -91,6 +91,8 @@ export function compile(options: {
             writtedEndpoint.push(endpointFormatted);
         }
     });
+
+    return;
 
 }
 
