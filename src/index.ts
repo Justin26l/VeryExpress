@@ -6,7 +6,7 @@ import * as openapiGen from "./generators/app/openapi.generator";
 import log from "./utils/logger";
 import * as utils from "./utils";
 import * as userSchemaGen from "./generators/project/userSchema.generator";
-import * as roleGen from "./generators/app/role.generator";
+import * as roleGen from "./generators/role/role.generator";
 import * as controllerGen from "./generators/controller/controllers.generator";
 import * as routeGen from "./generators/routes/routes.generator";
 import * as serverGen from "./generators/app/server.generator";
@@ -58,11 +58,11 @@ export async function generate(
     });
 
     // copy static files
-    utils.copyDir(`${__dirname}/templates/_utils`, dir.utilsDir, options, true);
-    // utils.copyDir(`${__dirname}/templates/_types`, dir.typeDir, options, true);
-    utils.copyDir(`${__dirname}/templates/_services`, dir.serviceDir, options, true);
     utils.copyDir(`${__dirname}/templates/_plugins`, dir.pluginDir, options, true);
     utils.copyDir(`${__dirname}/templates/_roles`, dir.roleDir, options, true);
+    utils.copyDir(`${__dirname}/templates/_services`, dir.serviceDir, options, true);
+    utils.copyDir(`${__dirname}/templates/_types`, dir.typeDir, options, true);
+    utils.copyDir(`${__dirname}/templates/_utils`, dir.utilsDir, options, true);
     // utils.copyDir(`${__dirname}/templates/_middleware`, dir.middlewareDir, options, true);
     
     // update userSchema
@@ -100,6 +100,7 @@ export async function generate(
             collectionList: documents.map((doc) => doc.config.documentName),
             roleSourceDir: dir.roleSrcDir,
             roleOutDir: dir.roleDir, 
+            middlewareDir: dir.middlewareDir,
             compilerOptions: options || utils.defaultCompilerOptions
         });
     }

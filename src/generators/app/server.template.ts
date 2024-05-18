@@ -90,9 +90,18 @@ async function main(): Promise<void> {
     {{AppRouter}}
 
     app.use(ApiRoute.router);
-
     app.get('/', (req, res) => {
-        res.send('Hello World');
+        res.send(\`
+            <div>
+                <h1>Hello World</h1>
+                <ul>
+                    <li><a href="/login">login</a></li>
+                    <li><a href="/profile">profile</a></li>
+                    <li><a href="/logout">logout</a></li>
+                    <li><a href="/api">api</a></li>
+                </ul>
+            </div>
+        \`);
     });
 
     app.listen(3000, () => {

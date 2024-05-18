@@ -6,7 +6,7 @@ export function compile( compilerOptions: types.compilerOptions ): string {
     return `${compilerOptions.headerComment}
 import { Router } from "express";
 import swaggerUi, { JsonObject } from "swagger-ui-express";
-import { loadYaml } from "../utils/common.gen";
+import { loadYaml } from "./../_utils/common.gen";
 
 export default class SwaggerRouter{
 

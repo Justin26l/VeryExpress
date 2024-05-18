@@ -1,7 +1,7 @@
 // {{headerComment}}
 
 import { Profile } from "passport";
-import { UserModel } from "./../models/UserModel.gen";
+import { UserModel } from "./../_models/UserModel.gen";
 
 interface IProfile extends Profile {
     [key: string]: any;
