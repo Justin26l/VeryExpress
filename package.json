@@ -6,12 +6,12 @@
     "license": "MIT",
     "main": "index.js",
     "bin": {
-        "vex": "./dist/cli.js"
+        "vex": "./dist/index.js"
     },
     "scripts": {
         "build": "npm run lint && npm run compile && npm run minify",
         "dev": "ts-node ./src/cli.ts",
-        "test": "node ./dist/index.js",
+        "test": "npm run compile && node ./dist/index.js",
         "lint": "eslint ./src --ext .ts --fix",
         "compile": "ncc build ./src/cli.ts -o dist && node ./src/copyTsTemplates.js",
         "minify": "uglifyjs ./dist/index.js -c -m -o ./dist/index.js"
