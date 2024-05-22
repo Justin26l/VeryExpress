@@ -50,7 +50,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
 import log from './system/_utils/logger.gen';
-import mongoConn from './system/_services/mongoConn.gen';
+import VexDbConnector from './system/_services/VexDbConnector.gen';
 
 import ApiRouter from './system/_routes/ApiRouter.gen';
 {{Import}}
@@ -65,6 +65,11 @@ const helmetConfig = {
     xPoweredBy: false,
     xDnsPrefetchControl: { allow: false },
 };
+
+const vexDB = new VexDbConnector({
+    mongoUrl: process.env.MONGODB_URI,
+});
+
 
 const ApiRoute = new ApiRouter(); ApiRoute.initRoutes();
 {{Config}}
@@ -81,7 +86,6 @@ async function main(): Promise<void> {
     // UseMiddleware
     app.use(express.json());
     app.use(helmet(helmetConfig));
-    app.use(mongoConn.middleware);
 
     // UsePlugins
     {{AppUse}}
@@ -106,8 +110,8 @@ async function main(): Promise<void> {
 
     app.listen(3000, () => {
         if(!process.env.MONGODB_URI) throw new Error('MONGODB_URI is not defined');
-        mongoConn.connect(process.env.MONGODB_URI);
-        log.ok(\`Server is running on : \${process.env.APP_HOST}:\${process.env.APP_PORT}\`);
+        vexDB.connectMongo();
+        log.ok(\`Server is running on : \${process.env.APP_HOST}\`);
     });
 
 }

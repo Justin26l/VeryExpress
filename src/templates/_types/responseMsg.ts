@@ -1,4 +1,4 @@
-enum responseMessage {
+export enum responseMsg {
     permissionDeny = "Permission Denied",
     ok = "OK", 
     notFound = "Not Found", 
@@ -10,4 +10,11 @@ enum responseMessage {
     deleteFail = "Delete Fail", 
 }
 
-export default responseMessage;
+export interface responseObject<T>{
+    ret_code : number,
+    ret_msg : string,
+    ret_time?: number,
+    result: T,
+}
+
+export default responseMsg;

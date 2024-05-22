@@ -1,17 +1,12 @@
 import { Response } from "express";
-
-export interface responseObject<T>{
-    ret_code : number,
-    ret_msg : string,
-    ret_time?: number,
-    result: T,
-}
+// import { responseObject } from "./../_types/responseMsg.gen";
 
 /**
  * @param res express response object
  * @param code http status
  * @param message response data message
  * @param result response data result
+ * @returns express response object
  */
 export function send<T = undefined>(
     res: Response,

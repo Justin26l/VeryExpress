@@ -19,10 +19,32 @@ export function error(msg: any, ...optionalParams: any[]): never {
     process.exit(1);
 }
 
+// wrapper 
+export function infoMongo(msg: any, ...optionalParams: any[]): void {
+    info("[MONGO]", msg, optionalParams);
+}
+
+export function errorMongo(msg: any, ...optionalParams: any[]): never {
+    error("[MONGO]", msg, optionalParams);
+}
+
+export function infoSql(msg: any, ...optionalParams: any[]): void {
+    info("[SQL]", msg, optionalParams);
+}
+
+export function errorSql(msg: any, ...optionalParams: any[]): never {
+    error("[SQL]", msg, optionalParams);
+}
+
 export default {
     process : processing,
     ok,
     info,
     warn,
     error,
+
+    infoMongo,
+    errorMongo,
+    infoSql,
+    errorSql,
 };

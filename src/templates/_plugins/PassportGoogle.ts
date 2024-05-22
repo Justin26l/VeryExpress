@@ -31,7 +31,7 @@ export default class PassportGoogle {
             this.config.strategyConfig.options || {
                 clientID: process.env.OAUTH_GOOGLE_CLIENTID || "",
                 clientSecret: process.env.OAUTH_GOOGLE_CLIENTSECRET || "",
-                callbackURL: `${process.env.APP_HOST}:${process.env.APP_PORT}/auth/google/callback`,
+                callbackURL: `${process.env.APP_HOST}/auth/google/callback`,
             },
             this.config.strategyConfig.verify
         ));
