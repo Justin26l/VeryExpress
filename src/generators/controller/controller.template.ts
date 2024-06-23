@@ -1,5 +1,5 @@
 import util from "util";
-import * as types from "../types/types";
+import * as types from "../../types/types";
 import { Schema } from "express-validator";
 
 export default function controllerTemplate(templateOptions: {
@@ -13,8 +13,9 @@ export default function controllerTemplate(templateOptions: {
 
     let template :string = templateOptions.template || `{{headerComment}}
 import { Router, Request, Response } from 'express';
+
 import { checkSchema, validationResult } from 'express-validator';
-import { parseFieldsSelect } from '../utils/common.gen';
+import vex from "./../../system/_utils/index.gen";
 import MongoQS from 'mongo-ts-querystring';
 
 import { {{interfaceName}}Model } from '{{modelPath}}';
@@ -47,18 +48,18 @@ class {{interfaceName}}Controller {
         try {
             const validationError = validationResult(req);
             if ( ! validationError.isEmpty() ) {
-                return res.status(400).json(validationError.array());
+                return vex.response.send(res, 400, vex.responseMsg.validateError, validationError.array());
             };
 
             const result = await {{interfaceName}}Model.findById(req.params.id);
             if (!result) {
-                return res.status(404).json({ error: "no data found" });
+                return vex.response.send(res, 404, vex.responseMsg.notFound);
             }
             else {
-                return res.status(200).json(result);
+                return vex.response.send(res, 200, vex.responseMsg.ok, result);
             };
         } catch (err:any) {
-            return res.status(500).json({ error: err.message });
+            return vex.response.send(res, 500, vex.responseMsg.unexpectedError, { error: err.message });
         }
     }
 
@@ -66,19 +67,23 @@ class {{interfaceName}}Controller {
         try {
             const validationError = validationResult(req);
             if ( ! validationError.isEmpty() ) {
-                return res.status(400).json(validationError.array());
+                return vex.response.send(res, 400, vex.responseMsg.validateError, validationError.array());
             };
             
             const searchFilter = new MongoQS().parse(req.query);
             let selectedFields : {[key: string]: number} | undefined = undefined;
 
-            try { selectedFields = parseFieldsSelect(req.query.select || '');} 
-            catch (err:any) { return res.status(400).json({ error: err.message });};
+            try { 
+                selectedFields = vex.common.parseFieldsSelect(req.query.select || '');
+            } 
+            catch (err:any) { 
+                return vex.response.send(res, 400, vex.responseMsg.queryError, { error: err.message });
+            };
 
             const result = await {{interfaceName}}Model.find(searchFilter, selectedFields);
-            return res.status(200).json(result);
+            return vex.response.send(res, 200, vex.responseMsg.ok, result);
         } catch (err:any) {
-            return res.status(500).json({ error: err.message });
+            return vex.response.send(res, 500, vex.responseMsg.unexpectedError, { error: err.message });
         }
     }
 
@@ -86,18 +91,18 @@ class {{interfaceName}}Controller {
         try {
             const validationError = validationResult(req);
             if ( ! validationError.isEmpty() ) {
-                return res.status(400).json(validationError.array());
+                return vex.response.send(res, 400, vex.responseMsg.validateError, validationError.array());
             };{{check_id}}
             
             const result = await {{interfaceName}}Model.create(req.body);
             if (!result) {
-                return res.status(500).json({ error: 'failed to create data' });
+                return vex.response.send(res, 400, vex.responseMsg.createFail);
             }
             else {
-                return res.status(201).json(result);
+                return vex.response.send(res, 201, vex.responseMsg.ok, result);
             };
         } catch (err:any) {
-            return res.status(500).json({ error: err.message });
+            return vex.response.send(res, 500, vex.responseMsg.unexpectedError, { error: err.message });
         };
     };
 
@@ -105,18 +110,18 @@ class {{interfaceName}}Controller {
         try {
             const validationError = validationResult(req);
             if ( ! validationError.isEmpty() ) {
-                return res.status(400).json(validationError.array());
+                return vex.response.send(res, 400, vex.responseMsg.validateError, validationError.array());
             };{{check_id}}
 
             const result = await {{interfaceName}}Model.findByIdAndUpdate(req.params.id, req.body, { new: true });
             if (!result) {
-                return res.status(404).json({ error: "failed to update" });
+                return vex.response.send(res, 404, vex.responseMsg.updateFail);
             }
             else {
-                return res.status(200).json(result);
+                return vex.response.send(res, 200, vex.responseMsg.ok, result);
             };
         } catch (err:any) {
-            return res.status(500).json({ error: err.message });
+            return vex.response.send(res, 500, vex.responseMsg.unexpectedError, { error: err.message });
         }
     }
 
@@ -124,18 +129,18 @@ class {{interfaceName}}Controller {
         try {
             const validationError = validationResult(req);
             if ( ! validationError.isEmpty() ) {
-                return res.status(400).json(validationError.array());
+                return vex.response.send(res, 400, vex.responseMsg.validateError, validationError.array());
             };{{check_id}}
 
             const result = await {{interfaceName}}Model.replaceOne({_id: req.params.id}, req.body);
             if (!result) {
-                return res.status(404).json({ error: "failed to update" });
+                return vex.response.send(res, 404, vex.responseMsg.updateFail);
             }
             else {
-                return res.status(200).json(result);
+                return vex.response.send(res, 200, vex.responseMsg.ok, result);
             };
         } catch (err:any) {
-            return res.status(500).json({ error: err.message });
+            return vex.response.send(res, 500, vex.responseMsg.unexpectedError, { error: err.message });
         }
     }
 
@@ -143,18 +148,18 @@ class {{interfaceName}}Controller {
         try {
             const validationError = validationResult(req);
             if ( ! validationError.isEmpty() ) {
-                return res.status(400).json(validationError.array());
+                return vex.response.send(res, 400, vex.responseMsg.validateError, validationError.array());
             };
 
             const result = await {{interfaceName}}Model.findByIdAndDelete(req.params.id);
             if (!result) {
-                return res.status(404).json({ error: "failed to update" });
+                return vex.response.send(res, 404, vex.responseMsg.deleteFail);
             }
             else {
-                return res.status(204).json(result);
+                return vex.response.send(res, 204, vex.responseMsg.ok, result);
             };
         } catch (err:any) {
-            return res.status(500).json({ error: err.message });
+            return vex.response.send(res, 500, vex.responseMsg.unexpectedError, { error: err.message });
         }
     }
 }

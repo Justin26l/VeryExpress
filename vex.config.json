@@ -3,12 +3,8 @@
     "jsonSchemaDir": "./output/jsonSchema",
     "rootDir": "./output",
     "srcDir": "./output/src",
-    "openapiDir": "./output/openapi",
+    "openapiDir": "./output/src/openapi",
     "app": {
-        "roles": [
-            "admin",
-            "user"
-        ],
         "enableSwagger": true,
         "useUserSchema": true,
         "useObjectID": true,
@@ -18,11 +14,19 @@
         "google": true,
         "microsoft": false,
         "apple": false,
-        "github": false
+        "github": false,
+        "facebook": false
     },
     "useRBAC": {
         "roles": [
+            "visitor",
+            "member",
+            "admin"
+        ],
+        "default": "visitor",
+        "schemaIncluded": [
             "user"
         ]
-    }
+    },
+    "sysDir": "./output/src/system"
 }

@@ -3,8 +3,8 @@
 import { Router } from "express";
 import passport, { PassportStatic, Profile } from "passport";
 import { AuthenticateOptionsGoogle, Strategy as GoogleStrategy, StrategyOptions, VerifyCallback } from "passport-google-oauth20";
-import log from "../utils/logger.gen";
-import { UserModel } from "../models/UserModel.gen";
+import log from "./../../system/_utils/logger.gen";
+import { UserModel } from "./../_models/UserModel.gen";
 
 export type { Profile };
 
@@ -31,7 +31,7 @@ export default class PassportGoogle {
             this.config.strategyConfig.options || {
                 clientID: process.env.OAUTH_GOOGLE_CLIENTID || "",
                 clientSecret: process.env.OAUTH_GOOGLE_CLIENTSECRET || "",
-                callbackURL: `${process.env.APP_HOST}:${process.env.APP_PORT}/auth/google/callback`,
+                callbackURL: `${process.env.APP_HOST}/auth/google/callback`,
             },
             this.config.strategyConfig.verify
         ));

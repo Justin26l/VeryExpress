@@ -15,12 +15,6 @@
             "type": "string",
             "index": true
         },
-        "role":{
-            "type": "string",
-            "enum": ["user"],
-            "default": "user",
-            "required": true
-        },
         "authProvider": {
             "type": "string"
         },
@@ -39,14 +33,26 @@
             "maxLength": 64,
             "required": true
         },
+        "active": {
+            "type": "boolean",
+            "default": true,
+            "required": true
+        },
         "locale": {
             "type": "string",
             "maxLength": 8
         },
-        "isActive": {
-            "type": "boolean",
-            "default": true,
-            "required": true
+        "roles":{
+            "type": "array",
+            "x-vexData": "role",
+            "items": {
+                "type": "string",
+                "default": "user",
+                "required": true,
+                "enum": [
+                    "user"
+                ]
+            }
         }
     }
 }

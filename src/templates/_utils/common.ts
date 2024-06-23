@@ -46,3 +46,8 @@ export function parseFieldsSelect(selectString: any) : { [key: string]: number }
 
     return selectFields;
 }
+
+export default {
+    loadYaml,
+    parseFieldsSelect
+};

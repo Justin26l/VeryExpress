@@ -1,22 +1,22 @@
 import json2openapi from "json-schema-to-openapi-schema";
-import yaml from "js-yaml";
+import jsYaml from "js-yaml";
 import fs from "fs";
 
-import * as types from "../types/types";
-import * as openapiType from "../types/openapi";
-import utilsJsonSchema from "../utils/jsonSchema";
-import log from "../utils/logger";
-import { writeFile } from "../utils";
+import * as types from "./../../types/types";
+import * as openapiType from "./../../types/openapi";
+import utilsJsonSchema from "./../../utils/jsonSchema";
+import log from "./../../utils/logger";
+import { writeFile } from "./../../utils";
 
 /**
  * compile json schema to openapi spec
  * @param openapiOutFileName output file based on compilerOptions.openapiDir
  * @param compilerOptions 
  */
-export function compile(
+export async function compile(
     openapiOutFileName: string, 
     compilerOptions: types.compilerOptions
-): void {
+): Promise<void> {
 
     // convert to yaml
     let openapiJson: openapiType.openapi = {
@@ -48,11 +48,13 @@ export function compile(
     });
 
     const validOpenApi = json2openapi(openapiJson, { version: 3.0 });
-    const openapiYaml = yaml.dump(validOpenApi);
+    const openapiYaml = jsYaml.dump(validOpenApi);
 
     // create and write file
     const openapiOutFile: string = compilerOptions.openapiDir + openapiOutFileName;
     writeFile("OpenApi", openapiOutFile, openapiYaml);
+
+    return;
 }
 
 function jsonToOpenapiPath(

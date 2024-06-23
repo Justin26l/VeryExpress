@@ -4,7 +4,7 @@ import * as utilsGenerator from "./../../utils/generator";
 function loginHtml(providers: string[]) {
     let html = "<p> login with : </p>";
     providers.forEach((pp) => {
-        html += `<a href="\${process.env.APP_HOST}:\${process.env.APP_PORT}/auth/${pp}">${pp}</a>`;
+        html += `<a href="\${process.env.APP_HOST}/auth/${pp}">${pp}</a>`;
     });
     return `\`${html}\``;
 }
@@ -28,10 +28,24 @@ export default class OAuthRouter{
         this.router.get('/login', (req, res) => {
             res.send(this.loginHtml);
         });
+        
+        this.router.get('/logout', (req, res) => {
+            req.logout(
+                {},
+                () => { res.redirect('/login'); }   
+            );
+        });
+
 
         this.router.get('/profile', (req, res) => {
             if (req.isAuthenticated()) {
-                res.send(\`<p>Session Data</p><pre>\${util.inspect(req.user, undefined, null)}</pre>\`);
+                res.send(\`
+                    <div>
+                        <h1>Session Data</h1>
+                        <pre>\${util.inspect(req.user, undefined, null)}</pre>
+                        <a href="/">back to home</a>
+                    </div>
+                \`);
             } 
             else {
                 res.redirect('/login');

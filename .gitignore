@@ -1,4 +1,5 @@
 dist/
+tsc_out/
 .env
 !src/templates/root/
 !src/templates/root/.env

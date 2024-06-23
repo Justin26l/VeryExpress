@@ -1,20 +1,21 @@
 {
     "name": "very-express",
-    "version": "0.3.0",
+    "version": "0.4.3",
     "description": "based on json schema and openapi, generate Express RestApi server with mongoDb ",
     "author": "justin26l",
     "license": "MIT",
     "main": "index.js",
     "bin": {
-        "vex": "./dist/cli.js"
+        "vex": "./dist/index.js"
     },
     "scripts": {
-        "build": "npm run test && tsc -p . && node ./src/copyTsTemplates.js",
-        "dev": "ts-node ./src/cli.ts -j ./output/jsonSchema -o ./output -s ./output/src",
-        "prod": "node ./dist/cli.js",
-        "test": "eslint ./src --ext .ts --fix",
-        "vexgen": "vex -j ./output/jsonSchema -o ./output/src",
-        "start": "node ./dist/server.js"
+        "start": "node ./dist/index.js",
+        "dev": "ts-node ./src/cli.ts",
+        "build": "npm run lint && npm run compile && npm run minify",
+        "test": "npm run compile && npm run start",
+        "lint": "eslint ./src --ext .ts --fix",
+        "compile": "ncc build ./src/cli.ts -o dist && node ./src/copyTsTemplates.js",
+        "minify": "uglifyjs ./dist/index.js -c -m -o ./dist/index.js"
     },
     "keywords": [
         "jsonSchema",
@@ -29,9 +30,12 @@
         "url": "git+https://github.com/Justin26l/VeryExpress.git"
     },
     "dependencies": {
+        "@vercel/ncc": "^0.38.1",
         "express-session": "^1.17.3",
         "js-yaml": "4.1.0",
         "json-schema-to-openapi-schema": "^0.4.0",
+        "json-schema-to-typescript": "^13.1.1",
+        "json2mongoose": "^0.3.0",
         "minimist": "^1.2.8"
     },
     "devDependencies": {
@@ -52,11 +56,11 @@
         "helmet": "^7.1.0",
         "js-yaml": "^4.1.0",
         "json-schema-to-openapi-schema": "^0.4.0",
-        "json2mongoose": "^0.2.1",
         "passport": "^0.7.0",
         "passport-google-oauth20": "^2.0.0",
         "swagger-ui-express": "^5.0.0",
         "ts-node": "^10.9.2",
-        "typescript": "^5.3.3"
+        "typescript": "^5.3.3",
+        "uglify-js": "^3.17.4"
     }
 }
