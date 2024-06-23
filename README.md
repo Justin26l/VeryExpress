@@ -1,99 +1,50 @@
 # VeryExpress
-an generator that generate [Express](https://github.com/expressjs/express) rest-api app based on [jsonSchema](https://github.com/json-schema-org) and [openApi](https://github.com/OAI) 
-
-## Idea
-bored on writing crud source code ?  
-then this tool is made for it,  
-all you need is define the `JsonSchema`  
-
+this is a generator to make [Express](https://github.com/expressjs/express) REST API app based on [Json Schema](https://github.com/json-schema-org) and [Open Api](https://github.com/OAI) 
+  
+  
+## Why?
+bored on writing CRUD API time after time ?  
+then this tool might save your time,  
+all you need is define the **Json Schema** files.  
+  
+  
 # Quick Start
-1. create JsonSchmea, can refer to output/jsonSchema put it as cli config file
-2. `npm i -g very-express`  
-    install package globally
-3. `vex -h`  
-    this cmd create the cli config file
-4. `vex `  
-    call cli with vex.config.json setting  
-5. `npm i`
-6. `npm build`
-7. `npm run start`
-
-## JsonSchmea Setup
-x-documentConfig: 
-
-| Fields | Description | 
-| - | - | 
-| documentName  | name of **collection** or **table**, also used at `Model`. | 
-| interfaceName  | used at endpoint and naming `Class`, `Interface`, `Files`. | 
-| methods | available method of rest api. |
-
-```JSON
-{
-    "x-documentConfig": {
-        "documentName": "user",
-        "interfaceName": "User",
-        "methods": [
-            "get",
-            "post",
-            "put",
-            "patch",
-            "delete"
-        ]
-    },
-    "properties": {
-        "invoiceId": {
-            "type": "string",
-            "format": "uuid",
-            "required": false,
-            "x-foreignKey": "invoice"
-        }
-    }
-}
-```
-
-## Road Map
-- [ ] dockernize
-- [ ] Schema Definition
-    - [ ] data join
-    - [ ] data encryption (PDPA)
-- [x] generate express app
-    - [x] gen. openapi based on json schema
-    - [x] gen. controllers based on openapi
-        - [x] CRUD API
-- [ ] database support
-    - [x] mongodb
-    - [ ] ~sql~
-- [ ] oauth2 Implement
-    - [x] google
-    - [ ] microsoft
-    - [ ] github
-- [x] Role Base Access Control
-    - [x] API access control
-    - [ ] data validation based on Role
-
-# To Do
-
-- data join
-    - at JsonSchmea fields, add attribute
-    `x-foreignKey: "collectionName"` use this column value to math with target collection "_id" fields.
-    ```JSON
-    {
-         "invoiceId": {
-            "type" : "string",
-            "x-foreignKey" : "invoice"
-        },
-         "orderId": {
-            "type" : "string",
-            "x-foreignKey" : "order"
-        }
-    }
+1. install package globally.  
+    ```npm i -g very-express```  
+      
+3. use cli to initialize configuration file **vex.config.json** under your project root directory.  
+    `vex -init`  
+      
+2. create a empty directory name it as value of vex.config's "jsonSchemaDir", default **jsonSchema**.  
+    `mkdir jsonSchema`.
+      
+4. generate the app with vex.config param.  
+    `vex`  
+      
+5. you should saw a express typescript app being generated (with src, package.json etc) .  
     ```
-    - at REST API, to query with join:  
-        add field name as stringified array into querystring "join"
-        example `/myDataApi?join=[invoiceId,orderId]`
+    ├── jsonSchema/  
+    │   └── ...
+    ├── src/ 
+    │   └── ...
+    ├── package.json  
+    ├── tsconfig.json  
+    ├── vex.config.json  
+    └── .env  
+    ```  
+      
+6. you could create your db collection/table now in directory **jsonSchema/** just created,  
+    refer to [Define Json Schmea](./docs/jsonSchema.md).  
+      
+7. start the generated express app.  
+    ```
+    npm i  
+    npm build    
+    npm run start
+    ```
 
-- data encryption
-    - at JsonSchmea fields, add attribute
-    `x-dataSecure: "SHA256/MD5/..."` while accessing data, perform encryption based on method selected.
 
-
+# Resource
+- [Documents](./docs/)
+- [Road Map](./docs/roadMap/)
+- [ReleaseNote](./docs/releaseNote)
