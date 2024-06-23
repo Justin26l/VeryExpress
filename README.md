@@ -34,7 +34,7 @@ all you need is define the **Json Schema** files.
     ```  
       
 6. you could create your db collection/table now in directory **jsonSchema/** just created,  
-    refer to [Define Json Schmea](./docs/jsonSchema.md).  
+    refer to [Define Json Schmea](./docs/defineJsonSchema.md).  
       
 7. start the generated express app.  
     ```
