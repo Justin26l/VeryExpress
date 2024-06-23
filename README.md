@@ -48,3 +48,5 @@ all you need is define the **Json Schema** files.
 - [Documents](./docs/)
 - [Road Map](./docs/roadMap/)
 - [ReleaseNote](./docs/releaseNote)
+
+- [Discord](https://discord.gg/PZGMzDp7)
