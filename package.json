@@ -10,9 +10,8 @@
     },
     "scripts": {
         "start": "node ./dist/index.js",
-        "dev": "ts-node ./src/cli.ts",
+        "dev": "npm run compile && npm run start",
         "build": "npm run lint && npm run compile && npm run minify",
-        "test": "npm run compile && npm run start",
         "lint": "eslint ./src --ext .ts --fix",
         "compile": "ncc build ./src/cli.ts -o dist && node ./src/copyTsTemplates.js",
         "minify": "uglifyjs ./dist/index.js -c -m -o ./dist/index.js"
