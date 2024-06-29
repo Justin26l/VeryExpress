@@ -18,3 +18,7 @@ export function checkConfigValid(options: types.compilerOptions): void {
     }
 
 }
+
+export default {
+    checkConfigValid
+}

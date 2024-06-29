@@ -1,9 +1,11 @@
 import fs from "fs";
-import log from "./../../utils/logger";
-import * as types from "./../../types/types";
-import { writeFile } from "./../../utils";
 
 import packangeJsonTemplate from "./../../templates/root/package.json";
+
+import utils from "./../../utils";
+import log from "./../../utils/logger";
+
+import * as types from "./../../types/types";
 
 export async function compile(
     packageOutPath: string,
@@ -37,7 +39,7 @@ export async function compile(
         packageJson.scripts.start = "node ./dist/server.js";
     }
 
-    writeFile(`Root : ${packageOutPath}`, packageOutPath, JSON.stringify(packageJson, null, 4));
+    utils.common.writeFile(`ROOT : ${packageOutPath}`, packageOutPath, JSON.stringify(packageJson, null, 4));
 
     return;
 }

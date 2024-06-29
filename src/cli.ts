@@ -4,17 +4,18 @@ import childProcess from "child_process";
 import minimist from "minimist";
 
 import { generate } from "./index";
+
+import utils from "./utils";
 import log from "./utils/logger";
 
 import { compilerOptions } from "./types/types";
-import { defaultCompilerOptions, writeFile } from "./utils";
 
 async function main(){
     console.log("\x1b[35m%s\x1b[0m", "\n========== veryExpress CLI (vex) Start ==========\n");
 
     /** configuration process */
     const args: minimist.ParsedArgs = minimist(process.argv.slice(2));
-    let config: compilerOptions = defaultCompilerOptions; 
+    let config: compilerOptions = utils.generator.defaultCompilerOptions; 
 
     if (fs.existsSync("vex.config.json")) {
         try {
@@ -62,7 +63,7 @@ async function main(){
     }
 
     log.process("validate vex.config.json");
-    writeFile("vex.config", "vex.config.json", JSON.stringify(config, null, 4));
+    utils.common.writeFile("vex.config", "vex.config.json", JSON.stringify(config, null, 4));
 
     /** 
      * ==================== 

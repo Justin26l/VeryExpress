@@ -2,8 +2,8 @@ import roleTemplate from "./role.template";
 import * as types from "../../types/types";
 import * as roleBase from "../../templates/_roles/_RoleFactory";
 
+import utils from "../../utils";
 import log from "../../utils/logger";
-import { loadJson, writeFile } from "../../utils";
 import { roleSetupFile } from "../../preprocess/roleSetupFile";
 
 import * as RBACmiddlewareGen from "../middlewares/RBACmiddleware.generator";
@@ -34,7 +34,7 @@ export async function compile(options: {
 
         const roleSrcFile = `${options.compilerOptions.srcDir}/roles/${role}.json`;
         const roleOutFile = `${options.roleOutDir}/${role}.gen.ts`;
-        const roleContent = loadJson(roleSrcFile);
+        const roleContent = utils.common.loadJson(roleSrcFile);
 
         Object.values(roleContent).forEach((resourceContent: any) => {
             // check is array of string
@@ -51,7 +51,7 @@ export async function compile(options: {
         const RoleAccessActionString = Object.keys(RoleAccessAction).map((key) => `"${key}"`);
         RoleAccessActionString.push("roleFactory.accessAction");
 
-        writeFile("RBAC Role", roleOutFile, roleTemplate({
+        utils.common.writeFile("RBAC Role", roleOutFile, roleTemplate({
             role: role,
             roleContent: roleContent,
             RoleAccessActionString: RoleAccessActionString,
@@ -67,7 +67,7 @@ export async function compile(options: {
     // 2. generate index file
     const indexFilePath = `${options.roleOutDir}/index.ts`;
     const indexFileContent = indexFileData.map((data) => `export { default as ${data.name} } from "./${data.name}.gen";`).join("\n");
-    writeFile("RBAC Index", indexFilePath, `${options.compilerOptions.headerComment}\n${indexFileContent}`);
+    utils.common.writeFile("RBAC Index", indexFilePath, `${options.compilerOptions.headerComment}\n${indexFileContent}`);
 
     // 3. generate RBAC middleware
     const roleTypesString = indexFileData.map((data) => `Role${data.name}`).join(" | "); 

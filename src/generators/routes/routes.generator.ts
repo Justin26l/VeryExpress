@@ -4,9 +4,8 @@ import * as routesSwaggerGen from "./swagger.generator";
 
 import * as types from "./../../types/types";
 
-import * as utilsGenerator from "./../../utils/generator";
+import utils from "./../../utils";
 import log from "./../../utils/logger";
-import { writeFile } from "./../../utils";
 
 /**
  * compile controllers to route source code
@@ -17,7 +16,7 @@ import { writeFile } from "./../../utils";
 export async function compile(options: {
     routesArr: {
         route: string,
-        interfaceName: string,
+        documentName: string,
         controllerPath: string,
     }[],
     routesDir: string,
@@ -32,8 +31,8 @@ export async function compile(options: {
     const routesSwaggerOutPath: string = `${options.routesDir}/SwaggerRouter.gen.ts`;
 
     // use oauth
-    if ( utilsGenerator.isUseOAuth(options.compilerOptions).length > 0 ) {
-        writeFile(
+    if ( utils.generator.isUseOAuth(options.compilerOptions).length > 0 ) {
+        utils.common.writeFile(
             "Route OAuth", 
             routesOAuthOutPath,
             routesOAuthGen.compile(options.compilerOptions)
@@ -42,7 +41,7 @@ export async function compile(options: {
 
     // use swagger
     if (options.compilerOptions.app.enableSwagger) {
-        writeFile(
+        utils.common.writeFile(
             "Route Swagger", 
             routesSwaggerOutPath, 
             routesSwaggerGen.compile(options.compilerOptions)
@@ -50,7 +49,7 @@ export async function compile(options: {
     }
 
     // write json schema api routes
-    writeFile(
+    utils.common.writeFile(
         "Route API", 
         routesApiOutPath, 
         routesTemplate({

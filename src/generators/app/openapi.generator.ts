@@ -2,11 +2,11 @@ import json2openapi from "json-schema-to-openapi-schema";
 import jsYaml from "js-yaml";
 import fs from "fs";
 
+import utils from "./../../utils";
+import log from "./../../utils/logger";
+
 import * as types from "./../../types/types";
 import * as openapiType from "./../../types/openapi";
-import utilsJsonSchema from "./../../utils/jsonSchema";
-import log from "./../../utils/logger";
-import { writeFile } from "./../../utils";
 
 /**
  * compile json schema to openapi spec
@@ -52,7 +52,7 @@ export async function compile(
 
     // create and write file
     const openapiOutFile: string = compilerOptions.openapiDir + openapiOutFileName;
-    writeFile("OpenApi", openapiOutFile, openapiYaml);
+    utils.common.writeFile("OpenApi", openapiOutFile, openapiYaml);
 
     return;
 }
@@ -67,18 +67,18 @@ function jsonToOpenapiPath(
     // get jsonschema properties
     const documentConfig: types.documentConfig = jsonSchema["x-documentConfig"];
     const lowerDocName: string = documentConfig.documentName.toLowerCase();
-    const interfaceName: string = documentConfig.interfaceName;
+    const documentName: string = documentConfig.documentName;
 
     const properties: types.jsonSchema["properties"] = jsonSchema.properties;
 
     const routes: openapiType.paths = {
         ["/" + lowerDocName]: {
             "x-collection": documentConfig.documentName,
-            "x-interface": interfaceName,
+            "x-documentName": documentName,
         },
         ["/" + lowerDocName + "/{id}"]: {
             "x-collection": documentConfig.documentName,
-            "x-interface": interfaceName,
+            "x-documentName": documentName,
         },
     };
 
@@ -87,14 +87,14 @@ function jsonToOpenapiPath(
         const useBody: boolean = ["post", "put", "patch"].includes(jsonSchemaMethod);
         const route: string = "/" + lowerDocName + (routeWithId ? "/{id}" : "");
         
-        const httpMethod: types.httpMethod = utilsJsonSchema.httpMethod(jsonSchemaMethod, additionalinfo.jsonSchemaFilePath);
+        const httpMethod: types.httpMethod = utils.jsonSchema.httpMethod(jsonSchemaMethod, additionalinfo.jsonSchemaFilePath);
         const parameters: openapiType.parameter[] = [];
         let requestBody: openapiType.requestBody | undefined = undefined;
         const successResponse: openapiType.responses = {
             200: {
                 description: "OK",
                 content: {
-                    "application/json": { schema: { $ref: `#/components/schemas/${httpMethod}${interfaceName}Response` } },
+                    "application/json": { schema: { $ref: `#/components/schemas/${httpMethod}${documentName}Response` } },
                 },
             },
         };
@@ -130,13 +130,13 @@ function jsonToOpenapiPath(
                 description: `${httpMethod} ${documentConfig.documentName}`,
                 required: false,
                 content: {
-                    "application/json": { schema: { $ref: `#/components/schemas/${httpMethod}${interfaceName}Body` } },
+                    "application/json": { schema: { $ref: `#/components/schemas/${httpMethod}${documentName}Body` } },
                 },
             };
         }
 
         routes[route][httpMethod] = {
-            operationId: jsonSchemaMethod + interfaceName,
+            operationId: jsonSchemaMethod + documentName,
             tags: [lowerDocName],
             parameters: parameters,
             requestBody: requestBody,
@@ -179,13 +179,13 @@ function jsonToOpenapiComponentSchema(
     // get jsonschema properties
     const documentConfig = jsonSchema["x-documentConfig"];
     const lowerDocName = documentConfig.documentName.toLowerCase();
-    const interfaceName = documentConfig.interfaceName;
+    const documentName = documentConfig.documentName;
 
 
     const componentSchemaResponse: openapiType.componentsSchemaValue = {
         type: "object",
         properties: json2openapi(
-            utilsJsonSchema.cleanXcustomValue(jsonSchema.properties, ["index", "unique", "required"]),
+            utils.jsonSchema.cleanXcustomValue(jsonSchema.properties, ["index", "unique", "required"]),
             { version: 3.0 }
         ),
     };
@@ -194,7 +194,7 @@ function jsonToOpenapiComponentSchema(
     const componentSchemaBodyRequired: openapiType.componentsSchemaValue = {
         type: "object",
         properties: json2openapi(
-            utilsJsonSchema.cleanXcustomValue(jsonSchema.properties, { index: "boolean", unique: "boolean", required: "boolean" }),
+            utils.jsonSchema.cleanXcustomValue(jsonSchema.properties, { index: "boolean", unique: "boolean", required: "boolean" }),
             { version: 3.0 }
         ),
         required: jsonSchema.required,
@@ -204,7 +204,7 @@ function jsonToOpenapiComponentSchema(
     const componentSchemaBodyRequiredWithoutId: openapiType.componentsSchemaValue = {
         type: "object",
         properties: json2openapi(
-            utilsJsonSchema.cleanXcustomValue(componentSchemaBodyRequired.properties as any, { _id: "object"}),
+            utils.jsonSchema.cleanXcustomValue(componentSchemaBodyRequired.properties as any, { _id: "object"}),
             { version: 3.0 }
         ),
         required: jsonSchema.required,
@@ -214,20 +214,20 @@ function jsonToOpenapiComponentSchema(
     const componentSchemaBody: openapiType.componentsSchemaValue = {
         type: "object",
         properties: json2openapi(
-            utilsJsonSchema.cleanXcustomValue(componentSchemaBodyRequiredWithoutId.properties as any, ["required"]),
+            utils.jsonSchema.cleanXcustomValue(componentSchemaBodyRequiredWithoutId.properties as any, ["required"]),
             { version: 3.0 }
         ),
     };   
 
     documentConfig.methods.forEach((jsonSchemaMethod) => {
-        const httpMethod: types.httpMethod = utilsJsonSchema.httpMethod(jsonSchemaMethod, additionalinfo.jsonSchemaFilePath);
+        const httpMethod: types.httpMethod = utils.jsonSchema.httpMethod(jsonSchemaMethod, additionalinfo.jsonSchemaFilePath);
 
         switch (jsonSchemaMethod) {
         case "delete":
             // no param, no response
             break;
         case "get":
-            componentSchemaPath[httpMethod + interfaceName + "Response"] = componentSchemaResponse;
+            componentSchemaPath[httpMethod + documentName + "Response"] = componentSchemaResponse;
             break;
         case "getList":{
 
@@ -283,25 +283,25 @@ function jsonToOpenapiComponentSchema(
 
                 openapiJson.paths["/" + lowerDocName][httpMethod]!.parameters = parameters;
 
-                componentSchemaPath[httpMethod + interfaceName + "Response"] = componentSchemaResponse;
-                componentSchemaPath[httpMethod + interfaceName + "ResponseList"] = {
+                componentSchemaPath[httpMethod + documentName + "Response"] = componentSchemaResponse;
+                componentSchemaPath[httpMethod + documentName + "ResponseList"] = {
                     type: "array",
                     items: componentSchemaResponse,
                 };
                 break;
         }
         case "patch":    
-            componentSchemaPath[httpMethod + interfaceName + "Body"] = componentSchemaBody;
-            componentSchemaPath[httpMethod + interfaceName + "Response"] = componentSchemaResponse;
+            componentSchemaPath[httpMethod + documentName + "Body"] = componentSchemaBody;
+            componentSchemaPath[httpMethod + documentName + "Response"] = componentSchemaResponse;
             break;
 
         case "post":
-            componentSchemaPath[httpMethod + interfaceName + "Body"] = compilerOptions.app.allowApiCreateUpdate_id ? componentSchemaBodyRequired : componentSchemaBodyRequiredWithoutId ;
-            componentSchemaPath[httpMethod + interfaceName + "Response"] = componentSchemaResponse;
+            componentSchemaPath[httpMethod + documentName + "Body"] = compilerOptions.app.allowApiCreateUpdate_id ? componentSchemaBodyRequired : componentSchemaBodyRequiredWithoutId ;
+            componentSchemaPath[httpMethod + documentName + "Response"] = componentSchemaResponse;
             break;
         case "put":
-            componentSchemaPath[httpMethod + interfaceName + "Body"] = componentSchemaBodyRequired;
-            componentSchemaPath[httpMethod + interfaceName + "Response"] = componentSchemaResponse;
+            componentSchemaPath[httpMethod + documentName + "Body"] = componentSchemaBodyRequired;
+            componentSchemaPath[httpMethod + documentName + "Response"] = componentSchemaResponse;
             break;
         default:
             break;

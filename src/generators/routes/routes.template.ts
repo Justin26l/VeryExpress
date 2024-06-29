@@ -5,7 +5,7 @@ export default function routesTemplate(options: {
     openapiFile?: string,
     routes: {
         route: string,
-        interfaceName: string,
+        documentName: string,
         controllerPath: string,
     }[],
     compilerOptions: types.compilerOptions,
@@ -32,8 +32,8 @@ export default class ApiRouter{
     let importRoutes = "";
     let useRoutes = "";
     options.routes.forEach((obj) => {
-        importRoutes += `import ${obj.interfaceName}Controller from '${obj.controllerPath}';\n`;
-        useRoutes += `        this.router.use('${obj.route}', ${obj.interfaceName}Controller);\n`;
+        importRoutes += `import ${obj.documentName}Controller from '${obj.controllerPath}';\n`;
+        useRoutes += `        this.router.use('${obj.route}', ${obj.documentName}Controller);\n`;
     });
 
     template = template.replace(/{{headerComment}}/g, options.compilerOptions.headerComment || "// generated files by very-express");
