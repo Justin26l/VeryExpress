@@ -7,24 +7,27 @@ import log from "./../utils/logger";
 export function formatJsonSchema(jsonSchemaPath: string, compilerOptions: types.compilerOptions): types.jsonSchema {
     // read json schema
     const fileName = jsonSchemaPath.split("/").pop()?.split(".")[0] || "Unknown_File_Name";
+    
     const jsonSchema: types.jsonSchema = utils.jsonSchema.loadJsonSchema(jsonSchemaPath);
 
     // check documentConfig exist
     if (!jsonSchema["x-documentConfig"]) {
         log.error(`Json Schema Formatting: "${jsonSchemaPath}" x-documentConfig not found.`);
     }
-    else if (!jsonSchema["x-documentConfig"].documentName) {
+
+    if (!jsonSchema["x-documentConfig"].documentName) {
         log.warn(`Json Schema Formatting: "${jsonSchemaPath}" x-documentConfig.documentName added.`);
         jsonSchema["x-documentConfig"].documentName = fileName;
 
     }
-    else if (!jsonSchema["x-documentConfig"].methods) {
+
+    if (!jsonSchema["x-documentConfig"].methods) {
         log.warn(`Json Schema Formatting: "${jsonSchemaPath}" x-documentConfig.methods not found, supported methods added.`);
         jsonSchema["x-documentConfig"].methods = Object.assign([], types.schemaMethodArr);
     }
 
     // check documentConfig format
-    else if (jsonSchema["x-documentConfig"].documentName != fileName) {
+    if (jsonSchema["x-documentConfig"].documentName != fileName) {
         log.error(`Json Schema Formatting: "${jsonSchemaPath}" x-documentConfig.documentName is not consistant with file name.`);
     }
 
