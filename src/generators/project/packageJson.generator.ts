@@ -10,7 +10,7 @@ export async function compile(
     compilerOptions: types.compilerOptions
 ): Promise<void> {
     // read package.json and add script section
-    log.process(`Project : ${packageOutPath}`);
+    log.process(`Root : ${packageOutPath}`);
     let packjson: string = "";
 
     if (!fs.existsSync(packageOutPath)) {
@@ -37,7 +37,7 @@ export async function compile(
         packageJson.scripts.start = "node ./dist/server.js";
     }
 
-    writeFile(`Project : ${packageOutPath}`, packageOutPath, JSON.stringify(packageJson, null, 4));
+    writeFile(`Root : ${packageOutPath}`, packageOutPath, JSON.stringify(packageJson, null, 4));
 
     return;
 }

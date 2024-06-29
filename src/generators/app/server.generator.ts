@@ -31,14 +31,14 @@ export async function compile(
 
     // write .env
     if (!fs.existsSync(envOutPath)) {
-        log.writing(`Project : ${envOutPath}`);
+        log.writing(`Root : ${envOutPath}`);
         fs.copyFileSync(__dirname+"/templates/root/.env", envOutPath);
     }
 
     // write tsconfig.json
     if (!fs.existsSync(tsconfigOutPath)) {
         // try {
-        log.writing(`Project : ${tsconfigOutPath}`);
+        log.writing(`Root : ${tsconfigOutPath}`);
         fs.copyFileSync(__dirname+"/templates/root/tsconfig.json", tsconfigOutPath);
         //     childProcess.execSync('tsc --init', { cwd: '.', stdio: 'inherit' });
         // } catch (error) {
