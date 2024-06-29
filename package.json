@@ -1,6 +1,6 @@
 {
     "name": "very-express",
-    "version": "0.4.5",
+    "version": "0.4.6",
     "description": "based on json schema and openapi, generate Express RestApi server with mongoDb ",
     "author": "justin26l",
     "license": "MIT",
@@ -11,7 +11,7 @@
     "scripts": {
         "start": "node ./dist/index.js",
         "dev": "npm run compile && npm run start",
-        "build": "npm run lint && npm run compile",
+        "build": "npm run lint && npm run compile && npm run minify",
         "lint": "eslint ./src --ext .ts --fix",
         "compile": "ncc build ./src/cli.ts -o dist && node ./src/copyTsTemplates.js",
         "minify": "uglifyjs ./dist/index.js -c -m -o ./dist/index.js"
