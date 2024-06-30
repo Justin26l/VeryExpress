@@ -240,6 +240,11 @@ function jsonToOpenapiComponentSchema(
                 // skip object, it should not be in query
                 if (props.type == "object") return;
 
+                // make array to stingified array
+                if (props.type == "array") {
+                    props.type = "string";
+                }
+
                 parameters.push({
                     name: key,
                     in: "query",
