@@ -13,8 +13,8 @@ this document tell how very express process the json schema.
 | Fields | Data Type | Required | Description | 
 | - | - | - | - | 
 | type | `string` | true | [JsonSchema's type field](https://json-schema.org/understanding-json-schema/reference/type) |
-| required | `boolean` | false | generated api will check field must be defined. |
-| x-foreignKey | `string` | false | `documentName` from other JsonSchema, plan to implemented on [v0.5.0](./RoadMap/v0-5-0.md) |
+| required | `boolean` | false | value cannot be falsy / undefined. |
+| x-foreignKey | `string` | false | `documentName` from other JsonSchema, auto index. plan to implemented on [v0.5.0](./RoadMap/v0-5-0.md) |
 <!-- | format | `string` | false | veryExpress did not handle this field | -->
 
 ```JSON
