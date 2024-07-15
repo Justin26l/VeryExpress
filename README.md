@@ -15,10 +15,10 @@ all you need is define the **Json Schema** files.
 3. use cli to initialize configuration file **vex.config.json** under your project root directory.  
     `vex -init`  
       
-2. create a empty directory name it as value of vex.config's "jsonSchemaDir", default **jsonSchema**.  
+2. create a empty directory and name it as value of vex.config's "jsonSchemaDir", by default `jsonSchema`.  
     `mkdir jsonSchema`.  
    
-4. you can create your db collection/table now in directory **jsonSchema/** just created,  
+4. you can create your db collection/table now in directory `./jsonSchema` just created,  
     refer to [Define Json Schmea](./docs/vexJsonSchema.md),
     every changes require to regenerate app.
    
