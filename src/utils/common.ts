@@ -34,7 +34,7 @@ export function writeFile(title: string, destination: string, newContent: string
     // read file, check difference, if yes write file
     const oldContent = fs.existsSync(destination) ? fs.readFileSync(destination, "utf8") : "";
     if (oldContent === newContent) {
-        log.info(`${title} : "${destination}" No changes`);
+        // log.info(`${title} : "${destination}" No changes`);
         return false;
     }
     else {
@@ -52,23 +52,23 @@ export function copyDir(source: string, destination: string, compilerOptions: ty
     const files: string[] = fs.readdirSync(source);
 
     for (let i = 0; i < files.length; i++) {
-        const current: fs.Stats = fs.lstatSync(source + "/" + files[i]);
+        const sourcePath = path.join(source,files[i]);
+        const destinationPath = path.join(destination, files[i].replace(".ts", ".gen.ts"));            
 
-        if (current.isDirectory()) {
-            copyDir(source + "/" + files[i], destination + "/" + files[i], compilerOptions, overwrite);
+        // recursive copy dir
+        if ( fs.lstatSync(sourcePath).isDirectory() ) {
+            copyDir(sourcePath, destinationPath, compilerOptions, overwrite);
         }
         // avoid overwrite
-        else if (!overwrite && fs.existsSync(destination + "/" + files[i])) {
-            log.info(`FILE : existed, skip file ${destination + "/" + files[i]} exist, skip`);
+        else if (!overwrite && fs.existsSync(destinationPath)) {
+            log.info(`FILE : AVOID OVERWRITE, skip "${destinationPath}"`);
         }
+        // check file exist, read it check is same content, if is then skip
         else {
-            const fileNameGen = files[i].replace(".ts", ".gen.ts");
-            const outPath: string = destination + "/" + fileNameGen;
-            // read file, replace header, write file
-            log.writing(`FILE : ${outPath}`);
-            let content = fs.readFileSync(source + "/" + files[i], "utf8");
-            content = content.replace(/\/\/ {{headerComment}}/g, compilerOptions.headerComment);
-            fs.writeFileSync(outPath, content);
+            let newContent = fs.readFileSync(sourcePath, "utf8");
+            newContent = newContent.replace(/\/\/ {{headerComment}}/g, compilerOptions.headerComment);
+            writeFile(`FILE : ${destinationPath}`, destinationPath, newContent);
+
         }
     }
 }
@@ -76,4 +76,6 @@ export function copyDir(source: string, destination: string, compilerOptions: ty
 export default {
     relativePath,
     copyDir,
+    loadJson,
+    writeFile,
 };

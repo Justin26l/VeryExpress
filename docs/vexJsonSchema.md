@@ -1,11 +1,11 @@
 # Define Json Schema
+this document tell how very express process the json schema.
 ### x-documentConfig: 
 
 | Fields | Data Type | Options | Description | 
 | - | - | - | - | 
-| documentName  | `string` | - | name of **collection** or **table**, also used at `Model`, camel case recomended.  | 
-| interfaceName | `string` | - | use to name `endpoint`, `Class`, `Interface`, `File`. | 
-| methods | `array<string>` | `get`, `post`, `put`, `patch`, `delete` | available method of REST API. |
+| documentName  | `string` | - | auto generated as file name. used to name **Collection**, **TS Interface**, **ODM Model** etc. | 
+| methods | `array<string>` | `get`, `post`, `put`, `patch`, `delete` | array of **REST API Method**  to be generated. |
 
 
 ### Properties Mandatory Value: 
@@ -13,15 +13,14 @@
 | Fields | Data Type | Required | Description | 
 | - | - | - | - | 
 | type | `string` | true | [JsonSchema's type field](https://json-schema.org/understanding-json-schema/reference/type) |
-| required | `boolean` | false | api will check field must be defined. |
-| x-foreignKey | `string` | false | `documentName` from other JsonSchema, plan to implemented on [v0.5.0](./RoadMap/v0-5-0.md) |
+| required | `boolean` | false | value cannot be falsy / undefined. |
+| x-foreignKey | `string` | false | `documentName` from other JsonSchema, auto index. plan to implemented on [v0.5.0](./RoadMap/v0-5-0.md) |
 <!-- | format | `string` | false | veryExpress did not handle this field | -->
 
 ```JSON
 {
     "x-documentConfig": {
-        "documentName": "user",
-        "interfaceName": "User", 
+        "documentName": "user", // auto generate as file name
         "methods": [ 
             "get",
             "post",

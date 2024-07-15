@@ -1,5 +1,6 @@
+import  utils from "../../utils";
+
 import * as types from "../../types/types";
-import * as utilsGenerator from "../../utils/generator";
 
 // import
 const importExpressSession = "import session from 'express-session';";
@@ -119,7 +120,7 @@ async function main(): Promise<void> {
 main();
 `;
 
-    const usedProvider: string[] = utilsGenerator.isUseOAuth(options.compilerOptions);
+    const usedProvider: string[] = utils.generator.isUseOAuth(options.compilerOptions);
     const Import: string[] = [];
     const Config: string[] = [];
     const AppUse: string[] = [];

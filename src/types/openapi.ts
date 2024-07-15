@@ -13,7 +13,7 @@ export interface openapi {
 export interface paths {
     [key:string]: {
         "x-collection"?: string, // 'x-collection' is a custom field for specify db collection
-        "x-interface"?: string, // 'x-interfaceName' is a custom field for specify interfaceName
+        "x-documentName"?: string, // 'x-documentName' is a custom field for specify documentName
         summary?: string,
         get?: method,
         post?: method,
@@ -29,7 +29,7 @@ export interface paths {
 
 export interface method {
     summary?: string,
-    operationId: string, // method + interfaceName
+    operationId: string, // method + documentName
     tags: string[], 
     parameters: parameter[],
     requestBody?: requestBody,

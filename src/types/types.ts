@@ -68,7 +68,6 @@ export interface jsonSchemaPropsItem {
 
 export interface documentConfig {
     documentName: string;
-    interfaceName: string;
     keyPrefix?: string;
     methods: schemaMethod[];
 }

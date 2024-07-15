@@ -1,8 +1,6 @@
 {
     "type": "object",
     "x-documentConfig": {
-        "documentName": "usercontact",
-        "interfaceName": "UserContact",
         "methods": [
             "get",
             "getList",
@@ -10,7 +8,8 @@
             "put",
             "patch",
             "delete"
-        ]
+        ],
+        "documentName": "UserContact"
     },
     "properties": {
         "_id": {

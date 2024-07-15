@@ -1,7 +1,7 @@
-import * as types from "./../../types/types";
-
+import utils from "./../../utils";
 import log from "./../../utils/logger";
-import { loadJson, writeFile } from "./../../utils";
+
+import * as types from "./../../types/types";
 
 export async function compile(options: {
     compilerOptions: types.compilerOptions,
@@ -12,8 +12,8 @@ export async function compile(options: {
     
     // 1. read userSchema file
     const schemaOutPath = `${options.compilerOptions.jsonSchemaDir}/User.json`;
-    const templateSchema = loadJson(__dirname+"/templates/jsonSchema/User.json");
-    const userSchema = loadJson(schemaOutPath, ()=>{
+    const templateSchema = utils.common.loadJson(__dirname+"/templates/jsonSchema/User.json");
+    const userSchema = utils.common.loadJson(schemaOutPath, ()=>{
         return templateSchema;
     });
 
@@ -28,7 +28,7 @@ export async function compile(options: {
     });
 
     // 3. write userSchema file
-    writeFile("UserSchmea", schemaOutPath, JSON.stringify(userSchema, null, 4));
+    utils.common.writeFile("UserSchmea", schemaOutPath, JSON.stringify(userSchema, null, 4));
 
     return;
 }

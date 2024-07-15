@@ -3,23 +3,22 @@ import fs from "fs";
 import json2mongoose from "json2mongoose";
 import * as openapiGen from "./generators/app/openapi.generator";
 
+import utils from "./utils";
 import log from "./utils/logger";
-import * as utils from "./utils";
+import { formatJsonSchema } from "./preprocess/jsonschemaFormat";
+import { roleSchemaFormat } from "./preprocess/roleSetupFile";
+
+import * as types from "./types/types";
 import * as userSchemaGen from "./generators/project/userSchema.generator";
 import * as roleGen from "./generators/role/role.generator";
 import * as controllerGen from "./generators/controller/controllers.generator";
 import * as routeGen from "./generators/routes/routes.generator";
 import * as serverGen from "./generators/app/server.generator";
 
-import * as types from "./types/types";
-import { checkConfigValid } from "./utils/configChecker";
-import { formatJsonSchema } from "./preprocess/jsonschemaFormat";
-import { roleSchemaFormat } from "./preprocess/roleSetupFile";
-
 export async function generate(
     options: types.compilerOptions
 ): Promise<void> {
-    checkConfigValid(options);
+    utils.configChecker.checkConfigValid(options);
     const openapiFile: string = "/openapi.gen.yaml";
     const documents: { path: string, config: types.documentConfig }[] = [];
 
@@ -38,13 +37,13 @@ export async function generate(
 
     const routeData: {
         route: string,
-        interfaceName: string,
+        documentName: string,
         controllerPath: string,
     }[] = [];
 
     // set default header comment
     if ( !options.headerComment ) {
-        options.headerComment = utils.getGenaratorHeaderComment();
+        options.headerComment = utils.generator.getGenaratorHeaderComment();
     }
 
     // create all directories if not exist
@@ -58,18 +57,18 @@ export async function generate(
     });
 
     // copy static files
-    utils.copyDir(`${__dirname}/templates/_plugins`, dir.pluginDir, options, true);
-    utils.copyDir(`${__dirname}/templates/_roles`, dir.roleDir, options, true);
-    utils.copyDir(`${__dirname}/templates/_services`, dir.serviceDir, options, true);
-    utils.copyDir(`${__dirname}/templates/_types`, dir.typeDir, options, true);
-    utils.copyDir(`${__dirname}/templates/_utils`, dir.utilsDir, options, true);
+    utils.common.copyDir(`${__dirname}/templates/_plugins`, dir.pluginDir, options, true);
+    utils.common.copyDir(`${__dirname}/templates/_roles`, dir.roleDir, options, true);
+    utils.common.copyDir(`${__dirname}/templates/_services`, dir.serviceDir, options, true);
+    utils.common.copyDir(`${__dirname}/templates/_types`, dir.typeDir, options, true);
+    utils.common.copyDir(`${__dirname}/templates/_utils`, dir.utilsDir, options, true);
     // utils.copyDir(`${__dirname}/templates/_middleware`, dir.middlewareDir, options, true);
     
     // update userSchema
-    await userSchemaGen.compile({ compilerOptions: options || utils.defaultCompilerOptions });
+    await userSchemaGen.compile({ compilerOptions: options || utils.generator.defaultCompilerOptions });
 
     // format role schema
-    roleSchemaFormat({ compilerOptions: options || utils.defaultCompilerOptions });
+    roleSchemaFormat({ compilerOptions: options || utils.generator.defaultCompilerOptions });
     
     // prepair schema files
     const files: string[] = fs.readdirSync(options.jsonSchemaDir);
@@ -101,16 +100,16 @@ export async function generate(
             roleSourceDir: dir.roleSrcDir,
             roleOutDir: dir.roleDir, 
             middlewareDir: dir.middlewareDir,
-            compilerOptions: options || utils.defaultCompilerOptions
+            compilerOptions: options || utils.generator.defaultCompilerOptions
         });
     }
 
     // genarate opanapi from jsonSchema
     await openapiGen.compile(
         openapiFile, 
-        options || utils.defaultCompilerOptions
+        options || utils.generator.defaultCompilerOptions
     );
-    utils.copyDir(`${options.openapiDir}`, options.srcDir + "/openapi", options, true);
+    utils.common.copyDir(`${options.openapiDir}`, options.srcDir + "/openapi", options, true);
 
     // generate dynamic files
     await Promise.all(documents.map( async (doc: { path: string, config: types.documentConfig }) => {
@@ -118,23 +117,23 @@ export async function generate(
         // make model
         json2mongoose.modelsGen.compileFromFile(
             `${doc.path}`,
-            `${utils.relativePath(dir.modelDir, dir.typeDir)}/${doc.config.interfaceName}.gen`,
-            `${dir.modelDir}/${doc.config.interfaceName}Model.gen.ts`,
-            options || utils.defaultCompilerOptions
+            `${utils.common.relativePath(dir.modelDir, dir.typeDir)}/${doc.config.documentName}.gen`,
+            `${dir.modelDir}/${doc.config.documentName}Model.gen.ts`,
+            options || utils.generator.defaultCompilerOptions
         );
 
         // make interface
         await json2mongoose.typesGen.compileFromFile(
             `${doc.path}`,
-            `${dir.typeDir}/${doc.config.interfaceName}.gen.ts`,
-            options || utils.defaultCompilerOptions
+            `${dir.typeDir}/${doc.config.documentName}.gen.ts`,
+            options || utils.generator.defaultCompilerOptions
         );
 
         // prepair route data
         routeData.push({
             route: `/${doc.config.documentName}`,
-            interfaceName: doc.config.interfaceName,
-            controllerPath: utils.relativePath(dir.routeDir, dir.controllerDir) + "/" + doc.config.interfaceName + "Controller.gen",
+            documentName: doc.config.documentName,
+            controllerPath: utils.common.relativePath(dir.routeDir, dir.controllerDir) + "/" + doc.config.documentName + "Controller.gen",
         });
         
         return;
@@ -145,7 +144,7 @@ export async function generate(
         openapiFile: openapiFile,
         controllerOutDir: dir.controllerDir,
         modelDir: dir.modelDir,
-        compilerOptions: options || utils.defaultCompilerOptions
+        compilerOptions: options || utils.generator.defaultCompilerOptions
     });
 
     // make route from routeData
@@ -153,7 +152,7 @@ export async function generate(
         routesArr: routeData,
         openapiFile: openapiFile,
         routesDir: dir.routeDir,
-        compilerOptions: options || utils.defaultCompilerOptions
+        compilerOptions: options || utils.generator.defaultCompilerOptions
     });
 
     // make server

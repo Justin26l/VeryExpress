@@ -1,8 +1,6 @@
 {
     "type": "object",
     "x-documentConfig": {
-        "documentName": "user",
-        "interfaceName": "User",
         "methods": [
             "get",
             "getList",

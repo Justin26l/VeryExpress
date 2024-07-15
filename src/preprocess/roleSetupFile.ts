@@ -1,6 +1,6 @@
 import fs from "fs";
 import * as types from "./../types/types";
-import { loadJson, writeFile } from "./../utils";
+import utils from "./../utils";
 import log from "./../utils/logger";
 
 export function roleSetupFile(options: {
@@ -21,7 +21,7 @@ export function roleSetupFile(options: {
         const content: types.roleJson = {};
 
         if (fs.existsSync(roleFilePath)) {
-            Object.assign(content,loadJson<types.roleJson>(roleFilePath));
+            Object.assign(content, utils.common.loadJson<types.roleJson>(roleFilePath));
         }
 
 
@@ -32,7 +32,7 @@ export function roleSetupFile(options: {
             }
         });
 
-        writeFile(`Role Setting File : ${roleFilePath}`, roleFilePath, JSON.stringify(content, null, 4));
+        utils.common.writeFile(`Role Setting File : ${roleFilePath}`, roleFilePath, JSON.stringify(content, null, 4));
 
     });
 
@@ -46,10 +46,10 @@ export function roleSchemaFormat(options: {
     // find schema props with "x-vexData" = "role"
     // if found, update prop format & enum of roles
     options.compilerOptions.useRBAC?.schemaIncluded.forEach((file) => {
-        log.process(`Schema Role Format : ${file}.json`);
+        log.process(`Schema Role Formatting : ${file}.json`);
 
         const roleSchemaPath = `${options.compilerOptions.jsonSchemaDir}/${file}.json`;
-        const schema = loadJson<types.jsonSchema>(roleSchemaPath);
+        const schema = utils.common.loadJson<types.jsonSchema>(roleSchemaPath);
 
         for(const key in schema.properties){
             const prop = schema.properties[key];
@@ -69,7 +69,7 @@ export function roleSchemaFormat(options: {
             }
         }
 
-        writeFile("Schema Role Format", roleSchemaPath, JSON.stringify(schema, null, 4));
+        utils.common.writeFile("Schema Role Formatting", roleSchemaPath, JSON.stringify(schema, null, 4));
 
     });
 

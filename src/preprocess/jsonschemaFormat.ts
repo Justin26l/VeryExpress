@@ -1,26 +1,34 @@
 import * as types from "./../types/types";
-import * as utilsJsonSchema from "./../utils/jsonSchema";
+
+import utils from "./../utils";
 import log from "./../utils/logger";
-import { writeFile } from "./../utils";
 
 /** format the schema and create role file (RBAC) */
 export function formatJsonSchema(jsonSchemaPath: string, compilerOptions: types.compilerOptions): types.jsonSchema {
     // read json schema
-    const jsonSchema: types.jsonSchema = utilsJsonSchema.loadJsonSchema(jsonSchemaPath);
+    const fileName = jsonSchemaPath.split("/").pop()?.split(".")[0] || "Unknown_File_Name";
+    
+    const jsonSchema: types.jsonSchema = utils.jsonSchema.loadJsonSchema(jsonSchemaPath);
 
-    // check props exist
+    // check documentConfig exist
     if (!jsonSchema["x-documentConfig"]) {
-        log.error(`formatJsonSchema : x-documentConfig not found in ${jsonSchemaPath}`);
+        log.error(`Json Schema Formatting: "${jsonSchemaPath}" x-documentConfig not found.`);
     }
-    else if (!jsonSchema["x-documentConfig"].documentName) {
-        log.error(`formatJsonSchema : x-documentConfig.documentName not found in ${jsonSchemaPath}`);
+
+    if (!jsonSchema["x-documentConfig"].documentName) {
+        log.warn(`Json Schema Formatting: "${jsonSchemaPath}" x-documentConfig.documentName added.`);
+        jsonSchema["x-documentConfig"].documentName = fileName;
+
     }
-    else if (!jsonSchema["x-documentConfig"].interfaceName) {
-        log.error(`formatJsonSchema : x-documentConfig.interfaceName not found in ${jsonSchemaPath}`);
-    }
-    else if (!jsonSchema["x-documentConfig"].methods) {
-        log.warn(`formatJsonSchema : x-documentConfig.methods is not found in ${jsonSchemaPath}, supported methods added.`);
+
+    if (!jsonSchema["x-documentConfig"].methods) {
+        log.warn(`Json Schema Formatting: "${jsonSchemaPath}" x-documentConfig.methods not found, supported methods added.`);
         jsonSchema["x-documentConfig"].methods = Object.assign([], types.schemaMethodArr);
+    }
+
+    // check documentConfig format
+    if (jsonSchema["x-documentConfig"].documentName != fileName) {
+        log.error(`Json Schema Formatting: "${jsonSchemaPath}" x-documentConfig.documentName is not consistant with file name.`);
     }
 
     // json schema structure check 
@@ -36,7 +44,7 @@ export function formatJsonSchema(jsonSchemaPath: string, compilerOptions: types.
     // format properties boolean "required" into array of string
     jsonSchema.required = getRequiredArrStr(jsonSchema, jsonSchemaPath);
 
-    writeFile("Format JsonSchema", jsonSchemaPath, JSON.stringify(jsonSchema, null, 4));
+    utils.common.writeFile("Json Schema Formatting", jsonSchemaPath, JSON.stringify(jsonSchema, null, 4));
 
     return jsonSchema;
 }

@@ -3,9 +3,10 @@ import fs from "fs";
 import serverTemplate from "./server.template";
 import packageJson from "../project/packageJson.generator";
 
-import * as types from "../../types/types";
+import utils from "../../utils";
 import log from "../../utils/logger";
-import { writeFile } from "../../utils";
+
+import * as types from "../../types/types";
 
 /**
  * generate required files at root & output directory
@@ -21,7 +22,7 @@ export async function compile(
     const tsconfigOutPath = compilerOptions.rootDir + "/tsconfig.json";
 
     // write server file
-    writeFile(
+    utils.common.writeFile(
         "Server",
         serverOutPath,
         serverTemplate({

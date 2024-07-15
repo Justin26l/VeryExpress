@@ -1,9 +1,10 @@
 import RBACmiddlewareTemplate from "./RBACmiddlewares.template";
 import fs from "fs";
-import * as types from "../../types/types";
 
+import utils from "../../utils";
 import log from "../../utils/logger";
-import { writeFile } from "../../utils";
+
+import * as types from "../../types/types";
 
 /**
  * compile role base access control (RBAC) middleware
@@ -25,7 +26,7 @@ export async function compile(options: {
     }
     // 2. generate middleware file
     const middlewareFilePath = `${options.middlewareDir}/RoleBaseAccessControl.gen.ts`;
-    writeFile("RBAC Middleware", middlewareFilePath, RBACmiddlewareTemplate({
+    utils.common.writeFile("RBAC Middleware", middlewareFilePath, RBACmiddlewareTemplate({
         roleTypes: options.roleTypes,
         compilerOptions: options.compilerOptions,
     }));

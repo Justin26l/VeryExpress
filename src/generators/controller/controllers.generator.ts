@@ -2,8 +2,9 @@ import fs from "fs";
 import jsYaml from "js-yaml";
 
 import controllerTemplate from "./controller.template";
+
+import utils from "./../../utils";
 import log from "./../../utils/logger";
-import { relativePath, writeFile } from "./../../utils/common";
 
 import * as types from "./../../types/types";
 import * as openapiType from "./../../types/openapi";
@@ -23,7 +24,7 @@ export async function compile(options: {
     compilerOptions: types.compilerOptions
 }): Promise<void> {
     const file: string = fs.readFileSync(options.compilerOptions.openapiDir + "/" + options.openapiFile, "utf8");
-    const controllerToModelBasePath: string = relativePath(options.compilerOptions.sysDir, options.modelDir);
+    const controllerToModelBasePath: string = utils.common.relativePath(options.compilerOptions.sysDir, options.modelDir);
 
     const openApi: openapiType.openapi = jsYaml.load(file) as openapiType.openapi;
     const endpointsValidator: {
@@ -59,15 +60,10 @@ export async function compile(options: {
     Object.keys(openApi.paths).forEach((endpoint: string) => {
         // remove '/{id}' from path and check is in writtedEndpoint
         const documentName: string | undefined = openApi.paths[endpoint]["x-collection"];
-        const interfaceName: string | undefined = openApi.paths[endpoint]["x-interface"];
         const endpointFormatted = endpoint.replace("/{id}", "").toLowerCase();
 
         if (documentName === undefined) {
             log.error(`"x-collection" not found in openapi spec's path "${endpoint}"\n     - opanapi source: ${options.compilerOptions.openapiDir}`);
-            return;
-        }
-        else if (interfaceName === undefined) {
-            log.error(`"x-interface" not found in openapi spec's path "${endpoint}"\n     - opanapi source: ${options.compilerOptions.openapiDir}`);
             return;
         }
         else if (writtedEndpoint.includes(endpointFormatted)) {
@@ -75,15 +71,15 @@ export async function compile(options: {
         }
         else {
             // write controller
-            const outPath = `${options.controllerOutDir}/${interfaceName}Controller.gen.ts`;
-            const controllerToModelPath = `../${controllerToModelBasePath}/${interfaceName}Model.gen`;
+            const outPath = `${options.controllerOutDir}/${documentName}Controller.gen.ts`;
+            const controllerToModelPath = `../${controllerToModelBasePath}/${documentName}Model.gen`;
 
-            writeFile("Controller",
+            utils.common.writeFile("Controller",
                 outPath,
                 controllerTemplate({
                     endpoint: endpoint,
                     modelPath: controllerToModelPath,
-                    interfaceName: interfaceName,
+                    documentName: documentName,
                     validators: endpointsValidator,
                     compilerOptions: options.compilerOptions,
                 })
