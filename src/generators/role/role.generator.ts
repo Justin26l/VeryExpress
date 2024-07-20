@@ -8,6 +8,11 @@ import { roleSetupFile } from "../../preprocess/roleSetupFile";
 
 import * as RBACmiddlewareGen from "../middlewares/RBACmiddleware.generator";
 
+/**
+ * compile role base access control (RBAC) middleware
+ * @param options 
+ * @returns 
+ */
 export async function compile(options: {
     collectionList: string[],
     roleSourceDir: string,
@@ -70,7 +75,7 @@ export async function compile(options: {
     utils.common.writeFile("RBAC Index", indexFilePath, `${options.compilerOptions.headerComment}\n${indexFileContent}`);
 
     // 3. generate RBAC middleware
-    const roleTypesString = indexFileData.map((data) => `Role${data.name}`).join(" | "); 
+    const roleTypesString = indexFileData.map((data) => `roles.${data.name}`).join(" | "); 
     RBACmiddlewareGen.compile({
         middlewareDir: options.middlewareDir,
         roleTypes: roleTypesString,

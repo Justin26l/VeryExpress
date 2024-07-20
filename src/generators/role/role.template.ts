@@ -9,7 +9,7 @@ export default function RBACmiddlewareTemplate(options: {
 }): string {
 
     let template: string = options.template || `{{headerComment}}
-import * as roleFactory from "./../system/_RoleFactory.gen";
+import * as roleFactory from "./../../system/_roles/_RoleFactory.gen";
 
 export type accessAction{{role}} = {{RoleAccessActionString}};
 

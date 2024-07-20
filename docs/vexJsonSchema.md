@@ -4,23 +4,24 @@ this document tell how very express process the json schema.
 
 | Fields | Data Type | Options | Description | 
 | - | - | - | - | 
-| documentName  | `string` | - | auto generated as file name. used to name **Collection**, **TS Interface**, **ODM Model** etc. | 
-| methods | `array<string>` | `get`, `post`, `put`, `patch`, `delete` | array of **REST API Method**  to be generated. |
+| documentName  | `string` | - | auto generated using file name. used to name **Collection**, **TS Interface**, **ODM Model** etc. | 
+| methods | `array<string>` | `get`, `post`, `put`, `patch`, `delete` | array of **REST API Method**  to be enable. |
 
 
-### Properties Mandatory Value: 
+### Properties Definition: 
 
-| Fields | Data Type | Required | Description | 
-| - | - | - | - | 
-| type | `string` | true | [JsonSchema's type field](https://json-schema.org/understanding-json-schema/reference/type) |
-| required | `boolean` | false | value cannot be falsy / undefined. |
-| x-foreignKey | `string` | false | `documentName` from other JsonSchema, auto index. plan to implemented on [v0.5.0](./RoadMap/v0-5-0.md) |
-<!-- | format | `string` | false | veryExpress did not handle this field | -->
+| Fields | Data Type | Required | options | Description | 
+| - | - | - | - | - | 
+| type | `string` | true | - | [JsonSchema's type field](https://json-schema.org/understanding-json-schema/reference/type) |
+| required | `boolean` | false | - | rest api's validator will check value cannot be falsy / undefined. |
+| x-vexData | `string` | false | `role` | determine veryExpress generation process. |
+| x-foreignKey | - | - | - | `documentName` from other JsonSchema, auto index. plan to implemented on [v0.5.0](./RoadMap/v0-5-0.md) |
+<!-- | format | `string` | false | - | veryExpress did not handle this field | -->
 
 ```JSON
 {
     "x-documentConfig": {
-        "documentName": "user", // auto generate as file name
+        "documentName": "user", // auto generated using name
         "methods": [ 
             "get",
             "post",
@@ -30,10 +31,9 @@ this document tell how very express process the json schema.
         ]
     },
     "properties": {
-        "invoiceId": {
+        "invoice_id": {
             "type": "string",
-            "format": "uuid",
-            "required": false,
+            "required": true,
             "x-foreignKey": "invoice"
         }
     }
