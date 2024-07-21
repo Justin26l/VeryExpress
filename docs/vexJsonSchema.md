@@ -1,6 +1,6 @@
-# Define Json Schema
-this document tell how very express process the json schema.
-### x-documentConfig: 
+# Define Json Schema for VeryExpress
+
+## x-documentConfig: 
 
 | Fields | Data Type | Options | Description | 
 | - | - | - | - | 
@@ -8,16 +8,22 @@ this document tell how very express process the json schema.
 | methods | `array<string>` | `get`, `post`, `put`, `patch`, `delete` | array of **REST API Method**  to be enable. |
 
 
-### Properties Definition: 
+## Properties Definition: 
 
 | Fields | Data Type | Required | options | Description | 
 | - | - | - | - | - | 
 | type | `string` | true | - | [JsonSchema's type field](https://json-schema.org/understanding-json-schema/reference/type) |
 | required | `boolean` | false | - | rest api's validator will check value cannot be falsy / undefined. |
-| x-vexData | `string` | false | `role` | determine veryExpress generation process. |
+| x-vexData | `string` | false | `primaryKey`, `role` | determine veryExpress generation process. |
 | x-foreignKey | - | - | - | `documentName` from other JsonSchema, auto index. plan to implemented on [v0.5.0](./RoadMap/v0-5-0.md) |
 <!-- | format | `string` | false | - | veryExpress did not handle this field | -->
 
+### System Fields
+which mean there field properties is not changable.  
+- `_id` : if defined in schema, will auto set as `"index": true`, `"x-vexData": "ObjectId"`.  
+
+
+#### Example : 
 ```JSON
 {
     "x-documentConfig": {
@@ -31,6 +37,14 @@ this document tell how very express process the json schema.
         ]
     },
     "properties": {
+        "_id": {
+            "type": "string",
+            "index": true,
+            "x-vexData": "ObjectId"
+        },
+        "username": {
+            "type": "string"
+        },
         "invoice_id": {
             "type": "string",
             "required": true,

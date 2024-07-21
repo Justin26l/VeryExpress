@@ -12,7 +12,6 @@ export interface openapi {
 
 export interface paths {
     [key:string]: {
-        "x-collection"?: string, // 'x-collection' is a custom field for specify db collection
         "x-documentName"?: string, // 'x-documentName' is a custom field for specify documentName
         summary?: string,
         get?: method,
@@ -38,7 +37,7 @@ export interface method {
 
 export interface parameter {
     name: string;
-    in: "query" | "header" | "path" | "cookie";
+    in: "path" | "param" | "query" | "header" | "cookie";
     description?: string;
     required?: boolean;
     deprecated?: boolean;

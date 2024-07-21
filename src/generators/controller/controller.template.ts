@@ -1,6 +1,7 @@
 import util from "util";
 import * as types from "../../types/types";
 import { Schema } from "express-validator";
+import utils from "~/utils";
 
 export default function controllerTemplate(templateOptions: {
     template?:string, 
@@ -12,6 +13,7 @@ export default function controllerTemplate(templateOptions: {
 }) : string {
 
     let template :string = templateOptions.template || `{{headerComment}}
+import * as controllerFactory from "./_ControllerFactory.gen";
 import { Router, Request, Response } from 'express';
 
 import { checkSchema, validationResult } from 'express-validator';
@@ -20,10 +22,11 @@ import MongoQS from 'mongo-ts-querystring';
 
 import { {{documentName}}Model } from '{{modelPath}}';
 
-class {{documentName}}Controller {
+class {{documentName}}Controller extends controllerFactory._ControllerFactory {
     public router: Router;
 
     constructor() {
+        super();
         this.router = Router();
         this.routes();
     }
@@ -240,5 +243,5 @@ export default new {{documentName}}Controller().router;
             };`
     );
 
-    return template;
+    return utils.template.format(template);
 }
