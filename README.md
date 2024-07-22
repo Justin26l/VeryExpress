@@ -43,6 +43,14 @@ all you need is define the **Json Schema** files.
     npm run start
     ```
 
+# Feature Supported
+- generate REST API server
+- API Validator by [express-validator](https://express-validator.github.io/docs/)
+- generate OpenApi
+- [Swagger UI Express](https://github.com/scottie1984/swagger-ui-express)
+- OAuth by [Passport.js](https://www.passportjs.org/)
+- Database Driver
+  - MongoDB by [Mongoose](https://mongoosejs.com/)
 
 # Resource
 - [Documents](./docs/)
