@@ -151,13 +151,13 @@ function processSchema(options: {
 
     // open api "param" is "request query" 
     // but express validator "query" is "request query"
-    const inParam = options.param?.in == 'path';
-    const inQuery = options.param?.in == 'param';
+    const inParam = options.param?.in == "path";
+    const inQuery = options.param?.in == "param";
     const inBody = options.body;
     
     const validators: Schema = {
         [options.fieldName]: {
-            in : inParam ? 'params' : inQuery ? 'query' : inBody ? 'body' : [],
+            in : inParam ? "params" : inQuery ? "query" : inBody ? "body" : [],
             optional : !options.required ? { options: { values: "falsy", checkFalsy: true} } : false,
             notEmpty : true,
         },
@@ -185,61 +185,61 @@ function processSchema(options: {
     = range.min && range.max ? { options: range } : undefined;
     
     switch (type) {
-        case "string":
-            validatorParam.isString = true;
-            if(range.min && range.max){
-                validatorParam.isLength = { options: range };
-            }
+    case "string":
+        validatorParam.isString = true;
+        if(range.min && range.max){
+            validatorParam.isLength = { options: range };
+        }
 
-            // enum validator
-            if(useEnum){
-                validatorParam.isEmpty = false;
-                validatorParam.isIn = {
-                    options: useEnum,
-                };
-            }
+        // enum validator
+        if(useEnum){
+            validatorParam.isEmpty = false;
+            validatorParam.isIn = {
+                options: useEnum,
+            };
+        }
 
-            // x-format validator
-            switch(options?.param?.schema?.['x-format']){
-                case "ObjectId":
-                    if (typeof validatorParam.custom !== 'object' || validatorParam.custom === null) {
-                        validatorParam.custom = {};
-                    }
-                    // @ts-expect-error
-                    // call controller base class : _ControllerFactory.isObjectId()
-                    validatorParam.custom.options = `FUNC{{this.isObjectId}}`;
-                    break;
+        // x-format validator
+        switch(options?.param?.schema?.["x-format"]){
+        case "ObjectId":
+            if (typeof validatorParam.custom !== "object" || validatorParam.custom === null) {
+                validatorParam.custom = {};
             }
+            // @ts-expect-error - type hell
+            validatorParam.custom.options = "FUNC{{this.isObjectId}}";
+            // call controller base class : _ControllerFactory.isObjectId()
             break;
-        case "integer":
-            validatorParam.isInt = rangeValidator;
-            break;
-        case "float":
-            validatorParam.isFloat = rangeValidator;
-            break;
-        case "number":
-            validatorParam.isNumeric = true;
-            break;
-        case "boolean":
-            validatorParam.isBoolean = true;
-            break;
-        case "array":
-            validatorParam.isArray = true;
-            break;
-        case "object":
-            if (useBody) {
-                for (const key in options.body?.properties) {
-                    Object.assign(
-                        validators, 
-                        processSchema({
-                            fieldName: options.fieldName + "." + key,
-                            body: options.body.properties[key],
-                            required: options.body.required?.includes(key),
-                        }) 
-                    );
-                }
+        }
+        break;
+    case "integer":
+        validatorParam.isInt = rangeValidator;
+        break;
+    case "float":
+        validatorParam.isFloat = rangeValidator;
+        break;
+    case "number":
+        validatorParam.isNumeric = true;
+        break;
+    case "boolean":
+        validatorParam.isBoolean = true;
+        break;
+    case "array":
+        validatorParam.isArray = true;
+        break;
+    case "object":
+        if (useBody) {
+            for (const key in options.body?.properties) {
+                Object.assign(
+                    validators, 
+                    processSchema({
+                        fieldName: options.fieldName + "." + key,
+                        body: options.body.properties[key],
+                        required: options.body.required?.includes(key),
+                    }) 
+                );
             }
-            break;
+        }
+        break;
     }
 
     return validators;

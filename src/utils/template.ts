@@ -1,16 +1,17 @@
 /**
- * - apply funtion calling syntax FUNC{{...}}
+ * - apply function calling syntax FUNC{{...}}
  * @param content 
  * @returns 
  */
 export function format(content:string){
-
     // format function calling syntax
     const regex = /'FUNC{{(.*?)}}'/g;
     let match;
-    while (match = regex.exec(content)) {
-        // replace with content in {{ }} keep
+
+    match = regex.exec(content);
+    while (match != null) {
         content = content.replace(match[0], match[1]);
+        match = regex.exec(content);
     }
 
     return content;
@@ -18,4 +19,4 @@ export function format(content:string){
 
 export default {
     format
-}
+};

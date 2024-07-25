@@ -3,7 +3,6 @@
 import { Router } from "express";
 import passport, { PassportStatic, Profile } from "passport";
 import { AuthenticateOptionsGoogle, Strategy as GoogleStrategy, StrategyOptions, VerifyCallback } from "passport-google-oauth20";
-import log from "./../../system/_utils/logger.gen";
 import { UserModel } from "./../_models/UserModel.gen";
 
 export type { Profile };

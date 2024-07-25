@@ -19,7 +19,7 @@ export default class VexDbConnector {
     
     connectMongo() : mongoose.Connection | void {
         if ( !this.mongoUrl ){
-            vex.log.error(`VexDbConnector : MongoUrl is not invalid`);
+            vex.log.error("VexDbConnector : MongoUrl is not invalid");
             return;
         }
         /**

@@ -323,7 +323,7 @@ function jsonToOpenapiComponentSchema(
             componentSchemaPath[httpMethod + documentName + "Response"] = componentSchemaResponse;
             break;
         case "put":
-            componentSchemaPath[httpMethod + documentName + "Body"] = compilerOptions.app.allowApiCreateUpdate_id ? componentSchemaBodyRequired : componentSchemaBodyRequiredWithoutId ;;
+            componentSchemaPath[httpMethod + documentName + "Body"] = compilerOptions.app.allowApiCreateUpdate_id ? componentSchemaBodyRequired : componentSchemaBodyRequiredWithoutId ;
             componentSchemaPath[httpMethod + documentName + "Response"] = componentSchemaResponse;
             break;
         default:
