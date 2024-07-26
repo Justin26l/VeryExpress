@@ -15,13 +15,17 @@ all you need is define the **Json Schema** files.
 3. use cli to initialize configuration file **vex.config.json** under your project root directory.  
     `vex -init`  
       
-2. create a empty directory name it as value of vex.config's "jsonSchemaDir", default **jsonSchema**.  
-    `mkdir jsonSchema`.
-      
-4. generate the app with vex.config param.  
+2. create a empty directory and name it as value of vex.config's "jsonSchemaDir", by default `jsonSchema`.  
+    `mkdir jsonSchema`.  
+   
+4. you can create your db collection/table now in directory `./jsonSchema` just created,  
+    refer to [Define Json Schmea](./docs/vexJsonSchema.md),
+    every changes require to regenerate app.
+   
+6. generate the app with vex.config param.  
     `vex`  
       
-5. you should saw a express typescript app being generated (with src, package.json etc) .  
+7. you should saw a express typescript app being generated (with src, package.json etc) .  
     ```
     ├── jsonSchema/  
     │   └── ...
@@ -33,10 +37,7 @@ all you need is define the **Json Schema** files.
     └── .env  
     ```  
       
-6. you could create your db collection/table now in directory **jsonSchema/** just created,  
-    refer to [Define Json Schmea](./docs/vexJsonSchema.md).  
-      
-7. start the generated express app.  
+8. start the generated express app.  
     ```
     npm i  
     npm build    
