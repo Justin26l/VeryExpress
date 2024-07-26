@@ -8,7 +8,7 @@ import { generate } from "./index";
 import utils from "./utils";
 import log from "./utils/logger";
 
-import { version } from "../package.json";
+import pkg from "../package.json";
 import { compilerOptions } from "./types/types";
 
 async function main(){
@@ -89,7 +89,7 @@ async function main(){
 
     /** Version */
     else if ( String(args._[0]).toLowerCase() === "v" || args["v"] ) {
-        log.info(`Very Express Version : ${version}`);
+        log.info(`Very Express Version : ${pkg.version}`);
         processEnd();
     }
 
