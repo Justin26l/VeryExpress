@@ -15,8 +15,12 @@ export function warn(msg: any, ...optionalParams: any[]): void {
 }
 
 export function error(msg: any, ...optionalParams: any[]): never {
-    console.log("\x1b[41m%s\x1b[0m", "[ERROR]", msg, optionalParams.length > 0 ? optionalParams : "");
+    errorNoExit(msg, optionalParams);
     process.exit(1);
+}
+
+export function errorNoExit(msg: any, ...optionalParams: any[]): void {
+    console.log("\x1b[41m%s\x1b[0m", "[ERROR]", msg, optionalParams.length > 0 ? optionalParams : "");
 }
 
 // wrapper 
@@ -24,8 +28,8 @@ export function infoMongo(msg: any, ...optionalParams: any[]): void {
     info("[MONGO]", msg, optionalParams);
 }
 
-export function errorMongo(msg: any, ...optionalParams: any[]): never {
-    error("[MONGO]", msg, optionalParams);
+export function errorMongo(msg: any, ...optionalParams: any[]): void {
+    errorNoExit("[MONGO]", msg, optionalParams);
 }
 
 export function infoSql(msg: any, ...optionalParams: any[]): void {
@@ -42,6 +46,7 @@ export default {
     info,
     warn,
     error,
+    errorNoExit,
 
     infoMongo,
     errorMongo,

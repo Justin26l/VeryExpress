@@ -19,7 +19,7 @@ export default class VexDbConnector {
     
     connectMongo() : mongoose.Connection | void {
         if ( !this.mongoUrl ){
-            vex.log.error(`VexDbConnector : MongoUrl is not invalid "${this.mongoUrl}"`);
+            vex.log.error("VexDbConnector : MongoUrl is not invalid");
             return;
         }
         /**
@@ -39,11 +39,11 @@ export default class VexDbConnector {
         connectWithRetry(10);
 
         mongoose.connection.on("open", () => {
-            vex.log.infoMongo("MongoDB Connection open : " + this.mongoUrl);
+            vex.log.infoMongo("MongoDB Connection open");
         });
 
         mongoose.connection.on("error", (err: any) => {
-            vex.log.errorMongo("MongoDB Connection error:", err.message, err);
+            vex.log.errorMongo("MongoDB Connection error: ", err.message, err);
         });
 
         return mongoose.connection;

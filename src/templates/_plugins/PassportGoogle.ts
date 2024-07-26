@@ -3,7 +3,6 @@
 import { Router } from "express";
 import passport, { PassportStatic, Profile } from "passport";
 import { AuthenticateOptionsGoogle, Strategy as GoogleStrategy, StrategyOptions, VerifyCallback } from "passport-google-oauth20";
-import log from "./../../system/_utils/logger.gen";
 import { UserModel } from "./../_models/UserModel.gen";
 
 export type { Profile };
@@ -52,10 +51,9 @@ export default class PassportGoogle {
 
     public passportSerializeUser() {
         this.passport.serializeUser(async (user, done) => {
-            log.info("passportGoogle().serializeUser", user);
-            // Here, you can choose what data to store in the session.
-            // This data will be used in `deserializeUser` to retrieve the full user object.
-            // This is typically just the user's ID.
+            // you can decide what data to store in the session here.
+            // this data will be used in `deserializeUser` to retrieve the full user object.
+            // ussually just user's id.
 
             // store role in session for access control
             const DbUser = await UserModel.findById(user);
@@ -71,7 +69,6 @@ export default class PassportGoogle {
 
     public async passportDeserializeUser() {
         this.passport.deserializeUser(async (id, done) => {
-            log.info("passportGoogle().deserializeUser", id);
 
             const user = await UserModel.findById(id);
             if (user) {

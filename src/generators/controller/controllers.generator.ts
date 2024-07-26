@@ -59,11 +59,11 @@ export async function compile(options: {
     // create and write file
     Object.keys(openApi.paths).forEach((endpoint: string) => {
         // remove '/{id}' from path and check is in writtedEndpoint
-        const documentName: string | undefined = openApi.paths[endpoint]["x-collection"];
+        const documentName: string | undefined = openApi.paths[endpoint]["x-documentName"];
         const endpointFormatted = endpoint.replace("/{id}", "").toLowerCase();
 
         if (documentName === undefined) {
-            log.error(`"x-collection" not found in openapi spec's path "${endpoint}"\n     - opanapi source: ${options.compilerOptions.openapiDir}`);
+            log.error(`"x-documentName" not found in openapi spec's path "${endpoint}"\n     - opanapi source: ${options.compilerOptions.openapiDir}`);
             return;
         }
         else if (writtedEndpoint.includes(endpointFormatted)) {
@@ -101,10 +101,6 @@ function buildParamValidator(
     const validators: Schema = {};
 
     openapi.paths[endpoint][httpMethod]!.parameters.forEach((parameter: openapiType.parameter) => {
-        if( parameter.name === "_id") {
-            return;
-        }
-
         Object.assign(
             validators, 
             processSchema({
@@ -153,9 +149,15 @@ function processSchema(options: {
     body?: openapiType.fieldsItem,
 }): Schema {
 
+    // open api "param" is "request query" 
+    // but express validator "query" is "request query"
+    const inParam = options.param?.in == "path";
+    const inQuery = options.param?.in == "param";
+    const inBody = options.body;
+    
     const validators: Schema = {
         [options.fieldName]: {
-            in : options.param ? "params" : options.body ? "body" : [],
+            in : inParam ? "params" : inQuery ? "query" : inBody ? "body" : [],
             optional : !options.required ? { options: { values: "falsy", checkFalsy: true} } : false,
             notEmpty : true,
         },
@@ -181,18 +183,32 @@ function processSchema(options: {
         }
     }
     = range.min && range.max ? { options: range } : undefined;
-
+    
     switch (type) {
     case "string":
         validatorParam.isString = true;
         if(range.min && range.max){
             validatorParam.isLength = { options: range };
         }
+
+        // enum validator
         if(useEnum){
             validatorParam.isEmpty = false;
             validatorParam.isIn = {
                 options: useEnum,
             };
+        }
+
+        // x-format validator
+        switch(options?.param?.schema?.["x-format"]){
+        case "ObjectId":
+            if (typeof validatorParam.custom !== "object" || validatorParam.custom === null) {
+                validatorParam.custom = {};
+            }
+            // @ts-expect-error - type hell
+            validatorParam.custom.options = "FUNC{{this.isObjectId}}";
+            // call controller base class : _ControllerFactory.isObjectId()
+            break;
         }
         break;
     case "integer":
