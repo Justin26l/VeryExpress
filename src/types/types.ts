@@ -75,7 +75,7 @@ export interface documentConfig {
 /**
  * fieldsName : fieldsType
  */
-export interface additionalKeyObj {
+export interface removeKeyObj {
     [key: string]: string;
 }
 

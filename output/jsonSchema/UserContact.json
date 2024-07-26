@@ -14,8 +14,8 @@
     "properties": {
         "_id": {
             "type": "string",
-            "index": true,
-            "unique": true
+            "x-format": "ObjectId",
+            "index": true
         },
         "phoneNo": {
             "type": "string",

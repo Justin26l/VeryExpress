@@ -73,11 +73,9 @@ function jsonToOpenapiPath(
 
     const routes: openapiType.paths = {
         ["/" + lowerDocName]: {
-            "x-collection": documentConfig.documentName,
             "x-documentName": documentName,
         },
         ["/" + lowerDocName + "/{id}"]: {
-            "x-collection": documentConfig.documentName,
             "x-documentName": documentName,
         },
     };
@@ -109,7 +107,13 @@ function jsonToOpenapiPath(
                 schema: {
                     type: properties["_id"].type,
                     format: properties["_id"].format,
-                },
+                    "x-format": properties["_id"]["x-format"],
+                    minLength: properties["_id"].minLength,
+                    maxLength: properties["_id"].maxLength,
+                    minimum: properties["_id"].minimum,
+                    maximum: properties["_id"].maximum,
+                    enum: properties["_id"].enum,
+                }
             };
 
             parameters.push(idParameter);
@@ -269,7 +273,14 @@ function jsonToOpenapiComponentSchema(
                         in: "query",
                         required: false,
                         schema: {
-                            type: "number",
+                            type: props.type,
+                            format: props.format,
+                            "x-format": props["x-format"],
+                            minLength: props.minLength,
+                            maxLength: props.maxLength,
+                            minimum: props.minimum,
+                            maximum: props.maximum,
+                            enum: props.enum,
                         }
                     });
                     parameters.push({
@@ -277,7 +288,14 @@ function jsonToOpenapiComponentSchema(
                         in: "query",
                         required: false,
                         schema: {
-                            type: "number",
+                            type: props.type,
+                            format: props.format,
+                            "x-format": props["x-format"],
+                            minLength: props.minLength,
+                            maxLength: props.maxLength,
+                            minimum: props.minimum,
+                            maximum: props.maximum,
+                            enum: props.enum,
                         }
                     });
                     break;
@@ -305,7 +323,7 @@ function jsonToOpenapiComponentSchema(
             componentSchemaPath[httpMethod + documentName + "Response"] = componentSchemaResponse;
             break;
         case "put":
-            componentSchemaPath[httpMethod + documentName + "Body"] = componentSchemaBodyRequired;
+            componentSchemaPath[httpMethod + documentName + "Body"] = compilerOptions.app.allowApiCreateUpdate_id ? componentSchemaBodyRequired : componentSchemaBodyRequiredWithoutId ;
             componentSchemaPath[httpMethod + documentName + "Response"] = componentSchemaResponse;
             break;
         default:

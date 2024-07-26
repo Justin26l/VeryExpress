@@ -8,6 +8,7 @@ import { generate } from "./index";
 import utils from "./utils";
 import log from "./utils/logger";
 
+import { version } from "../package.json";
 import { compilerOptions } from "./types/types";
 
 async function main(){
@@ -76,13 +77,20 @@ async function main(){
         log.info(`Very Express CLI Usage :
     vex [flag]
         -h : Help
-        -i : Create generator config etc. 
+        -v : Show Version.
+        -i : Initialize, Create file vex.config.json. 
     to generate app :
         vex [jsonSchemaDir] [rootDir]
         -j : jsonSchemaDir (configured: ${config.jsonSchemaDir})
         -o : rootDir (configured: ${config.rootDir})
     `);
         process.exit(0);
+    }
+
+    /** Version */
+    else if ( String(args._[0]).toLowerCase() === "v" || args["v"] ) {
+        log.info(`Very Express Version : ${version}`);
+        processEnd();
     }
 
     /** Initialization */

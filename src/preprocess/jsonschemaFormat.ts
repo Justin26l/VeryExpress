@@ -3,7 +3,13 @@ import * as types from "./../types/types";
 import utils from "./../utils";
 import log from "./../utils/logger";
 
-/** format the schema and create role file (RBAC) */
+
+/**
+ * - format the json schema file
+ * - create role file (RBAC)
+ * @param jsonSchemaPath
+ * @param compilerOptions
+ **/
 export function formatJsonSchema(jsonSchemaPath: string, compilerOptions: types.compilerOptions): types.jsonSchema {
     // read json schema
     const fileName = jsonSchemaPath.split("/").pop()?.split(".")[0] || "Unknown_File_Name";
@@ -49,6 +55,11 @@ export function formatJsonSchema(jsonSchemaPath: string, compilerOptions: types.
     return jsonSchema;
 }
 
+/**
+ * format the schema's required fields into array of string
+ * @param schema
+ * @param jsonSchemaPath
+ **/
 function getRequiredArrStr(schema: types.jsonSchemaPropsItem | types.jsonSchema, jsonSchemaPath?: string): string[] | undefined {
     let properties: { [key: string]: types.jsonSchemaPropsItem } | undefined ;
     let requiredArr: string[] = [];
@@ -97,8 +108,12 @@ function getRequiredArrStr(schema: types.jsonSchemaPropsItem | types.jsonSchema,
     
 }
 
+/**
+ * check if _id field is not exist, add it
+ * @param schema
+ * @param jsonSchemaPath
+ **/
 function checkField_id(schema: types.jsonSchemaPropsItem | types.jsonSchema, jsonSchemaPath?: string){
-    // check if _id field is not exist, add it
     if (schema.properties && !schema.properties._id) {
         schema.properties._id = {
             type: "string",
