@@ -11,12 +11,12 @@ import log from "./utils/logger";
 import pkg from "../package.json";
 import { compilerOptions } from "./types/types";
 
-async function main(){
+async function main() {
     console.log("\x1b[35m%s\x1b[0m", "\n========== veryExpress CLI (vex) Start ==========\n");
 
     /** configuration process */
     const args: minimist.ParsedArgs = minimist(process.argv.slice(2));
-    let config: compilerOptions = utils.generator.defaultCompilerOptions; 
+    let config: compilerOptions = utils.generator.defaultCompilerOptions;
 
     if (fs.existsSync("vex.config.json")) {
         try {
@@ -34,7 +34,7 @@ async function main(){
     // generator
     config.jsonSchemaDir = args.j || args.jsonSchemaDir || config.jsonSchemaDir || "./jsonSchema";
     config.rootDir = args.o || args.rootDir || config.rootDir || ".";
-    config.srcDir = config.srcDir || config.rootDir + "/src" ;
+    config.srcDir = config.srcDir || config.rootDir + "/src";
     config.sysDir = config.sysDir || config.srcDir + "/system";
     config.openapiDir = config.srcDir + "/openapi";
 
@@ -46,7 +46,7 @@ async function main(){
     config.app.allowApiCreateUpdate_id = config.app.allowApiCreateUpdate_id || false,
 
     // RBAC
-    config.useRBAC = config.useRBAC || { roles : [], default : "", schemaIncluded:[] };
+    config.useRBAC = config.useRBAC || { roles: [], default: "", schemaIncluded: [] };
     config.useRBAC.roles = config.useRBAC.roles || ["user"];
     config.useRBAC.default = config.useRBAC.default || "user";
     config.useRBAC.schemaIncluded = config.useRBAC.schemaIncluded || ["user"];
@@ -59,7 +59,7 @@ async function main(){
     config.useOauth.microsoft = config.useOauth.microsoft || false;
 
     // warning
-    if ( config.app.useObjectID && config.app.allowApiCreateUpdate_id ){
+    if (config.app.useObjectID && config.app.allowApiCreateUpdate_id) {
         log.warn("Not recommended to use \"useObjectID\" with \"allowApiCreateUpdate_id\",\nthis may cause some logic issues");
     }
 
@@ -73,7 +73,7 @@ async function main(){
      */
 
     /** Help */
-    if ( String(args._[0]).toLowerCase() === "h" || args["h"] ) {
+    if (String(args._[0]).toLowerCase() === "h" || args["h"]) {
         log.info(`Very Express CLI Usage: 
 
     Information: 
@@ -94,13 +94,27 @@ async function main(){
     }
 
     /** Version */
-    else if ( String(args._[0]).toLowerCase() === "v" || args["v"] ) {
+    else if (String(args._[0]).toLowerCase() === "v" || args["v"]) {
         log.info(`Very Express Version : ${pkg.version}`);
         processEnd();
     }
 
     /** Initialization */
-    else if ( String(args._[0]).toLowerCase() === "i" || args["i"] ) {
+    else if (String(args._[0]).toLowerCase() === "i" || args["i"]) {
+
+        if (!fs.existsSync(config.jsonSchemaDir)) {
+            // check if nested directory then create
+            const dir = config.jsonSchemaDir.split("/");
+            let path = "";
+            dir.forEach((d) => {
+                path += d;
+                if (!fs.existsSync(path)) {
+                    fs.mkdirSync(path);
+                }
+                path += "/";
+            });
+        }
+
         processEnd("Very Express CLI : Initialization Complete.");
     }
 
@@ -123,7 +137,7 @@ async function main(){
         }
 
         // run main process
-        log.process("generate with config",config);
+        log.process("generate with config", config);
         await generate(config);
 
         console.log(`next step:
@@ -135,8 +149,8 @@ async function main(){
     }
 }
 
-function processEnd(msg?: string){
-    if(msg){
+function processEnd(msg?: string) {
+    if (msg) {
         console.log("\x1b[36m%s\x1b[0m", msg);
     }
     console.log("\x1b[35m%s\x1b[0m", "\n========== veryExpress CLI (vex) Complete ==========\n");
