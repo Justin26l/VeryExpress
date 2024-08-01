@@ -8,7 +8,7 @@ import { generate } from "./index";
 import utils from "./utils";
 import log from "./utils/logger";
 
-import pkg from "../package.json";
+import pkg from "./version.json";
 import { compilerOptions } from "./types/types";
 
 async function main(){
@@ -74,15 +74,17 @@ async function main(){
 
     /** Help */
     if ( String(args._[0]).toLowerCase() === "h" || args["h"] ) {
-        log.info(`Very Express CLI Usage :
-    vex [flag]
+        log.info(`Very Express CLI:
+    Uasge: 
+        vex <args>
+    args:
         -h : Help
         -v : Show Version.
         -i : Initialize, Create file vex.config.json. 
-    to generate app :
-        vex [jsonSchemaDir] [rootDir]
-        -j : jsonSchemaDir (configured: ${config.jsonSchemaDir})
+
+        -j : set jsonSchemaDir (configured: ${config.jsonSchemaDir})
         -o : rootDir (configured: ${config.rootDir})
+
     `);
         process.exit(0);
     }
