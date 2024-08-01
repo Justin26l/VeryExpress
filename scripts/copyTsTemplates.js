@@ -21,11 +21,4 @@ function copyDir (src, destination) {
     });
 }
 
-function version (){
-    const packageJson = fs.readFileSync('package.json');
-    const version = JSON.parse(packageJson).version;
-    fs.writeFileSync('dist/version.json', JSON.stringify({version}));
-}
-
 copyDir('src/templates', 'dist/templates');
-version();
