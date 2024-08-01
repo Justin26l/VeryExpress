@@ -20,6 +20,7 @@ jobs:
           node-version: 22
       - run: npm ci
       - run: npm run build
+      - run: node ./dist/index.js -i
       - run: npm run start
 
   publish-npm:
