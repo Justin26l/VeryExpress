@@ -8,14 +8,21 @@ export default class VexDbConnector {
     private mongoUrl: string;
     private sqlUrl: string;
 
+    private recordAccessLog: boolean = true;
 
     constructor(options:{
         mongoUrl?: string;
         sqlUrl?: string;
+        recordAccessLog?: boolean;
     }){
         this.mongoUrl = options.mongoUrl || "";
         this.sqlUrl = options.sqlUrl || "";
+        this.recordAccessLog = options.recordAccessLog || false;
+
+        // Bind the middleware method to the instance
+        this.middleware = this.middleware.bind(this);
     }
+    
     
     connectMongo() : mongoose.Connection | void {
         if ( !this.mongoUrl ){
@@ -49,11 +56,17 @@ export default class VexDbConnector {
         return mongoose.connection;
     }
 
+    /**
+     * Database Middleware  
+     * Feature: 
+     * - restrict access to app when DB connection down.
+     * - record access log
+     **/
     middleware(req: Request, res: Response, next: NextFunction) {
         if (mongoose.connection.readyState !== 1) { 
             vex.response.send(res, 503, "Database Connection Down");
         }
-        else {
+        else if (this.recordAccessLog){
             mongoose.connection.collection("accessLogs").insertOne({
                 timestamp: new Date().getTime(),
                 ipa: req.socket.remoteAddress || req.headers["x-forwarded-for"],
@@ -63,7 +76,9 @@ export default class VexDbConnector {
                 // body: req.body,
                 query: req.query,
             });
-
+            next();
+        }
+        else{
             next();
         }
     }
