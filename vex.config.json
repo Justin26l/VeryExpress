@@ -25,7 +25,7 @@
         ],
         "default": "visitor",
         "schemaIncluded": [
-            "user"
+            "User"
         ]
     },
     "sysDir": "./output/src/system"

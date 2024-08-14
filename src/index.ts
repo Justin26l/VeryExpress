@@ -42,9 +42,7 @@ export async function generate(
     }[] = [];
 
     // set default header comment
-    if ( !options.headerComment ) {
-        options.headerComment = utils.generator.getGenaratorHeaderComment();
-    }
+    options.headerComment = utils.generator.getGenaratorHeaderComment();
 
     // create all directories if not exist
     if (!fs.existsSync(options.rootDir)) { fs.mkdirSync(options.rootDir); }
