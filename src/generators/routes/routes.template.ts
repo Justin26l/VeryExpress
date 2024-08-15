@@ -31,9 +31,19 @@ export default class ApiRouter{
 
     let importRoutes = "";
     let useRoutes = "";
+    let useRBAC = options.compilerOptions.useRBAC;
+    const rbacMiddleware = (path: string) => {
+        useRBAC ? `new RoleBaseAccessControl('${path}').middleware, ` : '';
+    };
+
+    if(useRBAC) {
+        importRoutes += `import RoleBaseAccessControl from '../_middlewares/RoleBaseAccessControl.gen';\n`;
+
+    }
+
     options.routes.forEach((obj) => {
         importRoutes += `import ${obj.documentName}Controller from '${obj.controllerPath}';\n`;
-        useRoutes += `        this.router.use('${obj.route}', ${obj.documentName}Controller);\n`;
+        useRoutes += `        this.router.use('${obj.route}', ${ rbacMiddleware(obj.documentName) } ${obj.documentName}Controller);\n`;
     });
 
     template = template.replace(/{{headerComment}}/g, options.compilerOptions.headerComment || "// generated files by very-express");
