@@ -29,7 +29,7 @@ export default class RoleBaseAccessControl {
         this.collection = collection;
     }
 
-    public middleware(req: Request, res: Response, next: NextFunction) {
+    public middleware = (req: Request, res: Response, next: NextFunction) => {
         try { 
             console.log(req.method, req.path, req.user);
             if ( !req.user ) {
@@ -50,6 +50,7 @@ export default class RoleBaseAccessControl {
             }
         }
         catch (e) {
+        console.error(e);
             if (typeof e === 'number') {
                 res.status(e).send("Permission denied");
             }
