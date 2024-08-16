@@ -14,7 +14,7 @@ import * as types from "../../types/types";
  */
 export async function compile(options: {
     middlewareDir: string,
-    roleTypes: string,
+    roles: string[],
     compilerOptions: types.compilerOptions
 }): Promise<void> {
 
@@ -27,7 +27,7 @@ export async function compile(options: {
     // 2. generate middleware file
     const middlewareFilePath = `${options.middlewareDir}/RoleBaseAccessControl.gen.ts`;
     utils.common.writeFile("RBAC Middleware", middlewareFilePath, RBACmiddlewareTemplate({
-        roleTypes: options.roleTypes,
+        roles: options.roles,
         compilerOptions: options.compilerOptions,
     }));
 

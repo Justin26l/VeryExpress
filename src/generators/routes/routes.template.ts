@@ -33,11 +33,11 @@ export default class ApiRouter{
     let useRoutes = "";
 
     const rbacMiddleware = (path: string) => {
-        return options.compilerOptions.useRBAC ? `new RoleBaseAccessControl('${path}').middleware, ` : '';
+        return options.compilerOptions.useRBAC ? `new RoleBaseAccessControl('${path}').middleware, ` : "";
     };
 
     if (options.compilerOptions.useRBAC) {
-        importRoutes += `import RoleBaseAccessControl from '../_middlewares/RoleBaseAccessControl.gen';\n`;
+        importRoutes += "import RoleBaseAccessControl from '../_middlewares/RoleBaseAccessControl.gen';\n";
 
     }
 
