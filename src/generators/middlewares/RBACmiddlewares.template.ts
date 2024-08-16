@@ -64,16 +64,7 @@ export default class RoleBaseAccessControl {
     roleSwitchCode += `else{
                 throw 403;
             }`;
-    // if ( user.roles.includes('visitor') && new roles.visitor().checkAccess(this.collection, this.actions[req.method]) ) {
-    //     next();
-    // }
-    // else if ( user.roles.includes('member') && new roles.member().checkAccess(this.collection, this.actions[req.method]) ) {
-    //     next();
-    // }
-    // else{
-    //     throw 403;
-    // }
-
+            
     template = template.replace(/{{headerComment}}/g, options.compilerOptions.headerComment || "// generated files by very-express");
     template = template.replace(/{{roleSwitch}}/g, roleSwitchCode);
 
