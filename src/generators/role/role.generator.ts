@@ -74,11 +74,12 @@ export async function compile(options: {
     const indexFileContent = indexFileData.map((data) => `export { default as ${data.name} } from "./${data.name}.gen";`).join("\n");
     utils.common.writeFile("RBAC Index", indexFilePath, `${options.compilerOptions.headerComment}\n${indexFileContent}`);
 
+    // list of indexFileData.name
+    const roles: string[] = indexFileData.map((data) => data.name);
     // 3. generate RBAC middleware
-    const roleTypesString = indexFileData.map((data) => `roles.${data.name}`).join(" | "); 
     RBACmiddlewareGen.compile({
         middlewareDir: options.middlewareDir,
-        roleTypes: roleTypesString,
+        roles: roles,
         compilerOptions: options.compilerOptions,
     });
     return;
