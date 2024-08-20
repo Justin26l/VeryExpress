@@ -59,6 +59,14 @@
             "default": [
                 "visitor"
             ]
+        },
+        "contact": {
+            "type": "string",
+            "x-format": "ObjectId",
+            "x-foreignKey": "UserContact",
+            "x-foreignValue": [
+                "phoneNo" // list of column for populate() at default getId return
+            ]
         }
     },
     "required": [
