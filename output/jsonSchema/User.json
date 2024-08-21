@@ -65,7 +65,8 @@
             "x-format": "ObjectId",
             "x-foreignKey": "UserContact",
             "x-foreignValue": [
-                "phoneNo" // list of column for populate() at default getId return
+                "phoneNo",
+                "isActive"
             ]
         }
     },

@@ -71,6 +71,17 @@ export async function compile(options: {
         }
         else {
             // write controller
+
+            // join table with "x-foreignKey", "x-foreignValue"
+            // .populate(
+            // {
+            //     path: "self.schema.key", // which have x-foreignKey in vexSchema
+            //     select: "target.schema.select keys", // "colA colB colC ..." using vexSchema.x-foreignValue
+            //     match: { isActive: true },  // Filter condition, or where statement in sql
+            //     options: { lean: true }
+            // },
+            // { ... }
+            // );
             const outPath = `${options.controllerOutDir}/${documentName}Controller.gen.ts`;
             const controllerToModelPath = `../${controllerToModelBasePath}/${documentName}Model.gen`;
 
