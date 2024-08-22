@@ -63,7 +63,16 @@ export interface jsonSchemaPropsItem {
     maximum?: number;
     "x-format"?: string;
     "x-vexData"?: string;
+    "x-foreignKey"?: string;
+    "x-foreignValue"?: string[];
     [key: string]: string | boolean | number | string[] | jsonSchemaPropsItem | { [key: string]: jsonSchemaPropsItem;} | any[] | undefined;
+}
+
+export interface populateOptions {
+    path: string,
+    select: string,
+    match?: { [key: string]: any },
+    options: { [key: string]: any },
 }
 
 export interface documentConfig {

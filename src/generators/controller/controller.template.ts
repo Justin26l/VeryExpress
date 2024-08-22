@@ -8,7 +8,12 @@ export default function controllerTemplate(templateOptions: {
     endpoint: string,
     modelPath: string,
     documentName: string,
-    validators: {[key:string]:{[key:string]:Schema}},
+    populateOptions?: Array<types.populateOptions>
+    validators: {
+        [key:string]: {
+            [key:string]: Schema
+        }
+    },
     compilerOptions: types.compilerOptions,
 }) : string {
 
@@ -83,7 +88,8 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
                 return vex.response.send(res, 400, vex.responseMsg.queryError, { error: err.message });
             };
 
-            const result = await {{documentName}}Model.find(searchFilter, selectedFields);
+            const result = await {{documentName}}Model.find(searchFilter, selectedFields)
+                .populate({{populateFields}})
             return vex.response.send(res, 200, vex.responseMsg.ok, result);
         } catch (err:any) {
             return vex.response.send(res, 500, vex.responseMsg.unexpectedError, { error: err.message });
@@ -184,6 +190,11 @@ export default new {{documentName}}Controller().router;
             checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint].get, { depth: null }).replace(/^/gm, indent3) }),
             this.getList${templateOptions.documentName}.bind(this)
         );`
+    );
+
+    template = template.replace(
+        /{{populateFields}}/g, 
+        templateOptions.populateOptions ? JSON.stringify(templateOptions.populateOptions) : ""
     );
 
     template = template.replace(

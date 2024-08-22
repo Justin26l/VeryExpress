@@ -21,6 +21,7 @@ export async function generate(
     utils.configChecker.checkConfigValid(options);
     const openapiFile: string = "/openapi.gen.yaml";
     const documents: { path: string, config: types.documentConfig }[] = [];
+    const documentPaths: { [key: string]: string } = {};
 
     const dir = {
         roleSrcDir: `${options.srcDir}/roles`,
@@ -86,6 +87,7 @@ export async function generate(
                 path: schemaPath,
                 config: jsonSchema["x-documentConfig"],
             });
+            documentPaths[jsonSchema["x-documentConfig"].documentName] = schemaPath;
         }
         catch (err: any) {
             log.error(`Processing File : ${schemaPath}\n`, err);
@@ -140,6 +142,7 @@ export async function generate(
 
     // genarate controller from open api
     await controllerGen.compile({
+        documentPaths: documentPaths,
         openapiFile: openapiFile,
         controllerOutDir: dir.controllerDir,
         modelDir: dir.modelDir,

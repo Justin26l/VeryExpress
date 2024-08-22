@@ -18,6 +18,7 @@ import { Schema } from "express-validator";
  * @param options 
  */
 export async function compile(options: {
+    documentPaths: { [key:string]: string },
     openapiFile: string,
     controllerOutDir: string,
     modelDir: string,
@@ -72,16 +73,19 @@ export async function compile(options: {
         else {
             // write controller
 
-            // join table with "x-foreignKey", "x-foreignValue"
-            // .populate(
-            // {
-            //     path: "self.schema.key", // which have x-foreignKey in vexSchema
-            //     select: "target.schema.select keys", // "colA colB colC ..." using vexSchema.x-foreignValue
-            //     match: { isActive: true },  // Filter condition, or where statement in sql
-            //     options: { lean: true }
-            // },
-            // { ... }
-            // );
+            let foreignKeys:  Array<types.populateOptions> = [];
+
+            // for (const key in options.documentPaths[documentName]) {
+            //     const props = options.documentPaths[documentName][key];
+            //     if (props["x-foreignKey"]) {
+            //         foreignKeys.push({
+            //             path: key,
+            //             select: props["x-foreignValue"].join(" "),
+            //             options: { lean: true },
+            //         });
+            //     };
+            // };
+
             const outPath = `${options.controllerOutDir}/${documentName}Controller.gen.ts`;
             const controllerToModelPath = `../${controllerToModelBasePath}/${documentName}Model.gen`;
 
@@ -92,6 +96,7 @@ export async function compile(options: {
                     modelPath: controllerToModelPath,
                     documentName: documentName,
                     validators: endpointsValidator,
+                    populateOptions: foreignKeys,
                     compilerOptions: options.compilerOptions,
                 })
             );
