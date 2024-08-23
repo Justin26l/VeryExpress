@@ -59,7 +59,8 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
                 return vex.response.send(res, 400, vex.responseMsg.validateError, validationError.array());
             };
 
-            const result = await {{documentName}}Model.findById(req.params.id);
+            const result = await {{documentName}}Model.findById(req.params.id){{populateFields}};
+
             if (!result) {
                 return vex.response.send(res, 404, vex.responseMsg.notFound);
             }
@@ -88,9 +89,8 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
                 return vex.response.send(res, 400, vex.responseMsg.queryError, { error: err.message });
             };
 
-            const result = await {{documentName}}Model.find(searchFilter, selectedFields)
-                .populate({{populateFields}})
-            return vex.response.send(res, 200, vex.responseMsg.ok, result);
+            const result = await {{documentName}}Model.find(searchFilter, selectedFields);
+                return vex.response.send(res, 200, vex.responseMsg.ok, result);
         } catch (err:any) {
             return vex.response.send(res, 500, vex.responseMsg.unexpectedError, { error: err.message });
         }
@@ -175,8 +175,13 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
 
 export default new {{documentName}}Controller().router;
 `;
-      
-    const indent3 = "           ";
+    
+    const indent = "    ";
+    const indent2 = indent+indent;
+    const indent3 = indent2+indent;
+    const indent4 = indent3+indent;
+    const indent5 = indent4+indent;
+
 
     template = template.replace(/{{headerComment}}/g, templateOptions.compilerOptions.headerComment || "// generated files by very-express");
     template = template.replace(/{{documentName}}/g, templateOptions.documentName);
@@ -192,9 +197,13 @@ export default new {{documentName}}Controller().router;
         );`
     );
 
+    const populateParam = util.inspect(templateOptions.populateOptions, { depth: null })
+        .replace(/\[/g, "")
+        .replace(/\]/g, "")
+        .replace(/^/gm, indent5);
     template = template.replace(
         /{{populateFields}}/g, 
-        templateOptions.populateOptions ? JSON.stringify(templateOptions.populateOptions) : ""
+        templateOptions.populateOptions!.length>0 ? `\n${indent4}.populate(${ populateParam })` : ""
     );
 
     template = template.replace(

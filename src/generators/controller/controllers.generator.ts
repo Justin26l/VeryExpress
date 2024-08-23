@@ -9,6 +9,7 @@ import log from "./../../utils/logger";
 import * as types from "./../../types/types";
 import * as openapiType from "./../../types/openapi";
 import { Schema } from "express-validator";
+import path from "path";
 
 /**
  * compile openapi to controller source code
@@ -18,7 +19,7 @@ import { Schema } from "express-validator";
  * @param options 
  */
 export async function compile(options: {
-    documentPaths: { [key:string]: string },
+    documentPaths: { [key: string]: string },
     openapiFile: string,
     controllerOutDir: string,
     modelDir: string,
@@ -38,12 +39,12 @@ export async function compile(options: {
     // loop path
     Object.keys(openApi.paths).forEach((endpoint: string) => {
         log.process(`Controller : ${options.compilerOptions.openapiDir} > ${endpoint}`);
-        
+
         endpointsValidator[endpoint] = {};
 
         // make validator
         Object.keys(openApi.paths[endpoint]).forEach((httpMethod: string) => {
-            
+
             // check method is in enum types.schemaMethod
             if (!Object.values(types.httpMethodArr).includes(httpMethod as types.httpMethod)) return;
             const methodEnum: types.httpMethod = httpMethod as types.httpMethod;
@@ -73,18 +74,21 @@ export async function compile(options: {
         else {
             // write controller
 
-            let foreignKeys:  Array<types.populateOptions> = [];
+            let foreignKeys: Array<types.populateOptions> = [];
 
-            // for (const key in options.documentPaths[documentName]) {
-            //     const props = options.documentPaths[documentName][key];
-            //     if (props["x-foreignKey"]) {
-            //         foreignKeys.push({
-            //             path: key,
-            //             select: props["x-foreignValue"].join(" "),
-            //             options: { lean: true },
-            //         });
-            //     };
-            // };
+            // build populate options by each foreign key
+            const schema = utils.common.loadJson<types.jsonSchema>(options.documentPaths[documentName]);
+
+            for (const key in schema.properties) {
+                if (schema.properties[key]["x-foreignKey"]) {
+                    foreignKeys.push({
+                        path: key,
+                        select: schema.properties[key]["x-foreignValue"]?.join(" "),
+                        // match: undefined,
+                        options: { lean: true },
+                    });
+                };
+            };
 
             const outPath = `${options.controllerOutDir}/${documentName}Controller.gen.ts`;
             const controllerToModelPath = `../${controllerToModelBasePath}/${documentName}Model.gen`;
@@ -118,7 +122,7 @@ function buildParamValidator(
 
     openapi.paths[endpoint][httpMethod]!.parameters.forEach((parameter: openapiType.parameter) => {
         Object.assign(
-            validators, 
+            validators,
             processSchema({
                 fieldName: parameter.name,
                 required: parameter.required,
@@ -145,7 +149,7 @@ function buildBodyValidator(
     if (components !== undefined) {
         for (const key in components.properties) {
             Object.assign(
-                validators, 
+                validators,
                 processSchema({
                     fieldName: key,
                     body: components.properties[key],
@@ -170,12 +174,12 @@ function processSchema(options: {
     const inParam = options.param?.in == "path";
     const inQuery = options.param?.in == "param";
     const inBody = options.body;
-    
+
     const validators: Schema = {
         [options.fieldName]: {
-            in : inParam ? "params" : inQuery ? "query" : inBody ? "body" : [],
-            optional : !options.required ? { options: { values: "falsy", checkFalsy: true} } : false,
-            notEmpty : true,
+            in: inParam ? "params" : inQuery ? "query" : inBody ? "body" : [],
+            optional: !options.required ? { options: { values: "falsy", checkFalsy: true } } : false,
+            notEmpty: true,
         },
     };
 
@@ -185,77 +189,77 @@ function processSchema(options: {
     const type: string | undefined = useBody ? options.body?.type : options.param?.schema.type;
     const useEnum = options.param?.schema?.enum ?? options.body?.enum;
 
-    const range : {
+    const range: {
         min: number | undefined;
         max: number | undefined;
     } = {
         min: options.param?.schema?.minLength ?? options.param?.schema?.minimum ?? options.body?.minLength ?? options.body?.minimum,
         max: options.param?.schema?.maxLength ?? options.param?.schema?.maximum ?? options.body?.maxLength ?? options.body?.maximum,
     };
-    const rangeValidator : undefined | {
+    const rangeValidator: undefined | {
         options: {
             min: number | undefined;
             max: number | undefined;
         }
     }
-    = range.min && range.max ? { options: range } : undefined;
-    
+        = range.min && range.max ? { options: range } : undefined;
+
     switch (type) {
-    case "string":
-        validatorParam.isString = true;
-        if(range.min && range.max){
-            validatorParam.isLength = { options: range };
-        }
-
-        // enum validator
-        if(useEnum){
-            validatorParam.isEmpty = false;
-            validatorParam.isIn = {
-                options: useEnum,
-            };
-        }
-
-        // x-format validator
-        switch(options?.param?.schema?.["x-format"]){
-        case "ObjectId":
-            if (typeof validatorParam.custom !== "object" || validatorParam.custom === null) {
-                validatorParam.custom = {};
+        case "string":
+            validatorParam.isString = true;
+            if (range.min && range.max) {
+                validatorParam.isLength = { options: range };
             }
-            // @ts-expect-error - type hell
-            validatorParam.custom.options = "FUNC{{this.isObjectId}}";
-            // call controller base class : _ControllerFactory.isObjectId()
+
+            // enum validator
+            if (useEnum) {
+                validatorParam.isEmpty = false;
+                validatorParam.isIn = {
+                    options: useEnum,
+                };
+            }
+
+            // x-format validator
+            switch (options?.param?.schema?.["x-format"]) {
+                case "ObjectId":
+                    if (typeof validatorParam.custom !== "object" || validatorParam.custom === null) {
+                        validatorParam.custom = {};
+                    }
+                    // @ts-expect-error - type hell
+                    validatorParam.custom.options = "FUNC{{this.isObjectId}}";
+                    // call controller base class : _ControllerFactory.isObjectId()
+                    break;
+            }
             break;
-        }
-        break;
-    case "integer":
-        validatorParam.isInt = rangeValidator;
-        break;
-    case "float":
-        validatorParam.isFloat = rangeValidator;
-        break;
-    case "number":
-        validatorParam.isNumeric = true;
-        break;
-    case "boolean":
-        validatorParam.isBoolean = true;
-        break;
-    case "array":
-        validatorParam.isArray = true;
-        break;
-    case "object":
-        if (useBody) {
-            for (const key in options.body?.properties) {
-                Object.assign(
-                    validators, 
-                    processSchema({
-                        fieldName: options.fieldName + "." + key,
-                        body: options.body.properties[key],
-                        required: options.body.required?.includes(key),
-                    }) 
-                );
+        case "integer":
+            validatorParam.isInt = rangeValidator;
+            break;
+        case "float":
+            validatorParam.isFloat = rangeValidator;
+            break;
+        case "number":
+            validatorParam.isNumeric = true;
+            break;
+        case "boolean":
+            validatorParam.isBoolean = true;
+            break;
+        case "array":
+            validatorParam.isArray = true;
+            break;
+        case "object":
+            if (useBody) {
+                for (const key in options.body?.properties) {
+                    Object.assign(
+                        validators,
+                        processSchema({
+                            fieldName: options.fieldName + "." + key,
+                            body: options.body.properties[key],
+                            required: options.body.required?.includes(key),
+                        })
+                    );
+                }
             }
-        }
-        break;
+            break;
     }
 
     return validators;

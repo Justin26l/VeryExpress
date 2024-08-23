@@ -70,7 +70,7 @@ export interface jsonSchemaPropsItem {
 
 export interface populateOptions {
     path: string,
-    select: string,
+    select?: string,
     match?: { [key: string]: any },
     options: { [key: string]: any },
 }
