@@ -89,6 +89,13 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
                 return vex.response.send(res, 400, vex.responseMsg.queryError, { error: err.message });
             };
 
+
+            // if found array "join" in query string, parse it to populate options
+            const joinArr = typeof req.query.join == "string" ? JSON.parse(req.query.join) : [];
+            console.log("joinArr",joinArr);
+
+            // switch joinArr's item to populate options
+
             const result = await {{documentName}}Model.find(searchFilter, selectedFields);
                 return vex.response.send(res, 200, vex.responseMsg.ok, result);
         } catch (err:any) {
