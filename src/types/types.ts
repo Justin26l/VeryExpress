@@ -61,8 +61,8 @@ export interface jsonSchemaPropsItem {
     maxLength?: number;
     minimum?: number;
     maximum?: number;
-    "x-format"?: string;
     "x-vexData"?: string;
+    "x-format"?: string;
     "x-foreignKey"?: string;
     "x-foreignValue"?: string[];
     [key: string]: string | boolean | number | string[] | jsonSchemaPropsItem | { [key: string]: jsonSchemaPropsItem;} | any[] | undefined;

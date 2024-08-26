@@ -172,7 +172,7 @@ function processSchema(options: {
     // open api "param" is "request query" 
     // but express validator "query" is "request query"
     const inParam = options.param?.in == "path";
-    const inQuery = options.param?.in == "param";
+    const inQuery = options.param?.in == "query";
     const inBody = options.body;
 
     const validators: Schema = {
