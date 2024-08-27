@@ -60,14 +60,29 @@
                 "visitor"
             ]
         },
-        "contact": {
+        "package": {
             "type": "string",
             "x-format": "ObjectId",
-            "x-foreignKey": "UserContact",
+            "x-foreignKey": "Package",
             "x-foreignValue": [
-                "phoneNo",
-                "isActive"
+                "name",
+                "period",
+                "price",
+                "startDate",
+                "endDate"
             ]
+        },
+        "contact": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "x-format": "ObjectId",
+                "x-foreignKey": "UserContact",
+                "x-foreignValue": [
+                    "phoneNo",
+                    "isActive"
+                ]
+            }
         }
     },
     "required": [

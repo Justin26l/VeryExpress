@@ -17,6 +17,8 @@ export default function controllerTemplate(templateOptions: {
     compilerOptions: types.compilerOptions,
 }) : string {
 
+
+    console.log('populateOptions', templateOptions.populateOptions);
     let template :string = templateOptions.template || `{{headerComment}}
 import * as controllerFactory from "./_ControllerFactory.gen";
 import { Router, Request, Response } from 'express';
@@ -205,8 +207,6 @@ export default new {{documentName}}Controller().router;
     );
 
     const populateParam = util.inspect(templateOptions.populateOptions, { depth: null })
-        .replace(/\[/g, "")
-        .replace(/\]/g, "")
         .replace(/^/gm, indent5);
     template = template.replace(
         /{{populateFields}}/g, 
