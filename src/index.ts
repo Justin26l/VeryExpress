@@ -130,6 +130,14 @@ export async function generate(
             options || utils.generator.defaultCompilerOptions
         );
 
+        // replace interface <import xxx from "./xxx";> to <import xxx from "./xxx.gen";>
+        const interfaceContent = fs.readFileSync(`${dir.typeDir}/${doc.config.documentName}.gen.ts`, "utf8");
+        const remappedContent = interfaceContent.replace(/import (.*) from ".\/(.*)";/g, (match,a,b)=>{
+            return `import ${a} from "./${b}.gen";`
+        })
+        utils.common.writeFile("Type-Remap",`${dir.typeDir}/${doc.config.documentName}.gen.ts`, remappedContent);
+
+
         // prepair route data
         routeData.push({
             route: `/${doc.config.documentName}`,
