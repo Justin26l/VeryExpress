@@ -82,10 +82,18 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
             };
             
             const searchFilter = new MongoQS().parse(req.query);
+            delete searchFilter._select;
+            delete searchFilter._join;
+            
             let selectedFields : {[key: string]: number} | undefined = undefined;
+            let populateOptions : any | undefined = undefined;
 
             try { 
-                selectedFields = vex.common.parseFieldsSelect(req.query.select || '');
+                selectedFields = vex.common.parseFieldsSelect(req);
+                populateOptions = vex.common.parseCollectionJoin(req, {
+                    "package": "name period price startDate endDate",
+                    "contact": "phoneNo isActive"
+                });
             } 
             catch (err:any) { 
                 return vex.response.send(res, 400, vex.responseMsg.queryError, { error: err.message });
