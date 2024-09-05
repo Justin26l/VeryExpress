@@ -68,11 +68,8 @@ export interface jsonSchemaPropsItem {
     [key: string]: string | boolean | number | string[] | jsonSchemaPropsItem | { [key: string]: jsonSchemaPropsItem;} | any[] | undefined;
 }
 
-export interface populateOptions {
-    path: string,
-    select?: string,
-    match?: { [key: string]: any },
-    options: { [key: string]: any },
+export interface populateOptions { 
+    [key: string]: string,
 }
 
 export interface documentConfig {

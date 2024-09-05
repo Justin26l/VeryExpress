@@ -8,7 +8,7 @@ export default function controllerTemplate(templateOptions: {
     endpoint: string,
     modelPath: string,
     documentName: string,
-    populateOptions?: Array<types.populateOptions>
+    populateOptions?: types.populateOptions
     validators: {
         [key:string]: {
             [key:string]: Schema
@@ -61,7 +61,7 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
                 return vex.response.send(res, 400, vex.responseMsg.validateError, validationError.array());
             };
 
-            const result = await {{documentName}}Model.findById(req.params.id){{populateFields}};
+            const result = await {{documentName}}Model.findById(req.params.id){{populateAll}};
 
             if (!result) {
                 return vex.response.send(res, 404, vex.responseMsg.notFound);
@@ -90,24 +90,14 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
 
             try { 
                 selectedFields = vex.common.parseFieldsSelect(req);
-                populateOptions = vex.common.parseCollectionJoin(req, {
-                    "package": "name period price startDate endDate",
-                    "contact": "phoneNo isActive"
-                });
+                populateOptions = vex.common.parseCollectionJoin(req, {{populateOptions}});
             } 
             catch (err:any) { 
                 return vex.response.send(res, 400, vex.responseMsg.queryError, { error: err.message });
             };
 
-
-            // if found array "join" in query string, parse it to populate options
-            const joinArr = typeof req.query.join == "string" ? JSON.parse(req.query.join) : [];
-            console.log("joinArr",joinArr);
-
-            // switch joinArr's item to populate options
-
-            const result = await {{documentName}}Model.find(searchFilter, selectedFields);
-                return vex.response.send(res, 200, vex.responseMsg.ok, result);
+            const result = await {{documentName}}Model.find(searchFilter, selectedFields).populate(populateOptions);
+            return vex.response.send(res, 200, vex.responseMsg.ok, result);
         } catch (err:any) {
             return vex.response.send(res, 500, vex.responseMsg.unexpectedError, { error: err.message });
         }
@@ -214,12 +204,15 @@ export default new {{documentName}}Controller().router;
         );`
     );
 
-    const populateParam = util.inspect(templateOptions.populateOptions, { depth: null })
-        .replace(/^/gm, indent5);
-    template = template.replace(
-        /{{populateFields}}/g, 
-        templateOptions.populateOptions!.length>0 ? `\n${indent4}.populate(${ populateParam })` : ""
-    );
+    // populate options
+    let populateTemplate = "";
+    if(templateOptions.populateOptions){
+        const populateParam: string = JSON.stringify(Object.keys(templateOptions.populateOptions));
+        populateTemplate = Object.keys(templateOptions.populateOptions).length>0 ? `\n${indent4}.populate(${ populateParam })` : "";
+    }
+    template = template.replace(/{{populateAll}}/g, populateTemplate);
+
+    template = template.replace(/{{populateOptions}}/g, JSON.stringify(templateOptions.populateOptions));
 
     template = template.replace(
         /{{getRoute}}/g, 

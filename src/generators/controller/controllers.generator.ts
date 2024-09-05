@@ -76,7 +76,7 @@ export async function compile(options: {
 
             // build populate options by each foreign key
             const schema = utils.common.loadJson<types.jsonSchemaPropsItem>(options.documentPaths[documentName]);
-            let foreignKeys: Array<types.populateOptions> = buildForeinKeyOptions(schema);
+            let foreignKeysOptions: types.populateOptions = buildForeinKeyOptions(schema);
 
             const outPath = `${options.controllerOutDir}/${documentName}Controller.gen.ts`;
             const controllerToModelPath = `../${controllerToModelBasePath}/${documentName}Model.gen`;
@@ -88,7 +88,7 @@ export async function compile(options: {
                     modelPath: controllerToModelPath,
                     documentName: documentName,
                     validators: endpointsValidator,
-                    populateOptions: foreignKeys,
+                    populateOptions: foreignKeysOptions,
                     compilerOptions: options.compilerOptions,
                 })
             );
@@ -152,32 +152,22 @@ function buildBodyValidator(
 
 function buildForeinKeyOptions(
     schema: types.jsonSchemaPropsItem,
-): types.populateOptions[] {
+): types.populateOptions {
     if(schema.type !== "object") {
         throw new Error("buildForeinKeyOptions : root schema type must be object");
     };
 
-    let foreignKeys: Array<types.populateOptions> = [];
+    let foreignKeys: types.populateOptions = {};
 
     for (const key in schema.properties) {
         if (schema.properties[key]["x-foreignKey"]) {
-            foreignKeys.push({
-                path: key,
-                select: schema.properties[key]["x-foreignValue"]?.join(" "),
-                // match: undefined,
-                options: { lean: true },
-            });
+            foreignKeys[key] = schema.properties[key]["x-foreignValue"]?.join(" ") || "";
         }
         else if (schema.properties[key].type === "array" && schema.properties[key].items?.["x-foreignKey"]) {
-            foreignKeys.push({
-                path: key,
-                select: schema.properties[key].items["x-foreignValue"]?.join(" "),
-                // match: undefined,
-                options: { lean: true },
-            });
+            foreignKeys[key] = schema.properties[key].items["x-foreignValue"]?.join(" ") || "";
         }
         else if (schema.properties[key].type === "object") {
-            foreignKeys.push(...buildForeinKeyOptions(schema.properties[key]));
+            foreignKeys = Object.assign(foreignKeys, buildForeinKeyOptions(schema.properties[key]));
         }
     };
 
