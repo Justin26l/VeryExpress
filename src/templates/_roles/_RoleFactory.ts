@@ -1,5 +1,5 @@
-export type accessAction = "create" | "read" | "update" | "delete" | "search";
-export const accessActionArr: accessAction[] = ["create", "read", "update", "delete", "search"];
+export type accessAction = "create" | "read" | "update" | "delete";
+export const accessActionArr: accessAction[] = ["create", "read", "update", "delete"];
 
 export interface accessControl< T = accessAction > { 
     [key:string]: T[] 

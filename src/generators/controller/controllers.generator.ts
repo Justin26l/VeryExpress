@@ -1,5 +1,6 @@
 import fs from "fs";
 import jsYaml from "js-yaml";
+import path from "path";
 
 import controllerTemplate from "./controller.template";
 
@@ -18,12 +19,13 @@ import { Schema } from "express-validator";
  * @param options 
  */
 export async function compile(options: {
+    documentPaths: { [key: string]: string },
     openapiFile: string,
     controllerOutDir: string,
     modelDir: string,
     compilerOptions: types.compilerOptions
 }): Promise<void> {
-    const file: string = fs.readFileSync(options.compilerOptions.openapiDir + "/" + options.openapiFile, "utf8");
+    const file: string = fs.readFileSync(path.join(options.compilerOptions.openapiDir, options.openapiFile), "utf8");
     const controllerToModelBasePath: string = utils.common.relativePath(options.compilerOptions.sysDir, options.modelDir);
 
     const openApi: openapiType.openapi = jsYaml.load(file) as openapiType.openapi;
@@ -37,12 +39,12 @@ export async function compile(options: {
     // loop path
     Object.keys(openApi.paths).forEach((endpoint: string) => {
         log.process(`Controller : ${options.compilerOptions.openapiDir} > ${endpoint}`);
-        
+
         endpointsValidator[endpoint] = {};
 
         // make validator
         Object.keys(openApi.paths[endpoint]).forEach((httpMethod: string) => {
-            
+
             // check method is in enum types.schemaMethod
             if (!Object.values(types.httpMethodArr).includes(httpMethod as types.httpMethod)) return;
             const methodEnum: types.httpMethod = httpMethod as types.httpMethod;
@@ -71,6 +73,11 @@ export async function compile(options: {
         }
         else {
             // write controller
+
+            // build populate options by each foreign key
+            const schema = utils.common.loadJson<types.jsonSchemaPropsItem>(options.documentPaths[documentName]);
+            const foreignKeysOptions: types.populateOptions = buildForeinKeyOptions(schema);
+
             const outPath = `${options.controllerOutDir}/${documentName}Controller.gen.ts`;
             const controllerToModelPath = `../${controllerToModelBasePath}/${documentName}Model.gen`;
 
@@ -81,6 +88,7 @@ export async function compile(options: {
                     modelPath: controllerToModelPath,
                     documentName: documentName,
                     validators: endpointsValidator,
+                    populateOptions: foreignKeysOptions,
                     compilerOptions: options.compilerOptions,
                 })
             );
@@ -102,7 +110,7 @@ function buildParamValidator(
 
     openapi.paths[endpoint][httpMethod]!.parameters.forEach((parameter: openapiType.parameter) => {
         Object.assign(
-            validators, 
+            validators,
             processSchema({
                 fieldName: parameter.name,
                 required: parameter.required,
@@ -129,7 +137,7 @@ function buildBodyValidator(
     if (components !== undefined) {
         for (const key in components.properties) {
             Object.assign(
-                validators, 
+                validators,
                 processSchema({
                     fieldName: key,
                     body: components.properties[key],
@@ -142,6 +150,29 @@ function buildBodyValidator(
     return validators;
 }
 
+function buildForeinKeyOptions(
+    schema: types.jsonSchemaPropsItem,
+): types.populateOptions {
+    if(schema.type !== "object") {
+        throw new Error("buildForeinKeyOptions : root schema type must be object");
+    }
+
+    let foreignKeys: types.populateOptions = {};
+
+    for (const key in schema.properties) {
+        if (schema.properties[key]["x-foreignKey"]) {
+            foreignKeys[key] = schema.properties[key]["x-foreignValue"]?.join(" ") || "";
+        }
+        else if (schema.properties[key].type === "array" && schema.properties[key].items?.["x-foreignKey"]) {
+            foreignKeys[key] = schema.properties[key].items["x-foreignValue"]?.join(" ") || "";
+        }
+        else if (schema.properties[key].type === "object") {
+            foreignKeys = Object.assign(foreignKeys, buildForeinKeyOptions(schema.properties[key]));
+        }
+    }
+
+    return foreignKeys;
+}
 function processSchema(options: {
     fieldName: string,
     required?: boolean,
@@ -152,14 +183,14 @@ function processSchema(options: {
     // open api "param" is "request query" 
     // but express validator "query" is "request query"
     const inParam = options.param?.in == "path";
-    const inQuery = options.param?.in == "param";
+    const inQuery = options.param?.in == "query";
     const inBody = options.body;
-    
+
     const validators: Schema = {
         [options.fieldName]: {
-            in : inParam ? "params" : inQuery ? "query" : inBody ? "body" : [],
-            optional : !options.required ? { options: { values: "falsy", checkFalsy: true} } : false,
-            notEmpty : true,
+            in: inParam ? "params" : inQuery ? "query" : inBody ? "body" : [],
+            optional: !options.required ? { options: { values: "falsy", checkFalsy: true } } : false,
+            notEmpty: true,
         },
     };
 
@@ -169,30 +200,30 @@ function processSchema(options: {
     const type: string | undefined = useBody ? options.body?.type : options.param?.schema.type;
     const useEnum = options.param?.schema?.enum ?? options.body?.enum;
 
-    const range : {
+    const range: {
         min: number | undefined;
         max: number | undefined;
     } = {
         min: options.param?.schema?.minLength ?? options.param?.schema?.minimum ?? options.body?.minLength ?? options.body?.minimum,
         max: options.param?.schema?.maxLength ?? options.param?.schema?.maximum ?? options.body?.maxLength ?? options.body?.maximum,
     };
-    const rangeValidator : undefined | {
+    const rangeValidator: undefined | {
         options: {
             min: number | undefined;
             max: number | undefined;
         }
     }
-    = range.min && range.max ? { options: range } : undefined;
-    
+        = range.min && range.max ? { options: range } : undefined;
+
     switch (type) {
     case "string":
         validatorParam.isString = true;
-        if(range.min && range.max){
+        if (range.min && range.max) {
             validatorParam.isLength = { options: range };
         }
 
         // enum validator
-        if(useEnum){
+        if (useEnum) {
             validatorParam.isEmpty = false;
             validatorParam.isIn = {
                 options: useEnum,
@@ -200,7 +231,7 @@ function processSchema(options: {
         }
 
         // x-format validator
-        switch(options?.param?.schema?.["x-format"]){
+        switch (options?.param?.schema?.["x-format"]) {
         case "ObjectId":
             if (typeof validatorParam.custom !== "object" || validatorParam.custom === null) {
                 validatorParam.custom = {};
@@ -230,12 +261,12 @@ function processSchema(options: {
         if (useBody) {
             for (const key in options.body?.properties) {
                 Object.assign(
-                    validators, 
+                    validators,
                     processSchema({
                         fieldName: options.fieldName + "." + key,
                         body: options.body.properties[key],
                         required: options.body.required?.includes(key),
-                    }) 
+                    })
                 );
             }
         }

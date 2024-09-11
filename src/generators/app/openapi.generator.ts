@@ -1,6 +1,8 @@
+import fs from "fs";
+import path from "path";
+
 import json2openapi from "json-schema-to-openapi-schema";
 import jsYaml from "js-yaml";
-import fs from "fs";
 
 import utils from "./../../utils";
 import log from "./../../utils/logger";
@@ -38,7 +40,7 @@ export async function compile(
     files.forEach((file) => {
         // ignore non json files
         if (!file.endsWith(".json")) return;
-        const jsonSchemaFilePath: string = compilerOptions.jsonSchemaDir + "/" + file;
+        const jsonSchemaFilePath: string = path.join(compilerOptions.jsonSchemaDir, file);
         log.process(`OpenApi : ${jsonSchemaFilePath}`);
 
         const jsonSchemaBuffer = fs.readFileSync(`${compilerOptions.jsonSchemaDir}/${file}`);
