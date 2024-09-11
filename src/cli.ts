@@ -2,6 +2,7 @@
 import fs from "fs";
 import childProcess from "child_process";
 import minimist from "minimist";
+import path from "path";
 
 import { generate } from "./index";
 
@@ -34,9 +35,9 @@ async function main() {
     // generator
     config.jsonSchemaDir = args.j || args.jsonSchemaDir || config.jsonSchemaDir || "./jsonSchema";
     config.rootDir = args.o || args.rootDir || config.rootDir || ".";
-    config.srcDir = config.srcDir || config.rootDir + "/src";
-    config.sysDir = config.sysDir || config.srcDir + "/system";
-    config.openapiDir = config.srcDir + "/openapi";
+    config.srcDir = path.join(config.srcDir || config.rootDir, "src");
+    config.sysDir = path.join(config.sysDir || config.srcDirrootDir, "system");
+    config.openapiDir = path.join(config.srcDirrootDir, "openapi");
 
     // app
     config.app = config.app || {},

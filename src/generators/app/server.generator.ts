@@ -1,4 +1,5 @@
 import fs from "fs";
+import path from "path";
 
 import serverTemplate from "./server.template";
 import packageJson from "../project/packageJson.generator";
@@ -16,10 +17,10 @@ export async function compile(
     compilerOptions: types.compilerOptions
 ): Promise<void> {
 
-    const serverOutPath = compilerOptions.srcDir + "/server.ts";
-    const packageOutPath = compilerOptions.rootDir + "/package.json";
-    const envOutPath = compilerOptions.rootDir + "/.env";
-    const tsconfigOutPath = compilerOptions.rootDir + "/tsconfig.json";
+    const serverOutPath = path.join(compilerOptions.srcDir, "server.ts");
+    const packageOutPath = path.join(compilerOptions.rootDir, "package.json");
+    const envOutPath = path.join(compilerOptions.rootDir, ".env");
+    const tsconfigOutPath = path.join(compilerOptions.rootDir, "tsconfig.json");
 
     // write server file
     utils.common.writeFile(

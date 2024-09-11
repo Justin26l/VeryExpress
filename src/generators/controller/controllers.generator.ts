@@ -1,5 +1,6 @@
 import fs from "fs";
 import jsYaml from "js-yaml";
+import path from "path";
 
 import controllerTemplate from "./controller.template";
 
@@ -9,7 +10,6 @@ import log from "./../../utils/logger";
 import * as types from "./../../types/types";
 import * as openapiType from "./../../types/openapi";
 import { Schema } from "express-validator";
-import path from "path";
 
 /**
  * compile openapi to controller source code
@@ -25,7 +25,7 @@ export async function compile(options: {
     modelDir: string,
     compilerOptions: types.compilerOptions
 }): Promise<void> {
-    const file: string = fs.readFileSync(options.compilerOptions.openapiDir + "/" + options.openapiFile, "utf8");
+    const file: string = fs.readFileSync(path.join(options.compilerOptions.openapiDir, options.openapiFile), "utf8");
     const controllerToModelBasePath: string = utils.common.relativePath(options.compilerOptions.sysDir, options.modelDir);
 
     const openApi: openapiType.openapi = jsYaml.load(file) as openapiType.openapi;
@@ -76,7 +76,7 @@ export async function compile(options: {
 
             // build populate options by each foreign key
             const schema = utils.common.loadJson<types.jsonSchemaPropsItem>(options.documentPaths[documentName]);
-            let foreignKeysOptions: types.populateOptions = buildForeinKeyOptions(schema);
+            const foreignKeysOptions: types.populateOptions = buildForeinKeyOptions(schema);
 
             const outPath = `${options.controllerOutDir}/${documentName}Controller.gen.ts`;
             const controllerToModelPath = `../${controllerToModelBasePath}/${documentName}Model.gen`;
@@ -155,7 +155,7 @@ function buildForeinKeyOptions(
 ): types.populateOptions {
     if(schema.type !== "object") {
         throw new Error("buildForeinKeyOptions : root schema type must be object");
-    };
+    }
 
     let foreignKeys: types.populateOptions = {};
 
@@ -169,7 +169,7 @@ function buildForeinKeyOptions(
         else if (schema.properties[key].type === "object") {
             foreignKeys = Object.assign(foreignKeys, buildForeinKeyOptions(schema.properties[key]));
         }
-    };
+    }
 
     return foreignKeys;
 }
@@ -216,61 +216,61 @@ function processSchema(options: {
         = range.min && range.max ? { options: range } : undefined;
 
     switch (type) {
-        case "string":
-            validatorParam.isString = true;
-            if (range.min && range.max) {
-                validatorParam.isLength = { options: range };
-            }
+    case "string":
+        validatorParam.isString = true;
+        if (range.min && range.max) {
+            validatorParam.isLength = { options: range };
+        }
 
-            // enum validator
-            if (useEnum) {
-                validatorParam.isEmpty = false;
-                validatorParam.isIn = {
-                    options: useEnum,
-                };
-            }
+        // enum validator
+        if (useEnum) {
+            validatorParam.isEmpty = false;
+            validatorParam.isIn = {
+                options: useEnum,
+            };
+        }
 
-            // x-format validator
-            switch (options?.param?.schema?.["x-format"]) {
-                case "ObjectId":
-                    if (typeof validatorParam.custom !== "object" || validatorParam.custom === null) {
-                        validatorParam.custom = {};
-                    }
-                    // @ts-expect-error - type hell
-                    validatorParam.custom.options = "FUNC{{this.isObjectId}}";
-                    // call controller base class : _ControllerFactory.isObjectId()
-                    break;
+        // x-format validator
+        switch (options?.param?.schema?.["x-format"]) {
+        case "ObjectId":
+            if (typeof validatorParam.custom !== "object" || validatorParam.custom === null) {
+                validatorParam.custom = {};
             }
+            // @ts-expect-error - type hell
+            validatorParam.custom.options = "FUNC{{this.isObjectId}}";
+            // call controller base class : _ControllerFactory.isObjectId()
             break;
-        case "integer":
-            validatorParam.isInt = rangeValidator;
-            break;
-        case "float":
-            validatorParam.isFloat = rangeValidator;
-            break;
-        case "number":
-            validatorParam.isNumeric = true;
-            break;
-        case "boolean":
-            validatorParam.isBoolean = true;
-            break;
-        case "array":
-            validatorParam.isArray = true;
-            break;
-        case "object":
-            if (useBody) {
-                for (const key in options.body?.properties) {
-                    Object.assign(
-                        validators,
-                        processSchema({
-                            fieldName: options.fieldName + "." + key,
-                            body: options.body.properties[key],
-                            required: options.body.required?.includes(key),
-                        })
-                    );
-                }
+        }
+        break;
+    case "integer":
+        validatorParam.isInt = rangeValidator;
+        break;
+    case "float":
+        validatorParam.isFloat = rangeValidator;
+        break;
+    case "number":
+        validatorParam.isNumeric = true;
+        break;
+    case "boolean":
+        validatorParam.isBoolean = true;
+        break;
+    case "array":
+        validatorParam.isArray = true;
+        break;
+    case "object":
+        if (useBody) {
+            for (const key in options.body?.properties) {
+                Object.assign(
+                    validators,
+                    processSchema({
+                        fieldName: options.fieldName + "." + key,
+                        body: options.body.properties[key],
+                        required: options.body.required?.includes(key),
+                    })
+                );
             }
-            break;
+        }
+        break;
     }
 
     return validators;

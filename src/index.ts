@@ -1,4 +1,5 @@
 import fs from "fs";
+import path from "path";
 
 import json2mongoose from "json2mongoose";
 import * as openapiGen from "./generators/app/openapi.generator";
@@ -24,16 +25,16 @@ export async function generate(
     const documentPaths: { [key: string]: string } = {};
 
     const dir = {
-        roleSrcDir: `${options.srcDir}/roles`,
-        roleDir: `${options.sysDir}/_roles`,
-        routeDir: `${options.sysDir}/_routes`,
-        middlewareDir: `${options.sysDir}/_middlewares`,
-        controllerDir: `${options.sysDir}/_controllers`,
-        modelDir: `${options.sysDir}/_models`,
-        typeDir: `${options.sysDir}/_types`,
-        serviceDir: `${options.sysDir}/_services`,
-        pluginDir: `${options.sysDir}/_plugins`,
-        utilsDir: `${options.sysDir}/_utils`,
+        roleSrcDir: path.join(options.srcDir, "roles"),
+        roleDir: path.join(options.sysDir, "_roles"),
+        routeDir: path.join(options.sysDir, "_routes"),
+        middlewareDir: path.join(options.sysDir, "_middlewares"),
+        controllerDir: path.join(options.sysDir, "_controllers"),
+        modelDir: path.join(options.sysDir, "_models"),
+        typeDir: path.join(options.sysDir, "_types"),
+        serviceDir: path.join(options.sysDir, "_services"),
+        pluginDir: path.join(options.sysDir, "_plugins"),
+        utilsDir: path.join(options.sysDir, "_utils"),
     };
 
     const routeData: {
@@ -110,7 +111,7 @@ export async function generate(
         openapiFile, 
         options || utils.generator.defaultCompilerOptions
     );
-    utils.common.copyDir(`${options.openapiDir}`, options.srcDir + "/openapi", options, true);
+    utils.common.copyDir(`${options.openapiDir}`, path.join(options.srcDir, "openapi"), options, true);
 
     // generate dynamic files
     await Promise.all(documents.map( async (doc: { path: string, config: types.documentConfig }) => {
@@ -133,8 +134,8 @@ export async function generate(
         // replace interface <import xxx from "./xxx";> to <import xxx from "./xxx.gen";>
         const interfaceContent = fs.readFileSync(`${dir.typeDir}/${doc.config.documentName}.gen.ts`, "utf8");
         const remappedContent = interfaceContent.replace(/import (.*) from ".\/(.*)";/g, (match,a,b)=>{
-            return `import ${a} from "./${b}.gen";`
-        })
+            return `import ${a} from "./${b}.gen";`;
+        });
         utils.common.writeFile("Type-Remap",`${dir.typeDir}/${doc.config.documentName}.gen.ts`, remappedContent);
 
 
@@ -142,7 +143,7 @@ export async function generate(
         routeData.push({
             route: `/${doc.config.documentName}`,
             documentName: doc.config.documentName,
-            controllerPath: utils.common.relativePath(dir.routeDir, dir.controllerDir) + "/" + doc.config.documentName + "Controller.gen",
+            controllerPath: path.join(utils.common.relativePath(dir.routeDir, dir.controllerDir), doc.config.documentName + "Controller.gen"),
         });
         
         return;

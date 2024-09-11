@@ -21,7 +21,7 @@ export function loadYaml(yamlFilePath: string) {
 export function parseFieldsSelect(req: Request) : { [key: string]: number } | undefined {
     
     const selectString = req.query._select;    
-    const ErrorArrStrMsg = `Invalid "_select" string, only json array accepted`;
+    const ErrorArrStrMsg = "Invalid \"_select\" string, only json array accepted";
 
     if (typeof selectString === "undefined" || selectString === "") {
         return undefined;
@@ -53,7 +53,7 @@ export function parseFieldsSelect(req: Request) : { [key: string]: number } | un
 export function parseCollectionJoin(req: Request, availablePopulateOptions:{[key:string]: string}) : { [key: string]: string } | undefined {
     
     const joinString = req.query._join;
-    const ErrorArrStrMsg = `Invalid "_select" string, only json array accepted`;
+    const ErrorArrStrMsg = "Invalid \"_select\" string, only json array accepted";
     const populateOptions: any = [];
 
     if (typeof joinString === "undefined" || joinString === "") {
@@ -67,20 +67,20 @@ export function parseCollectionJoin(req: Request, availablePopulateOptions:{[key
  
     // switch joinArr's item to populate options
     if(joinArr.length > 0) {
-      joinArr.forEach((refKey: any) => {
+        joinArr.forEach((refKey: any) => {
 
-        if(availablePopulateOptions[refKey]) {
-          populateOptions.push({
-            path: refKey,
-            select: availablePopulateOptions[refKey],
-            options: { lean: true }
-          })
-        };
-      });
+            if(availablePopulateOptions[refKey]) {
+                populateOptions.push({
+                    path: refKey,
+                    select: availablePopulateOptions[refKey],
+                    options: { lean: true }
+                });
+            }
+        });
     }
 
     return populateOptions;
-};
+}
 
 export default {
     loadYaml,

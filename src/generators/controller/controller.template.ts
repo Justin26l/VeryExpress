@@ -18,7 +18,7 @@ export default function controllerTemplate(templateOptions: {
 }) : string {
 
 
-    console.log('populateOptions', templateOptions.populateOptions);
+    console.log("populateOptions", templateOptions.populateOptions);
     let template :string = templateOptions.template || `{{headerComment}}
 import * as controllerFactory from "./_ControllerFactory.gen";
 import { Router, Request, Response } from 'express';
@@ -187,8 +187,6 @@ export default new {{documentName}}Controller().router;
     const indent2 = indent+indent;
     const indent3 = indent2+indent;
     const indent4 = indent3+indent;
-    const indent5 = indent4+indent;
-
 
     template = template.replace(/{{headerComment}}/g, templateOptions.compilerOptions.headerComment || "// generated files by very-express");
     template = template.replace(/{{documentName}}/g, templateOptions.documentName);
