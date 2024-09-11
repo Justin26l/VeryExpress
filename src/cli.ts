@@ -36,8 +36,8 @@ async function main() {
     config.jsonSchemaDir = args.j || args.jsonSchemaDir || config.jsonSchemaDir || "./jsonSchema";
     config.rootDir = args.o || args.rootDir || config.rootDir || ".";
     config.srcDir = path.join(config.srcDir || config.rootDir, "src");
-    config.sysDir = path.join(config.sysDir || config.srcDirrootDir, "system");
-    config.openapiDir = path.join(config.srcDirrootDir, "openapi");
+    config.sysDir = path.join(config.sysDir || config.srcDir, "system");
+    config.openapiDir = path.join(config.srcDir, "openapi");
 
     // app
     config.app = config.app || {},

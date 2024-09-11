@@ -18,7 +18,6 @@ export default function controllerTemplate(templateOptions: {
 }) : string {
 
 
-    console.log("populateOptions", templateOptions.populateOptions);
     let template :string = templateOptions.template || `{{headerComment}}
 import * as controllerFactory from "./_ControllerFactory.gen";
 import { Router, Request, Response } from 'express';
