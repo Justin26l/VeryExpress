@@ -2,7 +2,6 @@
 import fs from "fs";
 import childProcess from "child_process";
 import minimist from "minimist";
-import path from "path";
 
 import { generate } from "./index";
 
