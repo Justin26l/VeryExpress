@@ -35,9 +35,9 @@ async function main() {
     // generator
     config.jsonSchemaDir = args.j || args.jsonSchemaDir || config.jsonSchemaDir || "./jsonSchema";
     config.rootDir = args.o || args.rootDir || config.rootDir || ".";
-    config.srcDir = path.join(config.srcDir || config.rootDir, "src");
-    config.sysDir = path.join(config.sysDir || config.srcDir, "system");
-    config.openapiDir = path.join(config.srcDir, "openapi");
+    config.srcDir = config.srcDir || config.rootDir + "/src";
+    config.sysDir = config.sysDir || config.srcDir + "/system";
+    config.openapiDir = config.srcDir + "/openapi";
 
     // app
     config.app = config.app || {},
