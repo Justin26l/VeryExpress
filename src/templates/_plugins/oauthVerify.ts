@@ -27,7 +27,7 @@ export default async function oauthVerify(accessToken: string, refreshToken: str
                 familyName: profile.name?.familyName, 
                 givenName: profile.name?.givenName,
                 isActive: true,
-                locale: profile._json?.locale || 'en',
+                locale: profile._json?.locale || "en",
             });
             newUser.save();
             return done(null, newUser);

@@ -4,7 +4,7 @@ import { Router } from "express";
 import passport, { PassportStatic, Profile } from "passport";
 import { AuthenticateOptionsGoogle, Strategy as GoogleStrategy, StrategyOptions, VerifyCallback } from "passport-google-oauth20";
 import { UserModel } from "./../_models/UserModel.gen";
-
+import { generateToken } from "../_utils/jwt.gen";
 export type { Profile };
 
 export interface passportGoogleConfig {
@@ -44,6 +44,15 @@ export default class PassportGoogle {
         this.router.get("/auth/google/callback", 
             this.passport.authenticate("google", { failureRedirect: "/login" }), 
             (req, res) => {
+                const reqUser: any = req.user;
+                const user = {
+                    _id: reqUser._id.toString(),
+                    email: reqUser.email,
+                    name: reqUser.name,
+                }
+                console.log('req.user', user);
+                const token = generateToken(user);
+                res.cookie('jwt', token, { httpOnly: true, secure: true });
                 res.redirect("/profile");
             }
         );
