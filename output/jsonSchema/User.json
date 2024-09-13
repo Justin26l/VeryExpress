@@ -59,6 +59,30 @@
             "default": [
                 "visitor"
             ]
+        },
+        "package": {
+            "type": "string",
+            "x-format": "ObjectId",
+            "x-foreignKey": "Package",
+            "x-foreignValue": [
+                "name",
+                "period",
+                "price",
+                "startDate",
+                "endDate"
+            ]
+        },
+        "contact": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "x-format": "ObjectId",
+                "x-foreignKey": "UserContact",
+                "x-foreignValue": [
+                    "phoneNo",
+                    "isActive"
+                ]
+            }
         }
     },
     "required": [

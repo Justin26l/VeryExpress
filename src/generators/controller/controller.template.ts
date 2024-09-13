@@ -8,9 +8,15 @@ export default function controllerTemplate(templateOptions: {
     endpoint: string,
     modelPath: string,
     documentName: string,
-    validators: {[key:string]:{[key:string]:Schema}},
+    populateOptions?: types.populateOptions
+    validators: {
+        [key:string]: {
+            [key:string]: Schema
+        }
+    },
     compilerOptions: types.compilerOptions,
 }) : string {
+
 
     let template :string = templateOptions.template || `{{headerComment}}
 import * as controllerFactory from "./_ControllerFactory.gen";
@@ -54,7 +60,8 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
                 return vex.response.send(res, 400, vex.responseMsg.validateError, validationError.array());
             };
 
-            const result = await {{documentName}}Model.findById(req.params.id);
+            const result = await {{documentName}}Model.findById(req.params.id){{populateAll}};
+
             if (!result) {
                 return vex.response.send(res, 404, vex.responseMsg.notFound);
             }
@@ -74,16 +81,21 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
             };
             
             const searchFilter = new MongoQS().parse(req.query);
+            delete searchFilter._select;
+            delete searchFilter._join;
+            
             let selectedFields : {[key: string]: number} | undefined = undefined;
+            let populateOptions : any | undefined = undefined;
 
             try { 
-                selectedFields = vex.common.parseFieldsSelect(req.query.select || '');
+                selectedFields = vex.common.parseFieldsSelect(req);
+                populateOptions = vex.common.parseCollectionJoin(req, {{populateOptions}});
             } 
             catch (err:any) { 
                 return vex.response.send(res, 400, vex.responseMsg.queryError, { error: err.message });
             };
 
-            const result = await {{documentName}}Model.find(searchFilter, selectedFields);
+            const result = await {{documentName}}Model.find(searchFilter, selectedFields).populate(populateOptions);
             return vex.response.send(res, 200, vex.responseMsg.ok, result);
         } catch (err:any) {
             return vex.response.send(res, 500, vex.responseMsg.unexpectedError, { error: err.message });
@@ -169,8 +181,11 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
 
 export default new {{documentName}}Controller().router;
 `;
-      
-    const indent3 = "           ";
+    
+    const indent = "    ";
+    const indent2 = indent+indent;
+    const indent3 = indent2+indent;
+    const indent4 = indent3+indent;
 
     template = template.replace(/{{headerComment}}/g, templateOptions.compilerOptions.headerComment || "// generated files by very-express");
     template = template.replace(/{{documentName}}/g, templateOptions.documentName);
@@ -185,6 +200,16 @@ export default new {{documentName}}Controller().router;
             this.getList${templateOptions.documentName}.bind(this)
         );`
     );
+
+    // populate options
+    let populateTemplate = "";
+    if(templateOptions.populateOptions){
+        const populateParam: string = JSON.stringify(Object.keys(templateOptions.populateOptions));
+        populateTemplate = Object.keys(templateOptions.populateOptions).length>0 ? `\n${indent4}.populate(${ populateParam })` : "";
+    }
+    template = template.replace(/{{populateAll}}/g, populateTemplate);
+
+    template = template.replace(/{{populateOptions}}/g, JSON.stringify(templateOptions.populateOptions));
 
     template = template.replace(
         /{{getRoute}}/g, 

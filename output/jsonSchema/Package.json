@@ -1,0 +1,56 @@
+{
+    "type": "object",
+    "x-documentConfig": {
+        "methods": [
+            "get",
+            "getList",
+            "post",
+            "put",
+            "patch",
+            "delete"
+        ],
+        "documentName": "Package"
+    },
+    "properties": {
+        "_id": {
+            "type": "string",
+            "x-format": "ObjectId",
+            "index": true
+        },
+        "name": {
+            "type": "string",
+            "required": true
+        },
+        "period": {
+            "type": "string",
+            "required": true
+        },
+        "price": {
+            "type": "number",
+            "required": true
+        },
+        "startDate": {
+            "type": "string",
+            "format": "date",
+            "required": true
+        },
+        "endDate": {
+            "type": "string",
+            "format": "date",
+            "required": true
+        },
+        "isActive": {
+            "type": "boolean",
+            "required": true
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "name",
+        "period",
+        "price",
+        "startDate",
+        "endDate",
+        "isActive"
+    ]
+}

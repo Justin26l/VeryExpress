@@ -2,8 +2,8 @@
     "commitBeforeGenerate": false,
     "jsonSchemaDir": "./output/jsonSchema",
     "rootDir": "./output",
-    "srcDir": "./output/src",
-    "openapiDir": "./output/src/openapi",
+    "srcDir": "output/src",
+    "openapiDir": "output/src/openapi",
     "app": {
         "enableSwagger": true,
         "useUserSchema": true,
@@ -28,5 +28,5 @@
             "User"
         ]
     },
-    "sysDir": "./output/src/system"
+    "sysDir": "output/src/system"
 }

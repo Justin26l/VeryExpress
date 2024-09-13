@@ -10,7 +10,7 @@ export function roleSetupFile(options: {
 }): void {
     if(!options.compilerOptions.useRBAC){ return; }
 
-    const actionArray = [ "create", "search", "read", "update", "delete"];
+    const actionArray = [ "create", "read", "update", "delete"];
 
     options.compilerOptions.useRBAC?.roles.forEach((role) => {
 
