@@ -13,3 +13,8 @@ export function generateToken(data: any, expiresIn: string = '1h'): { token: str
         clientIndex: keyInfo.clientIndex
     }
 }
+
+export function verifyToken(token: string, index: number): any {
+    const key = keys.getKey(index);
+    return jwt.verify(token, key);
+}

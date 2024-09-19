@@ -1,21 +1,34 @@
 // {{headerComment}}
 
 import { Profile } from "passport";
-import { UserModel } from "./../_models/UserModel.gen";
+import { UserModel, UserDocument } from "./../_models/UserModel.gen";
+import { generateToken } from "./auth/jwt.gen";
 
 interface IProfile extends Profile {
     [key: string]: any;
+}
+
+function sanitizeUser(user: UserDocument){
+    console.log(user);
+    return {
+        _id: user._id,
+        email: user.email,
+        name: user.name,
+        locale: user.locale,
+        roles: user.roles
+    };
 }
 
 export default async function oauthVerify(accessToken: string, refreshToken: string, profile: IProfile, done: (error: any, user?: any) => void) : Promise<void> {
     try {
 
         // find or create user
+        let userProfile: any;
         const existingUser = await UserModel.findOne({ email: profile.emails?.[0].value });
 
         if( existingUser ){
+            userProfile = existingUser;
             // log.info('OAuthVerify ExistingUser');
-            return done(null, existingUser);
         }
         else {
             // log.info('OAuthVerify NewUser');
@@ -30,8 +43,15 @@ export default async function oauthVerify(accessToken: string, refreshToken: str
                 locale: profile._json?.locale || "en",
             });
             newUser.save();
-            return done(null, newUser);
+            userProfile = newUser;
         }
+
+        const sanitizedProfile = sanitizeUser(userProfile)
+        const tokenInfo = generateToken(sanitizedProfile, '1h');
+        return done(null, {
+            profile: sanitizedProfile, 
+            tokenInfo
+        });
     }
     catch(err) { 
         return done(err); 

@@ -3,19 +3,13 @@ import  utils from "../../utils";
 import * as types from "../../types/types";
 
 // import
-const importExpressSession = "import session from 'express-session';";
+const importCookieParser = "import cookieParser from 'cookie-parser';";
 const importOAuthVerifyPlugin = "import oauthVerify from './system/_plugins/oauthVerify.gen';";
 const importPassportGoogle = "import PassportGoogle from './system/_plugins/PassportGoogle.gen'";
 const importSwaggerRouter = "import SwaggerRouter from './system/_routes/SwaggerRouter.gen';";
 const importOAuthRouter = "import OAuthRouter from './system/_routes/OAuthRouter.gen';";
 
 // configure
-const ConfigExpressSession = `
-const expressSessionConfig = {
-    secret: 'your session secret', 
-    resave: false, 
-    saveUninitialized: false 
-}`;
 
 const ConfigSwaggerRouter = "const SwaggerRoute = new SwaggerRouter(); SwaggerRoute.initRoutes();";
 const ConfigOAuthRouter = "const OAuthRoute = new OAuthRouter(); OAuthRoute.initRoutes();";
@@ -28,12 +22,9 @@ const OAuthGoogle = new PassportGoogle({
 });`;
 
 // app.use 
-const UseSession = "app.use(session(expressSessionConfig));";
+const UseCookieParser = "app.use(cookieParser());";
 const UsePassportGoogle = `
-    await OAuthGoogle.passportSerializeUser();
-    await OAuthGoogle.passportDeserializeUser();
-    app.use(OAuthGoogle.passport.initialize());
-    app.use(OAuthGoogle.passport.session());`;
+    app.use(OAuthGoogle.passport.initialize());`;
 
 // routes
 const UseOAuthRouter = "app.use(OAuthRoute.router);";
@@ -128,10 +119,10 @@ main();
     const AppRoute: string[] = [];
 
     if (usedProvider.length > 0) {
-        Import.push(importExpressSession);
+        Import.push(importCookieParser);
+        AppUse.push(UseCookieParser);
+
         Import.push(importOAuthVerifyPlugin);
-        Config.push(ConfigExpressSession);
-        AppUse.push(UseSession);
 
         if (options.compilerOptions.app.enableSwagger) {
             Import.push(importSwaggerRouter);

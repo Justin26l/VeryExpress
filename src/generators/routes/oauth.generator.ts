@@ -14,6 +14,7 @@ export function compile( compilerOptions: types.compilerOptions ): string {
     const providers: string[] = utilsGenerator.isUseOAuth(compilerOptions);
     return `${compilerOptions.headerComment}
 import { Router } from 'express';
+import { verifyToken } from '../_plugins/auth/jwt.gen';
 import util from 'util';
 
 export default class OAuthRouter{
@@ -38,11 +39,13 @@ export default class OAuthRouter{
 
 
         this.router.get('/profile', (req, res) => {
-            if (req.isAuthenticated()) {
+            if (req.cookies.token) {
+                // to do: use header's token index
+                const decodedToken = verifyToken(req.cookies.token, 0);
                 res.send(\`
                     <div>
-                        <h1>Session Data</h1>
-                        <pre>\${util.inspect(req.user, undefined, null)}</pre>
+                        <h1>Profile Data</h1>
+                        <pre>\${util.inspect(decodedToken)}</pre>
                         <a href="/">back to home</a>
                     </div>
                 \`);

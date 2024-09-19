@@ -1,10 +1,11 @@
 // {{headerComment}}
 
+import crypto from "crypto";
 import { Router } from "express";
 import passport, { PassportStatic, Profile } from "passport";
 import { AuthenticateOptionsGoogle, Strategy as GoogleStrategy, StrategyOptions, VerifyCallback } from "passport-google-oauth20";
 import { UserModel } from "./../_models/UserModel.gen";
-import { generateToken } from "../_utils/jwt.gen";
+
 export type { Profile };
 
 export interface passportGoogleConfig {
@@ -47,45 +48,20 @@ export default class PassportGoogle {
 
         // back from google login
         this.router.get("/auth/google/callback", 
-            this.passport.authenticate("google", this.config.authenticateOptionsGoogle),
+            this.passport.authenticate("google", this.config.authenticateOptionsGoogle), 
             (req, res) => {
-                const reqUser: any = req.user;
-                res.cookie('token', reqUser.accessToken, { httpOnly: true, secure: true });
-                res.redirect("/profile");
+                const user = req.user as any;
+                res.cookie("token", user.tokenInfo.token, { httpOnly: true });
+
+                const nonce = crypto.randomBytes(16).toString('base64');
+                res.setHeader("Content-Security-Policy", `script-src 'self' 'nonce-${nonce}'`);
+                res.send(`
+                    <script nonce="${nonce}">
+                        localStorage.setItem('clientIndex', '${user.tokenInfo.clientIndex}');
+                        window.location.href = '/profile';
+                    </script>
+                `);
             }
         );
     }
-
-    public passportSerializeUser() {
-        this.passport.serializeUser(async (user, done) => {
-            // you can decide what data to store in the session here.
-            // this data will be used in `deserializeUser` to retrieve the full user object.
-            // ussually just user's id.
-
-            // store role in session for access control
-            const DbUser = await UserModel.findById(user);
-            if (DbUser) {
-                done(null, DbUser);
-            } else {
-                done(new Error("User not found"));
-            }
-
-            done(null, user);
-        });
-    }
-
-    public async passportDeserializeUser() {
-        this.passport.deserializeUser(async (id, done) => {
-
-            const user = await UserModel.findById(id);
-            if (user) {
-                done(null, user);
-            } 
-            else {
-                done(new Error("User not found"));
-            }
-            
-        });
-    }
-
 }
