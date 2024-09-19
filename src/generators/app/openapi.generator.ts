@@ -40,7 +40,7 @@ export async function compile(
     files.forEach((file) => {
         // ignore non json files
         if (!file.endsWith(".json")) return;
-        const jsonSchemaFilePath: string = path.join(compilerOptions.jsonSchemaDir, file);
+        const jsonSchemaFilePath: string = path.posix.join(compilerOptions.jsonSchemaDir, file);
         log.process(`OpenApi : ${jsonSchemaFilePath}`);
 
         const jsonSchemaBuffer = fs.readFileSync(`${compilerOptions.jsonSchemaDir}/${file}`);

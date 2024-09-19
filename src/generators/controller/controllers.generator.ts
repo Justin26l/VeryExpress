@@ -25,7 +25,7 @@ export async function compile(options: {
     modelDir: string,
     compilerOptions: types.compilerOptions
 }): Promise<void> {
-    const file: string = fs.readFileSync(path.join(options.compilerOptions.openapiDir, options.openapiFile), "utf8");
+    const file: string = fs.readFileSync(path.posix.join(options.compilerOptions.openapiDir, options.openapiFile), "utf8");
     const controllerToModelBasePath: string = utils.common.relativePath(options.compilerOptions.sysDir, options.modelDir);
 
     const openApi: openapiType.openapi = jsYaml.load(file) as openapiType.openapi;

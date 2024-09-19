@@ -17,10 +17,10 @@ export async function compile(
     compilerOptions: types.compilerOptions
 ): Promise<void> {
 
-    const serverOutPath = path.join(compilerOptions.srcDir, "server.ts");
-    const packageOutPath = path.join(compilerOptions.rootDir, "package.json");
-    const envOutPath = path.join(compilerOptions.rootDir, ".env");
-    const tsconfigOutPath = path.join(compilerOptions.rootDir, "tsconfig.json");
+    const serverOutPath = path.posix.join(compilerOptions.srcDir, "server.ts");
+    const packageOutPath = path.posix.join(compilerOptions.rootDir, "package.json");
+    const envOutPath = path.posix.join(compilerOptions.rootDir, ".env");
+    const tsconfigOutPath = path.posix.join(compilerOptions.rootDir, "tsconfig.json");
 
     // write server file
     utils.common.writeFile(
