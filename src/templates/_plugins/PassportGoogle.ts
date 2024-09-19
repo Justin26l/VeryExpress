@@ -25,6 +25,11 @@ export default class PassportGoogle {
     constructor(config: passportGoogleConfig ) {
 
         this.config = config;
+        this.config.authenticateOptionsGoogle = this.config.authenticateOptionsGoogle || { 
+            session: false, 
+            scope: ["profile", "email"], 
+            failureRedirect: "/login"
+        };
 
         this.passport.use(new GoogleStrategy(
             this.config.strategyConfig.options || {
@@ -37,22 +42,15 @@ export default class PassportGoogle {
 
         // redirect to google login
         this.router.get("/auth/google",
-            this.passport.authenticate("google", this.config.authenticateOptionsGoogle || { scope: ["profile", "email"] })
+            this.passport.authenticate("google", this.config.authenticateOptionsGoogle)
         );
 
         // back from google login
         this.router.get("/auth/google/callback", 
-            this.passport.authenticate("google", { failureRedirect: "/login" }), 
+            this.passport.authenticate("google", this.config.authenticateOptionsGoogle),
             (req, res) => {
                 const reqUser: any = req.user;
-                const user = {
-                    _id: reqUser._id.toString(),
-                    email: reqUser.email,
-                    name: reqUser.name,
-                }
-                console.log('req.user', user);
-                const token = generateToken(user);
-                res.cookie('jwt', token, { httpOnly: true, secure: true });
+                res.cookie('token', reqUser.accessToken, { httpOnly: true, secure: true });
                 res.redirect("/profile");
             }
         );
