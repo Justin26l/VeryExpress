@@ -2,16 +2,16 @@ export class JWTKeyStore{
     private keys: string[] = [];
     constructor(){
         this.keys = [
-            process.env.AUTH_KEY0 || undefined,
-            process.env.AUTH_KEY1 || undefined,
-            process.env.AUTH_KEY2 || undefined,
-            process.env.AUTH_KEY3 || undefined,
-            process.env.AUTH_KEY4 || undefined,
-            process.env.AUTH_KEY5 || undefined,
-            process.env.AUTH_KEY6 || undefined,
-            process.env.AUTH_KEY7 || undefined,
-            process.env.AUTH_KEY8 || undefined,
-            process.env.AUTH_KEY9 || undefined,
+            process.env.JWT_KEY0 || undefined,
+            process.env.JWT_KEY1 || undefined,
+            process.env.JWT_KEY2 || undefined,
+            process.env.JWT_KEY3 || undefined,
+            process.env.JWT_KEY4 || undefined,
+            process.env.JWT_KEY5 || undefined,
+            process.env.JWT_KEY6 || undefined,
+            process.env.JWT_KEY7 || undefined,
+            process.env.JWT_KEY8 || undefined,
+            process.env.JWT_KEY9 || undefined,
         ].filter((key) => key !== undefined);
     }
 
@@ -36,8 +36,8 @@ export class JWTKeyStore{
     }
 
     /**
-     * return key by index
-    */
+     * retrive key by index or client index
+     */
     public getKey(index:number|string): string {
         if (typeof index === 'string') {
             index = parseInt(index.replace(/\D/g, ''));
