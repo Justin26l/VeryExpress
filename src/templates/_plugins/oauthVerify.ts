@@ -9,7 +9,6 @@ interface IProfile extends Profile {
 }
 
 function sanitizeUser(user: UserDocument){
-    console.log(user);
     return {
         _id: user._id,
         email: user.email,
