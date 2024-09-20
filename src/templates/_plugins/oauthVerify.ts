@@ -45,8 +45,8 @@ export default async function oauthVerify(accessToken: string, refreshToken: str
             userProfile = newUser;
         }
 
-        const sanitizedProfile = sanitizeUser(userProfile)
-        const tokenInfo = generateToken(sanitizedProfile, '1h');
+        const sanitizedProfile = sanitizeUser(userProfile);
+        const tokenInfo = generateToken(sanitizedProfile, "1h");
         return done(null, {
             profile: sanitizedProfile, 
             tokenInfo

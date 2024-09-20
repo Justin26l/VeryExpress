@@ -1,3 +1,6 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 export class JWTKeyStore{
     private keys: string[] = [];
     constructor(){
@@ -39,16 +42,16 @@ export class JWTKeyStore{
      * retrive key by index or client index
      */
     public getKey(index:number|string): string {
-        if (typeof index === 'string') {
-            index = parseInt(index.replace(/\D/g, ''));
+        if (typeof index === "string") {
+            index = parseInt(index.replace(/\D/g, ""));
         }
 
         return this.keys[index];
     }
 
     private getRandomCharString(length: number = 3): string {
-        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-        let result = '';
+        const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+        let result = "";
         for (let i = 0; i < length; i++) {
             const randomIndex = Math.floor(Math.random() * characters.length);
             result += characters[randomIndex];

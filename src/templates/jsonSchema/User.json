@@ -11,6 +11,7 @@
     "properties": {
         "_id": {
             "type": "string",
+            "x-format": "ObjectId",
             "index": true
         },
         "authProvider": {

@@ -4,7 +4,6 @@ import crypto from "crypto";
 import { Router } from "express";
 import passport, { PassportStatic, Profile } from "passport";
 import { AuthenticateOptionsGoogle, Strategy as GoogleStrategy, StrategyOptions, VerifyCallback } from "passport-google-oauth20";
-import { UserModel } from "./../_models/UserModel.gen";
 
 export type { Profile };
 
@@ -53,7 +52,7 @@ export default class PassportGoogle {
                 const user = req.user as any;
                 res.cookie("token", user.tokenInfo.token, { httpOnly: true });
 
-                const nonce = crypto.randomBytes(16).toString('base64');
+                const nonce = crypto.randomBytes(16).toString("base64");
                 res.setHeader("Content-Security-Policy", `script-src 'self' 'nonce-${nonce}'`);
                 res.send(`
                     <script nonce="${nonce}">

@@ -1,9 +1,9 @@
-import jwt from 'jsonwebtoken';
-import JWTKeyStore from './JWTKeyStore';
+import jwt from "jsonwebtoken";
+import JWTKeyStore from "./JWTKeyStore.gen";
 
 const keys = new JWTKeyStore();
 
-export function generateToken(data: any, expiresIn: string = '1h'): { token: string, index: number, clientIndex: string } {
+export function generateToken(data: any, expiresIn: string = "1h"): { token: string, index: number, clientIndex: string } {
     const keyInfo = keys.getRandomKey();
     const token = jwt.sign(data, keyInfo.key, { expiresIn: expiresIn });
 
@@ -11,7 +11,7 @@ export function generateToken(data: any, expiresIn: string = '1h'): { token: str
         token: token,
         index: keyInfo.index,
         clientIndex: keyInfo.clientIndex
-    }
+    };
 }
 
 export function verifyToken(token: string, index: number): any {

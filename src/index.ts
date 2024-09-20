@@ -146,7 +146,6 @@ export async function generate(
             controllerPath: path.posix.join(utils.common.relativePath(dir.routeDir, dir.controllerDir), doc.config.documentName + "Controller.gen"),
         });
 
-        console.log(path.posix.join(utils.common.relativePath(dir.routeDir, dir.controllerDir), doc.config.documentName + "Controller.gen"))
         
         return;
     }));

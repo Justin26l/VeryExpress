@@ -48,6 +48,7 @@
             "x-vexData": "role",
             "items": {
                 "type": "string",
+                "default": "user",
                 "required": true,
                 "enum": [
                     "visitor",
@@ -89,7 +90,7 @@
         "active",
         "email",
         "name",
-        "locale",
-        "roles"
+        "roles",
+        "locale"
     ]
 }
