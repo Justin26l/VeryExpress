@@ -7,12 +7,12 @@ const importCookieParser = "import cookieParser from 'cookie-parser';";
 const importOAuthVerifyPlugin = "import oauthVerify from './system/_plugins/oauthVerify.gen';";
 const importPassportGoogle = "import PassportGoogle from './system/_plugins/PassportGoogle.gen'";
 const importSwaggerRouter = "import SwaggerRouter from './system/_routes/SwaggerRouter.gen';";
-const importOAuthRouter = "import OAuthRouter from './system/_routes/OAuthRouter.gen';";
+const importAuthRouter = "import AuthRouter from './system/_routes/AuthRouter.gen';";
 
 // configure
 
 const ConfigSwaggerRouter = "const SwaggerRoute = new SwaggerRouter(); SwaggerRoute.initRoutes();";
-const ConfigOAuthRouter = "const OAuthRoute = new OAuthRouter(); OAuthRoute.initRoutes();";
+const ConfigAuthRouter = "const AuthRoute = new AuthRouter(); AuthRoute.initRoutes();";
 
 const ConfigPassportGoogle = `
 const OAuthGoogle = new PassportGoogle({
@@ -27,7 +27,7 @@ const UsePassportGoogle = `
     app.use(OAuthGoogle.passport.initialize());`;
 
 // routes
-const UseOAuthRouter = "app.use(OAuthRoute.router);";
+const UseAuthRouter = "app.use(AuthRoute.router);";
 const UseSwaggerRouter = "app.use(SwaggerRoute.router);";
 const UseOAuthGoogleRouter = "app.use(OAuthGoogle.router);";
 
@@ -130,9 +130,9 @@ main();
             AppRoute.push(UseSwaggerRouter);
         }
 
-        Import.push(importOAuthRouter);
-        Config.push(ConfigOAuthRouter);
-        AppRoute.push(UseOAuthRouter);
+        Import.push(importAuthRouter);
+        Config.push(ConfigAuthRouter);
+        AppRoute.push(UseAuthRouter);
 
         if (usedProvider.includes("google")) {
             Import.push(importPassportGoogle);

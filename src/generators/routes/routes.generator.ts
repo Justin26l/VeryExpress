@@ -1,5 +1,5 @@
 import routesTemplate from "./routes.template";
-import * as routesOAuthGen from "./oauth.generator";
+import * as routesAuthGen from "./auth.generator";
 import * as routesSwaggerGen from "./swagger.generator";
 
 import * as types from "./../../types/types";
@@ -27,15 +27,15 @@ export async function compile(options: {
     log.process("Route");
     
     const routesApiOutPath: string = `${options.routesDir}/ApiRouter.gen.ts`;
-    const routesOAuthOutPath: string = `${options.routesDir}/OAuthRouter.gen.ts`;
+    const routesAuthOutPath: string = `${options.routesDir}/AuthRouter.gen.ts`;
     const routesSwaggerOutPath: string = `${options.routesDir}/SwaggerRouter.gen.ts`;
 
     // use oauth
     if ( utils.generator.isUseOAuth(options.compilerOptions).length > 0 ) {
         utils.common.writeFile(
-            "Route OAuth", 
-            routesOAuthOutPath,
-            routesOAuthGen.compile(options.compilerOptions)
+            "Route Auth", 
+            routesAuthOutPath,
+            routesAuthGen.compile(options.compilerOptions)
         );
     }
 

@@ -17,7 +17,7 @@ import { Router } from 'express';
 import { verifyToken } from '../_plugins/auth/jwt.gen';
 import util from 'util';
 
-export default class OAuthRouter{
+export default class AuthRouter{
 
     public router: Router = Router();
     private loginHtml = ${loginHtml(providers)};
