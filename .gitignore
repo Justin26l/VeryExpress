@@ -8,6 +8,7 @@ tsc_out/
 output/*
 !output/jsonSchema
 !output/*.txt
+!output/.gitignore
 
 # Dependency directories
 node_modules/
