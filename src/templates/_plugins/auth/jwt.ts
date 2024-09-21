@@ -3,9 +3,22 @@ import JWTKeyStore from "./JWTKeyStore.gen";
 
 const keys = new JWTKeyStore();
 
-export function generateToken(data: any, expiresIn: string = "1h"): { token: string, index: number, clientIndex: string } {
+export function generateToken(
+    data: any, 
+    expiresIn?: string
+): { 
+    token: string, 
+    index: number, 
+    clientIndex: string 
+} {
     const keyInfo = keys.getRandomKey();
-    const token = jwt.sign(data, keyInfo.key, { expiresIn: expiresIn });
+    const token = jwt.sign(
+        data,
+        keyInfo.key,
+        {
+            expiresIn: expiresIn || keys.expireTime || '1h',
+        }
+    );
 
     return {
         token: token,
@@ -14,7 +27,18 @@ export function generateToken(data: any, expiresIn: string = "1h"): { token: str
     };
 }
 
-export function verifyToken(token: string, index: number): any {
-    const key = keys.getKey(index);
-    return jwt.verify(token, key);
+/**
+ * Verifies a JSON Web Token (JWT) using the provided token and key index.
+ *
+ * @param {string} token - The JSON Web Token to be verified.
+ * @param {number} index - The index of the key used to verify the token.
+ * @return {jwt.JwtPayload | string | false} The decoded token payload, an error message, or false if verification fails.
+ */
+export function verifyToken(token: string, index?: number|string): jwt.JwtPayload | string | false {
+    try {
+        const key = keys.getKey(index || 0);
+        return jwt.verify(token, key)
+    } catch (e) {
+        return false;
+    }
 }

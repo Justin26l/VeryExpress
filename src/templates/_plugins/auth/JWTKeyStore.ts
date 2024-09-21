@@ -2,7 +2,9 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export class JWTKeyStore{
+    readonly expireTime: string | undefined = process.env.JWT_EXPIRE_TIME;
     private keys: string[] = [];
+
     constructor(){
         this.keys = [
             process.env.JWT_KEY0 || undefined,

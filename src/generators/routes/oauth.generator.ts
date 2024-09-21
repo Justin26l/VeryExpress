@@ -40,8 +40,14 @@ export default class OAuthRouter{
 
         this.router.get('/profile', (req, res) => {
             if (req.cookies.token) {
-                // to do: use header's token index
-                const decodedToken = verifyToken(req.cookies.token, 0);
+                const tokenIndex: string | undefined = req.headers['token-index']?.toString() || undefined;
+                const decodedToken = verifyToken(req.cookies.token, tokenIndex);
+
+                if (decodedToken === false) {
+                    res.redirect('/login');
+                    return;
+                };
+                
                 res.send(\`
                     <div>
                         <h1>Profile Data</h1>

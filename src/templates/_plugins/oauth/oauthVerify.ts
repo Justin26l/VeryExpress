@@ -1,8 +1,8 @@
 // {{headerComment}}
 
 import { Profile } from "passport";
-import { UserModel, UserDocument } from "./../_models/UserModel.gen";
-import { generateToken } from "./auth/jwt.gen";
+import { UserModel, UserDocument } from "./../../_models/UserModel.gen";
+import { generateToken } from "./../auth/jwt.gen";
 
 interface IProfile extends Profile {
     [key: string]: any;
@@ -46,7 +46,7 @@ export default async function oauthVerify(accessToken: string, refreshToken: str
         }
 
         const sanitizedProfile = sanitizeUser(userProfile);
-        const tokenInfo = generateToken(sanitizedProfile, "1h");
+        const tokenInfo = generateToken(sanitizedProfile);
         return done(null, {
             profile: sanitizedProfile, 
             tokenInfo
