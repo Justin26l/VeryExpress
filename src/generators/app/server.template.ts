@@ -4,8 +4,8 @@ import * as types from "../../types/types";
 
 // import
 const importCookieParser = "import cookieParser from 'cookie-parser';";
-const importOAuthVerifyPlugin = "import oauthVerify from './system/_plugins/oauthVerify.gen';";
-const importPassportGoogle = "import PassportGoogle from './system/_plugins/PassportGoogle.gen'";
+const importOAuthVerifyPlugin = "import oauthVerify from './system/_plugins/oauth/oauthVerify.gen';";
+const importPassportGoogle = "import PassportGoogle from './system/_plugins/oauth/PassportGoogle.gen'";
 const importSwaggerRouter = "import SwaggerRouter from './system/_routes/SwaggerRouter.gen';";
 const importAuthRouter = "import AuthRouter from './system/_routes/AuthRouter.gen';";
 
@@ -94,6 +94,7 @@ async function main(): Promise<void> {
                 <ul>
                     <li><a href="/login">login</a></li>
                     <li><a href="/profile">profile</a></li>
+                    <li><a href="/checkprofile">checkprofile</a></li>
                     <li><a href="/logout">logout</a></li>
                     <li><a href="/api">api</a></li>
                 </ul>

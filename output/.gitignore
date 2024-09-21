@@ -1,0 +1,6 @@
+!/src
+/src/*
+!/src/system
+/src/system/*
+!/src/system/_plugins
+!/src/system/_routes

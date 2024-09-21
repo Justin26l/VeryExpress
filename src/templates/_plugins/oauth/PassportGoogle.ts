@@ -57,7 +57,7 @@ export default class PassportGoogle {
                 res.send(`
                     <script nonce="${nonce}">
                         localStorage.setItem('tokenIndex', '${user.tokenInfo.clientIndex}');
-                        window.location.href = '/profile';
+                        window.location.href = '/checkprofile';
                     </script>
                 `);
             }

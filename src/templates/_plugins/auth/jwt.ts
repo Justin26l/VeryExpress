@@ -36,7 +36,10 @@ export function generateToken(
  */
 export function verifyToken(token: string, index?: number|string): jwt.JwtPayload | string | false {
     try {
-        const key = keys.getKey(index || 0);
+        if(!index) {
+            return false;
+        }
+        const key = keys.getKey(index);
         return jwt.verify(token, key)
     } catch (e) {
         return false;
