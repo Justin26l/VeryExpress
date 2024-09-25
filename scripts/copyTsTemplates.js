@@ -6,9 +6,15 @@ const path = require('path');
  * to copy template files into tsc output dir (dist)
  */
 function copyDir (src, destination) {
+
     if (!fs.existsSync(destination)) {
         fs.mkdirSync(destination);
     }
+    else {
+        fs.rmdirSync(destination, { recursive: true });
+        fs.mkdirSync(destination);
+    }
+    
     fs.readdirSync(src).forEach((file) => {
         const srcPath = path.join(src, file);
         const destPath = path.join(destination, file);

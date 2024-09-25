@@ -17,26 +17,37 @@ import { Router } from 'express';
 import { verifyToken } from '../_plugins/auth/jwt.gen';
 import crypto from 'crypto';
 
-const DummyLoginUI = ${loginHtml(providers)};
-const profileUI = (nonce:string)=> \`<html>
-    <head>
-        <script nonce="\${nonce}">
-            document.addEventListener("DOMContentLoaded", function() {
-                const tokenIndex = localStorage.getItem('tokenIndex');
-                const headers = new Headers();
-                headers.append('token-index', tokenIndex);
-                fetch('/profile', { headers })
-                    .then(res => res.text())
-                    .then(data => document.querySelector("#profileData").innerHTML = data);
-            });
-        </script>
-    </head>
-    <body>
-        <h1>Profile Data</h1>
-        <pre id="profileData"></pre>
-        <a href="/">back to home</a>
-    </body>
-</html>\`;
+const DummyLoginUI =  ${loginHtml(providers)};
+const profileUI = (nonce:string, token:string, tokenIndex:string) => {
+    const setToken = token && tokenIndex;
+    return \`<!DOCTYPE html>
+        <head>
+            <script nonce="\${nonce}">
+                \${
+                    setToken ? \`
+                    localStorage.setItem('token', '\${token}');
+                    localStorage.setItem('tokenIndex', '\${tokenIndex}');
+                    \` : 
+                    ''
+                }
+                document.addEventListener("DOMContentLoaded", function() {
+                    const tokenIndex = localStorage.getItem('tokenIndex');
+                    const headers = new Headers();
+                    headers.append('token-index', tokenIndex);
+                    headers.append('Authorization', 'Bearer ' + localStorage.getItem('token'));
+                    fetch('/profile', { headers })
+                        .then(res => res.text())
+                        .then(data => document.querySelector("#profileData").innerHTML = data);
+                });
+            </script>
+        </head>
+        <body>
+            <h1>Profile Data</h1>
+            <pre id="profileData"></pre>
+            <a href="/">back to home</a>
+        </body>
+    </html>\`;
+};
 
 
 export default class AuthRouter{
@@ -63,22 +74,19 @@ export default class AuthRouter{
 
         /** Dummy Profile UI, show how to make auth request */
         this.router.get('/checkprofile', (req, res) => {
-            if (req.cookies.token) {
+            const token = req.query.token?.toString() || '';
+            const tokenIndex = req.query.tokenIndex?.toString() || '';
+            const nonce = crypto.randomBytes(16).toString("base64");
 
-                const nonce = crypto.randomBytes(16).toString("base64");
-
-                res.setHeader("Content-Security-Policy", \`script-src 'self' 'nonce-\${nonce}'\`);
-                res.send(profileUI(nonce));
-            } 
-            else {
-                res.redirect('/login');
-            };
+            res.setHeader("Content-Security-Policy", \`script-src 'self' 'nonce-\${nonce}'\`);
+            res.send(profileUI(nonce, token, tokenIndex));
         });
 
         this.router.get('/profile', (req, res) => {
-            if (req.cookies.token) {
+            if (req.headers['authorization']) {
+                const token = req.headers['authorization']?.toString().split(' ')[1];
                 const tokenIndex: string | undefined = req.headers['token-index']?.toString() || undefined;
-                const decodedToken = verifyToken(req.cookies.token, tokenIndex);
+                const decodedToken = verifyToken(token, tokenIndex);
 
                 if (decodedToken === false) {
                     res.redirect('/login');

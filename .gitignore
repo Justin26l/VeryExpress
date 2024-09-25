@@ -7,9 +7,6 @@ tsc_out/
 # generated files
 output/*
 !output/jsonSchema
-!output/*.txt
-!output/.gitignore
-
 # Dependency directories
 node_modules/
 jspm_packages/
