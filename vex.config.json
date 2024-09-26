@@ -12,10 +12,7 @@
     },
     "useOauth": {
         "google": true,
-        "microsoft": false,
-        "apple": false,
-        "github": true,
-        "facebook": false
+        "github": true
     },
     "useRBAC": {
         "roles": [
