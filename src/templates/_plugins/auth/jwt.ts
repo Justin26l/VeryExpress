@@ -16,7 +16,7 @@ export function generateToken(
         data,
         keyInfo.key,
         {
-            expiresIn: expiresIn || keys.expireTime || '1h',
+            expiresIn: expiresIn || keys.expireTime || "1h",
         }
     );
 

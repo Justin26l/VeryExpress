@@ -14,7 +14,7 @@
         "google": true,
         "microsoft": false,
         "apple": false,
-        "github": false,
+        "github": true,
         "facebook": false
     },
     "useRBAC": {
