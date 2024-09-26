@@ -16,7 +16,7 @@ export function generateToken(
         data,
         keyInfo.key,
         {
-            expiresIn: expiresIn || keys.expireTime || '1h',
+            expiresIn: expiresIn || keys.expireTime || "1h",
         }
     );
 
@@ -37,7 +37,7 @@ export function generateToken(
 export function verifyToken(token: string, index?: number|string): jwt.JwtPayload | string | false {
     try {
         const key = keys.getKey(index || 0);
-        return jwt.verify(token, key)
+        return jwt.verify(token, key);
     } catch (e) {
         return false;
     }

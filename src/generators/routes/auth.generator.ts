@@ -4,7 +4,7 @@ import * as utilsGenerator from "./../../utils/generator";
 function loginHtml(providers: string[]) {
     let html = "<p> login with : </p>";
     providers.forEach((pp) => {
-        html += `<a href="\${process.env.APP_HOST}/auth/${pp}">${pp}</a>`;
+        html += `<a href="\${process.env.APP_HOST}/auth/${pp}">${pp}</a><br/>`;
     });
     return `\`${html}\``;
 }

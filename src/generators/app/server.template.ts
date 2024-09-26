@@ -4,8 +4,9 @@ import * as types from "../../types/types";
 
 // import
 const importCookieParser = "import cookieParser from 'cookie-parser';";
-const importOAuthVerifyPlugin = "import oauthVerify from './system/_plugins/oauthVerify.gen';";
-const importPassportGoogle = "import PassportGoogle from './system/_plugins/PassportGoogle.gen'";
+const importOAuthVerifyPlugin = "import oauthVerify from './system/_plugins/oauth/oauthVerify.gen';";
+const importPassportGoogle = "import PassportGoogle from './system/_plugins/oauth/PassportGoogle.gen'";
+const importPassportGithub = "import PassportGithub from './system/_plugins/oauth/PassportGithub.gen'";
 const importSwaggerRouter = "import SwaggerRouter from './system/_routes/SwaggerRouter.gen';";
 const importAuthRouter = "import AuthRouter from './system/_routes/AuthRouter.gen';";
 
@@ -21,15 +22,23 @@ const OAuthGoogle = new PassportGoogle({
     }
 });`;
 
+const ConfigPassportGithub = `
+const OAuthGithub = new PassportGithub({
+    strategyConfig: {
+        verify: oauthVerify
+    }
+});`;
+
 // app.use 
 const UseCookieParser = "app.use(cookieParser());";
-const UsePassportGoogle = `
-    app.use(OAuthGoogle.passport.initialize());`;
+const UsePassportGoogle = "app.use(OAuthGoogle.passport.initialize());";
+const UsePassportGithub = "app.use(OAuthGithub.passport.initialize());";
 
 // routes
 const UseAuthRouter = "app.use(AuthRoute.router);";
 const UseSwaggerRouter = "app.use(SwaggerRoute.router);";
 const UseOAuthGoogleRouter = "app.use(OAuthGoogle.router);";
+const UseOAuthGithubRouter = "app.use(OAuthGithub.router);";
 
 
 export default function serverTemplate(options: {
@@ -139,6 +148,12 @@ main();
             Config.push(ConfigPassportGoogle);
             AppUse.push(UsePassportGoogle);
             AppRoute.push(UseOAuthGoogleRouter);
+        }
+        if (usedProvider.includes("github")) {
+            Import.push(importPassportGithub);
+            Config.push(ConfigPassportGithub);
+            AppUse.push(UsePassportGithub);
+            AppRoute.push(UseOAuthGithubRouter);
         }
     }
 
