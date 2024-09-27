@@ -18,22 +18,19 @@ import { verifyToken } from '../_plugins/auth/jwt.gen';
 import crypto from 'crypto';
 
 const DummyLoginUI =  ${loginHtml(providers)};
-const profileUI = (nonce:string, token:string, tokenIndex:string) => {
-    const setToken = token && tokenIndex;
+const profileUI = (nonce:string, token:string) => {
     return \`<!DOCTYPE html>
         <head>
             <script nonce="\${nonce}">
                 \${
-                    setToken ? \`
+                    token ? \`
                     localStorage.setItem('token', '\${token}');
-                    localStorage.setItem('tokenIndex', '\${tokenIndex}');
                     \` : 
                     ''
                 }
                 document.addEventListener("DOMContentLoaded", function() {
-                    const tokenIndex = localStorage.getItem('tokenIndex');
                     const headers = new Headers();
-                    headers.append('token-index', tokenIndex);
+                    // tokenIndex in http only cookie
                     headers.append('Authorization', 'Bearer ' + localStorage.getItem('token'));
                     fetch('/profile', { headers })
                         .then(res => res.text())
@@ -79,13 +76,13 @@ export default class AuthRouter{
             const nonce = crypto.randomBytes(16).toString("base64");
 
             res.setHeader("Content-Security-Policy", \`script-src 'self' 'nonce-\${nonce}'\`);
-            res.send(profileUI(nonce, token, tokenIndex));
+            res.send(profileUI(nonce, token));
         });
 
         this.router.get('/profile', (req, res) => {
             if (req.headers['authorization']) {
                 const token = req.headers['authorization']?.toString().split(' ')[1];
-                const tokenIndex: string | undefined = req.headers['token-index']?.toString() || undefined;
+                const tokenIndex: string | undefined = req.cookies['tokenIndex']?.toString() || undefined;
                 const decodedToken = verifyToken(token, tokenIndex);
 
                 if (decodedToken === false) {

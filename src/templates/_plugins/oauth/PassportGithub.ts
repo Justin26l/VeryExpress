@@ -49,16 +49,13 @@ export default class PassportGithub {
             this.passport.authenticate("google", this.config.authenticateOptionsGithub), 
             (req, res) => {
                 const user = req.user as any;
-                res.cookie("token", user.tokenInfo.token, { httpOnly: true });
 
                 const nonce = crypto.randomBytes(16).toString("base64");
                 res.setHeader("Content-Security-Policy", `script-src 'self' 'nonce-${nonce}'`);
-                res.send(`
-                    <script nonce="${nonce}">
-                        localStorage.setItem('tokenIndex', '${user.tokenInfo.clientIndex}');
-                        window.location.href = '/profile';
-                    </script>
-                `);
+                res.cookie("tokenIndex", user.tokenInfo.clientIndex, { httpOnly: true });
+                res.send(`<script nonce="${nonce}">
+                    window.location.href = '/checkprofile?token=${user.tokenInfo.token}';
+                </script>`);
             }
         );
     }
