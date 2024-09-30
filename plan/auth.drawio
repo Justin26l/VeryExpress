@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram name="DBStore" id="5vakd0-f1liF5I9U3yXF">
-        <mxGraphModel dx="1127" dy="667" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+        <mxGraphModel dx="483" dy="552" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="mySKQl5GLhSIpnXFPhBY-0"/>
                 <mxCell id="mySKQl5GLhSIpnXFPhBY-1" parent="mySKQl5GLhSIpnXFPhBY-0"/>
@@ -10,7 +10,7 @@
                         <mxPoint x="640" y="160" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="mySKQl5GLhSIpnXFPhBY-3" value="SSO" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="mySKQl5GLhSIpnXFPhBY-2" vertex="1" connectable="0">
+                <mxCell id="mySKQl5GLhSIpnXFPhBY-3" value="OAuth" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="mySKQl5GLhSIpnXFPhBY-2" vertex="1" connectable="0">
                     <mxGeometry x="0.1528" y="-1" relative="1" as="geometry">
                         <mxPoint x="-237" y="-11" as="offset"/>
                     </mxGeometry>
@@ -54,24 +54,24 @@
                 <mxCell id="mySKQl5GLhSIpnXFPhBY-14" value="Server" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="mySKQl5GLhSIpnXFPhBY-12" vertex="1">
                     <mxGeometry x="22.11" width="75.78947368421052" height="42.972972972972975" as="geometry"/>
                 </mxCell>
-                <mxCell id="mySKQl5GLhSIpnXFPhBY-15" value="assign server token to cookie" style="edgeStyle=none;html=1;exitX=-0.006;exitY=0.367;exitDx=0;exitDy=0;exitPerimeter=0;" parent="mySKQl5GLhSIpnXFPhBY-1" edge="1">
-                    <mxGeometry x="-0.0152" y="-12" relative="1" as="geometry">
+                <mxCell id="mySKQl5GLhSIpnXFPhBY-15" value="return access token, &lt;br&gt;token Index(rolling key index)&lt;br&gt;refresh token" style="edgeStyle=none;html=1;exitX=-0.006;exitY=0.367;exitDx=0;exitDy=0;exitPerimeter=0;" parent="mySKQl5GLhSIpnXFPhBY-1" edge="1">
+                    <mxGeometry x="0.003" y="-28" relative="1" as="geometry">
                         <mxPoint x="399.28" y="298" as="sourcePoint"/>
                         <mxPoint x="160" y="298" as="targetPoint"/>
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="mySKQl5GLhSIpnXFPhBY-16" value="&lt;span style=&quot;font-size: 11px; text-align: center; background-color: rgb(24, 20, 29);&quot;&gt;create user's jwt&amp;nbsp;&lt;br&gt;&lt;/span&gt;&lt;span style=&quot;font-size: 11px; text-align: center; background-color: rgb(24, 20, 29);&quot;&gt;+&lt;br&gt;&lt;/span&gt;&lt;span style=&quot;font-size: 11px; text-align: center; background-color: rgb(24, 20, 29);&quot;&gt;save provider token in db&lt;br&gt;&lt;/span&gt;" style="text;whiteSpace=wrap;html=1;" parent="mySKQl5GLhSIpnXFPhBY-1" vertex="1">
+                <mxCell id="mySKQl5GLhSIpnXFPhBY-16" value="&lt;span style=&quot;font-size: 11px; text-align: center; background-color: rgb(24, 20, 29);&quot;&gt;create access token&amp;nbsp;&lt;br&gt;&lt;/span&gt;&lt;span style=&quot;font-size: 11px; text-align: center; background-color: rgb(24, 20, 29);&quot;&gt;with client device fingerprint ,&lt;br&gt;save provider token in db&lt;br&gt;&lt;/span&gt;" style="text;whiteSpace=wrap;html=1;" parent="mySKQl5GLhSIpnXFPhBY-1" vertex="1">
                     <mxGeometry x="410" y="230" width="160" height="85.14" as="geometry"/>
                 </mxCell>
-                <mxCell id="mySKQl5GLhSIpnXFPhBY-17" value="assign &lt;br&gt;provider token" style="edgeStyle=none;html=1;" parent="mySKQl5GLhSIpnXFPhBY-1" edge="1">
-                    <mxGeometry x="0.0009" y="-22" relative="1" as="geometry">
+                <mxCell id="mySKQl5GLhSIpnXFPhBY-17" value="return&lt;br&gt;provider token" style="edgeStyle=none;html=1;" parent="mySKQl5GLhSIpnXFPhBY-1" edge="1">
+                    <mxGeometry y="-22" relative="1" as="geometry">
                         <mxPoint x="640" y="222.2143243243243" as="sourcePoint"/>
                         <mxPoint x="400" y="220.99810810810808" as="targetPoint"/>
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="mySKQl5GLhSIpnXFPhBY-18" value="&lt;span style=&quot;font-size: 11px; text-align: center; background-color: rgb(24, 20, 29);&quot;&gt;validate user jwt,&lt;br&gt;continue handler logic.&lt;br&gt;&lt;/span&gt;" style="text;whiteSpace=wrap;html=1;" parent="mySKQl5GLhSIpnXFPhBY-1" vertex="1">
+                <mxCell id="mySKQl5GLhSIpnXFPhBY-18" value="&lt;span style=&quot;font-size: 11px; text-align: center; background-color: rgb(24, 20, 29);&quot;&gt;validate user jwt,&lt;br&gt;validate device fingerprint,&lt;br&gt;continue handler logic.&lt;br&gt;&lt;/span&gt;" style="text;whiteSpace=wrap;html=1;" parent="mySKQl5GLhSIpnXFPhBY-1" vertex="1">
                     <mxGeometry x="410" y="370" width="160" height="45.14" as="geometry"/>
                 </mxCell>
                 <mxCell id="mySKQl5GLhSIpnXFPhBY-19" style="edgeStyle=none;html=1;entryX=0.007;entryY=0.654;entryDx=0;entryDy=0;entryPerimeter=0;" parent="mySKQl5GLhSIpnXFPhBY-1" edge="1">
