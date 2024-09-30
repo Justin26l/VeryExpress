@@ -8,7 +8,8 @@
         "enableSwagger": true,
         "useUserSchema": true,
         "useObjectID": true,
-        "allowApiCreateUpdate_id": false
+        "allowApiCreateUpdate_id": false,
+        "useStatefulRedisAuth": true
     },
     "useOauth": {
         "google": true,
