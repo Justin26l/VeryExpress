@@ -3,7 +3,7 @@
 import crypto from "crypto";
 import { Router } from "express";
 import passport, { PassportStatic, Profile } from "passport";
-import { Strategy as GitHubStrategy, StrategyOptions } from "passport-github";
+import { Strategy as GithubStrategy, StrategyOptions } from "passport-github";
 
 export type { Profile };
 
@@ -31,10 +31,10 @@ export default class PassportGithub {
             failureRedirect: "/login"
         };
 
-        this.passport.use(new GitHubStrategy({
+        this.passport.use(new GithubStrategy({
             clientID: process.env.OAUTH_GITHUB_CLIENTID || "",
-            clientSecret: process.env.OAUTH_GITHUB_SECRET || "",
-            callbackURL: "https://yourdomain.com/auth/github/callback"
+            clientSecret: process.env.OAUTH_GITHUB_CLIENTSECRET || "",
+            callbackURL: process.env.APP_HOST+"/auth/github/callback"
         },
         this.config.strategyConfig.verify
         ));

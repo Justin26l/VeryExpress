@@ -44,7 +44,7 @@ async function main() {
     config.app.useUserSchema = config.app.useUserSchema || true,
     config.app.useObjectID = config.app.useObjectID || true,
     config.app.allowApiCreateUpdate_id = config.app.allowApiCreateUpdate_id || false,
-    config.app.useStatefulRedisAuth = config.app.useStatefulRedisAuth || false;
+    // config.app.useStatefulRedisAuth = config.app.useStatefulRedisAuth || false;
 
     // RBAC
     config.useRBAC = config.useRBAC || { roles: [], default: "", schemaIncluded: [] };
