@@ -27,24 +27,24 @@ interface userProfile {
     name: string;
     isActive: boolean;
     locale?: string;
-};
-
-function oauthProfileGithubMapping(oauthProfile: any): userProfile
-{
-    const user: userProfile = {
-        authProvider: [],
-        email: oauthProfile._json.email || oauthProfile._json.notification_email || undefined,
-        name: oauthProfile.username || oauthProfile.displayName,
-        isActive: true,
-        locale: undefined
-    }
-    user.authProvider.push({
-        provider: String(oauthProfile.provider),
-        id: String(oauthProfile.id)
-    });
-    // user need to fill in their email
-    return user;
 }
+
+// function oauthProfileGithubMapping(oauthProfile: any): userProfile
+// {
+//     const user: userProfile = {
+//         authProvider: [],
+//         email: oauthProfile._json.email || oauthProfile._json.notification_email || undefined,
+//         name: oauthProfile.username || oauthProfile.displayName,
+//         isActive: true,
+//         locale: undefined
+//     };
+//     user.authProvider.push({
+//         provider: String(oauthProfile.provider),
+//         id: String(oauthProfile.id)
+//     });
+//     // user need to fill in their email
+//     return user;
+// }
 
 
 export default async function oauthVerify(accessToken: string, refreshToken: string, profile: IProfile, done: (error: any, user?: any) => void) : Promise<void> {

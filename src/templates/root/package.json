@@ -1,9 +1,11 @@
 {
   "main": "index.js",
   "scripts": {
-    "build": "tsc -p .",
+    "build": "cp -r ./src/openapi ./dist && tsc -p .",
     "start": "node dist/server.js",
-    "dev": "nodemon --watch src --exec ts-node src/server.ts"
+    "dev": "nodemon --watch src --exec ts-node src/server.ts",
+    "docker-build": "docker build -t very-express .",
+    "docker-start": "docker run -p 3000:3000 very-express"
   },
   "dependencies": {
     "cookie": "^0.6.0",
@@ -40,6 +42,7 @@
     "@types/swagger-ui-express": "^4.1.6",
     "@types/ws": "^8.5.5",
     "nodemon": "^2.0.22",
+    "strip-json-comments": "^5.0.1",
     "ts-node": "^10.9.1",
     "typescript": "^5.1.6"
   }
