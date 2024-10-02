@@ -24,6 +24,7 @@ export async function compile(
 
     const packageJson = JSON.parse(packjson);
 
+    // todo: add script/build.js with param
     if (!packageJson.scripts.build) {
         log.process(`package.json : Update script : build > ${packageJson.scripts.build}`);
         packageJson.scripts.build = "tsc -p .";
