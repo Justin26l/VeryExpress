@@ -18,16 +18,16 @@ function sanitizeUser(user: UserDocument){
     };
 }
 
-interface userProfile {
-    authProvider: {
-        provider: string;
-        id: string;
-    }[];
-    email: string;
-    name: string;
-    isActive: boolean;
-    locale?: string;
-}
+// interface userProfile {
+//     authProvider: {
+//         provider: string;
+//         id: string;
+//     }[];
+//     email: string;
+//     name: string;
+//     isActive: boolean;
+//     locale?: string;
+// }
 
 // function oauthProfileGithubMapping(oauthProfile: any): userProfile
 // {

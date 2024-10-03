@@ -1,7 +1,7 @@
 {
   "main": "index.js",
   "scripts": {
-    "build": "cp -r ./src/openapi ./dist && tsc -p .",
+    "build": "tsc -p . && node scripts/build.js",
     "start": "node dist/server.js",
     "dev": "nodemon --watch src --exec ts-node src/server.ts",
     "docker-build": "docker build -t very-express .",

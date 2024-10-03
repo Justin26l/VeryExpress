@@ -1,4 +1,4 @@
-// copy ./openapi to tsconfig's outDir
+// copy openapiDir to tsconfig's outDir
 
 const fs = require('fs');
 const path = require('path');
@@ -36,7 +36,7 @@ async function main(vexConfigPath) {
 
 
 // Execute the main function
-main('../vex.config.json').catch(err => {
+main("<<__vexConfigPath__>>").catch(err => {
     console.error(err);
     process.exit(1);
 });

@@ -11,6 +11,8 @@ import { roleSchemaFormat } from "./preprocess/roleSetupFile";
 
 import * as types from "./types/types";
 import * as userSchemaGen from "./generators/project/userSchema.generator";
+import * as buildScriptGen from "./generators/project/buildScripts.generator";
+
 import * as roleGen from "./generators/role/role.generator";
 import * as controllerGen from "./generators/controller/controllers.generator";
 import * as routeGen from "./generators/routes/routes.generator";
@@ -170,6 +172,9 @@ export async function generate(
 
     // make server
     await serverGen.compile(options);
+
+    // make project files
+    await buildScriptGen.compile(options);
 
     return ;
 }
