@@ -18,13 +18,14 @@ import { Router } from 'express';
 
 export default class ApiRouter{
 
-    public router: Router = Router();
+    private router: Router = Router();
 
-    constructor() {}
+    constructor() {
+        {{useRoutes}}
+    }
 
-    public initRoutes() {
-
-{{useRoutes}}
+    public getRouter(){
+        return this.router;
     }
 
 }`;

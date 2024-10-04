@@ -29,15 +29,19 @@ export class JWTKeyStore{
     public getRandomKey(): { index: number, clientIndex:string, key: string } {
         // get leng of keys and return random key
         const len = this.keys.length;
-        const index = Math.floor(Math.random() * len);
-        // get random char string
-        const clientIndex = this.getRandomCharString() + index;
+        const tokenInfo = {
+            index: 0,
+            clientIndex: '',
+            key: ''
+        }
+        if (len > 1) {
+            tokenInfo.index = Math.floor(Math.random() * len);
+        }
 
-        return {
-            index,
-            clientIndex,
-            key: this.keys[index]
-        };
+        tokenInfo.clientIndex = this.getRandomCharString() + tokenInfo.index;
+        tokenInfo.key = this.keys[tokenInfo.index];
+
+        return tokenInfo;
     }
 
     /**

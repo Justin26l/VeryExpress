@@ -10,12 +10,18 @@ import { loadYaml } from "./../_utils/common.gen";
 
 export default class SwaggerRouter{
 
-    public router: Router = Router();
+    private router: Router = Router();
 
     constructor() {}
-    
+
     public initRoutes() {
-        this.router.use("/api", swaggerUi.serve, swaggerUi.setup(loadYaml(__dirname+"/${yamlPath}") as JsonObject));
+        this.router.use("/", swaggerUi.serve, swaggerUi.setup(loadYaml(__dirname+"/../../openapi/openapi.gen.yaml") as JsonObject));
     }
+
+    public getRouter(){
+        this.initRoutes();
+        return this.router;
+    }
+    
 }`;
 }

@@ -4,42 +4,20 @@ import * as types from "../../types/types";
 
 // import
 const importCookieParser = "import cookieParser from 'cookie-parser';";
-const importOAuthVerifyPlugin = "import oauthVerify from './system/_plugins/oauth/oauthVerify.gen';";
-const importPassportGoogle = "import PassportGoogle from './system/_plugins/oauth/PassportGoogle.gen'";
-const importPassportGithub = "import PassportGithub from './system/_plugins/oauth/PassportGithub.gen'";
 const importSwaggerRouter = "import SwaggerRouter from './system/_routes/SwaggerRouter.gen';";
 const importAuthRouter = "import AuthRouter from './system/_routes/AuthRouter.gen';";
 
 // configure
+const ConfigSwaggerRouter = "const SwaggerRoute = new SwaggerRouter();";
+const ConfigAuthRouter = "const AuthRoute = new AuthRouter();";
+const ConfigApiRouter = "const ApiRoute = new ApiRouter();";
 
-const ConfigSwaggerRouter = "const SwaggerRoute = new SwaggerRouter(); SwaggerRoute.initRoutes();";
-const ConfigAuthRouter = "const AuthRoute = new AuthRouter(); AuthRoute.initRoutes();";
 
-const ConfigPassportGoogle = `
-const OAuthGoogle = new PassportGoogle({
-    strategyConfig: {
-        verify: oauthVerify
-    }
-});`;
-
-const ConfigPassportGithub = `
-const OAuthGithub = new PassportGithub({
-    strategyConfig: {
-        verify: oauthVerify
-    }
-});`;
-
-// app.use 
+// use
 const UseCookieParser = "app.use(cookieParser());";
-const UsePassportGoogle = "app.use(OAuthGoogle.passport.initialize());";
-const UsePassportGithub = "app.use(OAuthGithub.passport.initialize());";
-
-// routes
-const UseAuthRouter = "app.use(AuthRoute.router);";
-const UseSwaggerRouter = "app.use(SwaggerRoute.router);";
-const UseOAuthGoogleRouter = "app.use(OAuthGoogle.router);";
-const UseOAuthGithubRouter = "app.use(OAuthGithub.router);";
-
+const UseAuthRouter = "app.use(\"/auth\", AuthRoute.getRouter());";
+const UseSwaggerRouter = "app.use(\"/swagger\", SwaggerRoute.getRouter());";
+const UseApiRouter = "app.use(\"/api\", ApiRoute.getRouter());"
 
 export default function serverTemplate(options: {
     compilerOptions: types.compilerOptions,
@@ -49,13 +27,13 @@ export default function serverTemplate(options: {
 
 import express from 'express';
 import dotenv from 'dotenv';
+import crypto from 'crypto';
 import helmet from 'helmet';
 import log from './system/_utils/logger.gen';
 import VexDbConnector from './system/_services/VexDbConnector.gen';
 
 import ApiRouter from './system/_routes/ApiRouter.gen';
 {{Import}}
-
 
 /** 
  * Configure
@@ -72,7 +50,6 @@ const vexDB = new VexDbConnector({
 });
 
 
-const ApiRoute = new ApiRouter(); ApiRoute.initRoutes();
 {{Config}}
 
 
@@ -95,21 +72,21 @@ async function main(): Promise<void> {
     // Routes
     {{AppRouter}}
 
-    app.use(ApiRoute.router);
     app.get('/', (req, res) => {
         res.send(\`
             <div>
                 <h1>Hello World</h1>
                 <ul>
-                    <li><a href="/login">login</a></li>
-                    <li><a href="/profile">profile</a></li>
-                    <li><a href="/checkprofile">checkprofile</a></li>
-                    <li><a href="/logout">logout</a></li>
-                    <li><a href="/api">api</a></li>
+                    <li><a href="/login">Login</a></li>
+                    <li><a href="/profile">Profile</a></li>
+                    <li><a href="/logout">LogOut</a></li>
+                    <li><a href="/swagger">Swagger UI</a></li>
                 </ul>
             </div>
         \`);
     });
+
+    {{dummyLoginUI}}
 
     app.listen(3000, () => {
         if(!process.env.MONGODB_URI) throw new Error('MONGODB_URI is not defined');
@@ -128,34 +105,24 @@ main();
     const AppUse: string[] = [];
     const AppRoute: string[] = [];
 
+    Config.push(ConfigApiRouter);
+    AppRoute.push(UseApiRouter);
+
+    if (options.compilerOptions.app.enableSwagger) {
+        Import.push(importSwaggerRouter);
+        Config.push(ConfigSwaggerRouter);
+        AppRoute.push(UseSwaggerRouter);
+    }
+
     if (usedProvider.length > 0) {
         Import.push(importCookieParser);
         AppUse.push(UseCookieParser);
-
-        Import.push(importOAuthVerifyPlugin);
-
-        if (options.compilerOptions.app.enableSwagger) {
-            Import.push(importSwaggerRouter);
-            Config.push(ConfigSwaggerRouter);
-            AppRoute.push(UseSwaggerRouter);
-        }
 
         Import.push(importAuthRouter);
         Config.push(ConfigAuthRouter);
         AppRoute.push(UseAuthRouter);
 
-        if (usedProvider.includes("google")) {
-            Import.push(importPassportGoogle);
-            Config.push(ConfigPassportGoogle);
-            AppUse.push(UsePassportGoogle);
-            AppRoute.push(UseOAuthGoogleRouter);
-        }
-        if (usedProvider.includes("github")) {
-            Import.push(importPassportGithub);
-            Config.push(ConfigPassportGithub);
-            AppUse.push(UsePassportGithub);
-            AppRoute.push(UseOAuthGithubRouter);
-        }
+        template = template.replace(/{{dummyLoginUI}}/g, dummyLoginUI(usedProvider));
     }
 
     template = template.replace(/{{headerComment}}/g, options.compilerOptions.headerComment || "// generated files by very-express");
@@ -166,3 +133,84 @@ main();
 
     return template;
 }
+
+function loginHtml(providers: string[]) {
+    let html = "<p> login with : </p>";
+    providers.forEach((provider) => {
+        html += `<a href="\${process.env.APP_HOST}/auth/${provider}">${provider}</a><br/>`;
+    });
+    return `${html}`;
+}
+
+function dummyLoginUI(providers: string[]) {
+    return `
+    /**
+     * Dummy Login Page,
+     * this should handle by client application (vue, react, angular, etc)
+     * - list all available provider
+     */
+    app.get('/login', (req, res) => {
+        res.send(\`${loginHtml(providers)}\`);
+    });
+
+    /** 
+     * Dummy Profile Page, 
+     * this should handle by client application (vue, react, angular, etc)
+     * - after provider callback will redirect with token info in query
+     * - front end server should issue "tokenIndex" & "refreshToken" as http only cookie
+     * - client side should store "accessToken" in local
+     **/
+    app.get('/profile', (req, res) => {
+        const accessToken = req.query.accessToken?.toString() || '';
+        const refreshToken = req.query.refreshToken?.toString() || '';
+        const tokenIndex = req.query.tokenIndex?.toString() || '';
+        const nonce = crypto.randomBytes(16).toString("base64");
+
+        res.setHeader("Content-Security-Policy", \`script-src 'self' 'nonce-\${nonce}'\`);
+        if (tokenIndex) {
+            res.cookie('tokenIndex', tokenIndex, { httpOnly: true });
+        }
+        if (refreshToken) {
+            res.cookie('refreshToken', refreshToken, { httpOnly: true });
+        }
+        res.send(\`
+            <script nonce="\${nonce}">
+                \${accessToken ? \`localStorage.setItem('accessToken', '\${accessToken}');\` : ''}
+                
+                document.addEventListener("DOMContentLoaded", function() {
+                    console.log('Fetching Profile Data from /auth/profile');
+                    const headers = new Headers();
+                    headers.append('Authorization', 'Bearer ' + localStorage.getItem('accessToken'));
+                    fetch('/auth/profile', { headers })
+                        .then(res => res.text())
+                        .then(data => document.querySelector("#profileData").innerHTML = data);
+                });
+            </script>
+            <body>
+                <h1>Profile Data</h1>
+                <pre id="profileData"></pre>
+                <a href="/">back to home</a>
+            </body>
+        \`);
+    });
+
+    /** 
+     * Dummy Logout Page, 
+     * this should handle by client application (vue, react, angular, etc)
+     * - front end server should remove cookie "tokenIndex" & "refreshToken"
+     * - client side should remove "accessToken" in local
+     **/
+    app.get('/logout', (req, res) => {
+        const nonce = crypto.randomBytes(16).toString("base64");
+        res.setHeader("Content-Security-Policy", \`script-src 'self' 'nonce-\${nonce}'\`);
+        res.clearCookie('tokenIndex');
+        res.clearCookie('refreshToken');
+        res.send(\`
+            <script nonce="\${nonce}">
+                localStorage.removeItem('accessToken');
+                location.href = '/login';
+            </script>
+        \`);
+    });
+    `;
+};
