@@ -27,6 +27,11 @@
     npm run start
     ```
 
+5. start the app in docker.  
+    ```
+    npm run docker-build  
+    npm run docker-start
+    ```
 # Resource
 - [Documents](https://github.com/Justin26l/VeryExpress/blob/main/README.md)
 
