@@ -49,9 +49,7 @@ const vexDB = new VexDbConnector({
     mongoUrl: process.env.MONGODB_URI,
 });
 
-
 {{Config}}
-
 
 /** 
  * App
@@ -89,7 +87,7 @@ async function main(): Promise<void> {
     {{dummyLoginUI}}
 
     app.listen(3000, () => {
-        if(!process.env.MONGODB_URI) throw new Error('MONGODB_URI is not defined');
+        if (!process.env.MONGODB_URI) throw new Error('MONGODB_URI is not defined');
         vexDB.connectMongo();
         log.ok(\`Server is running on : \${process.env.APP_HOST}\`);
     });
@@ -137,7 +135,7 @@ main();
 function loginHtml(providers: string[]) {
     let html = "<p> login with : </p>";
     providers.forEach((provider) => {
-        html += `<a href="\${process.env.APP_HOST}/auth/${provider}">${provider}</a><br/>`;
+        html += `<a href="\${process.env.APP_HOST}/auth/${provider}">${provider}</a><br/>\n`;
     });
     return `${html}`;
 }

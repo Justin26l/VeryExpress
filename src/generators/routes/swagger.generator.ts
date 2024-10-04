@@ -12,14 +12,11 @@ export default class SwaggerRouter{
 
     private router: Router = Router();
 
-    constructor() {}
-
-    public initRoutes() {
+    constructor() {
         this.router.use("/", swaggerUi.serve, swaggerUi.setup(loadYaml(__dirname+"/../../openapi/openapi.gen.yaml") as JsonObject));
     }
 
-    public getRouter(){
-        this.initRoutes();
+    public getRouter() {
         return this.router;
     }
     

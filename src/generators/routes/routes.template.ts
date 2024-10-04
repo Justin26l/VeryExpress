@@ -21,10 +21,10 @@ export default class ApiRouter{
     private router: Router = Router();
 
     constructor() {
-        {{useRoutes}}
+{{useRoutes}}
     }
 
-    public getRouter(){
+    public getRouter() {
         return this.router;
     }
 

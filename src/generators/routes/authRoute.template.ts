@@ -5,7 +5,6 @@ export default function template(
     compilerOptions: types.compilerOptions,
 ): string {
     let template = `{{headerComment}}
-
 import { Router } from 'express';
 import { verifyToken } from '../_plugins/auth/jwt.gen';
 import oauthVerify from '../_plugins/auth/oauthVerify.gen';
