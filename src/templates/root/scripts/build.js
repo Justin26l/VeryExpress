@@ -8,23 +8,19 @@ async function loadStripJsonComments() {
     return stripJsonComments;
 }
 
-async function main(vexConfigPath) {
+async function main() {
     // Load strip-json-comments dynamically
     const stripJsonComments = await loadStripJsonComments();
 
+    const openapiDir = "{{openapiDir}}";
+    const tsconfigPath = "tsconfig.json"
+
     // 1. read tsconfig.json to get outDir
-    const tsconfigPath = path.resolve(__dirname, '../tsconfig.json');
     const tsconfigContent = fs.readFileSync(tsconfigPath, 'utf-8');
     const tsconfig = JSON.parse(stripJsonComments(tsconfigContent));
     const outDir = tsconfig.compilerOptions.outDir;
 
-    // 2. read vex.config.json to get openapiDir
-    const vexConfigPathResolve = path.resolve(__dirname, vexConfigPath);
-    const vexConfigContent = fs.readFileSync(vexConfigPathResolve, 'utf-8');
-    const vexConfig = JSON.parse(stripJsonComments(vexConfigContent));
-    const openapiDir = vexConfig.openapiDir;
-
-    // 3. copy ./openapi to outDir
+    // 2. copy ./openapi to outDir
     const outDirOpenapi = path.resolve(outDir, 'openapi');
     if (!fs.existsSync(outDirOpenapi)) {
         fs.mkdirSync(outDirOpenapi, { recursive: true });
@@ -36,7 +32,8 @@ async function main(vexConfigPath) {
 
 
 // Execute the main function
-main("<<__vexConfigPath__>>").catch(err => {
+main()
+.catch(err => {
     console.error(err);
     process.exit(1);
 });
