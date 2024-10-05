@@ -2,66 +2,40 @@
 
 import { Profile } from "passport";
 import { UserModel, UserDocument } from "./../../_models/UserModel.gen";
+import { User } from "./../../_types/User.gen";
 import { generateToken } from "./../auth/jwt.gen";
 
 interface IProfile extends Profile {
     [key: string]: any;
 }
 
-function sanitizeUser(user: UserDocument){
-    return {
-        _id: user._id,
-        email: user.email,
-        name: user.name,
-        locale: user.locale,
-        roles: user.roles
-    };
-}
-
-// interface userProfile {
-//     authProvider: {
-//         provider: string;
-//         id: string;
-//     }[];
-//     email: string;
-//     name: string;
-//     isActive: boolean;
-//     locale?: string;
-// }
-
-// function oauthProfileGithubMapping(oauthProfile: any): userProfile
-// {
-//     const user: userProfile = {
-//         authProvider: [],
-//         email: oauthProfile._json.email || oauthProfile._json.notification_email || undefined,
-//         name: oauthProfile.username || oauthProfile.displayName,
-//         isActive: true,
-//         locale: undefined
-//     };
-//     user.authProvider.push({
-//         provider: String(oauthProfile.provider),
-//         id: String(oauthProfile.id)
-//     });
-//     // user need to fill in their email
-//     return user;
-// }
-
-
 export default async function oauthVerify(accessToken: string, refreshToken: string, profile: IProfile, done: (error: any, user?: any) => void) : Promise<void> {
     try {
 
+        console.log('OAuthVerify', profile);
+
         // find or create user
         let userProfile: any;
+        let authProfile = oauthProfileMapping(profile);
+
+        if(!authProfile.email){
+            return done(new Error('Email is required'));
+        }
+
+        // user's human readible unique identifier is email
         const existingUser = await UserModel.findOne({ email: profile.emails?.[0].value });
 
         if( existingUser ){
+            console.log('OAuthVerify ExistingUser');
             userProfile = existingUser;
-            // log.info('OAuthVerify ExistingUser');
         }
         else {
-            // log.info('OAuthVerify NewUser');
+            console.log('OAuthVerify NewUser');
             const newUser = new UserModel({
-                authProvider: profile.provider,
+                authProviders: [{
+                    provider: profile.provider,
+                    id: profile.id
+                }],
                 email: profile.emails?.[0].value || "",
                 authId: profile.id,
                 name: profile.displayName,
@@ -84,4 +58,62 @@ export default async function oauthVerify(accessToken: string, refreshToken: str
     catch(err) { 
         return done(err); 
     }
+}
+
+function sanitizeUser(user: UserDocument){
+    return {
+        _id: user._id,
+        email: user.email,
+        name: user.name,
+        locale: user.locale,
+        roles: user.roles
+    };
+}
+
+function oauthProfileMapping(oauthProfile: IProfile): User
+{
+    switch(oauthProfile.provider){
+        case 'github':
+            return GithubProfileMapping(oauthProfile);
+        case 'google':
+            return GoogleProfileMapping(oauthProfile);
+        default:
+            throw new Error('Invalid OAuth Profile');
+    }
+}
+
+function GithubProfileMapping(oauthProfile: IProfile): User
+{
+    const user: User = {
+        active: true,
+        authProfiles: [{
+            provider: oauthProfile.provider,
+            id: oauthProfile.id
+        }],
+        roles:[],
+        name: oauthProfile.username || oauthProfile.displayName,
+        // data below could be missing depend on the provider
+        email: oauthProfile._json.email || oauthProfile._json.notification_email || undefined,
+        locale: undefined,
+    };
+
+    return user;
+}
+
+function GoogleProfileMapping(oauthProfile: IProfile): User
+{
+    const user: User = {
+        active: true,
+        authProfiles: [{
+            provider: oauthProfile.provider,
+            id: oauthProfile.id
+        }],
+        roles:[],
+        name: oauthProfile.username || oauthProfile.displayName,
+        // data below could be missing depend on the provider
+        email: oauthProfile._json.email || oauthProfile._json.notification_email || undefined,
+        locale: undefined
+    };
+
+    return user;
 }

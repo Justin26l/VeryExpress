@@ -6,7 +6,8 @@
             "getList",
             "post",
             "patch"
-        ]
+        ],
+        "documentName": "User"
     },
     "properties": {
         "_id": {
@@ -14,12 +15,21 @@
             "x-format": "ObjectId",
             "index": true
         },
-        "authProvider": {
-            "type": "string"
-        },
-        "authId": {
-            "type": "string",
-            "index": true
+        "authProfiles": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "provider": {
+                        "type": "string",
+                        "index": true
+                    },
+                    "id": {
+                        "type": "string",
+                        "index": true
+                    }
+                }
+            }
         },
         "email": {
             "type": "string",
@@ -41,17 +51,22 @@
             "type": "string",
             "maxLength": 8
         },
-        "roles":{
+        "roles": {
             "type": "array",
             "x-vexData": "role",
             "items": {
                 "type": "string",
                 "default": "user",
                 "required": true,
-                "enum": [
-                    "user"
-                ]
+                "enum": []
             }
         }
-    }
+    },
+    "required": [
+        "authProfiles",
+        "email",
+        "name",
+        "active",
+        "roles"
+    ]
 }
