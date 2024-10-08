@@ -19,10 +19,12 @@ export default async function oauthVerify(accessToken: string, refreshToken: str
 
         // 1. create new user
         if ( !existingUser ){
+            console.log('OAuthVerify NewUser');
             user = await createNewUser(authUser);
         }
         // 2. update existing user
         else {
+            console.log('OAuthVerify UpdateUser');
             user = existingUser;
             
             let userUpdated = false;
@@ -35,8 +37,15 @@ export default async function oauthVerify(accessToken: string, refreshToken: str
 
             // 2.A. if email is missing, try get from authProfile
             if ( !user.email && !authUser.email){
+                console.log('missingEmail');
                 user.profileErrors?.push('missingEmail');
                 user.active = false;
+                userUpdated = true;
+            }
+            else if (!user.email && authUser.email){
+                console.log('set new email');
+                user.email = authUser.email;
+                user.active = true;
                 userUpdated = true;
             };
 

@@ -181,11 +181,12 @@ function dummyLoginUI(providers: string[]) {
                     const headers = new Headers();
                     headers.append('Authorization', 'Bearer ' + localStorage.getItem('accessToken'));
                     fetch('/auth/profile', { headers })
+                        .then((res) => res.text())
                         .then((data) => {
                             document.querySelector("#profileData").innerHTML = data;
                             jsonData = JSON.parse(data);
-                            if (jsonData.errors.length > 0){
-                                jsonData.errors.forEach((error) => {
+                            if (jsonData.profileErrors.length > 0){
+                                jsonData.profileErrors.forEach((error) => {
                                     if (error === 'missingEmail'){
                                         const userInput = window.prompt(\\\`Error: \\\${error}. Please provide your Email:\\\`);
                                         if (userInput) {
