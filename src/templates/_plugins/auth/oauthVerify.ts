@@ -4,6 +4,7 @@ import { Profile } from "passport";
 import { UserModel, UserDocument } from "./../../_models/UserModel.gen";
 import { User } from "./../../_types/User.gen";
 import { generateToken } from "./../auth/jwt.gen";
+import utils from "../../_utils/index.gen";
 
 interface IProfile extends Profile {
     [key: string]: any;
@@ -97,12 +98,12 @@ function sanitizeUser(user: UserDocument){
 function oauthProfileMapping(oauthProfile: IProfile): User
 {
     switch(oauthProfile.provider){
-        case 'github':
-            return GithubProfileMapping(oauthProfile);
-        case 'google':
-            return GoogleProfileMapping(oauthProfile);
-        default:
-            throw new Error('Invalid OAuth Profile');
+    case "github":
+        return GithubProfileMapping(oauthProfile);
+    case "google":
+        return GoogleProfileMapping(oauthProfile);
+    default:
+        throw new Error("Invalid OAuth Profile");
     }
 }
 
