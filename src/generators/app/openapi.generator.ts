@@ -74,10 +74,10 @@ function jsonToOpenapiPath(
     const properties: types.jsonSchema["properties"] = jsonSchema.properties;
 
     const routes: openapiType.paths = {
-        ["/" + lowerDocName]: {
+        ["/api/" + lowerDocName]: {
             "x-documentName": documentName,
         },
-        ["/" + lowerDocName + "/{id}"]: {
+        ["/api/" + lowerDocName + "/{id}"]: {
             "x-documentName": documentName,
         },
     };
@@ -85,7 +85,7 @@ function jsonToOpenapiPath(
     documentConfig.methods.forEach((jsonSchemaMethod) => {
         const routeWithId: boolean = ["get", "put", "patch", "delete"].includes(jsonSchemaMethod);
         const useBody: boolean = ["post", "put", "patch"].includes(jsonSchemaMethod);
-        const route: string = "/" + lowerDocName + (routeWithId ? "/{id}" : "");
+        const route: string = "/api/" + lowerDocName + (routeWithId ? "/{id}" : "");
         
         const httpMethod: types.httpMethod = utils.jsonSchema.httpMethod(jsonSchemaMethod, additionalinfo.jsonSchemaFilePath);
         const parameters: openapiType.parameter[] = [];
@@ -306,7 +306,7 @@ function jsonToOpenapiComponentSchema(
                 }
             });
 
-                openapiJson.paths["/" + lowerDocName][httpMethod]!.parameters = parameters;
+                openapiJson.paths["/api/" + lowerDocName][httpMethod]!.parameters = parameters;
 
                 componentSchemaPath[httpMethod + documentName + "Response"] = componentSchemaResponse;
                 componentSchemaPath[httpMethod + documentName + "ResponseList"] = {

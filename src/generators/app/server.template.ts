@@ -17,7 +17,7 @@ const ConfigApiRouter = "const ApiRoute = new ApiRouter();";
 const UseCookieParser = "app.use(cookieParser());";
 const UseAuthRouter = "app.use(\"/auth\", AuthRoute.getRouter());";
 const UseSwaggerRouter = "app.use(\"/swagger\", SwaggerRoute.getRouter());";
-const UseApiRouter = "app.use(\"/api\", ApiRoute.getRouter());"
+const UseApiRouter = "app.use(\"/api\", ApiRoute.getRouter());";
 
 export default function serverTemplate(options: {
     compilerOptions: types.compilerOptions,
@@ -173,6 +173,7 @@ function dummyLoginUI(providers: string[]) {
         }
         res.send(\`
             <script nonce="\${nonce}">
+                let jsonData = {};
                 \${accessToken ? \`localStorage.setItem('accessToken', '\${accessToken}');\` : ''}
                 
                 document.addEventListener("DOMContentLoaded", function() {
@@ -180,9 +181,39 @@ function dummyLoginUI(providers: string[]) {
                     const headers = new Headers();
                     headers.append('Authorization', 'Bearer ' + localStorage.getItem('accessToken'));
                     fetch('/auth/profile', { headers })
-                        .then(res => res.text())
-                        .then(data => document.querySelector("#profileData").innerHTML = data);
+                        .then((data) => {
+                            document.querySelector("#profileData").innerHTML = data;
+                            jsonData = JSON.parse(data);
+                            if (jsonData.errors.length > 0){
+                                jsonData.errors.forEach((error) => {
+                                    if (error === 'missingEmail'){
+                                        const userInput = window.prompt(\\\`Error: \\\${error}. Please provide your Email:\\\`);
+                                        if (userInput) {
+                                            updateUser(userInput);
+                                        }
+                                    };
+                                });
+                            }
+                        });
                 });
+
+                function updateUser(input) {
+                    fetch('/api/user/'+jsonData._id, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + localStorage.getItem('accessToken')
+                        },
+                        body: JSON.stringify({ email: input })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Success:', data);
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                    });
+                }
             </script>
             <body>
                 <h1>Profile Data</h1>
@@ -211,4 +242,4 @@ function dummyLoginUI(providers: string[]) {
         \`);
     });
     `;
-};
+}

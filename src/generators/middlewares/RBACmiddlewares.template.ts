@@ -31,7 +31,7 @@ export default class RoleBaseAccessControl {
 
     public middleware = (req: Request, res: Response, next: NextFunction) => {
         try { 
-            Log.info(req.method, req.path, req.user);
+            Log.info("RBAC.middleware", req.method, req.path, req.user);
             if ( !req.user ) {
                 throw 401;
             }

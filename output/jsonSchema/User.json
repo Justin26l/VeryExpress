@@ -24,9 +24,12 @@
                         "type": "string",
                         "index": true
                     },
-                    "id": {
+                    "authId": {
                         "type": "string",
                         "index": true
+                    },
+                    "username": {
+                        "type": "string"
                     }
                 },
                 "required": []
@@ -35,8 +38,7 @@
         "email": {
             "type": "string",
             "format": "email",
-            "index": true,
-            "required": true
+            "index": true
         },
         "name": {
             "type": "string",
@@ -65,20 +67,24 @@
                     "admin"
                 ]
             },
+            "required": true,
+            "default": [
+                "visitor"
+            ],
             "enum": [
                 "visitor",
                 "member",
                 "admin"
-            ],
-            "required": true,
-            "default": [
-                "visitor"
             ]
+        },
+        "profileErrors": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
         }
     },
     "required": [
-        "authProfiles",
-        "email",
         "name",
         "active",
         "roles"

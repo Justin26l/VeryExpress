@@ -57,8 +57,8 @@ export default class AuthRouter {
     const providers: string[] = utilsGenerator.isUseOAuth(compilerOptions);
     const providersTemplate = providers.map((providerName) => {
         switch (providerName) {
-            case 'google':
-                return `
+        case "google":
+            return `
         const google = 'google';
         const OAuthGoogle = new OAuthRouteFactory({
             strategyName: google,
@@ -73,8 +73,8 @@ export default class AuthRouter {
         });
         this.router.use(\`/\${google}\`, OAuthGoogle.getRouter());
         `;
-            case 'github':
-                return `
+        case "github":
+            return `
         const github = 'github';
         const OAuthGithub = new OAuthRouteFactory({
             strategyName: github,
@@ -89,8 +89,8 @@ export default class AuthRouter {
         });
         this.router.use(\`/\${github}\`, OAuthGithub.getRouter());
         `;
-        };
-    }).join('\n');
+        }
+    }).join("\n");
     template = template.replace(/{{headerComment}}/g, compilerOptions.headerComment || "// generated files by very-express");
     template = template.replace(/{{OAuthRouteProviders}}/g, providersTemplate);
 

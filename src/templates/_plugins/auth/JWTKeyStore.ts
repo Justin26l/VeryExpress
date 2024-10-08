@@ -1,3 +1,5 @@
+// {{headerComment}}
+
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -31,9 +33,9 @@ export class JWTKeyStore{
         const len = this.keys.length;
         const tokenInfo = {
             index: 0,
-            clientIndex: '',
-            key: ''
-        }
+            clientIndex: "",
+            key: ""
+        };
         if (len > 1) {
             tokenInfo.index = Math.floor(Math.random() * len);
         }

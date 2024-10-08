@@ -12,52 +12,74 @@ interface IProfile extends Profile {
 export default async function oauthVerify(accessToken: string, refreshToken: string, profile: IProfile, done: (error: any, user?: any) => void) : Promise<void> {
     try {
 
-        console.log('OAuthVerify', profile);
+        let user: UserDocument;
+        const authUser = oauthProfileMapping(profile);
+        const existingUser = await UserModel.findOne<UserDocument>({ email: authUser.email });
 
-        // find or create user
-        let userProfile: any;
-        let authProfile = oauthProfileMapping(profile);
-
-        if(!authProfile.email){
-            return done(new Error('Email is required'));
+        // 1. create new user
+        if ( !existingUser ){
+            user = await createNewUser(authUser);
         }
-
-        // user's human readible unique identifier is email
-        const existingUser = await UserModel.findOne({ email: profile.emails?.[0].value });
-
-        if( existingUser ){
-            console.log('OAuthVerify ExistingUser');
-            userProfile = existingUser;
-        }
+        // 2. update existing user
         else {
-            console.log('OAuthVerify NewUser');
-            const newUser = new UserModel({
-                authProviders: [{
-                    provider: profile.provider,
-                    id: profile.id
-                }],
-                email: profile.emails?.[0].value || "",
-                authId: profile.id,
-                name: profile.displayName,
-                familyName: profile.name?.familyName, 
-                givenName: profile.name?.givenName,
-                isActive: true,
-                locale: profile._json?.locale || "en",
-            });
-            newUser.save();
-            userProfile = newUser;
-        }
+            user = existingUser;
+            
+            let userUpdated = false;
+            const authProfile = authUser.authProfiles?.[0] || undefined;
+            const userProfiles = user.authProfiles as User['authProfiles'] || [];
 
-        const sanitizedProfile = sanitizeUser(userProfile);
-        const tokenInfo = generateToken(sanitizedProfile);
-        return done(null, {
-            profile: sanitizedProfile, 
-            tokenInfo
-        });
+            if(!authProfile){
+                throw new Error('Invalid OAuth Callback "authProfile"');
+            };
+
+            // 2.A. if email is missing, try get from authProfile
+            if ( !user.email && !authUser.email){
+                user.profileErrors?.push('missingEmail');
+                user.active = false;
+                userUpdated = true;
+            };
+
+            // 2.B.1. check current provider exist in authProfiles
+            const providerExists = userProfiles.length > 0 &&  userProfiles.find((p) => {
+                return (p.provider === authProfile.provider) && (p.authId === authProfile.authId);
+            });
+
+            // 2.B.2. add if not exist
+            if (!providerExists){
+                userProfiles.push(authProfile);
+                userUpdated = true;
+            }
+            // 2.B.3 update if username changed
+            else if (providerExists && providerExists.username !== authProfile.username){
+                providerExists.username = authProfile.username;
+                userUpdated = true;
+            };
+
+            if (userUpdated){
+                user = await existingUser.updateOne({ authProfiles: userProfiles });
+            };
+        };
+
+        done(null, returnToken(user));
     }
     catch(err) { 
         return done(err); 
     }
+}
+
+async function createNewUser(authProfile: User): Promise<UserDocument>{
+    console.log('OAuthVerify NewUser');
+    const newUser = new UserModel(authProfile);
+    return await newUser.save();
+}
+
+function returnToken(userProfile: UserDocument){
+    const sanitizedProfile = sanitizeUser(userProfile);
+    const tokenInfo = generateToken(sanitizedProfile);
+    return {
+        profile: sanitizedProfile, 
+        tokenInfo
+    };
 }
 
 function sanitizeUser(user: UserDocument){
@@ -66,7 +88,9 @@ function sanitizeUser(user: UserDocument){
         email: user.email,
         name: user.name,
         locale: user.locale,
-        roles: user.roles
+        roles: user.roles,
+        profileErrors: user.profileErrors,
+        active: user.active
     };
 }
 
@@ -88,13 +112,14 @@ function GithubProfileMapping(oauthProfile: IProfile): User
         active: true,
         authProfiles: [{
             provider: oauthProfile.provider,
-            id: oauthProfile.id
+            authId: oauthProfile.id,
+            username: oauthProfile.username || oauthProfile.displayName
         }],
         roles:[],
         name: oauthProfile.username || oauthProfile.displayName,
-        // data below could be missing depend on the provider
         email: oauthProfile._json.email || oauthProfile._json.notification_email || undefined,
         locale: undefined,
+        profileErrors: []
     };
 
     return user;
@@ -106,13 +131,15 @@ function GoogleProfileMapping(oauthProfile: IProfile): User
         active: true,
         authProfiles: [{
             provider: oauthProfile.provider,
-            id: oauthProfile.id
+            authId: oauthProfile.id,
+            username: oauthProfile.username || oauthProfile.displayName
         }],
         roles:[],
         name: oauthProfile.username || oauthProfile.displayName,
         // data below could be missing depend on the provider
         email: oauthProfile._json.email || oauthProfile._json.notification_email || undefined,
-        locale: undefined
+        locale: oauthProfile._json.locale || undefined,
+        profileErrors: []
     };
 
     return user;
