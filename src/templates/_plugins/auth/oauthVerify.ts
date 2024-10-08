@@ -15,7 +15,7 @@ export default async function oauthVerify(accessToken: string, refreshToken: str
 
         let user: UserDocument;
         const authUser = oauthProfileMapping(profile);
-        const existingUser = await UserModel.findOne<UserDocument>({ email: authUser.email });
+        const existingUser = !authUser.email ? null : await UserModel.findOne<UserDocument>({ email: authUser.email });
 
         // 1. create new user
         if ( !existingUser ){
@@ -36,13 +36,7 @@ export default async function oauthVerify(accessToken: string, refreshToken: str
             };
 
             // 2.A. if email is missing, try get from authProfile
-            if ( !user.email && !authUser.email){
-                console.log('missingEmail');
-                user.profileErrors?.push('missingEmail');
-                user.active = false;
-                userUpdated = true;
-            }
-            else if (!user.email && authUser.email){
+             if (!user.email && authUser.email){
                 console.log('set new email');
                 user.email = authUser.email;
                 user.active = true;
@@ -106,14 +100,25 @@ function sanitizeUser(user: UserDocument){
 
 function oauthProfileMapping(oauthProfile: IProfile): User
 {
+    let authProfile: User;
     switch(oauthProfile.provider){
-    case "github":
-        return GithubProfileMapping(oauthProfile);
-    case "google":
-        return GoogleProfileMapping(oauthProfile);
-    default:
-        throw new Error("Invalid OAuth Profile");
+        case "github":
+            authProfile = GithubProfileMapping(oauthProfile);
+            break;
+        case "google":
+            authProfile = GoogleProfileMapping(oauthProfile);
+            break;
+        default:
+            throw new Error('Invalid OAuth Provider');
+            break;
     }
+
+    if ( !authProfile.email){
+        console.log('missingEmail');
+        authProfile.profileErrors?.push('missingEmail');
+        authProfile.active = false;
+    }
+    return authProfile;
 }
 
 function GithubProfileMapping(oauthProfile: IProfile): User
