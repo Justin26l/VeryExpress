@@ -12,25 +12,25 @@ interface IProfile extends Profile {
 export default async function oauthVerify(accessToken: string, refreshToken: string, profile: IProfile, done: (error: any, user?: any) => void) : Promise<void> {
     try {
 
-        console.log('OAuthVerify', profile);
+        console.log("OAuthVerify", profile);
 
         // find or create user
         let userProfile: any;
-        let authProfile = oauthProfileMapping(profile);
+        const authProfile = oauthProfileMapping(profile);
 
         if(!authProfile.email){
-            return done(new Error('Email is required'));
+            return done(new Error("Email is required"));
         }
 
         // user's human readible unique identifier is email
         const existingUser = await UserModel.findOne({ email: profile.emails?.[0].value });
 
         if( existingUser ){
-            console.log('OAuthVerify ExistingUser');
+            console.log("OAuthVerify ExistingUser");
             userProfile = existingUser;
         }
         else {
-            console.log('OAuthVerify NewUser');
+            console.log("OAuthVerify NewUser");
             const newUser = new UserModel({
                 authProviders: [{
                     provider: profile.provider,
@@ -73,12 +73,12 @@ function sanitizeUser(user: UserDocument){
 function oauthProfileMapping(oauthProfile: IProfile): User
 {
     switch(oauthProfile.provider){
-        case 'github':
-            return GithubProfileMapping(oauthProfile);
-        case 'google':
-            return GoogleProfileMapping(oauthProfile);
-        default:
-            throw new Error('Invalid OAuth Profile');
+    case "github":
+        return GithubProfileMapping(oauthProfile);
+    case "google":
+        return GoogleProfileMapping(oauthProfile);
+    default:
+        throw new Error("Invalid OAuth Profile");
     }
 }
 

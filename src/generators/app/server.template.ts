@@ -17,7 +17,7 @@ const ConfigApiRouter = "const ApiRoute = new ApiRouter();";
 const UseCookieParser = "app.use(cookieParser());";
 const UseAuthRouter = "app.use(\"/auth\", AuthRoute.getRouter());";
 const UseSwaggerRouter = "app.use(\"/swagger\", SwaggerRoute.getRouter());";
-const UseApiRouter = "app.use(\"/api\", ApiRoute.getRouter());"
+const UseApiRouter = "app.use(\"/api\", ApiRoute.getRouter());";
 
 export default function serverTemplate(options: {
     compilerOptions: types.compilerOptions,
@@ -211,4 +211,4 @@ function dummyLoginUI(providers: string[]) {
         \`);
     });
     `;
-};
+}

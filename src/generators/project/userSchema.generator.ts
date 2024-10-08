@@ -21,7 +21,7 @@ export async function compile(options: {
             userSchema.properties[key] = templateSchema.properties[key];
         }
 
-        if (userSchema.properties[key]?.['x-vexData'] == "role") {
+        if (userSchema.properties[key]?.["x-vexData"] == "role") {
             userSchema.properties[key].enum = options.compilerOptions.useRBAC?.roles || ["user"];
         }
     });
