@@ -4,6 +4,7 @@ import { Profile } from "passport";
 import { UserModel, UserDocument } from "./../../_models/UserModel.gen";
 import { User } from "./../../_types/User.gen";
 import { generateToken } from "./../auth/jwt.gen";
+import utils from "../../_utils/index.gen";
 
 interface IProfile extends Profile {
     [key: string]: any;
@@ -18,35 +19,36 @@ export default async function oauthVerify(accessToken: string, refreshToken: str
         let userProfile: any;
         const authProfile = oauthProfileMapping(profile);
 
-        if(!authProfile.email){
-            return done(new Error("Email is required"));
-        }
-
-        // user's human readible unique identifier is email
-        const existingUser = await UserModel.findOne({ email: profile.emails?.[0].value });
-
-        if( existingUser ){
-            console.log("OAuthVerify ExistingUser");
-            userProfile = existingUser;
-        }
-        else {
-            console.log("OAuthVerify NewUser");
-            const newUser = new UserModel({
-                authProviders: [{
-                    provider: profile.provider,
-                    id: profile.id
-                }],
-                email: profile.emails?.[0].value || "",
-                authId: profile.id,
-                name: profile.displayName,
-                familyName: profile.name?.familyName, 
-                givenName: profile.name?.givenName,
-                isActive: true,
-                locale: profile._json?.locale || "en",
-            });
-            newUser.save();
+        if (!authProfile.email){
+            return done(JSON.stringify({
+                provider: profile.provider,
+                message: "Email is required"
+            }));
+        };
+        
+        // user email as human readible identifier
+        const existingUser = await UserModel.findOne<User>({ email: profile.emails?.[0].value });
+        if( !existingUser ){
+            utils.log.info("OAuthVerify - New User Logging In");
+            const newUser = new UserModel(authProfile);
+            await newUser.save();
             userProfile = newUser;
         }
+        else {
+            utils.log.info("OAuthVerify - Existing User Logging In");
+
+            // check existingUser's auth profile have the same provider
+            const isExistingAuthProfile = await existingUser.authProfiles.find((authProfile) => authProfile.provider === profile.provider);
+            // if not add the new auth profile to the user
+            if(!isExistingAuthProfile){
+                utils.log.info("OAuthVerify - Existing User Logging In - New Auth Provider");
+
+                existingUser.authProfiles?.push(authProfile.authProfiles[0]);
+                await UserModel.updateOne({ email: profile.emails?.[0].value }, existingUser);
+            }
+            userProfile = existingUser;
+        }
+
 
         const sanitizedProfile = sanitizeUser(userProfile);
         const tokenInfo = generateToken(sanitizedProfile);
