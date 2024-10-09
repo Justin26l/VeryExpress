@@ -22,7 +22,7 @@ export async function compile(options: {
         }
 
         if (userSchema.properties[key]?.["x-vexData"] == "role") {
-            userSchema.properties[key].enum = options.compilerOptions.useRBAC?.roles || ["user"];
+            userSchema.properties[key].items.enum = options.compilerOptions.useRBAC?.roles || ["user"];
         }
     });
 

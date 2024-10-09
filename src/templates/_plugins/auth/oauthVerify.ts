@@ -130,7 +130,7 @@ function GithubProfileMapping(oauthProfile: IProfile): User
             authId: oauthProfile.id,
             username: oauthProfile.username || oauthProfile.displayName
         }],
-        roles:[],
+        roles: undefined,
         name: oauthProfile.username || oauthProfile.displayName,
         email: oauthProfile._json.email || oauthProfile._json.notification_email || undefined,
         locale: undefined,
@@ -149,7 +149,7 @@ function GoogleProfileMapping(oauthProfile: IProfile): User
             authId: oauthProfile.id,
             username: oauthProfile.username || oauthProfile.displayName
         }],
-        roles:[],
+        roles: undefined,
         name: oauthProfile.username || oauthProfile.displayName,
         // data below could be missing depend on the provider
         email: oauthProfile._json.email || oauthProfile._json.notification_email || undefined,

@@ -33,6 +33,7 @@ export const defaultCompilerOptions: types.compilerOptions = {
     app: {
         enableSwagger: true,
         useUserSchema: true,
+        useStatefulRedisAuth: false,
         useObjectID: true,
         allowApiCreateUpdate_id: false,
     },

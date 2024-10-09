@@ -59,22 +59,14 @@
             "x-vexData": "role",
             "items": {
                 "type": "string",
-                "default": "user",
-                "required": true,
                 "enum": [
                     "visitor",
                     "member",
                     "admin"
                 ]
             },
-            "required": true,
             "default": [
                 "visitor"
-            ],
-            "enum": [
-                "visitor",
-                "member",
-                "admin"
             ]
         },
         "profileErrors": {
@@ -86,7 +78,6 @@
     },
     "required": [
         "name",
-        "active",
-        "roles"
+        "active"
     ]
 }
