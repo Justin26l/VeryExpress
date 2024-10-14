@@ -36,7 +36,7 @@ export function generateToken(
  * @param {number} index - The index of the key used to verify the token.
  * @return {jwt.JwtPayload | string | false} The decoded token payload, an error message, or false if verification fails.
  */
-export function verifyToken(token: string, index?: number|string): jwt.JwtPayload | string | false {
+export function verifyToken(token: string, index?: number|string): jwt.JwtPayload | false {
     try {
         if(!index) {
             return false;
@@ -44,6 +44,14 @@ export function verifyToken(token: string, index?: number|string): jwt.JwtPayloa
         const key = keys.getKey(index);
         return jwt.verify(token, key);
     } catch (e) {
-        return false;
+        if(e instanceof jwt.TokenExpiredError) {
+            throw e;
+        }
+        else if (e instanceof jwt.JsonWebTokenError) {
+            throw e;
+        }
+        else {
+            return false;
+        };
     }
 }

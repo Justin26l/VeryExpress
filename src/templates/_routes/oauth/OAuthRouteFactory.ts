@@ -3,6 +3,8 @@
 import { Router } from "express";
 import passport, { PassportStatic, Profile } from "passport";
 import * as oauth2 from "passport-oauth2";
+import responseGen from "../../_utils/response.gen";
+import { generateToken, verifyToken } from "../../_plugins/auth/jwt.gen";
 
 export type { Profile };
 
@@ -53,6 +55,31 @@ export default class OAuthRouteFactory {
                 res.redirect(`/profile?accessToken=${tokenInfo.token}&tokenIndex=${tokenInfo.clientIndex}`);
             }
         );
+
+        // // refresh expired token
+        // this.router.get("/refresh", 
+        //     this.passport.authenticate(this.config.strategyName, this.config.authenticateOptions), 
+        //     (req, res) => {
+        //         const user = req.user as any;
+
+        //         // create new token 
+        //         // 1. get user info from token
+        //         const tokenData = verifyToken(user.tokenInfo.token, user.tokenInfo.clientIndex);
+
+        //         // 2. create new token if token is valid
+        //         if (tokenData) {
+        //             responseGen.send(
+        //                 res,
+        //                 200,
+        //                 undefined,
+        //                 generateToken(tokenData)
+        //             );
+        //         }
+        //         else{
+        //             responseGen.send(res, 401);
+        //         }
+        //     }
+        // );
     }
 
     public getRouter() {
