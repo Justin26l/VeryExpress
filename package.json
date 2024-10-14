@@ -36,12 +36,13 @@
         "@typescript-eslint/parser": "^6.18.1",
         "dotenv": "^16.3.1",
         "esbuild": "0.23.0",
-        "eslint": "^8.56.0",
+        "eslint": "^8.57.1",
         "js-yaml": "^4.1.0",
         "json-schema-to-openapi-schema": "^0.4.0",
         "json-schema-to-typescript": "^13.1.1",
-        "json2mongoose": "^0.4.2",
+        "json2mongoose": "^0.4.4",
         "minimist": "^1.2.8",
+        "mongoose": "^8.7.1",
         "ts-node": "^10.9.2",
         "typescript": "^5.3.3"
     }
