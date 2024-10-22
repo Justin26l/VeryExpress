@@ -52,6 +52,6 @@ export function verifyToken(token: string, index?: number|string): jwt.JwtPayloa
         }
         else {
             return false;
-        };
+        }
     }
 }

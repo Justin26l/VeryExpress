@@ -10,15 +10,15 @@ export default function profileMapping(oauthProfile: IProfile): User
 {
     let authProfile: User;
     switch(oauthProfile.provider){
-        case "github":
-            authProfile = GithubProfileMapping(oauthProfile);
-            break;
-        case "google":
-            authProfile = GoogleProfileMapping(oauthProfile);
-            break;
-        default:
-            throw new Error('Invalid OAuth Provider');
-            break;
+    case "github":
+        authProfile = GithubProfileMapping(oauthProfile);
+        break;
+    case "google":
+        authProfile = GoogleProfileMapping(oauthProfile);
+        break;
+    default:
+        throw new Error("Invalid OAuth Provider");
+        break;
     }
 
     // if ( !authProfile.email){

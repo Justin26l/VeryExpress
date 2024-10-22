@@ -3,8 +3,8 @@
 import { Router } from "express";
 import passport, { PassportStatic, Profile } from "passport";
 import * as oauth2 from "passport-oauth2";
-import responseGen from "../../_utils/response.gen";
-import { generateToken, verifyToken } from "../../_plugins/auth/jwt.gen";
+// import responseGen from "../../_utils/response.gen";
+// import { generateToken, verifyToken } from "../../_plugins/auth/jwt.gen";
 
 export type { Profile };
 

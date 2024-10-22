@@ -17,7 +17,7 @@ export default class Authentication {
             }
 
             // verify token with jwt.verify
-            const token = req.headers.authorization.split(' ')[1];
+            const token = req.headers.authorization.split(" ")[1];
             const clientIndex = req.cookies.tokenIndex;
             const tokenData = jwt.verifyToken(token, clientIndex);
 
@@ -25,7 +25,7 @@ export default class Authentication {
                 Log.ok("tokenInvalid", tokenData);
                 responseGen.send(res, 401);
                 return;
-            };
+            }
 
             // if token is valid, set req.user to the decoded token
             Log.ok("tokenValid", tokenData);
@@ -33,7 +33,7 @@ export default class Authentication {
             next();
         }
         catch (e) {
-            if (typeof e === 'number') {
+            if (typeof e === "number") {
                 responseGen.send(res, e);
             }
             else {
@@ -41,5 +41,5 @@ export default class Authentication {
                 responseGen.send(res, 500);
             }
         }
-    }
+    };
 }
