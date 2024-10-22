@@ -62,6 +62,7 @@ async function main(): Promise<void> {
     // UseMiddleware
     app.use(express.json());
     app.use(helmet(helmetConfig));
+    app.use(processTimer);
     app.use(vexDB.middleware);
 
     // UsePlugins
