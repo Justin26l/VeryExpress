@@ -20,32 +20,34 @@ export default class AuthRouter {
     constructor() {
         this.router.get('/profile', (req, res) => {
 
-            try {
-                if (!req.headers['authorization']) {
-                    throw new Error('No Authorization Header');
-                };
+            if (!req.headers['authorization']) {
+                return responseGen.send(res, 401);
+            };
 
-                const accessToken = req.headers['authorization']?.toString().split(' ')[1];
-                const tokenIndex = req.cookies['tokenIndex']?.toString() || undefined;
-                const decodedToken = verifyToken(accessToken, tokenIndex);
-                
-                if (!decodedToken) {
-                    console.log(decodedToken);
-                    throw new Error('Invalid Token');
-                };
-
-                res.json(decodedToken);
+            const accessToken = req.headers['authorization']?.toString().split(' ')[1];
+            const tokenIndex = req.cookies['tokenIndex']?.toString() || undefined;
+            const decodedToken = verifyToken(accessToken, tokenIndex);
+            
+            if (!decodedToken) {
+                return responseGen.send(res, 401);
             }
-            catch ( err: any ) {
-                res.status(401);
-                res.json({ error: err.message });
-            }
+            else{
+                return responseGen.send(res, 200, undefined, decodedToken);
+            };
         });
 
         this.router.get('/refreshtoken', (req, res) => {
             // check if refresh token is valid
+            if (!req.cookies.refreshToken) {
+                return responseGen.send(res, 401);
+            }
             // if valid, return new access token
-            // if not, return 401
+            else if (verifyToken(req.cookies.refreshToken, 0)) {
+                // const accessToken = returnToken(req.user);
+                return responseGen.send(res, 200, undefined, {
+                    //todo: return new access token
+                });
+            }
         });
 
         this.initOAuthRoutes();

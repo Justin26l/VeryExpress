@@ -10,6 +10,7 @@ export default class Authentication {
     public middleware = (req: Request, res: Response, next: NextFunction) => {
         try {
             Log.info("Authentication.middleware", req.headers.authorization);
+            
             if (!req.headers.authorization) {
                 Log.ok("no Header", req.headers.authorization);
                 responseGen.send(res, 401);
@@ -23,8 +24,7 @@ export default class Authentication {
 
             if (!tokenData) {
                 Log.ok("tokenInvalid", tokenData);
-                responseGen.send(res, 401);
-                return;
+                throw 401;
             }
 
             // if token is valid, set req.user to the decoded token
@@ -32,13 +32,13 @@ export default class Authentication {
             req.user = tokenData;
             next();
         }
-        catch (e) {
+        catch (e: any) {
             if (typeof e === "number") {
                 responseGen.send(res, e);
             }
             else {
                 Log.errorNoExit(e);
-                responseGen.send(res, 500);
+                responseGen.send(res, 500, e?.message);
             }
         }
     };
