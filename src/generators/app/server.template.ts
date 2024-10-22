@@ -30,6 +30,7 @@ import dotenv from 'dotenv';
 import crypto from 'crypto';
 import helmet from 'helmet';
 import log from './system/_utils/logger.gen';
+import processTimer from './system/_utils/processTimer.gen';
 import VexDbConnector from './system/_services/VexDbConnector.gen';
 
 import ApiRouter from './system/_routes/ApiRouter.gen';
