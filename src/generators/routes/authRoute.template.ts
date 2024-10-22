@@ -42,6 +42,12 @@ export default class AuthRouter {
             }
         });
 
+        this.router.get('/refreshtoken', (req, res) => {
+            // check if refresh token is valid
+            // if valid, return new access token
+            // if not, return 401
+        });
+
         this.initOAuthRoutes();
     }
 
