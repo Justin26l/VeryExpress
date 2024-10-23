@@ -9,6 +9,7 @@ export default function RBACmiddlewareTemplate(options: {
     let template: string = options.template || `{{headerComment}}
 import { Request, Response, NextFunction } from "express";
 import * as roles from "../_roles";
+import responseGen from "../_utils/response.gen";
 import Log from "../_utils/logger.gen";
 
 export { roles };
@@ -39,13 +40,13 @@ export default class RoleBaseAccessControl {
             const user :any = req.user;
             {{roleSwitch}}
         }
-        catch (e) {
+        catch (e: any) {
             Log.errorNoExit(e);
             if (typeof e === 'number') {
-                res.status(e).send("Permission denied");
+                responseGen.send(res, e);
             }
             else {
-                res.status(500).send("Internal server error");
+                responseGen.send(res, 500, { message: e.errorMessages });
             }
         }
     }

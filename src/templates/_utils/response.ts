@@ -1,26 +1,40 @@
 import { Response } from "express";
-import { responseStatus } from "./../_types/responseMsg.gen";
+import { responseStatusToCode, responseMsg, ResponseCode } from "./../_types/response/index.gen";
 
 /**
  * @param res express response object
- * @param code http status
+ * @param status http response code
+ * @param code custom response/error code
  * @param message response data message
  * @param result response data result
  * @returns express response object
  */
 export function send<T = undefined>(
     res: Response,
-    code: number = 200,
-    message?: string,
-    result?: T,
+    status: number = 200, 
+    body?:{ 
+        code?: ResponseCode,
+        message?: string|null,
+        result?: T,
+    }
 ): Response<any, Record<string, any>> {
-    return res.status(code).json({
-        ret_code: code,
-        ret_msg: message || responseStatus.get(code) || "",
-        ret_time: new Date().getTime(),
-        result: result,
-    });
-}
+    const code :ResponseCode | undefined = body?.code || responseStatusToCode.get(status) as ResponseCode | undefined;
+    const msg :string | undefined = body?.message || (code ? responseMsg[code] : undefined);
+    const noBody = !code && !msg && !body?.result;
+
+    if(noBody){
+        return res.status(status).send();
+    }
+    else{
+        return res.status(status)
+        .json({
+            ret_code: code,
+            ret_msg: msg,
+            elapse: Date.now() - res.locals?.startAt || 0,
+            result: body?.result,
+        });
+    };
+};
 
 export default {
     send

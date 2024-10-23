@@ -6,6 +6,7 @@ export default function template(
 ): string {
     let template = `{{headerComment}}
 import { Router } from 'express';
+import responseGen from '../_utils/response.gen';
 import { verifyToken } from '../_plugins/auth/jwt.gen';
 import oauthVerify from '../_plugins/auth/oauthVerify.gen';
 
@@ -32,7 +33,9 @@ export default class AuthRouter {
                 return responseGen.send(res, 401);
             }
             else{
-                return responseGen.send(res, 200, undefined, decodedToken);
+                return responseGen.send(res, 200, {
+                    result: decodedToken
+                });
             };
         });
 
@@ -44,8 +47,8 @@ export default class AuthRouter {
             // if valid, return new access token
             else if (verifyToken(req.cookies.refreshToken, 0)) {
                 // const accessToken = returnToken(req.user);
-                return responseGen.send(res, 200, undefined, {
-                    //todo: return new access token
+                return responseGen.send(res, 200, {
+                    // result: todo, return new access token
                 });
             }
         });

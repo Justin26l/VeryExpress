@@ -1,7 +1,9 @@
+
+
 import logger from "./logger.gen";
 import response from "./response.gen";
 import validator from "./validator.gen";
-import { responseMsg, responseStatus } from "./../_types/responseMsg.gen";
+import { responseMsg, responseCode, responseStatusToCode } from "./../_types/response/index.gen";
 import common from "./common.gen";
 
 export default {
@@ -9,6 +11,7 @@ export default {
     response,
     validator,
     responseMsg,
-    responseStatus,
+    responseCode,
+    responseStatusToCode,
     common
 };
