@@ -27,14 +27,14 @@ export function send<T = undefined>(
     }
     else{
         return res.status(status)
-        .json({
-            ret_code: code,
-            ret_msg: msg,
-            elapse: Date.now() - res.locals?.startAt || 0,
-            result: body?.result,
-        });
-    };
-};
+            .json({
+                ret_code: code,
+                ret_msg: msg,
+                elapse: Date.now() - res.locals?.startAt || 0,
+                result: body?.result,
+            });
+    }
+}
 
 export default {
     send
