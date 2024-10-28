@@ -51,35 +51,10 @@ export default class OAuthRouteFactory {
             this.passport.authenticate(this.config.strategyName, this.config.authenticateOptions), 
             (req, res) => {
                 const user = req.user as any;
-                const tokenInfo = user.tokenInfo;
-                res.redirect(`/profile?accessToken=${tokenInfo.token}&tokenIndex=${tokenInfo.clientIndex}`);
+                res.redirect(`/profile?accessToken=${user.accessToken}&tokenIndex=${user.clientIndex}&refreshToken=${user.refreshToken}`);
             }
         );
 
-        // // refresh expired token
-        // this.router.get("/refresh", 
-        //     this.passport.authenticate(this.config.strategyName, this.config.authenticateOptions), 
-        //     (req, res) => {
-        //         const user = req.user as any;
-
-        //         // create new token 
-        //         // 1. get user info from token
-        //         const tokenData = verifyToken(user.tokenInfo.token, user.tokenInfo.clientIndex);
-
-        //         // 2. create new token if token is valid
-        //         if (tokenData) {
-        //             responseGen.send(
-        //                 res,
-        //                 200,
-        //                 undefined,
-        //                 generateToken(tokenData)
-        //             );
-        //         }
-        //         else{
-        //             responseGen.send(res, 401);
-        //         }
-        //     }
-        // );
     }
 
     public getRouter() {

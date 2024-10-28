@@ -2,6 +2,11 @@
 
 import dotenv from "dotenv";
 dotenv.config();
+export interface keyObj {
+    key: string, 
+    index?: number, 
+    clientIndex?:string, 
+}
 
 export class JWTKeyStore{
     readonly expireTime: string | undefined = process.env.JWT_EXPIRE_TIME;
@@ -28,7 +33,7 @@ export class JWTKeyStore{
      * - index (actual index of key)
      * - client index (index with random string)
      */
-    public getRandomKey(): { index: number, clientIndex:string, key: string } {
+    public getRandomKey(): keyObj {
         // get leng of keys and return random key
         const len = this.keys.length;
         const tokenInfo = {
@@ -55,6 +60,19 @@ export class JWTKeyStore{
         }
 
         return this.keys[index];
+    }
+
+    /**
+     * retrive key by index or client index
+     */
+    public getKeyObj(index:number|string): keyObj {
+        if (typeof index === "string") {
+            index = parseInt(index.replace(/\D/g, ""));
+        }
+
+        return {
+            key: this.keys[index]
+        };
     }
 
     private getRandomCharString(length: number = 3): string {

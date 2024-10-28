@@ -2,8 +2,6 @@
  * default response message of each return code
  **/
 export const responseMsg = {
-    success: "Success",
-
     err_perm: "Permission Denied",
 
     err_payload: "Invalid Request Payload",
