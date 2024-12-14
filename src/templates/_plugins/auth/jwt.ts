@@ -7,13 +7,15 @@ const keys = new JWTKeyStore();
 
 export function generateToken(
     data: any, 
+    keyIndex?: number,
     expiresIn?: string
 ): { 
     token: string, 
-    index: number, 
-    clientIndex: string 
+    index?: number, 
+    clientIndex?: string 
 } {
-    const keyInfo = keys.getRandomKey();
+    const keyInfo = typeof keyIndex == "number" ? keys.getKeyObj(keyIndex) : keys.getRandomKey();
+
     const token = jwt.sign(
         data,
         keyInfo.key,

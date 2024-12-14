@@ -7,8 +7,9 @@ export default function template(
     let template = `{{headerComment}}
 import { Router } from 'express';
 import responseGen from '../_utils/response.gen';
-import { verifyToken } from '../_plugins/auth/jwt.gen';
+import { generateToken, verifyToken } from '../_plugins/auth/jwt.gen';
 import oauthVerify from '../_plugins/auth/oauthVerify.gen';
+import jwt from "jsonwebtoken";
 
 import OAuthRouteFactory from './oauth/OAuthRouteFactory.gen';
 import { Strategy as GithubStrategy } from 'passport-github';
@@ -45,10 +46,14 @@ export default class AuthRouter {
                 return responseGen.send(res, 401);
             }
             // if valid, return new access token
-            else if (verifyToken(req.cookies.refreshToken, 0)) {
-                // const accessToken = returnToken(req.user);
+            if (verifyToken(req.cookies.refreshToken, 0)) {
+                // parse refresh token
+                const refreshTokenInfo = jwt.decode(req.cookies.refreshToken);
+                const accessToken = generateToken(refreshTokenInfo, 0).token;
                 return responseGen.send(res, 200, {
-                    // result: todo, return new access token
+                    result: {
+                        accessToken: accessToken
+                    }
                 });
             }
         });

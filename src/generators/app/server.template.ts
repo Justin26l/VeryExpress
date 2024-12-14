@@ -122,8 +122,8 @@ main();
         Config.push(ConfigAuthRouter);
         AppRoute.push(UseAuthRouter);
 
-        template = template.replace(/{{dummyLoginUI}}/g, dummyLoginUI(usedProvider));
     }
+    template = template.replace(/{{dummyLoginUI}}/g, dummyLoginUI(usedProvider));
 
     template = template.replace(/{{headerComment}}/g, options.compilerOptions.headerComment || "// generated files by very-express");
     template = template.replace(/{{Import}}/g, Import.join("\n"));

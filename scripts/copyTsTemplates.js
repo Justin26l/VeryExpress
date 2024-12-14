@@ -11,7 +11,7 @@ function copyDir (src, destination) {
         fs.mkdirSync(destination);
     }
     else {
-        fs.rmdirSync(destination, { recursive: true });
+        fs.rmSync(destination, { recursive: true });
         fs.mkdirSync(destination);
     }
     

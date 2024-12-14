@@ -1,4 +1,4 @@
-import { responseMsg } from './responseMsg.gen';
+import { responseMsg } from "./responseMsg.gen";
 
 /** custom response code **/
 export type ResponseCode = keyof typeof responseMsg;
