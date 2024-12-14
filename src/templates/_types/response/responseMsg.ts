@@ -1,7 +1,11 @@
 /** 
- * default response message of each return code
+ * default response message by response code
+ * { code: message }
  **/
 export const responseMsg = {
+    
+    DB_CONN_ERR: "Database connection error",
+
     success: "Success",
 
     err_perm: "Permission Denied",

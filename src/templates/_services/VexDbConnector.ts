@@ -65,7 +65,7 @@ export default class VexDbConnector {
     middleware(req: Request, res: Response, next: NextFunction) {
         if (mongoose.connection.readyState !== 1) { 
             vex.response.send(res, 503, {
-                message: "Database connection error",
+                code: vex.response.code.DB_CONN_ERR,
             });
         }
         else if (this.recordAccessLog){

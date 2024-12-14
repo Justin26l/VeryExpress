@@ -58,7 +58,7 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
             const validationError = validationResult(req);
             if ( ! validationError.isEmpty() ) {
                 return vex.response.send(res, 400, {
-                    code: vex.responseCode.err_validation, 
+                    code: vex.response.code.err_validation, 
                     result: validationError.array()
                 });
             };
@@ -81,7 +81,7 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
             const validationError = validationResult(req);
             if ( ! validationError.isEmpty() ) {
                 return vex.response.send(res, 400, {
-                    code: vex.responseCode.err_validation, 
+                    code: vex.response.code.err_validation, 
                     result: validationError.array()
                 });
             };
@@ -99,7 +99,7 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
             } 
             catch (err:any) { 
                 return vex.response.send(res, 400, {
-                    code: vex.responseCode.err_validation, 
+                    code: vex.response.code.err_validation, 
                     result: err.message
                 });
             };
@@ -116,7 +116,7 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
             const validationError = validationResult(req);
             if ( ! validationError.isEmpty() ) {
                 return vex.response.send(res, 400, {
-                    code: vex.responseCode.err_validation, 
+                    code: vex.response.code.err_validation, 
                     result: validationError.array()
                 });
             };{{check_id}}
@@ -124,7 +124,7 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
             const result = await {{documentName}}Model.create(req.body);
             if (!result) {
                 return vex.response.send(res, 400, {
-                    code: vex.responseCode.err_create
+                    code: vex.response.code.err_create
                 });
             }
             else {
@@ -140,7 +140,7 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
             const validationError = validationResult(req);
             if ( ! validationError.isEmpty() ) {
                 return vex.response.send(res, 400, {
-                    code: vex.responseCode.err_validation, 
+                    code: vex.response.code.err_validation, 
                     result: validationError.array()
                 });
             };{{check_id}}
@@ -148,7 +148,7 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
             const result = await {{documentName}}Model.findByIdAndUpdate(req.params.id, req.body, { new: true });
             if (!result) {
                 return vex.response.send(res, 404, {
-                    code: vex.responseCode.err_update
+                    code: vex.response.code.err_update
                 });
             }
             else {
@@ -164,7 +164,7 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
             const validationError = validationResult(req);
             if ( ! validationError.isEmpty() ) {
                 return vex.response.send(res, 400, {
-                    code: vex.responseCode.err_validation, 
+                    code: vex.response.code.err_validation, 
                     result: validationError.array()
                 });
             };{{check_id}}
@@ -172,7 +172,7 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
             const result = await {{documentName}}Model.replaceOne({_id: req.params.id}, req.body);
             if (!result) {
                 return vex.response.send(res, 404, { 
-                    code: vex.responseCode.err_update
+                    code: vex.response.code.err_update
                 });
             }
             else {
@@ -188,7 +188,7 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
             const validationError = validationResult(req);
             if ( ! validationError.isEmpty() ) {
                 return vex.response.send(res, 400, {
-                    code: vex.responseCode.err_validation, 
+                    code: vex.response.code.err_validation, 
                     result: validationError.array()
                 });
             };
@@ -196,7 +196,7 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
             const result = await {{documentName}}Model.findByIdAndDelete(req.params.id);
             if (!result) {
                 return vex.response.send(res, 404, {
-                    code: vex.responseCode.err_delete
+                    code: vex.response.code.err_delete
                 });
             }
             else {

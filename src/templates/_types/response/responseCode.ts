@@ -3,7 +3,9 @@ import { responseMsg } from './responseMsg.gen';
 /** custom response code **/
 export type ResponseCode = keyof typeof responseMsg;
 
-/** custom response code **/
+/** 
+ * response code of response message
+ **/
 export const responseCode = Object.keys(responseMsg).reduce((acc, key, index) => {
     acc[key] = key as ResponseCode;
     return acc;

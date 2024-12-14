@@ -43,12 +43,12 @@ export function verifyToken(token: string, index?: number|string): jwt.JwtPayloa
         }
         const key = keys.getKey(index);
         return jwt.verify(token, key);
-    } catch (e) {
-        if(e instanceof jwt.TokenExpiredError) {
-            throw e;
-        }
-        else if (e instanceof jwt.JsonWebTokenError) {
-            throw e;
+    } catch (error) {
+        if(
+            error instanceof jwt.TokenExpiredError || 
+            error instanceof jwt.JsonWebTokenError 
+        ) {
+            throw error;
         }
         else {
             return false;
