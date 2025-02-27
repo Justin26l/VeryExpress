@@ -17,7 +17,7 @@ export default function returnToken(userProfile: UserDocument){
     };
 }
 
-function sanitizeUser(user: UserDocument){
+export function sanitizeUser(user: UserDocument){
     return {
         _id: user._id,
         email: user.email,

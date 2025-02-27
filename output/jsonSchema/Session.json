@@ -22,5 +22,9 @@
             "type": "number",
             "required": true
         }
-    }
+    },
+    "required": [
+        "provider",
+        "expired"
+    ]
 }

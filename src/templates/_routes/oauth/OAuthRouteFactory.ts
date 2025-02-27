@@ -3,8 +3,8 @@
 import { Router } from "express";
 import passport, { PassportStatic, Profile } from "passport";
 import * as oauth2 from "passport-oauth2";
-// import responseGen from "../../_utils/response.gen";
-// import { generateToken, verifyToken } from "../../_plugins/auth/jwt.gen";
+import log from "../../_utils/logger.gen";
+import { SessionModel } from "../../_models/SessionModel.gen";
 
 export type { Profile };
 
@@ -61,12 +61,17 @@ export default class OAuthRouteFactory {
                     return res.redirect(`/profile?state=${state}`);
                 }
 
-                // insert {appAuthCode : userData} to db, 5s expired
+                log.info("OAuthRouteFactory > req.user", req.user);
+                // insert {sessionCode, userId} to db, 5s expired
+                const sessionCode = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
+                // @ts-ignore
+                SessionModel.create({ sessionCode: sessionCode, userData: req.user, provider: req.user?.provider || '', expired: Date.now() + 5000 });
+
                 // dummy code, need client side key's encoding
-                const appAuthCode = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15); 
                 
                 // return appAuthCode to client
-                res.redirect(`/profile?code=${appAuthCode}`);
+                res.redirect(`/profile?code=${sessionCode}`);
             }
         );
 

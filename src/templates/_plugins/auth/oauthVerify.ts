@@ -3,7 +3,7 @@
 import { UserModel, UserDocument } from "./../../_models/UserModel.gen";
 import { User } from "./../../_types/User.gen";
 import profileMapping, { IProfile } from "./profileMapping.gen";
-import returnToken from "./token.gen";
+import { sanitizeUser } from "./token.gen";
 import vex from "../../_utils/index.gen";
 
 export default async function oauthVerify(accessToken: string, refreshToken: string, profile: IProfile, done: (error: any, user?: any) => void) : Promise<void> {
@@ -30,7 +30,11 @@ export default async function oauthVerify(accessToken: string, refreshToken: str
             user = await processExistingUser(authUser, existingUser);
         }
 
-        done(null, returnToken(user));
+        // set req.user
+        done(null, {
+            provider: profile.provider,
+            profile: sanitizeUser(user),
+        });
     }
     catch(err) { 
         return done(err); 

@@ -68,8 +68,8 @@ export async function generate(
     utils.common.copyDir(`${__dirname}/templates/_types`, dir.typeDir, options, true);
     utils.common.copyDir(`${__dirname}/templates/_utils`, dir.utilsDir, options, true);
     utils.common.copyDir(`${__dirname}/templates/root`, options.rootDir, options, true);
-    // utils.copyDir(`${__dirname}/templates/_middleware`, dir.middlewareDir, options, true);
-    
+    utils.common.copyDir(`${__dirname}/templates/jsonSchema`, options.jsonSchemaDir, options, true);
+
     // update userSchema
     await userSchemaGen.compile({ compilerOptions: options || utils.generator.defaultCompilerOptions });
 
