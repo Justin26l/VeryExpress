@@ -1,0 +1,25 @@
+{
+    "type": "object",
+    "x-documentConfig": {
+        "documentName": "Session"
+    },
+    "properties": {
+        "_id": {
+            "type": "string",
+            "x-format": "ObjectId",
+            "index": true
+        },
+        "sessionCode": {
+            "type": "string",
+            "index": true
+        },
+        "provider": {
+            "type": "string",
+            "required": true
+        },
+        "expired": {
+            "type": "number",
+            "required": true
+        }
+    }
+}

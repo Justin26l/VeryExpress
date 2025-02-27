@@ -10,7 +10,7 @@ export default function RBACmiddlewareTemplate(options: {
 import { Request, Response, NextFunction } from "express";
 import * as roles from "../_roles";
 import responseGen from "../_utils/response.gen";
-import Log from "../_utils/logger.gen";
+import log from "../_utils/logger.gen";
 
 export { roles };
 
@@ -32,7 +32,7 @@ export default class RoleBaseAccessControl {
 
     public middleware = (req: Request, res: Response, next: NextFunction) => {
         try { 
-            Log.info("RBAC.middleware", req.method, req.path, req.user);
+            log.info("RBAC.middleware", req.method, req.path, req.user);
             if ( !req.user ) {
                 throw 401;
             }
@@ -41,7 +41,7 @@ export default class RoleBaseAccessControl {
             {{roleSwitch}}
         }
         catch (e: any) {
-            Log.errorNoExit(e);
+            log.errorNoExit(e);
             if (typeof e === 'number') {
                 responseGen.send(res, e);
             }

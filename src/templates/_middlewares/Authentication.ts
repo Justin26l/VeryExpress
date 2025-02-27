@@ -2,17 +2,17 @@
 
 import { Request, Response, NextFunction } from "express";
 import * as jwt from "../_plugins/auth/jwt.gen";
-import Log from "../_utils/logger.gen";
+import log from "../_utils/logger.gen";
 import responseGen from "../_utils/response.gen";
 
 export default class Authentication {
 
     public middleware = (req: Request, res: Response, next: NextFunction) => {
         try {
-            Log.info("Authentication.middleware", req.headers.authorization);
+            log.info("Authentication.middleware", req.headers.authorization);
             
             if (!req.headers.authorization) {
-                Log.ok("no Header", req.headers.authorization);
+                log.ok("no Header", req.headers.authorization);
                 responseGen.send(res, 401);
                 return;
             }
@@ -23,12 +23,12 @@ export default class Authentication {
             const tokenData = jwt.verifyToken(token, accessTokenClientKeyIndex);
 
             if (!tokenData) {
-                Log.ok("tokenInvalid", tokenData);
+                log.ok("tokenInvalid", tokenData);
                 throw 401;
             }
 
             // if token is valid, set req.user to the decoded token
-            Log.ok("tokenValid", tokenData);
+            log.ok("tokenValid", tokenData);
             req.user = tokenData;
             next();
         }
@@ -37,7 +37,7 @@ export default class Authentication {
                 responseGen.send(res, e);
             }
             else {
-                Log.errorNoExit(e);
+                log.errorNoExit(e);
                 responseGen.send(res, 500, e?.message);
             }
         }
