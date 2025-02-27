@@ -11,8 +11,8 @@ export function generateToken(
     expiresIn?: string
 ): { 
     token: string, 
-    index?: number, 
-    clientIndex?: string 
+    keyIndex?: number, 
+    clientKeyIndex?: string 
 } {
     const keyInfo = typeof keyIndex == "number" ? keys.getKeyObj(keyIndex) : keys.getRandomKey();
 
@@ -26,8 +26,8 @@ export function generateToken(
 
     return {
         token: token,
-        index: keyInfo.index,
-        clientIndex: keyInfo.clientIndex
+        keyIndex: keyInfo.index,
+        clientKeyIndex: keyInfo.clientIndex
     };
 }
 

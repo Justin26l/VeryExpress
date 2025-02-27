@@ -19,8 +19,8 @@ export default class Authentication {
 
             // verify token with jwt.verify
             const token = req.headers.authorization.split(" ")[1];
-            const clientIndex = req.cookies.tokenIndex;
-            const tokenData = jwt.verifyToken(token, clientIndex);
+            const accessTokenClientKeyIndex = req.cookies.tokenIndex;
+            const tokenData = jwt.verifyToken(token, accessTokenClientKeyIndex);
 
             if (!tokenData) {
                 Log.ok("tokenInvalid", tokenData);

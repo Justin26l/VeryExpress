@@ -40,19 +40,48 @@ export default class AuthRouter {
             };
         });
 
-        this.router.get('/refreshtoken', (req, res) => {
+        // exchange an authorization code for an access token.
+        this.router.post('/token', (req, res) => {
+            if (!req.query.code) {
+                return responseGen.send(res, 401);
+            }
+
+            const code = req.query.code;
+            // find code in database
+            // check code expire
+            // generate tokens based on code's user profile
+
+            const accessToken = generateToken({}, undefined, process.env.ACCESS_TOKEN_EXPIRED_TIME);
+            const refreshToken = generateToken({}, undefined, process.env.REFRESH_TOKEN_EXPIRED_TIME);
+
+            return responseGen.send(res, 200, {
+                result: {
+                    accessToken: accessToken.token,
+                    accessTokenIndex: accessToken.clientKeyIndex,
+
+                    // todo : need able to configure direct set cookie or return as json
+                    refreshToken: refreshToken.token,
+                    refreshTokenIndex: refreshToken.clientKeyIndex
+                }
+            });
+        });
+
+        // refresh expired access token using a refresh token.
+        this.router.get('/refresh', (req, res) => {
             // check if refresh token is valid
-            if (!req.cookies.refreshToken) {
+            if (!req.cookies.refreshToken || !req.headers.authorization) {
                 return responseGen.send(res, 401);
             }
             // if valid, return new access token
             if (verifyToken(req.cookies.refreshToken, 0)) {
                 // parse refresh token
-                const refreshTokenInfo = jwt.decode(req.cookies.refreshToken);
-                const accessToken = generateToken(refreshTokenInfo, 0).token;
+                const oldAccessTokenInfo = jwt.decode(req.headers.authorization.split(' ')[1]);
+                const accessToken = generateToken(oldAccessTokenInfo, undefined, process.env.ACCESS_TOKEN_EXPIRED_TIME);
+
                 return responseGen.send(res, 200, {
                     result: {
-                        accessToken: accessToken
+                        accessToken: accessToken.token,
+                        tokenIndex: accessToken.clientKeyIndex
                     }
                 });
             }

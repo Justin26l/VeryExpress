@@ -40,23 +40,37 @@ export default class OAuthRouteFactory {
         this.passport.initialize();
     }
     
+
     private initRoutes(){
-        // redirect to login
+        // redirect to provider's login page
         this.router.get("/",
             this.passport.authenticate(this.config.strategyName, this.config.authenticateOptions)
         );
 
-        // back from login
+        // back from provider's login page
         this.router.get("/callback", 
             this.passport.authenticate(this.config.strategyName, this.config.authenticateOptions), 
             (req, res) => {
-                const user = req.user as any;
-                res.redirect(`/profile?accessToken=${user.accessToken}&tokenIndex=${user.clientIndex}&refreshToken=${user.refreshToken}`);
+                const { code, state, error } = req.query;
+                console.log("/callback", { code, state, error });
+
+                if(error){
+                    return res.redirect(`/profile?error=${error}`);
+                }
+                else if(state){
+                    return res.redirect(`/profile?state=${state}`);
+                }
+
+                // insert {appAuthCode : userData} to db, 5s expired
+                // dummy code, need client side key's encoding
+                const appAuthCode = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15); 
+                
+                // return appAuthCode to client
+                res.redirect(`/profile?code=${appAuthCode}`);
             }
         );
 
     }
-
     public getRouter() {
         return this.router;
     }
