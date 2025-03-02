@@ -59,7 +59,7 @@ export default class AuthRouter {
             else {
                 await SessionModel.deleteOne({ sessionCode: sessionCode }).exec();
                 // log.info("Session Found & Deleted", sessionDoc);
-            }};
+            };
 
             if (sessionDoc?.get('expired') < Date.now()) {
                 return responseGen.send(res, 401, { message: 'code expired' });
