@@ -18,14 +18,15 @@ export function send<T = undefined>(
         result?: T,
     }
 ): Response<any, Record<string, any>> {
-    const code :ResponseCode | undefined = body?.code ?? responseStatusCodeMap.get(status) as ResponseCode | undefined;
-    const msg :string | undefined = body?.message ?? (code ? responseMsg[code] : undefined);
-    const noBody = !code && !msg && !body?.result;
+    const noBody = !body || (body.code === undefined && body.message === undefined && body.result === undefined);
 
     if(noBody){
         return res.status(status).send();
     }
     else{
+        const code :ResponseCode | undefined = body?.code ?? responseStatusCodeMap.get(status) as ResponseCode | undefined;
+        const msg :string | undefined = body?.message ?? (code ? responseMsg[code] : undefined);
+
         return res.status(status)
             .json({
                 ret_code: code,

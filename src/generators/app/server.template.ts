@@ -154,73 +154,36 @@ function dummyLoginUI(providers: string[]) {
     });
 
     /** 
-     * Dummy Profile Page, 
-     * this should handle by client application (vue, react, angular, etc)
-     * - after provider callback will redirect with token info in query
-     * - front end server should issue "tokenIndex" & "refreshToken" as http only cookie
-     * - client side should store "accessToken" in local
+     * token exchange page
+     * in ideal condition this will handle by Front-End Server (nuxtJs, nextJs, etc)
      **/
     app.get('/profile', (req, res) => {
-        const accessToken = req.query.accessToken?.toString() || '';
-        const refreshToken = req.query.refreshToken?.toString() || '';
-        const tokenIndex = req.query.tokenIndex?.toString() || '';
         const nonce = crypto.randomBytes(16).toString("base64");
 
         res.setHeader("Content-Security-Policy", \`script-src 'self' 'nonce-\${nonce}'\`);
-        if (tokenIndex) {
-            res.cookie('tokenIndex', tokenIndex, { httpOnly: true });
-        }
-        if (refreshToken) {
-            res.cookie('refreshToken', refreshToken, { httpOnly: true });
-        }
         res.send(\`
             <script nonce="\${nonce}">
                 let jsonData = {};
-                \${accessToken ? \`localStorage.setItem('accessToken', '\${accessToken}');\` : ''}
                 
                 document.addEventListener("DOMContentLoaded", function() {
-                    console.log('Fetching Profile Data from /auth/profile');
-                    const headers = new Headers();
-                    headers.append('Authorization', 'Bearer ' + localStorage.getItem('accessToken'));
-                    fetch('/auth/profile', { headers })
+                    console.log('Exchange Tokens from /auth/token');
+                    let sessionCode = new URLSearchParams(location.search).get('code');
+                    fetch(
+                        '/auth/token?code=' + sessionCode, {
+                            method: 'POST'
+                        }
+                    )
                         .then((res) => res.text())
                         .then((data) => {
-                            document.querySelector("#profileData").innerHTML = data;
+                            document.querySelector("#tokenData").innerHTML = data;
                             jsonData = JSON.parse(data);
-                            if (jsonData.profileErrors.length > 0){
-                                jsonData.profileErrors.forEach((error) => {
-                                    if (error === 'missingEmail'){
-                                        const userInput = window.prompt(\\\`Error: \\\${error}. Please provide your Email:\\\`);
-                                        if (userInput) {
-                                            updateUser(userInput);
-                                        }
-                                    };
-                                });
-                            }
+                            console.log('jsonData', jsonData);
                         });
                 });
-
-                function updateUser(input) {
-                    fetch('/api/user/'+jsonData._id, {
-                        method: 'PATCH',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': 'Bearer ' + localStorage.getItem('accessToken')
-                        },
-                        body: JSON.stringify({ email: input })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log('Success:', data);
-                    })
-                    .catch((error) => {
-                        console.error('Error:', error);
-                    });
-                }
             </script>
             <body>
                 <h1>Profile Data</h1>
-                <pre id="profileData"></pre>
+                <pre id="tokenData"></pre>
                 <a href="/">back to home</a>
             </body>
         \`);

@@ -48,11 +48,11 @@ export default class OAuthRouteFactory {
         );
 
         // back from provider's login page
+        // insert temporary sessionCode to database
         this.router.get("/callback", 
             this.passport.authenticate(this.config.strategyName, this.config.authenticateOptions), 
             (req, res) => {
                 const { code, state, error } = req.query;
-                console.log("/callback", { code, state, error });
 
                 if(error){
                     return res.redirect(`/profile?error=${error}`);
@@ -60,13 +60,20 @@ export default class OAuthRouteFactory {
                 else if(state){
                     return res.redirect(`/profile?state=${state}`);
                 }
+                else if(!req.user){
+                    return res.redirect(`/profile?error=invalid user`);
+                }
 
-                log.info("OAuthRouteFactory > req.user", req.user);
-                // insert {sessionCode, userId} to db, 5s expired
                 const sessionCode = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
-                // @ts-ignore
-                SessionModel.create({ sessionCode: sessionCode, userData: req.user, provider: req.user?.provider || '', expired: Date.now() + 5000 });
+                SessionModel.create({ 
+                    sessionCode: sessionCode, 
+                    // @ts-ignore
+                    userId: req.user.profile._id, 
+                    // @ts-ignore
+                    provider: req.user.provider || '', 
+                    expired: Date.now() + 5000 
+                });
 
                 // dummy code, need client side key's encoding
                 

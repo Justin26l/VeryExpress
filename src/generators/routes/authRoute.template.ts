@@ -14,6 +14,9 @@ import jwt from "jsonwebtoken";
 import OAuthRouteFactory from './oauth/OAuthRouteFactory.gen';
 import { Strategy as GithubStrategy } from 'passport-github';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
+import { SessionDocument, SessionModel } from '../_models/SessionModel.gen';
+import { UserModel } from '../_models/UserModel.gen';
+import { sanitizeUser } from '../_plugins/auth/token.gen';
 
 export default class AuthRouter {
 
@@ -41,18 +44,37 @@ export default class AuthRouter {
         });
 
         // exchange an authorization code for an access token.
-        this.router.post('/token', (req, res) => {
+        this.router.post('/token', async (req, res) => {
             if (!req.query.code) {
                 return responseGen.send(res, 401);
             }
 
-            const code = req.query.code;
+            const sessionCode = req.query.code;
             // find code in database
-            // check code expire
-            // generate tokens based on code's user profile
+            const sessionDoc = await SessionModel.findOne<SessionDocument>({ sessionCode: sessionCode }).exec();
 
-            const accessToken = generateToken({}, undefined, process.env.ACCESS_TOKEN_EXPIRED_TIME);
-            const refreshToken = generateToken({}, undefined, process.env.REFRESH_TOKEN_EXPIRED_TIME);
+            if (!sessionDoc) {
+                return responseGen.send(res, 404, { message: 'invalid code' });
+            }
+            else {
+                await SessionModel.deleteOne({ sessionCode: sessionCode }).exec();
+                // log.info("Session Found & Deleted", sessionDoc);
+            }};
+
+            if (sessionDoc?.get('expired') < Date.now()) {
+                return responseGen.send(res, 401, { message: 'code expired' });
+            };
+
+            const userDoc = await UserModel.findById(sessionDoc.get("userId")).exec();
+
+            if (!userDoc) {
+                return responseGen.send(res, 404, { message: 'user not found' });
+            }
+            const userInfo = sanitizeUser(userDoc);
+
+            // generate tokens based on code's user profile
+            const accessToken = generateToken(userInfo, undefined, process.env.ACCESS_TOKEN_EXPIRED_TIME);
+            const refreshToken = generateToken(userInfo, undefined, process.env.REFRESH_TOKEN_EXPIRED_TIME);
 
             return responseGen.send(res, 200, {
                 result: {
