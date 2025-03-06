@@ -41,7 +41,7 @@ export default class ApiRouter{
     if (options.compilerOptions.useRBAC) {
         importRoutes.push("import RoleBaseAccessControl from '../_middlewares/RoleBaseAccessControl.gen';");
     }
-    if (utilsGenerator.isUseOAuth(options.compilerOptions)) {
+    if (utilsGenerator.isOAuthEnabled(options.compilerOptions)) {
         importRoutes.push("import Authentication from '../_middlewares/Authentication.gen';");
         useRoutes.push("this.router.use(new Authentication().middleware);");
     }

@@ -31,7 +31,7 @@ export async function compile(options: {
     const routesSwaggerOutPath: string = `${options.routesDir}/SwaggerRouter.gen.ts`;
 
     // use oauth
-    if ( utils.generator.isUseOAuth(options.compilerOptions).length > 0 ) {
+    if ( utils.generator.isOAuthEnabled(options.compilerOptions) ) {
         utils.common.writeFile(
             "Route Auth", 
             routesAuthOutPath,

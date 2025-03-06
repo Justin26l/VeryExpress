@@ -30,6 +30,7 @@ export interface method {
     summary?: string,
     operationId: string, // method + documentName
     tags: string[], 
+    security?: { BearerAuth: string[] }[],
     parameters: parameter[],
     requestBody?: requestBody,
     responses: responses,
@@ -92,6 +93,13 @@ export interface responseItem {
  * OpenAPI 3.0 Components
  */
 export interface components {
+    securitySchemes: {
+        BearerAuth?: {
+            type: string,
+            scheme: string,
+            bearerFormat: string
+        }
+    },
     schemas: {
         [key:string]: componentsSchemaValue
     }

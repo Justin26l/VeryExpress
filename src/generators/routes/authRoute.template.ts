@@ -121,7 +121,7 @@ export default class AuthRouter {
     }
 }`;
 
-    const providers: string[] = utilsGenerator.isUseOAuth(compilerOptions);
+    const providers: string[] = utilsGenerator.OAuthProviders(compilerOptions);
     const providersTemplate = providers.map((providerName) => {
         switch (providerName) {
         case "google":

@@ -99,7 +99,7 @@ async function main(): Promise<void> {
 main();
 `;
 
-    const usedProvider: string[] = utils.generator.isUseOAuth(options.compilerOptions);
+    const usedProvider: string[] = utils.generator.OAuthProviders(options.compilerOptions);
     const Import: string[] = [];
     const Config: string[] = [];
     const AppUse: string[] = [];
