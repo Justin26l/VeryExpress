@@ -1,6 +1,7 @@
 import  utils from "../../utils";
 
 import * as types from "../../types/types";
+import { isOAuthEnabled } from "~/utils/generator";
 
 // import
 const importCookieParser = "import cookieParser from 'cookie-parser';";
@@ -29,6 +30,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import crypto from 'crypto';
 import helmet from 'helmet';
+
 import log from './system/_utils/logger.gen';
 import processTimer from './system/_utils/processTimer.gen';
 import VexDbConnector from './system/_services/VexDbConnector.gen';
@@ -48,6 +50,7 @@ const helmetConfig = {
 
 const vexDB = new VexDbConnector({
     mongoUrl: process.env.MONGODB_URI,
+    recordAccessLog: false,
 });
 
 {{Config}}
@@ -71,20 +74,6 @@ async function main(): Promise<void> {
 
     // Routes
     {{AppRouter}}
-
-    app.get('/', (req, res) => {
-        res.send(\`
-            <div>
-                <h1>Hello World</h1>
-                <ul>
-                    <li><a href="/login">Login</a></li>
-                    <li><a href="/profile">Profile</a></li>
-                    <li><a href="/logout">LogOut</a></li>
-                    <li><a href="/swagger">Swagger UI</a></li>
-                </ul>
-            </div>
-        \`);
-    });
 
     {{dummyLoginUI}}
 
@@ -121,9 +110,9 @@ main();
         Import.push(importAuthRouter);
         Config.push(ConfigAuthRouter);
         AppRoute.push(UseAuthRouter);
-
     }
-    template = template.replace(/{{dummyLoginUI}}/g, dummyLoginUI(usedProvider));
+    
+    template = template.replace(/{{dummyLoginUI}}/g, dummyLoginUI(usedProvider, options.compilerOptions));
 
     template = template.replace(/{{headerComment}}/g, options.compilerOptions.headerComment || "// generated files by very-express");
     template = template.replace(/{{Import}}/g, Import.join("\n"));
@@ -142,8 +131,26 @@ function loginHtml(providers: string[]) {
     return `${html}`;
 }
 
-function dummyLoginUI(providers: string[]) {
+function dummyLoginUI(providers: string[], compilerOptions: types.compilerOptions) {
     return `
+    app.get('/', (req, res) => {
+        res.send(\`
+            <div>
+                <h1>Hello World</h1>
+                <ul>
+                    ${ 
+                        isOAuthEnabled(compilerOptions) ? 
+                        `<li><a href="/login">Login</a></li>
+                    <li><a href="/logincallback">Profile</a></li>
+                    <li><a href="/logout">LogOut</a></li>` : 
+                        "" 
+                    }
+                    <li><a href="/swagger">Swagger UI</a></li>
+                </ul>
+            </div>
+        \`);
+    });
+
     /**
      * Dummy Login Page,
      * this should handle by client application (vue, react, angular, etc)
@@ -157,7 +164,7 @@ function dummyLoginUI(providers: string[]) {
      * token exchange page
      * in ideal condition this will handle by Front-End Server (nuxtJs, nextJs, etc)
      **/
-    app.get('/profile', (req, res) => {
+    app.get('/logincallback', (req, res) => {
         const nonce = crypto.randomBytes(16).toString("base64");
 
         res.setHeader("Content-Security-Policy", \`script-src 'self' 'nonce-\${nonce}'\`);
@@ -178,6 +185,10 @@ function dummyLoginUI(providers: string[]) {
                             document.querySelector("#tokenData").innerHTML = data;
                             jsonData = JSON.parse(data);
                             console.log('jsonData', jsonData);
+                            localStorage.setItem('accessToken', jsonData.result.accessToken);
+                            localStorage.setItem('accessTokenIndex', jsonData.result.accessTokenIndex);
+                            localStorage.setItem('refreshToken', jsonData.result.refreshToken);
+                            localStorage.setItem('refreshTokenIndex', jsonData.result.refreshTokenIndex);
                         });
                 });
             </script>
@@ -202,8 +213,10 @@ function dummyLoginUI(providers: string[]) {
         res.clearCookie('refreshToken');
         res.send(\`
             <script nonce="\${nonce}">
-                localStorage.removeItem('accessToken');
-                location.href = '/login';
+                localStorage.removeItem('accessToken', jsonData.result.accessToken);
+                localStorage.removeItem('accessTokenIndex', jsonData.result.accessTokenIndex);
+                localStorage.removeItem('refreshToken', jsonData.result.refreshToken);
+                localStorage.removeItem('refreshTokenIndex', jsonData.result.refreshTokenIndex);
             </script>
         \`);
     });

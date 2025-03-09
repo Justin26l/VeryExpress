@@ -5,6 +5,7 @@ import passport, { PassportStatic, Profile } from "passport";
 import * as oauth2 from "passport-oauth2";
 import log from "../../_utils/logger.gen";
 import { SessionModel } from "../../_models/SessionModel.gen";
+import path from "path";
 
 export type { Profile };
 
@@ -21,6 +22,9 @@ export default class OAuthRouteFactory {
     private router: Router = Router();
     private passport: PassportStatic = passport;
 
+    private loginSuccessRedirectPath = "";
+    private loginFailedRedirectPath = "";
+
     constructor(config: passportFactoryConfig ) {
 
         this.config = config;
@@ -29,6 +33,8 @@ export default class OAuthRouteFactory {
             scope: ["profile", "email"], 
             failureRedirect: ""
         };
+        this.loginSuccessRedirectPath = path.join("/",process.env.LOGIN_SUCCESS_REDIRECT_PATH || "/logincallback");
+        this.loginFailedRedirectPath = path.join("/",process.env.LOGIN_FAILED_REDIRECT_PATH || "/logincallback");
         
         this.initPassport(this.config.strategy);
         this.initRoutes();
@@ -55,13 +61,13 @@ export default class OAuthRouteFactory {
                 const { code, state, error } = req.query;
 
                 if(error){
-                    return res.redirect(`/profile?error=${error}`);
+                    return res.redirect(`${this.loginFailedRedirectPath}?error=${error}`);
                 }
                 else if(state){
-                    return res.redirect(`/profile?state=${state}`);
+                    return res.redirect(`${this.loginFailedRedirectPath}?state=${state}`);
                 }
                 else if(!req.user){
-                    return res.redirect(`/profile?error=invalid user`);
+                    return res.redirect(`${this.loginFailedRedirectPath}?error=invalid user`);
                 }
 
                 const sessionCode = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
@@ -78,7 +84,7 @@ export default class OAuthRouteFactory {
                 // dummy code, need client side key's encoding
                 
                 // return appAuthCode to client
-                res.redirect(`/profile?code=${sessionCode}`);
+                res.redirect(`${this.loginSuccessRedirectPath}?code=${sessionCode}`);
             }
         );
 

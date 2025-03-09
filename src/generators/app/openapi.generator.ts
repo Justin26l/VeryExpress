@@ -42,6 +42,11 @@ export async function compile(
                 type: "http",
                 scheme: "bearer",
                 bearerFormat: "JWT",
+            },
+            AuthIndex: {
+                type: "apiKey",
+                in: "header",
+                name: "X-Auth-Index",
             }
         };
     }
@@ -80,6 +85,7 @@ function jsonToOpenapiPath(
     const documentConfig: types.documentConfig = jsonSchema["x-documentConfig"];
     const lowerDocName: string = documentConfig.documentName.toLowerCase();
     const documentName: string = documentConfig.documentName;
+    const authParams: {[key:string]: Array<never>}[] = [{ BearerAuth: [] }, { AuthIndex: [] }];
 
     const properties: types.jsonSchema["properties"] = jsonSchema.properties;
 
@@ -154,7 +160,7 @@ function jsonToOpenapiPath(
         routes[route][httpMethod] = {
             operationId: jsonSchemaMethod + documentName,
             tags: [lowerDocName],
-            security: utils.generator.isOAuthEnabled(compilerOptions) ? [{ BearerAuth: [] }] : undefined,
+            security: utils.generator.isOAuthEnabled(compilerOptions) ? authParams : undefined,
             parameters: parameters,
             requestBody: requestBody,
             responses: Object.assign(

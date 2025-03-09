@@ -1,7 +1,10 @@
 // {{headerComment}}
 
 import dotenv from "dotenv";
+import { Algorithm } from "jsonwebtoken";
+
 dotenv.config();
+
 export interface keyObj {
     key: string, 
     index?: number, 
@@ -9,7 +12,8 @@ export interface keyObj {
 }
 
 export class JWTKeyStore{
-    readonly expireTime: string | undefined = process.env.JWT_EXPIRE_TIME;
+    readonly algorithm: Algorithm = this.getAlgorithm(process.env.JWT_ALGORITHM);
+    readonly expireTime: string | undefined = process.env.JWT_EXPIRE_TIME || "1h";
     private keys: string[] = [];
 
     constructor(){
@@ -83,6 +87,28 @@ export class JWTKeyStore{
             result += characters[randomIndex];
         }
         return result;
+    }
+
+    /**
+     * Type guard to check if a string is a valid Algorithm.
+     * @param str - The string to check.
+     * @returns True if the string is a valid Algorithm, false otherwise.
+     */
+    private getAlgorithm(str: string | undefined): Algorithm {
+        const algorithms: Algorithm[] = [
+            "HS256", "HS384", "HS512",
+            "RS256", "RS384", "RS512",
+            "ES256", "ES384", "ES512",
+            "PS256", "PS384", "PS512",
+            "none"
+        ];
+
+        if ( algorithms.includes(str as Algorithm) ) {
+            return str as Algorithm;
+        }
+        else {
+            return "HS256";
+        };
     }
 }
 

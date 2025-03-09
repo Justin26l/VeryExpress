@@ -1,6 +1,8 @@
 // {{headerComment}}
 
+
 import { Request, Response, NextFunction } from "express";
+import { JsonWebTokenError } from "jsonwebtoken";
 import * as jwt from "../_plugins/auth/jwt.gen";
 import log from "../_utils/logger.gen";
 import responseGen from "../_utils/response.gen";
@@ -9,25 +11,28 @@ export default class Authentication {
 
     public middleware = (req: Request, res: Response, next: NextFunction) => {
         try {
-            log.info("Authentication.middleware", req.headers.authorization);
+            // gate keeper
+            log.info("Authentication.middleware", req.headers['x-auth-index'], req.headers.authorization);
+            const token = req.headers.authorization?.split(" ")[1];
+            const accessTokenIndex = req.headers['x-auth-index']?.toString();
             
-            if (!req.headers.authorization) {
-                log.ok("no Header", req.headers.authorization);
-                responseGen.send(res, 401);
-                return;
-            }
-
-            // verify token with jwt.verify
-            const token = req.headers.authorization.split(" ")[1];
-            const accessTokenClientKeyIndex = req.cookies.tokenIndex;
-            const tokenData = jwt.verifyToken(token, accessTokenClientKeyIndex);
-
-            if (!tokenData) {
-                log.ok("tokenInvalid", tokenData);
+            if (!token || !accessTokenIndex) {
+                log.warn("invalid header", {
+                    "X-Auth-Index": req.headers['x-auth-index'], 
+                    "Authorization": req.headers.authorization
+                });
                 throw 401;
             }
 
-            // if token is valid, set req.user to the decoded token
+            // verify token
+            const tokenData = jwt.verifyToken(token, accessTokenIndex);
+
+            if (!tokenData) {
+                log.warn("token invalid", tokenData);
+                throw 401;
+            }
+
+            // set req.user to the decoded token
             log.ok("tokenValid", tokenData);
             req.user = tokenData;
             next();
@@ -36,9 +41,12 @@ export default class Authentication {
             if (typeof e === "number") {
                 responseGen.send(res, e);
             }
+            else if (e instanceof JsonWebTokenError) {
+                responseGen.send(res, 400, { message: e?.message});
+            }
             else {
                 log.errorNoExit(e);
-                responseGen.send(res, 500, e?.message);
+                responseGen.send(res, 500, { message: e?.message});
             }
         }
     };

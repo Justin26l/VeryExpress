@@ -7,7 +7,7 @@ export default function template(
     let template = `{{headerComment}}
 import { Router } from 'express';
 import responseGen from '../_utils/response.gen';
-import { generateToken, verifyToken } from '../_plugins/auth/jwt.gen';
+import { generateAccessToken, generateRefreshToken, verifyToken } from '../_plugins/auth/jwt.gen';
 import oauthVerify from '../_plugins/auth/oauthVerify.gen';
 import jwt from "jsonwebtoken";
 
@@ -23,27 +23,8 @@ export default class AuthRouter {
     private router: Router = Router();
         
     constructor() {
-        this.router.get('/profile', (req, res) => {
 
-            if (!req.headers['authorization']) {
-                return responseGen.send(res, 401);
-            };
-
-            const accessToken = req.headers['authorization']?.toString().split(' ')[1];
-            const tokenIndex = req.cookies['tokenIndex']?.toString() || undefined;
-            const decodedToken = verifyToken(accessToken, tokenIndex);
-            
-            if (!decodedToken) {
-                return responseGen.send(res, 401);
-            }
-            else{
-                return responseGen.send(res, 200, {
-                    result: decodedToken
-                });
-            };
-        });
-
-        // exchange an authorization code for an access token.
+        // exchange an authorization code for tokens.
         this.router.post('/token', async (req, res) => {
             if (!req.query.code) {
                 return responseGen.send(res, 401);
@@ -73,40 +54,50 @@ export default class AuthRouter {
             const userInfo = sanitizeUser(userDoc);
 
             // generate tokens based on code's user profile
-            const accessToken = generateToken(userInfo, undefined, process.env.ACCESS_TOKEN_EXPIRED_TIME);
-            const refreshToken = generateToken(userInfo, undefined, process.env.REFRESH_TOKEN_EXPIRED_TIME);
+            const accessToken = generateAccessToken(userInfo);
+            const refreshToken = generateRefreshToken({_id: userInfo._id});
 
             return responseGen.send(res, 200, {
                 result: {
                     accessToken: accessToken.token,
-                    accessTokenIndex: accessToken.clientKeyIndex,
-
-                    // todo : need able to configure direct set cookie or return as json
+                    accessTokenIndex: accessToken.clientIndex,
                     refreshToken: refreshToken.token,
-                    refreshTokenIndex: refreshToken.clientKeyIndex
+                    refreshTokenIndex: refreshToken.clientIndex
                 }
             });
         });
 
-        // refresh expired access token using a refresh token.
+        // refresh expired tokens by refresh token.
         this.router.get('/refresh', (req, res) => {
-            // check if refresh token is valid
-            if (!req.cookies.refreshToken || !req.headers.authorization) {
+            if (
+                !req.cookies.refreshToken || 
+                !req.cookies.refreshTokenIndex || 
+                !req.headers.authorization || 
+                !req.headers['x-auth-index']
+            ) {
+                console.log(req.headers);
                 return responseGen.send(res, 401);
-            }
-            // if valid, return new access token
-            if (verifyToken(req.cookies.refreshToken, 0)) {
-                // parse refresh token
-                const oldAccessTokenInfo = jwt.decode(req.headers.authorization.split(' ')[1]);
-                const accessToken = generateToken(oldAccessTokenInfo, undefined, process.env.ACCESS_TOKEN_EXPIRED_TIME);
+            };
 
-                return responseGen.send(res, 200, {
-                    result: {
-                        accessToken: accessToken.token,
-                        tokenIndex: accessToken.clientKeyIndex
-                    }
-                });
-            }
+            const refreshTokenPayload = verifyToken(req.cookies.refreshToken, req.cookies.refreshTokenIndex);
+            const accessTokenPayload = verifyToken(req.headers.authorization.split(' ')[1], req.headers['x-auth-index'].toString());
+
+            if (!refreshTokenPayload || !accessTokenPayload) {
+                return responseGen.send(res, 401);
+            };
+            
+            // new tokens generated
+            const accessToken = generateAccessToken(accessTokenPayload);
+            const refreshToken = generateRefreshToken(refreshTokenPayload);
+            
+            return responseGen.send(res, 200, {
+                result: {
+                    accessToken: accessToken.token,
+                    accessTokenIndex: accessToken.clientIndex,
+                    refreshToken: refreshToken.token,
+                    refreshTokenIndex: refreshToken.clientIndex
+                }
+            });
         });
 
         this.initOAuthRoutes();

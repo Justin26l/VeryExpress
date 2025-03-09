@@ -30,7 +30,7 @@ export interface method {
     summary?: string,
     operationId: string, // method + documentName
     tags: string[], 
-    security?: { BearerAuth: string[] }[],
+    security?: {[key:string]: Array<never>}[],
     parameters: parameter[],
     requestBody?: requestBody,
     responses: responses,
@@ -98,7 +98,12 @@ export interface components {
             type: string,
             scheme: string,
             bearerFormat: string
-        }
+        },
+        AuthIndex: {
+            type: string,
+            in: string,
+            name: string,
+        },
     },
     schemas: {
         [key:string]: componentsSchemaValue

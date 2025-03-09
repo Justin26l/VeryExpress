@@ -3,32 +3,43 @@
 import jwt from "jsonwebtoken";
 import JWTKeyStore from "./JWTKeyStore.gen";
 
+interface tokenObj { 
+    token: string, 
+    index?: number, 
+    clientIndex?: string 
+};
+
 const keys = new JWTKeyStore();
 
 export function generateToken(
-    data: any, 
-    keyIndex?: number,
+    data: Object, 
+    index?: number,
     expiresIn?: string
-): { 
-    token: string, 
-    keyIndex?: number, 
-    clientKeyIndex?: string 
-} {
-    const keyInfo = typeof keyIndex == "number" ? keys.getKeyObj(keyIndex) : keys.getRandomKey();
-
+): tokenObj {
+    data = JSON.parse(JSON.stringify(data));
+    const keyInfo = typeof index == "number" ? keys.getKeyObj(index) : keys.getRandomKey();
     const token = jwt.sign(
         data,
         keyInfo.key,
         {
             expiresIn: expiresIn || keys.expireTime || "1h",
+            algorithm: keys.algorithm
         }
     );
 
     return {
         token: token,
-        keyIndex: keyInfo.index,
-        clientKeyIndex: keyInfo.clientIndex
+        index: keyInfo.index,
+        clientIndex: keyInfo.clientIndex
     };
+}
+
+export function generateAccessToken(data: Object, index?: number): tokenObj {
+    return generateToken(data, index, process.env.ACCESS_TOKEN_EXPIRE_TIME);
+}
+
+export function generateRefreshToken(data: Object, index?: number): tokenObj {
+    return generateToken(data, index, process.env.REFRESH_TOKEN_EXPIRE_TIME);
 }
 
 /**
@@ -38,13 +49,10 @@ export function generateToken(
  * @param {number} index - The index of the key used to verify the token.
  * @return {jwt.JwtPayload | string | false} The decoded token payload, an error message, or false if verification fails.
  */
-export function verifyToken(token: string, index?: number|string): jwt.JwtPayload | string |  false {
+export function verifyToken(token: string, index?: number|string): jwt.JwtPayload | false {
     try {
-        if(!index) {
-            return false;
-        }
-        const key = keys.getKey(index);
-        return jwt.verify(token, key);
+        const key = keys.getKey(index || 0);
+        return jwt.verify(token, key) as jwt.JwtPayload;
     } catch (error) {
         if(
             error instanceof jwt.TokenExpiredError || 

@@ -11,9 +11,9 @@ export default function returnToken(userProfile: UserDocument){
     return {
         profile: sanitizedProfile, 
         accessToken: accessToken.token,
-        accessTokenKeyIndex: accessToken.keyIndex,
-        clientIndex: accessToken.clientKeyIndex,
-        refreshToken: refreshToken["token"]
+        accessTokenIndex: accessToken.index,
+        clientIndex: accessToken.clientIndex,
+        refreshToken: refreshToken.token
     };
 }
 

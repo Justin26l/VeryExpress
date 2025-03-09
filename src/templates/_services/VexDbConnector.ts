@@ -8,7 +8,7 @@ export default class VexDbConnector {
     private mongoUrl: string;
     private sqlUrl: string;
 
-    private recordAccessLog: boolean = true;
+    private recordAccessLog: boolean = false;
 
     constructor(options:{
         mongoUrl?: string;
