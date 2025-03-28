@@ -1,11 +1,21 @@
 # VeryExpress
-this is a generator to make [Express](https://github.com/expressjs/express) REST API app based on [Json Schema](https://github.com/json-schema-org) and [Open Api](https://github.com/OAI) 
-  
-  
-## Why?
-bored on writing CRUD API time after time ?  
-then this tool might save your time,  
-all you need is define the **Json Schema** files.  
+this is a generator to make [Express](https://github.com/expressjs/express) app  
+with custom REST API defined in [Json Schema](https://github.com/json-schema-org) and [Open Api](https://github.com/OAI) 
+
+# Features
+- generate simple express.js server.
+- generate custom REST API.
+- API Validator by [express-validator](https://express-validator.github.io/docs/)
+- generate OpenApi
+- [Swagger UI Express](https://github.com/scottie1984/swagger-ui-express)
+- OAuth by [Passport.js](https://www.passportjs.org/)
+- Database Driver
+  - MongoDB by [Mongoose](https://mongoosejs.com/)
+
+## Why use ExpressJs
+express.js is a simple & flexible framework to build a web app, it provide balanced performance, 
+as this is open-source project, i want lower the technical barrier to contribute ideas,
+eventually lead to a usefull and powerful framework.
   
   
 # Quick Start
@@ -43,15 +53,6 @@ all you need is define the **Json Schema** files.
     npm build    
     npm run start
     ```
-
-# Feature Supported
-- generate REST API server
-- API Validator by [express-validator](https://express-validator.github.io/docs/)
-- generate OpenApi
-- [Swagger UI Express](https://github.com/scottie1984/swagger-ui-express)
-- OAuth by [Passport.js](https://www.passportjs.org/)
-- Database Driver
-  - MongoDB by [Mongoose](https://mongoosejs.com/)
 
 # Resource
 - [Documents](./docs/)
