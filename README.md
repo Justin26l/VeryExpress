@@ -13,8 +13,8 @@ with custom REST API defined in [Json Schema](https://github.com/json-schema-org
   - MongoDB by [Mongoose](https://mongoosejs.com/)
 
 ## Why use ExpressJs
-express.js is a simple & flexible framework to build a web app, it provide balanced performance, 
-as this is open-source project, i want lower the technical barrier to contribute ideas,
+express.js is a simple & flexible framework to build a web app, it provide balanced performance,  
+as this is open-source project, i want lower the technical barrier to contribute ideas,  
 eventually lead to a usefull and powerful framework.
   
   
