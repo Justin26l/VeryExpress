@@ -27,13 +27,8 @@ export default class Authentication {
             // verify token
             const tokenData = jwt.verifyToken(token, accessTokenIndex);
 
-            if (!tokenData) {
-                log.warn("token invalid", tokenData);
-                throw 401;
-            }
-
             // set req.user to the decoded token
-            log.ok("tokenValid", tokenData);
+            log.info("tokenValid", tokenData);
             req.user = tokenData;
             next();
         }

@@ -65,6 +65,7 @@ async function main(): Promise<void> {
 
     // UseMiddleware
     app.use(express.json());
+    app.use(express.static('public'));
     app.use(helmet(helmetConfig));
     app.use(processTimer);
     app.use(vexDB.middleware);
@@ -141,11 +142,17 @@ function dummyLoginUI(providers: string[], compilerOptions: types.compilerOption
                     ${ 
                         isOAuthEnabled(compilerOptions) ? 
                         `<li><a href="/login">Login</a></li>
-                    <li><a href="/logincallback">Profile</a></li>
+                    <li><a href="/mytokens">myTokens</a></li>
+                    <li><a href="/refreshtoken">RefreshToken</a></li>
                     <li><a href="/logout">LogOut</a></li>` : 
                         "" 
                     }
                     <li><a href="/swagger">Swagger UI</a></li>
+                </ul>
+                
+                <h1>Others</h1>
+                <ul>
+                    <li><a href="/logincallback">logincallback</a></li>
                 </ul>
             </div>
         \`);
@@ -160,38 +167,50 @@ function dummyLoginUI(providers: string[], compilerOptions: types.compilerOption
         res.send(\`${loginHtml(providers)}\`);
     });
 
+    /**
+     * Dummy Token Display Page
+     **/
+    app.get('/mytokens', (req, res) => {
+        const nonce = crypto.randomBytes(16).toString("base64");
+        res.setHeader("Content-Security-Policy", \`script-src 'self' 'nonce-\${nonce}'\`);
+        res.send(\`
+            <script nonce="\${nonce}" src="\${process.env.APP_HOST}/js/mytokens.js"></script>
+            <link rel="stylesheet" href="\${process.env.APP_HOST}/css/style.css">
+            <body>
+                <h1>My Token</h1>
+                <pre id="tokenData">{a:1,B:2}<code></pre>
+                <a href="/">back to home</a>
+            </body>
+        \`);
+    });
+
     /** 
-     * token exchange page
-     * in ideal condition this will handle by Front-End Server (nuxtJs, nextJs, etc)
+     * Dummy Token Exchange trigger
+     **/
+    app.get('/refreshtoken', (req, res) => {
+        const nonce = crypto.randomBytes(16).toString("base64");
+        res.setHeader("Content-Security-Policy", \`script-src 'self' 'nonce-\${nonce}'\`);
+        res.send(\`
+            <script nonce="\${nonce}" src="\${process.env.APP_HOST}/js/refreshtokens.js"></script>
+            <link rel="stylesheet" href="\${process.env.APP_HOST}/css/style.css">
+            <body>
+                <h1>New Token</h1>
+                <pre id="tokenData">{a:1,B:2}<code></pre>
+                <a href="/">back to home</a>
+            </body>
+        \`);
+    });
+
+    /** 
+     * Dummy Code Exchange Trigger
      **/
     app.get('/logincallback', (req, res) => {
         const nonce = crypto.randomBytes(16).toString("base64");
 
         res.setHeader("Content-Security-Policy", \`script-src 'self' 'nonce-\${nonce}'\`);
         res.send(\`
-            <script nonce="\${nonce}">
-                let jsonData = {};
-                
-                document.addEventListener("DOMContentLoaded", function() {
-                    console.log('Exchange Tokens from /auth/token');
-                    let sessionCode = new URLSearchParams(location.search).get('code');
-                    fetch(
-                        '/auth/token?code=' + sessionCode, {
-                            method: 'POST'
-                        }
-                    )
-                        .then((res) => res.text())
-                        .then((data) => {
-                            document.querySelector("#tokenData").innerHTML = data;
-                            jsonData = JSON.parse(data);
-                            console.log('jsonData', jsonData);
-                            localStorage.setItem('accessToken', jsonData.result.accessToken);
-                            localStorage.setItem('accessTokenIndex', jsonData.result.accessTokenIndex);
-                            localStorage.setItem('refreshToken', jsonData.result.refreshToken);
-                            localStorage.setItem('refreshTokenIndex', jsonData.result.refreshTokenIndex);
-                        });
-                });
-            </script>
+            <script nonce="\${nonce}" src="\${process.env.APP_HOST}/js/logincallback.js"></script>
+            <link rel="stylesheet" href="\${process.env.APP_HOST}/css/style.css">
             <body>
                 <h1>Profile Data</h1>
                 <pre id="tokenData"></pre>
@@ -202,15 +221,12 @@ function dummyLoginUI(providers: string[], compilerOptions: types.compilerOption
 
     /** 
      * Dummy Logout Page, 
-     * this should handle by client application (vue, react, angular, etc)
-     * - front end server should remove cookie "tokenIndex" & "refreshToken"
-     * - client side should remove "accessToken" in local
+     * - this should handle by client application
+     * - client side application should remove local storage's tokens
      **/
     app.get('/logout', (req, res) => {
         const nonce = crypto.randomBytes(16).toString("base64");
         res.setHeader("Content-Security-Policy", \`script-src 'self' 'nonce-\${nonce}'\`);
-        res.clearCookie('tokenIndex');
-        res.clearCookie('refreshToken');
         res.send(\`
             <script nonce="\${nonce}">
                 localStorage.removeItem('accessToken', jsonData.result.accessToken);

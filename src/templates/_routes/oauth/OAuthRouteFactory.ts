@@ -33,8 +33,9 @@ export default class OAuthRouteFactory {
             scope: ["profile", "email"], 
             failureRedirect: ""
         };
-        this.loginSuccessRedirectPath = path.join("/",process.env.LOGIN_SUCCESS_REDIRECT_PATH || "/logincallback");
-        this.loginFailedRedirectPath = path.join("/",process.env.LOGIN_FAILED_REDIRECT_PATH || "/logincallback");
+        
+        this.loginSuccessRedirectPath = path.posix.join("/", process.env.LOGIN_SUCCESS_REDIRECT_PATH || "/logincallback");
+        this.loginFailedRedirectPath = path.posix.join("/", process.env.LOGIN_FAILED_REDIRECT_PATH || "/logincallback");
         
         this.initPassport(this.config.strategy);
         this.initRoutes();

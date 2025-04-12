@@ -5,10 +5,11 @@
 export const responseMsg = {
     
     DB_CONN_ERR: "Database connection error",
+    SERVER_ERROR: "Unknown Server Error",
 
     success: "Success",
 
-    err_perm: "Permission Denied",
+    err_permission: "Permission Denied",
 
     err_payload: "Invalid Request Payload",
     err_query: "Invalid Request Query",

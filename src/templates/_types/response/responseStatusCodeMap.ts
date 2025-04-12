@@ -27,7 +27,7 @@ responseStatusCodeMap.set(202, responseCode.success);
 // responseStatusCodeMap.set(307, "Temporary Redirect");
 // responseStatusCodeMap.set(308, "Permanent Redirect");
 responseStatusCodeMap.set(400, responseCode.err_payload);
-// responseStatusCodeMap.set(401, responseCode.err_perm);
+// responseStatusCodeMap.set(401, responseCode.err_permission);
 // responseStatusCodeMap.set(402, "Payment Required");
 // responseStatusCodeMap.set(403, "Forbidden");
 // responseStatusCodeMap.set(404, "Not Found");

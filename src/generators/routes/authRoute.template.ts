@@ -15,17 +15,17 @@ import OAuthRouteFactory from './oauth/OAuthRouteFactory.gen';
 import { Strategy as GithubStrategy } from 'passport-github';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { SessionDocument, SessionModel } from '../_models/SessionModel.gen';
-import { UserModel } from '../_models/UserModel.gen';
-import { sanitizeUser } from '../_plugins/auth/token.gen';
+import VexSystem from '../_services/VexSystem.gen';
 
 export default class AuthRouter {
 
     private router: Router = Router();
-        
+
     constructor() {
+        const vexSystem = new VexSystem();
 
         // exchange an authorization code for tokens.
-        this.router.post('/token', async (req, res) => {
+        this.router.post('/token', (req, res) => vexSystem.RouteHandler(req, res, async ()=> {
             if (!req.query.code) {
                 return responseGen.send(res, 401);
             }
@@ -46,16 +46,9 @@ export default class AuthRouter {
                 return responseGen.send(res, 401, { message: 'code expired' });
             };
 
-            const userDoc = await UserModel.findById(sessionDoc.get("userId")).exec();
-
-            if (!userDoc) {
-                return responseGen.send(res, 404, { message: 'user not found' });
-            }
-            const userInfo = sanitizeUser(userDoc);
-
             // generate tokens based on code's user profile
-            const accessToken = generateAccessToken(userInfo);
-            const refreshToken = generateRefreshToken({_id: userInfo._id});
+            const accessToken = await generateAccessToken(sessionDoc.get("userId"));
+            const refreshToken = generateRefreshToken({_id: sessionDoc.get("userId")});
 
             return responseGen.send(res, 200, {
                 result: {
@@ -65,40 +58,30 @@ export default class AuthRouter {
                     refreshTokenIndex: refreshToken.clientIndex
                 }
             });
-        });
+        }));
 
         // refresh expired tokens by refresh token.
-        this.router.get('/refresh', (req, res) => {
+        this.router.post('/refresh', (req, res) => vexSystem.RouteHandler(req, res, async () => {
             if (
-                !req.cookies.refreshToken || 
-                !req.cookies.refreshTokenIndex || 
-                !req.headers.authorization || 
-                !req.headers['x-auth-index']
+                !req.body.refreshToken || 
+                !req.body.refreshTokenIndex
             ) {
-                console.log(req.headers);
+                console.log("invalid /refresh payload");
                 return responseGen.send(res, 401);
             };
 
-            const refreshTokenPayload = verifyToken(req.cookies.refreshToken, req.cookies.refreshTokenIndex);
-            const accessTokenPayload = verifyToken(req.headers.authorization.split(' ')[1], req.headers['x-auth-index'].toString());
-
-            if (!refreshTokenPayload || !accessTokenPayload) {
-                return responseGen.send(res, 401);
-            };
+            let refreshTokenPayload = verifyToken(req.body.refreshToken, req.body.refreshTokenIndex);
             
             // new tokens generated
-            const accessToken = generateAccessToken(accessTokenPayload);
-            const refreshToken = generateRefreshToken(refreshTokenPayload);
+            const accessToken = await generateAccessToken(refreshTokenPayload._id);
             
             return responseGen.send(res, 200, {
                 result: {
                     accessToken: accessToken.token,
-                    accessTokenIndex: accessToken.clientIndex,
-                    refreshToken: refreshToken.token,
-                    refreshTokenIndex: refreshToken.clientIndex
+                    accessTokenIndex: accessToken.clientIndex
                 }
             });
-        });
+        }));
 
         this.initOAuthRoutes();
     }
@@ -131,6 +114,7 @@ export default class AuthRouter {
         });
         this.router.use(\`/\${google}\`, OAuthGoogle.getRouter());
         `;
+        
         case "github":
             return `
         const github = 'github';

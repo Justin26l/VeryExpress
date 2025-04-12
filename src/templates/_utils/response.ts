@@ -28,6 +28,9 @@ export function send<T = undefined>(
         const msg :string | undefined = body?.message ?? (code ? responseMsg[code] : undefined);
 
         return res.status(status)
+            .header({
+                "Content-Type": "application/json",
+            })
             .json({
                 ret_code: code,
                 ret_msg: msg,
@@ -42,6 +45,24 @@ export interface responseObject<T>{
     ret_msg : string,
     ret_time?: number,
     result: T,
+}
+
+export class VexResponseError extends Error {
+    public status: number;
+    public ret_code: ResponseCode;
+    public ret_msg: any;
+
+    constructor(
+        status: number = 200, 
+        code?: ResponseCode,
+        message?: string,
+    ) {
+        super(message);
+        this.name = "VexResponseError";
+        this.status = status;
+        this.ret_code = code || responseCode.SERVER_ERROR;
+        this.ret_msg = message || responseMsg.SERVER_ERROR;
+    }
 }
 
 export default {
