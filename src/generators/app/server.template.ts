@@ -140,13 +140,13 @@ function dummyLoginUI(providers: string[], compilerOptions: types.compilerOption
                 <h1>Hello World</h1>
                 <ul>
                     ${ 
-                        isOAuthEnabled(compilerOptions) ? 
-                        `<li><a href="/login">Login</a></li>
+    isOAuthEnabled(compilerOptions) ? 
+        `<li><a href="/login">Login</a></li>
                     <li><a href="/mytokens">myTokens</a></li>
                     <li><a href="/refreshtoken">RefreshToken</a></li>
                     <li><a href="/logout">LogOut</a></li>` : 
-                        "" 
-                    }
+        "" 
+}
                     <li><a href="/swagger">Swagger UI</a></li>
                 </ul>
                 

@@ -3,7 +3,6 @@
 import { Router } from "express";
 import passport, { PassportStatic, Profile } from "passport";
 import * as oauth2 from "passport-oauth2";
-import log from "../../_utils/logger.gen";
 import { SessionModel } from "../../_models/SessionModel.gen";
 import path from "path";
 
@@ -59,7 +58,7 @@ export default class OAuthRouteFactory {
         this.router.get("/callback", 
             this.passport.authenticate(this.config.strategyName, this.config.authenticateOptions), 
             (req, res) => {
-                const { code, state, error } = req.query;
+                const { state, error } = req.query;
 
                 if(error){
                     return res.redirect(`${this.loginFailedRedirectPath}?error=${error}`);
@@ -75,10 +74,10 @@ export default class OAuthRouteFactory {
 
                 SessionModel.create({ 
                     sessionCode: sessionCode, 
-                    // @ts-ignore
+                    // @ts-expect-error 
                     userId: req.user.profile._id, 
-                    // @ts-ignore
-                    provider: req.user.provider || '', 
+                    // @ts-expect-error
+                    provider: req.user.provider || "", 
                     expired: Date.now() + 5000 
                 });
 

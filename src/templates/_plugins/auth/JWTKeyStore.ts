@@ -108,7 +108,7 @@ export class JWTKeyStore{
         }
         else {
             return "HS256";
-        };
+        }
     }
 }
 

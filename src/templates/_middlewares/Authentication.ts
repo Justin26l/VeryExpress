@@ -12,13 +12,13 @@ export default class Authentication {
     public middleware = (req: Request, res: Response, next: NextFunction) => {
         try {
             // gate keeper
-            log.info("Authentication.middleware", req.headers['x-auth-index'], req.headers.authorization);
+            log.info("Authentication.middleware", req.headers["x-auth-index"], req.headers.authorization);
             const token = req.headers.authorization?.split(" ")[1];
-            const accessTokenIndex = req.headers['x-auth-index']?.toString();
+            const accessTokenIndex = req.headers["x-auth-index"]?.toString();
             
             if (!token || !accessTokenIndex) {
                 log.warn("invalid header", {
-                    "X-Auth-Index": req.headers['x-auth-index'], 
+                    "X-Auth-Index": req.headers["x-auth-index"], 
                     "Authorization": req.headers.authorization
                 });
                 throw 401;

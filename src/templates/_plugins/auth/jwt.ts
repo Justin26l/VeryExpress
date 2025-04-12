@@ -3,15 +3,15 @@
 import jwt from "jsonwebtoken";
 import JWTKeyStore from "./JWTKeyStore.gen";
 import responseCode from "../../_types/response/responseCode.gen";
-import { UserModel } from '../../_models/UserModel.gen';
-import { sanitizeUser } from '../../_plugins/auth/token.gen';
+import { UserModel } from "../../_models/UserModel.gen";
+import { sanitizeUser } from "../../_plugins/auth/token.gen";
 import { VexResponseError } from "../../_utils/response.gen";
 
 interface tokenObj { 
     token: string, 
     index?: number, 
     clientIndex?: string 
-};
+}
 
 const keys = new JWTKeyStore();
 
@@ -38,7 +38,7 @@ export function generateToken(
     };
 }
 
-export async function generateAccessToken(userId: String, index?: number): Promise<tokenObj> {
+export async function generateAccessToken(userId: string, index?: number): Promise<tokenObj> {
 
     const userDoc = await UserModel.findById(userId).exec();
     if (!userDoc) {
@@ -49,7 +49,7 @@ export async function generateAccessToken(userId: String, index?: number): Promi
     return generateToken(userInfo, index, process.env.ACCESS_TOKEN_EXPIRE_TIME);
 }
 
-export function generateRefreshToken(data: Object, index?: number): tokenObj {
+export function generateRefreshToken(data: any, index?: number): tokenObj {
     return generateToken(data, index, process.env.REFRESH_TOKEN_EXPIRE_TIME);
 }
 
@@ -64,7 +64,7 @@ export function verifyToken(token: string, index?: number|string): jwt.JwtPayloa
 
     if(token.startsWith("Bearer ")) {
         token = token.split("Bearer ")[1]; 
-    };
+    }
 
     const key = keys.getKey(index || 0);
 
