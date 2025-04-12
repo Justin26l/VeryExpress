@@ -52,8 +52,8 @@ export function copyDir(source: string, destination: string, compilerOptions: ty
     const files: string[] = fs.readdirSync(source);
 
     for (let i = 0; i < files.length; i++) {
-        const sourcePath = path.join(source,files[i]);
-        const destinationPath = path.join(destination, files[i].replace(".ts", ".gen.ts"));            
+        const sourcePath = path.posix.join(source,files[i]);
+        const destinationPath = path.posix.join(destination, files[i].replace(".ts", ".gen.ts"));            
 
         // recursive copy dir
         if ( fs.lstatSync(sourcePath).isDirectory() ) {

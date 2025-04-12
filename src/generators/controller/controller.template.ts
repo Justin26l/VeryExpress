@@ -57,19 +57,22 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
         try {
             const validationError = validationResult(req);
             if ( ! validationError.isEmpty() ) {
-                return vex.response.send(res, 400, vex.responseMsg.validateError, validationError.array());
+                return vex.response.send(res, 400, {
+                    code: vex.response.code.err_validation, 
+                    result: validationError.array()
+                });
             };
 
             const result = await {{documentName}}Model.findById(req.params.id){{populateAll}};
 
             if (!result) {
-                return vex.response.send(res, 404, vex.responseMsg.notFound);
+                return vex.response.send(res, 404);
             }
             else {
-                return vex.response.send(res, 200, vex.responseMsg.ok, result);
+                return vex.response.send(res, 200, { result });
             };
         } catch (err:any) {
-            return vex.response.send(res, 500, vex.responseMsg.unexpectedError, { error: err.message });
+            return vex.response.send(res, 500, { message: err.message });
         }
     }
 
@@ -77,7 +80,10 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
         try {
             const validationError = validationResult(req);
             if ( ! validationError.isEmpty() ) {
-                return vex.response.send(res, 400, vex.responseMsg.validateError, validationError.array());
+                return vex.response.send(res, 400, {
+                    code: vex.response.code.err_validation, 
+                    result: validationError.array()
+                });
             };
             
             const searchFilter = new MongoQS().parse(req.query);
@@ -92,13 +98,16 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
                 populateOptions = vex.common.parseCollectionJoin(req, {{populateOptions}});
             } 
             catch (err:any) { 
-                return vex.response.send(res, 400, vex.responseMsg.queryError, { error: err.message });
+                return vex.response.send(res, 400, {
+                    code: vex.response.code.err_validation, 
+                    result: err.message
+                });
             };
 
             const result = await {{documentName}}Model.find(searchFilter, selectedFields).populate(populateOptions);
-            return vex.response.send(res, 200, vex.responseMsg.ok, result);
+            return vex.response.send(res, 200, { result });
         } catch (err:any) {
-            return vex.response.send(res, 500, vex.responseMsg.unexpectedError, { error: err.message });
+            return vex.response.send(res, 500, { result: err.message });
         }
     }
 
@@ -106,18 +115,23 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
         try {
             const validationError = validationResult(req);
             if ( ! validationError.isEmpty() ) {
-                return vex.response.send(res, 400, vex.responseMsg.validateError, validationError.array());
+                return vex.response.send(res, 400, {
+                    code: vex.response.code.err_validation, 
+                    result: validationError.array()
+                });
             };{{check_id}}
             
             const result = await {{documentName}}Model.create(req.body);
             if (!result) {
-                return vex.response.send(res, 400, vex.responseMsg.createFail);
+                return vex.response.send(res, 400, {
+                    code: vex.response.code.err_create
+                });
             }
             else {
-                return vex.response.send(res, 201, vex.responseMsg.ok, result);
+                return vex.response.send(res, 201, {result});
             };
         } catch (err:any) {
-            return vex.response.send(res, 500, vex.responseMsg.unexpectedError, { error: err.message });
+            return vex.response.send(res, 500, { message: err.message });
         };
     };
 
@@ -125,18 +139,23 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
         try {
             const validationError = validationResult(req);
             if ( ! validationError.isEmpty() ) {
-                return vex.response.send(res, 400, vex.responseMsg.validateError, validationError.array());
+                return vex.response.send(res, 400, {
+                    code: vex.response.code.err_validation, 
+                    result: validationError.array()
+                });
             };{{check_id}}
 
             const result = await {{documentName}}Model.findByIdAndUpdate(req.params.id, req.body, { new: true });
             if (!result) {
-                return vex.response.send(res, 404, vex.responseMsg.updateFail);
+                return vex.response.send(res, 404, {
+                    code: vex.response.code.err_update
+                });
             }
             else {
-                return vex.response.send(res, 200, vex.responseMsg.ok, result);
+                return vex.response.send(res, 200, { result });
             };
         } catch (err:any) {
-            return vex.response.send(res, 500, vex.responseMsg.unexpectedError, { error: err.message });
+            return vex.response.send(res, 500, { message: err.message });
         }
     }
 
@@ -144,18 +163,23 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
         try {
             const validationError = validationResult(req);
             if ( ! validationError.isEmpty() ) {
-                return vex.response.send(res, 400, vex.responseMsg.validateError, validationError.array());
+                return vex.response.send(res, 400, {
+                    code: vex.response.code.err_validation, 
+                    result: validationError.array()
+                });
             };{{check_id}}
 
             const result = await {{documentName}}Model.replaceOne({_id: req.params.id}, req.body);
             if (!result) {
-                return vex.response.send(res, 404, vex.responseMsg.updateFail);
+                return vex.response.send(res, 404, { 
+                    code: vex.response.code.err_update
+                });
             }
             else {
-                return vex.response.send(res, 200, vex.responseMsg.ok, result);
+                return vex.response.send(res, 200, { result });
             };
         } catch (err:any) {
-            return vex.response.send(res, 500, vex.responseMsg.unexpectedError, { error: err.message });
+            return vex.response.send(res, 500, { message: err.message });
         }
     }
 
@@ -163,18 +187,23 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
         try {
             const validationError = validationResult(req);
             if ( ! validationError.isEmpty() ) {
-                return vex.response.send(res, 400, vex.responseMsg.validateError, validationError.array());
+                return vex.response.send(res, 400, {
+                    code: vex.response.code.err_validation, 
+                    result: validationError.array()
+                });
             };
 
             const result = await {{documentName}}Model.findByIdAndDelete(req.params.id);
             if (!result) {
-                return vex.response.send(res, 404, vex.responseMsg.deleteFail);
+                return vex.response.send(res, 404, {
+                    code: vex.response.code.err_delete
+                });
             }
             else {
-                return vex.response.send(res, 204, vex.responseMsg.ok, result);
+                return vex.response.send(res, 204, { result });
             };
         } catch (err:any) {
-            return vex.response.send(res, 500, vex.responseMsg.unexpectedError, { error: err.message });
+            return vex.response.send(res, 500, { message: err.message });
         }
     }
 }

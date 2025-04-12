@@ -14,6 +14,7 @@ export interface compilerOptions {
         useUserSchema: boolean,
         useObjectID: boolean,
         allowApiCreateUpdate_id: boolean,
+        useStatefulRedisAuth: boolean,
     },
 
     useRBAC?: {

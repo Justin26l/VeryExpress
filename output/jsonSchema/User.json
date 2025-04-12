@@ -15,81 +15,69 @@
             "x-format": "ObjectId",
             "index": true
         },
-        "active": {
-            "type": "boolean",
-            "default": true,
-            "required": true
-        },
-        "authProvider": {
-            "type": "string"
-        },
-        "authId": {
-            "type": "string",
-            "index": true
+        "authProfiles": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "provider": {
+                        "type": "string",
+                        "index": true
+                    },
+                    "authId": {
+                        "type": "string",
+                        "index": true
+                    },
+                    "username": {
+                        "type": "string"
+                    }
+                },
+                "required": []
+            }
         },
         "email": {
             "type": "string",
             "format": "email",
-            "index": true,
-            "required": true
+            "index": true
         },
         "name": {
             "type": "string",
             "maxLength": 64,
             "required": true
         },
+        "active": {
+            "type": "boolean",
+            "default": true,
+            "required": true
+        },
         "locale": {
             "type": "string",
-            "maxLength": 8,
-            "required": true
+            "maxLength": 8
         },
         "roles": {
             "type": "array",
             "x-vexData": "role",
             "items": {
                 "type": "string",
-                "required": true,
                 "enum": [
                     "visitor",
                     "member",
                     "admin"
                 ]
             },
-            "required": true,
             "default": [
                 "visitor"
             ]
         },
-        "package": {
-            "type": "string",
-            "x-format": "ObjectId",
-            "x-foreignKey": "Package",
-            "x-foreignValue": [
-                "name",
-                "period",
-                "price",
-                "startDate",
-                "endDate"
-            ]
-        },
-        "contact": {
+        "profileErrors": {
             "type": "array",
             "items": {
-                "type": "string",
-                "x-format": "ObjectId",
-                "x-foreignKey": "UserContact",
-                "x-foreignValue": [
-                    "phoneNo",
-                    "isActive"
-                ]
+                "type": "string"
             }
         }
     },
     "required": [
-        "active",
-        "email",
         "name",
-        "locale",
-        "roles"
+        "active"
     ]
 }

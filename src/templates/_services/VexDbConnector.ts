@@ -8,7 +8,7 @@ export default class VexDbConnector {
     private mongoUrl: string;
     private sqlUrl: string;
 
-    private recordAccessLog: boolean = true;
+    private recordAccessLog: boolean = false;
 
     constructor(options:{
         mongoUrl?: string;
@@ -64,7 +64,9 @@ export default class VexDbConnector {
      **/
     middleware(req: Request, res: Response, next: NextFunction) {
         if (mongoose.connection.readyState !== 1) { 
-            vex.response.send(res, 503, "Database Connection Down");
+            vex.response.send(res, 503, {
+                code: vex.response.code.DB_CONN_ERR,
+            });
         }
         else if (this.recordAccessLog){
             mongoose.connection.collection("accessLogs").insertOne({

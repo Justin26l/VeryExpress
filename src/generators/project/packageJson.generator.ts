@@ -26,7 +26,7 @@ export async function compile(
 
     if (!packageJson.scripts.build) {
         log.process(`package.json : Update script : build > ${packageJson.scripts.build}`);
-        packageJson.scripts.build = "tsc -p .";
+        packageJson.scripts.build = "tsc -p . && node scripts/build.js";
     }
 
     if (!packageJson.scripts.dev) {

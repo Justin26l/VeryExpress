@@ -9,7 +9,8 @@ export default function RBACmiddlewareTemplate(options: {
     let template: string = options.template || `{{headerComment}}
 import { Request, Response, NextFunction } from "express";
 import * as roles from "../_roles";
-import Log from "../_utils/logger.gen";
+import responseGen from "../_utils/response.gen";
+import log from "../_utils/logger.gen";
 
 export { roles };
 
@@ -31,7 +32,7 @@ export default class RoleBaseAccessControl {
 
     public middleware = (req: Request, res: Response, next: NextFunction) => {
         try { 
-            Log.info(req.method, req.path, req.user);
+            log.info("RBAC.middleware", req.method, req.path, req.user);
             if ( !req.user ) {
                 throw 401;
             }
@@ -39,13 +40,13 @@ export default class RoleBaseAccessControl {
             const user :any = req.user;
             {{roleSwitch}}
         }
-        catch (e) {
-            Log.errorNoExit(e);
+        catch (e: any) {
+            log.errorNoExit(e);
             if (typeof e === 'number') {
-                res.status(e).send("Permission denied");
+                responseGen.send(res, e);
             }
             else {
-                res.status(500).send("Internal server error");
+                responseGen.send(res, 500, { message: e.errorMessages });
             }
         }
     }

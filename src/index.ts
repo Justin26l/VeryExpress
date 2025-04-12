@@ -11,6 +11,8 @@ import { roleSchemaFormat } from "./preprocess/roleSetupFile";
 
 import * as types from "./types/types";
 import * as userSchemaGen from "./generators/project/userSchema.generator";
+import * as buildScriptGen from "./generators/project/buildScripts.generator";
+
 import * as roleGen from "./generators/role/role.generator";
 import * as controllerGen from "./generators/controller/controllers.generator";
 import * as routeGen from "./generators/routes/routes.generator";
@@ -25,16 +27,16 @@ export async function generate(
     const documentPaths: { [key: string]: string } = {};
 
     const dir = {
-        roleSrcDir: path.join(options.srcDir, "roles"),
-        roleDir: path.join(options.sysDir, "_roles"),
-        routeDir: path.join(options.sysDir, "_routes"),
-        middlewareDir: path.join(options.sysDir, "_middlewares"),
-        controllerDir: path.join(options.sysDir, "_controllers"),
-        modelDir: path.join(options.sysDir, "_models"),
-        typeDir: path.join(options.sysDir, "_types"),
-        serviceDir: path.join(options.sysDir, "_services"),
-        pluginDir: path.join(options.sysDir, "_plugins"),
-        utilsDir: path.join(options.sysDir, "_utils"),
+        roleSrcDir: path.posix.join(options.srcDir, "roles"),
+        roleDir: path.posix.join(options.sysDir, "_roles"),
+        routeDir: path.posix.join(options.sysDir, "_routes"),
+        middlewareDir: path.posix.join(options.sysDir, "_middlewares"),
+        controllerDir: path.posix.join(options.sysDir, "_controllers"),
+        modelDir: path.posix.join(options.sysDir, "_models"),
+        typeDir: path.posix.join(options.sysDir, "_types"),
+        serviceDir: path.posix.join(options.sysDir, "_services"),
+        pluginDir: path.posix.join(options.sysDir, "_plugins"),
+        utilsDir: path.posix.join(options.sysDir, "_utils"),
     };
 
     const routeData: {
@@ -58,13 +60,16 @@ export async function generate(
 
     // copy static files
     utils.common.copyDir(`${__dirname}/templates/_controllers`, dir.controllerDir, options, true);
+    utils.common.copyDir(`${__dirname}/templates/_middlewares`, dir.middlewareDir, options, true);
     utils.common.copyDir(`${__dirname}/templates/_plugins`, dir.pluginDir, options, true);
     utils.common.copyDir(`${__dirname}/templates/_roles`, dir.roleDir, options, true);
+    utils.common.copyDir(`${__dirname}/templates/_routes`, dir.routeDir, options, true);
     utils.common.copyDir(`${__dirname}/templates/_services`, dir.serviceDir, options, true);
     utils.common.copyDir(`${__dirname}/templates/_types`, dir.typeDir, options, true);
     utils.common.copyDir(`${__dirname}/templates/_utils`, dir.utilsDir, options, true);
-    // utils.copyDir(`${__dirname}/templates/_middleware`, dir.middlewareDir, options, true);
-    
+    utils.common.copyDir(`${__dirname}/templates/root`, options.rootDir, options, true);
+    utils.common.copyDir(`${__dirname}/templates/jsonSchema`, options.jsonSchemaDir, options, true);
+
     // update userSchema
     await userSchemaGen.compile({ compilerOptions: options || utils.generator.defaultCompilerOptions });
 
@@ -111,7 +116,7 @@ export async function generate(
         openapiFile, 
         options || utils.generator.defaultCompilerOptions
     );
-    utils.common.copyDir(`${options.openapiDir}`, path.join(options.srcDir, "openapi"), options, true);
+    utils.common.copyDir(`${options.openapiDir}`, path.posix.join(options.srcDir, "openapi"), options, true);
 
     // generate dynamic files
     await Promise.all(documents.map( async (doc: { path: string, config: types.documentConfig }) => {
@@ -143,8 +148,9 @@ export async function generate(
         routeData.push({
             route: `/${doc.config.documentName}`,
             documentName: doc.config.documentName,
-            controllerPath: path.join(utils.common.relativePath(dir.routeDir, dir.controllerDir), doc.config.documentName + "Controller.gen"),
+            controllerPath: path.posix.join(utils.common.relativePath(dir.routeDir, dir.controllerDir), doc.config.documentName + "Controller.gen"),
         });
+
         
         return;
     }));
@@ -169,6 +175,8 @@ export async function generate(
     // make server
     await serverGen.compile(options);
 
+    // make project files
+    await buildScriptGen.compile(options);
+
     return ;
 }
-

@@ -44,6 +44,7 @@ async function main() {
     config.app.useUserSchema = config.app.useUserSchema || true,
     config.app.useObjectID = config.app.useObjectID || true,
     config.app.allowApiCreateUpdate_id = config.app.allowApiCreateUpdate_id || false,
+    // config.app.useStatefulRedisAuth = config.app.useStatefulRedisAuth || false;
 
     // RBAC
     config.useRBAC = config.useRBAC || { roles: [], default: "", schemaIncluded: [] };
@@ -54,9 +55,10 @@ async function main() {
     // oauth
     config.useOauth = config.useOauth || {};
     config.useOauth.google = config.useOauth.google || false;
-    config.useOauth.facebook = config.useOauth.facebook || false;
     config.useOauth.github = config.useOauth.github || false;
-    config.useOauth.microsoft = config.useOauth.microsoft || false;
+    // config.useOauth.apple = config.useOauth.apple || false;
+    // config.useOauth.facebook = config.useOauth.facebook || false;
+    // config.useOauth.azure = config.useOauth.microsoft || false;
 
     // warning
     if (config.app.useObjectID && config.app.allowApiCreateUpdate_id) {

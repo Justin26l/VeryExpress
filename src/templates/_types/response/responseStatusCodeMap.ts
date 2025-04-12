@@ -1,0 +1,70 @@
+import responseCode from "./responseCode.gen";
+
+/** 
+ * response status default message.
+ * if set value as response code, response handler will set status, code & message.
+ **/
+export const responseStatusCodeMap = new Map<number, string>();
+// responseStatusCodeMap.set(100, "Continue");
+// responseStatusCodeMap.set(101, "Switching Protocols");
+// responseStatusCodeMap.set(102, "Processing");
+// responseStatusCodeMap.set(103, "Early Hints");
+responseStatusCodeMap.set(200, responseCode.success);
+responseStatusCodeMap.set(201, responseCode.success);
+responseStatusCodeMap.set(202, responseCode.success);
+// responseStatusCodeMap.set(203, "Non-Authoritative Information");
+// responseStatusCodeMap.set(204, "No Content");
+// responseStatusCodeMap.set(205, "Reset Content");
+// responseStatusCodeMap.set(206, "Partial Content");
+// responseStatusCodeMap.set(207, "Multi-Status");
+// responseStatusCodeMap.set(208, "Already Reported");
+// responseStatusCodeMap.set(226, "IM Used");
+// responseStatusCodeMap.set(300, "Multiple Choices");
+// responseStatusCodeMap.set(301, "Moved Permanently");
+// responseStatusCodeMap.set(302, "Found");
+// responseStatusCodeMap.set(303, "See Other");
+// responseStatusCodeMap.set(304, "Not Modified");
+// responseStatusCodeMap.set(307, "Temporary Redirect");
+// responseStatusCodeMap.set(308, "Permanent Redirect");
+responseStatusCodeMap.set(400, responseCode.err_payload);
+// responseStatusCodeMap.set(401, responseCode.err_permission);
+// responseStatusCodeMap.set(402, "Payment Required");
+// responseStatusCodeMap.set(403, "Forbidden");
+// responseStatusCodeMap.set(404, "Not Found");
+// responseStatusCodeMap.set(405, "Method Not Allowed");
+// responseStatusCodeMap.set(406, "Not Acceptable");
+// responseStatusCodeMap.set(407, "Proxy Authentication Required");
+// responseStatusCodeMap.set(408, "Request Timeout");
+// responseStatusCodeMap.set(409, "Conflict");
+// responseStatusCodeMap.set(410, "Gone");
+// responseStatusCodeMap.set(411, "Length Required");
+// responseStatusCodeMap.set(412, "Precondition Failed");
+// responseStatusCodeMap.set(413, "Content Too Large");
+// responseStatusCodeMap.set(414, "URI Too Long");
+// responseStatusCodeMap.set(415, "Unsupported Media Type");
+// responseStatusCodeMap.set(416, "Range Not Satisfiable");
+// responseStatusCodeMap.set(417, "Expectation Failed");
+// responseStatusCodeMap.set(418, "I'm a teapot");
+// responseStatusCodeMap.set(421, "Misdirected Request");
+// responseStatusCodeMap.set(422, "Unprocessable Content");
+// responseStatusCodeMap.set(423, "Locked");
+// responseStatusCodeMap.set(424, "Failed Dependency");
+// responseStatusCodeMap.set(425, "Too Early");
+// responseStatusCodeMap.set(426, "Upgrade Required");
+// responseStatusCodeMap.set(428, "Precondition Required");
+// responseStatusCodeMap.set(429, "Too Many Requests");
+// responseStatusCodeMap.set(431, "Request Header Fields Too Large");
+// responseStatusCodeMap.set(451, "Unavailable For Legal Reasons");
+// responseStatusCodeMap.set(500, "Internal Server Error");
+// responseStatusCodeMap.set(501, "Not Implemented");
+// responseStatusCodeMap.set(502, "Bad Gateway");
+// responseStatusCodeMap.set(503, "Service Unavailable");
+// responseStatusCodeMap.set(504, "Gateway Timeout");
+// responseStatusCodeMap.set(505, "HTTP Version Not Supported");
+// responseStatusCodeMap.set(506, "Variant Also Negotiates");
+// responseStatusCodeMap.set(507, "Insufficient Storage");
+// responseStatusCodeMap.set(508, "Loop Detected");
+// responseStatusCodeMap.set(510, "Not Extended");
+// responseStatusCodeMap.set(511, "Network Authentication Required");
+
+export default responseStatusCodeMap;

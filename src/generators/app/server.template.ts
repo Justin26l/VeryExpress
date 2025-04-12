@@ -1,45 +1,24 @@
 import  utils from "../../utils";
 
 import * as types from "../../types/types";
+import { isOAuthEnabled } from "~/utils/generator";
 
 // import
-const importExpressSession = "import session from 'express-session';";
-const importOAuthVerifyPlugin = "import oauthVerify from './system/_plugins/oauthVerify.gen';";
-const importPassportGoogle = "import PassportGoogle from './system/_plugins/PassportGoogle.gen'";
+const importCookieParser = "import cookieParser from 'cookie-parser';";
 const importSwaggerRouter = "import SwaggerRouter from './system/_routes/SwaggerRouter.gen';";
-const importOAuthRouter = "import OAuthRouter from './system/_routes/OAuthRouter.gen';";
+const importAuthRouter = "import AuthRouter from './system/_routes/AuthRouter.gen';";
 
 // configure
-const ConfigExpressSession = `
-const expressSessionConfig = {
-    secret: 'your session secret', 
-    resave: false, 
-    saveUninitialized: false 
-}`;
+const ConfigSwaggerRouter = "const SwaggerRoute = new SwaggerRouter();";
+const ConfigAuthRouter = "const AuthRoute = new AuthRouter();";
+const ConfigApiRouter = "const ApiRoute = new ApiRouter();";
 
-const ConfigSwaggerRouter = "const SwaggerRoute = new SwaggerRouter(); SwaggerRoute.initRoutes();";
-const ConfigOAuthRouter = "const OAuthRoute = new OAuthRouter(); OAuthRoute.initRoutes();";
 
-const ConfigPassportGoogle = `
-const OAuthGoogle = new PassportGoogle({
-    strategyConfig: {
-        verify: oauthVerify
-    }
-});`;
-
-// app.use 
-const UseSession = "app.use(session(expressSessionConfig));";
-const UsePassportGoogle = `
-    await OAuthGoogle.passportSerializeUser();
-    await OAuthGoogle.passportDeserializeUser();
-    app.use(OAuthGoogle.passport.initialize());
-    app.use(OAuthGoogle.passport.session());`;
-
-// routes
-const UseOAuthRouter = "app.use(OAuthRoute.router);";
-const UseSwaggerRouter = "app.use(SwaggerRoute.router);";
-const UseOAuthGoogleRouter = "app.use(OAuthGoogle.router);";
-
+// use
+const UseCookieParser = "app.use(cookieParser());";
+const UseAuthRouter = "app.use(\"/auth\", AuthRoute.getRouter());";
+const UseSwaggerRouter = "app.use(\"/swagger\", SwaggerRoute.getRouter());";
+const UseApiRouter = "app.use(\"/api\", ApiRoute.getRouter());";
 
 export default function serverTemplate(options: {
     compilerOptions: types.compilerOptions,
@@ -49,13 +28,15 @@ export default function serverTemplate(options: {
 
 import express from 'express';
 import dotenv from 'dotenv';
+import crypto from 'crypto';
 import helmet from 'helmet';
+
 import log from './system/_utils/logger.gen';
+import processTimer from './system/_utils/processTimer.gen';
 import VexDbConnector from './system/_services/VexDbConnector.gen';
 
 import ApiRouter from './system/_routes/ApiRouter.gen';
 {{Import}}
-
 
 /** 
  * Configure
@@ -69,12 +50,10 @@ const helmetConfig = {
 
 const vexDB = new VexDbConnector({
     mongoUrl: process.env.MONGODB_URI,
+    recordAccessLog: false,
 });
 
-
-const ApiRoute = new ApiRouter(); ApiRoute.initRoutes();
 {{Config}}
-
 
 /** 
  * App
@@ -86,7 +65,9 @@ async function main(): Promise<void> {
 
     // UseMiddleware
     app.use(express.json());
+    app.use(express.static('public'));
     app.use(helmet(helmetConfig));
+    app.use(processTimer);
     app.use(vexDB.middleware);
 
     // UsePlugins
@@ -95,23 +76,10 @@ async function main(): Promise<void> {
     // Routes
     {{AppRouter}}
 
-    app.use(ApiRoute.router);
-    app.get('/', (req, res) => {
-        res.send(\`
-            <div>
-                <h1>Hello World</h1>
-                <ul>
-                    <li><a href="/login">login</a></li>
-                    <li><a href="/profile">profile</a></li>
-                    <li><a href="/logout">logout</a></li>
-                    <li><a href="/api">api</a></li>
-                </ul>
-            </div>
-        \`);
-    });
+    {{dummyLoginUI}}
 
     app.listen(3000, () => {
-        if(!process.env.MONGODB_URI) throw new Error('MONGODB_URI is not defined');
+        if (!process.env.MONGODB_URI) throw new Error('MONGODB_URI is not defined');
         vexDB.connectMongo();
         log.ok(\`Server is running on : \${process.env.APP_HOST}\`);
     });
@@ -121,35 +89,31 @@ async function main(): Promise<void> {
 main();
 `;
 
-    const usedProvider: string[] = utils.generator.isUseOAuth(options.compilerOptions);
+    const usedProvider: string[] = utils.generator.OAuthProviders(options.compilerOptions);
     const Import: string[] = [];
     const Config: string[] = [];
     const AppUse: string[] = [];
     const AppRoute: string[] = [];
 
-    if (usedProvider.length > 0) {
-        Import.push(importExpressSession);
-        Import.push(importOAuthVerifyPlugin);
-        Config.push(ConfigExpressSession);
-        AppUse.push(UseSession);
+    Config.push(ConfigApiRouter);
+    AppRoute.push(UseApiRouter);
 
-        if (options.compilerOptions.app.enableSwagger) {
-            Import.push(importSwaggerRouter);
-            Config.push(ConfigSwaggerRouter);
-            AppRoute.push(UseSwaggerRouter);
-        }
-
-        Import.push(importOAuthRouter);
-        Config.push(ConfigOAuthRouter);
-        AppRoute.push(UseOAuthRouter);
-
-        if (usedProvider.includes("google")) {
-            Import.push(importPassportGoogle);
-            Config.push(ConfigPassportGoogle);
-            AppUse.push(UsePassportGoogle);
-            AppRoute.push(UseOAuthGoogleRouter);
-        }
+    if (options.compilerOptions.app.enableSwagger) {
+        Import.push(importSwaggerRouter);
+        Config.push(ConfigSwaggerRouter);
+        AppRoute.push(UseSwaggerRouter);
     }
+
+    if (usedProvider.length > 0) {
+        Import.push(importCookieParser);
+        AppUse.push(UseCookieParser);
+
+        Import.push(importAuthRouter);
+        Config.push(ConfigAuthRouter);
+        AppRoute.push(UseAuthRouter);
+    }
+    
+    template = template.replace(/{{dummyLoginUI}}/g, dummyLoginUI(usedProvider, options.compilerOptions));
 
     template = template.replace(/{{headerComment}}/g, options.compilerOptions.headerComment || "// generated files by very-express");
     template = template.replace(/{{Import}}/g, Import.join("\n"));
@@ -158,4 +122,119 @@ main();
     template = template.replace(/{{AppRouter}}/g, AppRoute.join("\n    "));
 
     return template;
+}
+
+function loginHtml(providers: string[]) {
+    let html = "<p> login with : </p>";
+    providers.forEach((provider) => {
+        html += `<a href="\${process.env.APP_HOST}/auth/${provider}">${provider}</a><br/>\n`;
+    });
+    return `${html}`;
+}
+
+function dummyLoginUI(providers: string[], compilerOptions: types.compilerOptions) {
+    return `
+    app.get('/', (req, res) => {
+        res.send(\`
+            <div>
+                <h1>Hello World</h1>
+                <ul>
+                    ${ 
+                        isOAuthEnabled(compilerOptions) ? 
+                        `<li><a href="/login">Login</a></li>
+                    <li><a href="/mytokens">myTokens</a></li>
+                    <li><a href="/refreshtoken">RefreshToken</a></li>
+                    <li><a href="/logout">LogOut</a></li>` : 
+                        "" 
+                    }
+                    <li><a href="/swagger">Swagger UI</a></li>
+                </ul>
+                
+                <h1>Others</h1>
+                <ul>
+                    <li><a href="/logincallback">logincallback</a></li>
+                </ul>
+            </div>
+        \`);
+    });
+
+    /**
+     * Dummy Login Page,
+     * this should handle by client application (vue, react, angular, etc)
+     * - list all available provider
+     */
+    app.get('/login', (req, res) => {
+        res.send(\`${loginHtml(providers)}\`);
+    });
+
+    /**
+     * Dummy Token Display Page
+     **/
+    app.get('/mytokens', (req, res) => {
+        const nonce = crypto.randomBytes(16).toString("base64");
+        res.setHeader("Content-Security-Policy", \`script-src 'self' 'nonce-\${nonce}'\`);
+        res.send(\`
+            <script nonce="\${nonce}" src="\${process.env.APP_HOST}/js/mytokens.js"></script>
+            <link rel="stylesheet" href="\${process.env.APP_HOST}/css/style.css">
+            <body>
+                <h1>My Token</h1>
+                <pre id="tokenData">{a:1,B:2}<code></pre>
+                <a href="/">back to home</a>
+            </body>
+        \`);
+    });
+
+    /** 
+     * Dummy Token Exchange trigger
+     **/
+    app.get('/refreshtoken', (req, res) => {
+        const nonce = crypto.randomBytes(16).toString("base64");
+        res.setHeader("Content-Security-Policy", \`script-src 'self' 'nonce-\${nonce}'\`);
+        res.send(\`
+            <script nonce="\${nonce}" src="\${process.env.APP_HOST}/js/refreshtokens.js"></script>
+            <link rel="stylesheet" href="\${process.env.APP_HOST}/css/style.css">
+            <body>
+                <h1>New Token</h1>
+                <pre id="tokenData">{a:1,B:2}<code></pre>
+                <a href="/">back to home</a>
+            </body>
+        \`);
+    });
+
+    /** 
+     * Dummy Code Exchange Trigger
+     **/
+    app.get('/logincallback', (req, res) => {
+        const nonce = crypto.randomBytes(16).toString("base64");
+
+        res.setHeader("Content-Security-Policy", \`script-src 'self' 'nonce-\${nonce}'\`);
+        res.send(\`
+            <script nonce="\${nonce}" src="\${process.env.APP_HOST}/js/logincallback.js"></script>
+            <link rel="stylesheet" href="\${process.env.APP_HOST}/css/style.css">
+            <body>
+                <h1>Profile Data</h1>
+                <pre id="tokenData"></pre>
+                <a href="/">back to home</a>
+            </body>
+        \`);
+    });
+
+    /** 
+     * Dummy Logout Page, 
+     * - this should handle by client application
+     * - client side application should remove local storage's tokens
+     **/
+    app.get('/logout', (req, res) => {
+        const nonce = crypto.randomBytes(16).toString("base64");
+        res.setHeader("Content-Security-Policy", \`script-src 'self' 'nonce-\${nonce}'\`);
+        res.send(\`
+            <script nonce="\${nonce}">
+                localStorage.removeItem('accessToken', jsonData.result.accessToken);
+                localStorage.removeItem('accessTokenIndex', jsonData.result.accessTokenIndex);
+                localStorage.removeItem('refreshToken', jsonData.result.refreshToken);
+                localStorage.removeItem('refreshTokenIndex', jsonData.result.refreshTokenIndex);
+            </script>
+        \`);
+    });
+    `;
 }

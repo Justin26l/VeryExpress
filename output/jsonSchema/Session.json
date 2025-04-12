@@ -1,0 +1,37 @@
+{
+    "type": "object",
+    "x-documentConfig": {
+        "documentName": "Session",
+        "methods": []
+    },
+    "properties": {
+        "_id": {
+            "type": "string",
+            "x-format": "ObjectId",
+            "index": true
+        },
+        "sessionCode": {
+            "type": "string",
+            "index": true
+        },
+        "provider": {
+            "type": "string",
+            "required": true
+        },
+        "userId": {
+            "type": "string",
+            "x-format": "ObjectId",
+            "required": true
+        },
+        "expired": {
+            "type": "number",
+            "description": "expired time in unix timestamp format (ms)",
+            "required": true
+        }
+    },
+    "required": [
+        "provider",
+        "userId",
+        "expired"
+    ]
+}

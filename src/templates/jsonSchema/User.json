@@ -6,25 +6,39 @@
             "getList",
             "post",
             "patch"
-        ]
+        ],
+        "documentName": "User"
     },
     "properties": {
         "_id": {
             "type": "string",
+            "x-format": "ObjectId",
             "index": true
         },
-        "authProvider": {
-            "type": "string"
-        },
-        "authId": {
-            "type": "string",
-            "index": true
+        "authProfiles": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "provider": {
+                        "type": "string",
+                        "index": true
+                    },
+                    "authId": {
+                        "type": "string",
+                        "index": true
+                    },
+                    "username": {
+                        "type": "string"
+                    }
+                },
+                "required": []
+            }
         },
         "email": {
             "type": "string",
             "format": "email",
-            "index": true,
-            "required": true
+            "index": true
         },
         "name": {
             "type": "string",
@@ -40,17 +54,30 @@
             "type": "string",
             "maxLength": 8
         },
-        "roles":{
+        "roles": {
             "type": "array",
             "x-vexData": "role",
             "items": {
                 "type": "string",
-                "default": "user",
-                "required": true,
                 "enum": [
-                    "user"
+                    "visitor",
+                    "member",
+                    "admin"
                 ]
+            },
+            "default": [
+                "visitor"
+            ]
+        },
+        "profileErrors": {
+            "type": "array",
+            "items": {
+                "type": "string"
             }
         }
-    }
+    },
+    "required": [
+        "name",
+        "active"
+    ]
 }

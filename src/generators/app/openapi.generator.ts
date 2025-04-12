@@ -30,22 +30,38 @@ export async function compile(
         },
         paths: {},
         components: {
+            securitySchemes: {},
             schemas: {},
         },
     };
 
-    // loop through all json schema files and compile to openapi paths & components
+    // set auth method
+    if (utils.generator.isOAuthEnabled(compilerOptions)) {
+        openapiJson.components.securitySchemes = {
+            BearerAuth: {
+                type: "http",
+                scheme: "bearer",
+                bearerFormat: "JWT",
+            },
+            AuthIndex: {
+                type: "apiKey",
+                in: "header",
+                name: "X-Auth-Index",
+            }
+        };
+    }
 
+    // loop through all json schema files and compile to openapi paths & components
     const files = fs.readdirSync(compilerOptions.jsonSchemaDir);
     files.forEach((file) => {
         // ignore non json files
         if (!file.endsWith(".json")) return;
-        const jsonSchemaFilePath: string = path.join(compilerOptions.jsonSchemaDir, file);
+        const jsonSchemaFilePath: string = path.posix.join(compilerOptions.jsonSchemaDir, file);
         log.process(`OpenApi : ${jsonSchemaFilePath}`);
 
         const jsonSchemaBuffer = fs.readFileSync(`${compilerOptions.jsonSchemaDir}/${file}`);
         const jsonSchema: types.jsonSchema = JSON.parse(jsonSchemaBuffer.toString());
-        openapiJson = jsonToOpenapiPath(openapiJson, jsonSchema, { jsonSchemaFilePath: jsonSchemaFilePath });
+        openapiJson = jsonToOpenapiPath(openapiJson, jsonSchema, { jsonSchemaFilePath: jsonSchemaFilePath }, compilerOptions);
         openapiJson = jsonToOpenapiComponentSchema(openapiJson, jsonSchema, { jsonSchemaFilePath: jsonSchemaFilePath }, compilerOptions);
     });
 
@@ -62,22 +78,22 @@ export async function compile(
 function jsonToOpenapiPath(
     openapiJson: openapiType.openapi,
     jsonSchema: types.jsonSchema,
-    additionalinfo: {
-        jsonSchemaFilePath: string
-    }
+    jsonSchemaFilePath: string,
+    compilerOptions: types.compilerOptions
 ): openapiType.openapi {
     // get jsonschema properties
     const documentConfig: types.documentConfig = jsonSchema["x-documentConfig"];
     const lowerDocName: string = documentConfig.documentName.toLowerCase();
     const documentName: string = documentConfig.documentName;
+    const authParams: {[key:string]: Array<never>}[] = [{ BearerAuth: [] }, { AuthIndex: [] }];
 
     const properties: types.jsonSchema["properties"] = jsonSchema.properties;
 
     const routes: openapiType.paths = {
-        ["/" + lowerDocName]: {
+        ["/api/" + lowerDocName]: {
             "x-documentName": documentName,
         },
-        ["/" + lowerDocName + "/{id}"]: {
+        ["/api/" + lowerDocName + "/{id}"]: {
             "x-documentName": documentName,
         },
     };
@@ -85,9 +101,9 @@ function jsonToOpenapiPath(
     documentConfig.methods.forEach((jsonSchemaMethod) => {
         const routeWithId: boolean = ["get", "put", "patch", "delete"].includes(jsonSchemaMethod);
         const useBody: boolean = ["post", "put", "patch"].includes(jsonSchemaMethod);
-        const route: string = "/" + lowerDocName + (routeWithId ? "/{id}" : "");
+        const route: string = "/api/" + lowerDocName + (routeWithId ? "/{id}" : "");
         
-        const httpMethod: types.httpMethod = utils.jsonSchema.httpMethod(jsonSchemaMethod, additionalinfo.jsonSchemaFilePath);
+        const httpMethod: types.httpMethod = utils.jsonSchema.httpMethod(jsonSchemaMethod, jsonSchemaFilePath);
         const parameters: openapiType.parameter[] = [];
         let requestBody: openapiType.requestBody | undefined = undefined;
         const successResponse: openapiType.responses = {
@@ -144,6 +160,7 @@ function jsonToOpenapiPath(
         routes[route][httpMethod] = {
             operationId: jsonSchemaMethod + documentName,
             tags: [lowerDocName],
+            security: utils.generator.isOAuthEnabled(compilerOptions) ? authParams : undefined,
             parameters: parameters,
             requestBody: requestBody,
             responses: Object.assign(
@@ -175,9 +192,7 @@ function jsonToOpenapiPath(
 function jsonToOpenapiComponentSchema(
     openapiJson: openapiType.openapi,
     jsonSchema: types.jsonSchema,
-    additionalinfo: {
-        jsonSchemaFilePath: string
-    },
+    jsonSchemaFilePath: string,
     compilerOptions: types.compilerOptions
 ): openapiType.openapi {
     const componentSchemaPath: openapiType.components["schemas"] = {};
@@ -226,7 +241,7 @@ function jsonToOpenapiComponentSchema(
     };   
 
     documentConfig.methods.forEach((jsonSchemaMethod) => {
-        const httpMethod: types.httpMethod = utils.jsonSchema.httpMethod(jsonSchemaMethod, additionalinfo.jsonSchemaFilePath);
+        const httpMethod: types.httpMethod = utils.jsonSchema.httpMethod(jsonSchemaMethod, jsonSchemaFilePath);
 
         switch (jsonSchemaMethod) {
         case "delete":
@@ -306,7 +321,7 @@ function jsonToOpenapiComponentSchema(
                 }
             });
 
-                openapiJson.paths["/" + lowerDocName][httpMethod]!.parameters = parameters;
+                openapiJson.paths["/api/" + lowerDocName][httpMethod]!.parameters = parameters;
 
                 componentSchemaPath[httpMethod + documentName + "Response"] = componentSchemaResponse;
                 componentSchemaPath[httpMethod + documentName + "ResponseList"] = {
