@@ -74,9 +74,9 @@ export default class OAuthRouteFactory {
 
                 SessionModel.create({ 
                     sessionCode: sessionCode, 
-                    // @ts-expect-error 
+                    // @ts-expect-error custom var
                     userId: req.user.profile._id, 
-                    // @ts-expect-error
+                    // @ts-expect-error custom var
                     provider: req.user.provider || "", 
                     expired: Date.now() + 5000 
                 });
