@@ -1,5 +1,6 @@
 // {{headerComment}}
 
+import ms from "ms";
 import jwt from "jsonwebtoken";
 import JWTKeyStore from "./JWTKeyStore.gen";
 import responseCode from "../../_types/response/responseCode.gen";
@@ -24,9 +25,9 @@ export function generateToken(
     const keyInfo = typeof index == "number" ? keys.getKeyObj(index) : keys.getRandomKey();
     const token = jwt.sign(
         data,
-        keyInfo.key,
+        keyInfo.key as any,
         {
-            expiresIn: expiresIn || keys.expireTime || "1h",
+            expiresIn: expiresIn as ms.StringValue || keys.expireTime as ms.StringValue || "1h",
             algorithm: keys.algorithm
         }
     );
