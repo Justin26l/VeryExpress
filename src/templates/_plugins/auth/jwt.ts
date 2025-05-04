@@ -6,6 +6,7 @@ import responseCode from "../../_types/response/responseCode.gen";
 import { UserModel } from "../../_models/UserModel.gen";
 import { sanitizeUser } from "../../_plugins/auth/token.gen";
 import { VexResponseError } from "../../_utils/response.gen";
+import { StringValue } from "ms";
 
 interface tokenObj { 
     token: string, 
@@ -24,9 +25,9 @@ export function generateToken(
     const keyInfo = typeof index == "number" ? keys.getKeyObj(index) : keys.getRandomKey();
     const token = jwt.sign(
         data,
-        keyInfo.key,
+        keyInfo.key as jwt.Secret,
         {
-            expiresIn: expiresIn || keys.expireTime || "1h",
+            expiresIn: (expiresIn || keys.expireTime || "1h") as StringValue,
             algorithm: keys.algorithm
         }
     );
