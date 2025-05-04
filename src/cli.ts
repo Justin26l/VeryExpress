@@ -53,12 +53,12 @@ async function main() {
     config.useRBAC.schemaIncluded = config.useRBAC.schemaIncluded || ["user"];
 
     // oauth
-    config.useOauth = config.useOauth || {};
-    config.useOauth.google = config.useOauth.google || false;
-    config.useOauth.github = config.useOauth.github || false;
-    // config.useOauth.apple = config.useOauth.apple || false;
-    // config.useOauth.facebook = config.useOauth.facebook || false;
-    // config.useOauth.azure = config.useOauth.microsoft || false;
+    config.sso.oauthProviders = config.sso.oauthProviders || {};
+    config.sso.oauthProviders.google = config.sso.oauthProviders.google || false;
+    config.sso.oauthProviders.github = config.sso.oauthProviders.github || false;
+    // config.sso.oauthProviders.apple = config.sso.oauthProviders.apple || false;
+    // config.sso.oauthProviders.facebook = config.sso.oauthProviders.facebook || false;
+    // config.sso.oauthProviders.azure = config.sso.oauthProviders.microsoft || false;
 
     // warning
     if (config.app.useObjectID && config.app.allowApiCreateUpdate_id) {

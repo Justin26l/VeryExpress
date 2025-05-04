@@ -14,8 +14,8 @@ export function getSimpleHeaderComment(): string {
 }
 
 export function OAuthProviders(compilerOptions: types.compilerOptions): string[] {
-    return Object.keys(compilerOptions.useOauth!).filter((key) => {
-        return compilerOptions.useOauth![key] === true;
+    return Object.keys(compilerOptions.sso.oauthProviders!).filter((key) => {
+        return compilerOptions.sso.oauthProviders![key] === true;
     });
 }
 
@@ -46,12 +46,15 @@ export const defaultCompilerOptions: types.compilerOptions = {
         default: "user",
         schemaIncluded: ["user"],
     },
-    useOauth: {
-        google: false,
-        microsoft: false,
-        apple: false,
-        github: false,
-    },
+    sso: {
+        useHttpOnlyCookieToken: false,
+        oauthProviders: {
+            google: false,
+            microsoft: false,
+            apple: false,
+            github: false,
+        },
+    }
 
 };
 

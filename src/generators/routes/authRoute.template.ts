@@ -26,6 +26,9 @@ export default class AuthRouter {
 
         // exchange an authorization code for tokens.
         this.router.post('/token', (req, res) => vexSystem.RouteHandler(req, res, async ()=> {
+            
+            // todo: disable this route if use httpOnly Cookie
+            
             if (!req.query.code) {
                 return responseGen.send(res, 401);
             }
@@ -62,6 +65,9 @@ export default class AuthRouter {
 
         // refresh expired tokens by refresh token.
         this.router.post('/refresh', (req, res) => vexSystem.RouteHandler(req, res, async () => {
+            
+            // todo: change this return if use httpOnly Cookie
+
             if (
                 !req.body.refreshToken || 
                 !req.body.refreshTokenIndex
