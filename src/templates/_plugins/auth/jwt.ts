@@ -1,12 +1,12 @@
 // {{headerComment}}
 
-import ms from "ms";
 import jwt from "jsonwebtoken";
 import JWTKeyStore from "./JWTKeyStore.gen";
 import responseCode from "../../_types/response/responseCode.gen";
 import { UserModel } from "../../_models/UserModel.gen";
 import { sanitizeUser } from "../../_plugins/auth/token.gen";
 import { VexResponseError } from "../../_utils/response.gen";
+import { StringValue } from "ms";
 
 interface tokenObj { 
     token: string, 
@@ -25,9 +25,9 @@ export function generateToken(
     const keyInfo = typeof index == "number" ? keys.getKeyObj(index) : keys.getRandomKey();
     const token = jwt.sign(
         data,
-        keyInfo.key as any,
+        keyInfo.key as jwt.Secret,
         {
-            expiresIn: expiresIn as ms.StringValue || keys.expireTime as ms.StringValue || "1h",
+            expiresIn: (expiresIn || keys.expireTime || "1h") as StringValue,
             algorithm: keys.algorithm
         }
     );
