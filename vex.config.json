@@ -13,7 +13,7 @@
     },
     "useOauth": {
         "google": true,
-        "github": true
+        "github": false
     },
     "useRBAC": {
         "roles": [

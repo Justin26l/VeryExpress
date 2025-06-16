@@ -20,3 +20,4 @@ build/Release
 package-lock.json
 plan/appstructure.drawio
 plan/hostStructure.drawio
+.DS_Store
