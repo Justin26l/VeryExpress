@@ -18,17 +18,17 @@ export class JWTKeyStore{
 
     constructor(){
         this.secrets = [
-            process.env.JWT_SECRET0 || undefined,
-            process.env.JWT_SECRET1 || undefined,
-            process.env.JWT_SECRET2 || undefined,
-            process.env.JWT_SECRET3 || undefined,
-            process.env.JWT_SECRET4 || undefined,
-            process.env.JWT_SECRET5 || undefined,
-            process.env.JWT_SECRET6 || undefined,
-            process.env.JWT_SECRET7 || undefined,
-            process.env.JWT_SECRET8 || undefined,
-            process.env.JWT_SECRET9 || undefined,
-        ].filter((key) => key !== undefined);
+            process.env.JWT_SECRET0 || '',
+            process.env.JWT_SECRET1 || '',
+            process.env.JWT_SECRET2 || '',
+            process.env.JWT_SECRET3 || '',
+            process.env.JWT_SECRET4 || '',
+            process.env.JWT_SECRET5 || '',
+            process.env.JWT_SECRET6 || '',
+            process.env.JWT_SECRET7 || '',
+            process.env.JWT_SECRET8 || '',
+            process.env.JWT_SECRET9 || '',
+        ].filter((key) => key !== '');
     }
 
     /**
