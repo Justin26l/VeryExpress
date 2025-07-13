@@ -17,6 +17,5 @@ jspm_packages/
 
 # Compiled binary addons (https://nodejs.org/api/addons.html)
 build/Release
-package-lock.json
 plan/appstructure.drawio
 plan/hostStructure.drawio
