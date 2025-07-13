@@ -77,7 +77,7 @@ export default class OAuthRouteFactory {
                 // @ts-expect-error custom var
                 const refreshToken = await generateRefreshToken({_id: req.user.profile._id});
 
-                res.cookie("vex-token", {
+                res.cookie("vex-access-token", {
                     accessToken: accessToken.token,
                     accessTokenIndex: accessToken.clientIndex
                 }, {
@@ -87,9 +87,9 @@ export default class OAuthRouteFactory {
                     sameSite: "strict",
                 });
 
-                res.cookie("vex-session", {
-                    accessToken: accessToken.token,
-                    accessTokenIndex: accessToken.clientIndex,
+                res.cookie("vex-refresh-token", {
+                    accessToken: refreshToken.token,
+                    accessTokenIndex: refreshToken.clientIndex,
                 }, {
                     maxAge: ms(process.env.REFRESH_TOKEN_EXPIRE_TIME as ms.StringValue),
                     httpOnly: true,
