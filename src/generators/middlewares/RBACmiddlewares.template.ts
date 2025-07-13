@@ -66,7 +66,7 @@ export default class RoleBaseAccessControl {
                 throw 403;
             }`;
             
-    template = template.replace(/{{headerComment}}/g, options.compilerOptions.headerComment || "// generated files by very-express");
+    template = template.replace(/{{headerComment}}/g, options.compilerOptions._.headerComment || "// generated files by very-express");
     template = template.replace(/{{roleSwitch}}/g, roleSwitchCode);
 
     return template;

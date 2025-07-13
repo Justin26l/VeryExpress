@@ -72,7 +72,7 @@ export async function compile(options: {
     // 2. generate index file
     const indexFilePath = `${options.roleOutDir}/index.ts`;
     const indexFileContent = indexFileData.map((data) => `export { default as ${data.name} } from "./${data.name}.gen";`).join("\n");
-    utils.common.writeFile("RBAC Index", indexFilePath, `${options.compilerOptions.headerComment}\n${indexFileContent}`);
+    utils.common.writeFile("RBAC Index", indexFilePath, `${options.compilerOptions._.headerComment}\n${indexFileContent}`);
 
     // list of indexFileData.name
     const roles: string[] = indexFileData.map((data) => data.name);

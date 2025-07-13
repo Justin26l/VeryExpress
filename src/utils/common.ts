@@ -66,7 +66,7 @@ export function copyDir(source: string, destination: string, compilerOptions: ty
         // check file exist, read it check is same content, if is then skip
         else {
             let newContent = fs.readFileSync(sourcePath, "utf8");
-            newContent = newContent.replace(/\/\/ {{headerComment}}/g, compilerOptions.headerComment);
+            newContent = newContent.replace(/\/\/ {{headerComment}}/g, compilerOptions._.headerComment);
             writeFile(`FILE : ${destinationPath}`, destinationPath, newContent);
 
         }

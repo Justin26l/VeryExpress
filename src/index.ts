@@ -26,6 +26,12 @@ export async function generate(
     const documents: { path: string, config: types.documentConfig }[] = [];
     const documentPaths: { [key: string]: string } = {};
 
+    // set system options
+    options._ = {
+        headerComment: options.generator?.disableVersionLabel ? utils.generator.getStaticHeaderComment() : utils.generator.getDefaultHeaderComment(),
+        writtedDir: [],
+    };
+
     const dir = {
         roleSrcDir: path.posix.join(options.srcDir, "roles"),
         roleDir: path.posix.join(options.sysDir, "_roles"),
@@ -44,9 +50,6 @@ export async function generate(
         documentName: string,
         controllerPath: string,
     }[] = [];
-
-    // set default header comment
-    options.headerComment = utils.generator.getGenaratorHeaderComment();
 
     // create all directories if not exist
     if (!fs.existsSync(options.rootDir)) { fs.mkdirSync(options.rootDir); }
@@ -114,7 +117,7 @@ export async function generate(
     // genarate opanapi from jsonSchema
     await openapiGen.compile(
         openapiFile, 
-        options || utils.generator.defaultCompilerOptions
+        options
     );
     utils.common.copyDir(`${options.openapiDir}`, path.posix.join(options.srcDir, "openapi"), options, true);
 

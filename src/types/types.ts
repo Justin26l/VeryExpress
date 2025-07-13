@@ -1,13 +1,14 @@
 export interface compilerOptions {
-    commitBeforeGenerate: boolean;
-    headerComment: string;
-
     jsonSchemaDir: string,
     openapiDir: string,
     rootDir: string,
     srcDir: string,
     sysDir: string,
-    writtedDir: string[],
+
+    generator: {
+        disableVersionLabel?: boolean;
+        commitBeforeGenerate: boolean;
+    },
 
     app: {
         enableSwagger: boolean,
@@ -32,7 +33,12 @@ export interface compilerOptions {
             github?: boolean,
             [key: string]: boolean | undefined;
         };
-    }
+    },
+
+    _: {
+        headerComment: string,
+        writtedDir: string[],
+    },
 }
 
 export interface roleJson {

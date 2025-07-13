@@ -64,7 +64,7 @@ export default class AuthRouter {
     }
 }`;
 
-    template = template.replace(/{{headerComment}}/g, compilerOptions.headerComment || "// generated files by very-express");
+    template = template.replace(/{{headerComment}}/g, compilerOptions._.headerComment || "// generated files by very-express");
 
     const providers: string[] = utilsGenerator.OAuthProviders(compilerOptions);
     const providersTemplate = providers.map((providerName) => {

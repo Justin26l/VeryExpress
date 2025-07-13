@@ -51,7 +51,7 @@ export default class ApiRouter{
         useRoutes.push(`this.router.use('${obj.route}', ${rbacMiddleware(obj.documentName)} ${obj.documentName}Controller);`);
     });
 
-    template = template.replace(/{{headerComment}}/g, options.compilerOptions.headerComment || "// generated files by very-express");
+    template = template.replace(/{{headerComment}}/g, options.compilerOptions._.headerComment || "// generated files by very-express");
     template = template.replace(/{{importRoutes}}/g, importRoutes.join("\n"));
     template = template.replace(/{{useRoutes}}/g, useRoutes.join("\n        "));
 

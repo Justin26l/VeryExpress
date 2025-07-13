@@ -28,15 +28,17 @@ async function main() {
         }
     }
 
-    // record last generation args or set default values
-    config.commitBeforeGenerate = config.commitBeforeGenerate ?? false;
-
-    // generator
+    // directories
     config.jsonSchemaDir = args.j || args.jsonSchemaDir || config.jsonSchemaDir || "./jsonSchema";
     config.rootDir = args.o || args.rootDir || config.rootDir || ".";
     config.srcDir = config.srcDir || config.rootDir + "/src";
     config.sysDir = config.sysDir || config.srcDir + "/system";
     config.openapiDir = config.srcDir + "/openapi";
+    
+    // record last generation args or set default values
+    config.generator = config.generator ?? {};
+    config.generator.commitBeforeGenerate = config.generator.commitBeforeGenerate ?? false;
+    config.generator.disableVersionLabel = config.generator.disableVersionLabel ?? false;
 
     // app
     config.app = config.app || {},
@@ -128,7 +130,7 @@ async function main() {
         }
 
         // commit before generate
-        if (config.commitBeforeGenerate === true) {
+        if (config.generator.commitBeforeGenerate === true) {
             try {
                 log.info("git commit \"before vex-gen\"");
                 childProcess.execSync("git add . && git commit -m \"before vex-gen\"", { stdio: "inherit" });
