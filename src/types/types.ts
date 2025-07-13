@@ -22,13 +22,17 @@ export interface compilerOptions {
         default: string,
         schemaIncluded: string[]
     },
-    useOauth?: {
-        google?: boolean,
-        microsoft?: boolean,
-        apple?: boolean,
-        github?: boolean,
-        [key: string]: boolean | undefined;
-    };
+
+    sso:{
+        useHttpOnlyCookieToken?: boolean,
+        oauthProviders?: {
+            google?: boolean,
+            microsoft?: boolean,
+            apple?: boolean,
+            github?: boolean,
+            [key: string]: boolean | undefined;
+        };
+    }
 }
 
 export interface roleJson {

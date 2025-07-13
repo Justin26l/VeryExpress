@@ -11,9 +11,12 @@
         "allowApiCreateUpdate_id": false,
         "useStatefulRedisAuth": true
     },
-    "useOauth": {
-        "google": true,
-        "github": true
+    "sso": {
+        "useHttpOnlyCookieToken": true,
+        "oauthProviders": {
+            "google": true,
+            "github": true
+        }
     },
     "useRBAC": {
         "roles": [
