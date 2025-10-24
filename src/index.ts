@@ -10,8 +10,9 @@ import { formatJsonSchema } from "./preprocess/jsonschemaFormat";
 import { roleSchemaFormat } from "./preprocess/roleSetupFile";
 
 import * as types from "./types/types";
-import * as userSchemaGen from "./generators/project/userSchema.generator";
-import * as buildScriptGen from "./generators/project/buildScripts.generator";
+import * as userSchemaGen from "./generators/projectSettings/userSchema.generator";
+import * as projectSettingsGen from "./generators/projectSettings";
+
 
 import * as roleGen from "./generators/role/role.generator";
 import * as controllerGen from "./generators/controller/controllers.generator";
@@ -70,11 +71,11 @@ export async function generate(
     utils.common.copyDir(`${__dirname}/templates/root`, options.rootDir, options, true);
     utils.common.copyDir(`${__dirname}/templates/jsonSchema`, options.jsonSchemaDir, options, true);
 
-    // update userSchema
-    await userSchemaGen.compile({ compilerOptions: options || utils.generator.defaultCompilerOptions });
-
     // format role schema
     roleSchemaFormat({ compilerOptions: options || utils.generator.defaultCompilerOptions });
+
+    // update userSchema
+    await userSchemaGen.compile({ compilerOptions: options || utils.generator.defaultCompilerOptions });
     
     // prepair schema files
     const files: string[] = fs.readdirSync(options.jsonSchemaDir);
@@ -101,7 +102,7 @@ export async function generate(
     });
 
     // generate roles
-    if ( options.useRBAC && options.useRBAC.roles.length > 0){
+    if ( options.useRBAC && options.useRBAC.roles.length > 0 ){
         await roleGen.compile({
             collectionList: documents.map((doc) => doc.config.documentName),
             roleSourceDir: dir.roleSrcDir,
@@ -176,7 +177,8 @@ export async function generate(
     await serverGen.compile(options);
 
     // make project files
-    await buildScriptGen.compile(options);
+    await projectSettingsGen.compile(options);
+    // await configGen.compile(options);
 
     return ;
 }

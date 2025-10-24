@@ -1,6 +1,6 @@
 import fs from "fs";
 
-import packangeJsonTemplate from "./../../templates/root/package.json";
+import packangeJsonTemplate from "./../../templates/_projectSettings/package.json";
 
 import utils from "./../../utils";
 import log from "./../../utils/logger";
@@ -12,7 +12,7 @@ export async function compile(
     compilerOptions: types.compilerOptions
 ): Promise<void> {
     // read package.json and add script section
-    log.process(`Root : ${packageOutPath}`);
+    log.process(`Project Settings : ${packageOutPath}`);
     let packjson: string = "";
 
     if (!fs.existsSync(packageOutPath)) {
@@ -39,7 +39,7 @@ export async function compile(
         packageJson.scripts.start = "node ./dist/server.js";
     }
 
-    utils.common.writeFile(`ROOT : ${packageOutPath}`, packageOutPath, JSON.stringify(packageJson, null, 4));
+    utils.common.writeFile(`Project Settings : ${packageOutPath}`, packageOutPath, JSON.stringify(packageJson, null, 4));
 
     return;
 }
