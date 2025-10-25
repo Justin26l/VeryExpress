@@ -13,7 +13,7 @@ export async function compile(
     // read env and add
     log.process(`Project Settings : ${envOutPath}`);
     let envOutput: string = "";
-    let envTemplate: string = fs.readFileSync(__dirname+"/templates/_projectSettings/env", "utf8");
+    const envTemplate: string = fs.readFileSync(__dirname+"/templates/_projectSettings/env", "utf8");
 
     console.log(`Processing .env file at ${envOutPath}`);
 
@@ -41,18 +41,18 @@ export async function compile(
         // find missing props
         templateEnvProps.forEach(key => {
             if(!existingEnvProps.includes(key)){
-                newProps.push(key)
+                newProps.push(key);
             }
         });
 
         // add missing props
         if(newProps.length > 0){
-            envOutput += `\n\n# New Props from very-express`;
+            envOutput += "\n\n# New Props from very-express";
             newProps.forEach(key => {
                 envOutput += `\n${key}=`;
             });
         }
-    };
+    }
 
 
     utils.common.writeFile(`Project Settings : ${envOutPath}`, envOutPath, envOutput);

@@ -1,9 +1,9 @@
-import * as path from 'path';
-import * as types from '~/types/types';
+import * as path from "path";
+import * as types from "~/types/types";
 
-import packageJson from './packageJson.generator';
-import buildScripts from './buildScripts.generator';
-import environment from './environment.generator';
+import packageJson from "./packageJson.generator";
+import buildScripts from "./buildScripts.generator";
+import environment from "./environment.generator";
 
 export function compile(compilerOptions: types.compilerOptions): void {
 
