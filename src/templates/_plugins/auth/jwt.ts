@@ -1,5 +1,4 @@
 // {{headerComment}}
-
 import jwt from "jsonwebtoken";
 import ms from "ms";
 import JWTKeyStore from "./JWTKeyStore.gen";

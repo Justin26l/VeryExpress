@@ -1,5 +1,4 @@
 // {{headerComment}}
-
 import { generateToken } from "./../auth/jwt.gen";
 import { UserDocument } from "./../../_models/UserModel.gen";
 

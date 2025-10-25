@@ -1,3 +1,4 @@
+// {{headerComment}}
 export class _ControllerFactory {
 
     constructor() {}

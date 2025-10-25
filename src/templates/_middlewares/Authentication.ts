@@ -1,6 +1,4 @@
 // {{headerComment}}
-
-
 import { Request, Response, NextFunction } from "express";
 import { JsonWebTokenError } from "jsonwebtoken";
 import * as jwt from "../_plugins/auth/jwt.gen";

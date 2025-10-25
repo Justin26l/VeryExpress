@@ -1,5 +1,4 @@
 // {{headerComment}}
-
 import dotenv from "dotenv";
 import { Algorithm } from "jsonwebtoken";
 

@@ -6,7 +6,6 @@ export interface compilerOptions {
     sysDir: string,
 
     generator: {
-        disableVersionLabel?: boolean;
         commitBeforeGenerate: boolean;
     },
 
@@ -36,7 +35,6 @@ export interface compilerOptions {
     },
 
     _: {
-        headerComment: string,
         writtedDir: string[],
     },
 }

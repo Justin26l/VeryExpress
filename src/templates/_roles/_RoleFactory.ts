@@ -1,3 +1,4 @@
+// {{headerComment}}
 export type accessAction = "create" | "read" | "update" | "delete";
 export const accessActionArr: accessAction[] = ["create", "read", "update", "delete"];
 

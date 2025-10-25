@@ -28,7 +28,6 @@ export async function generate(
 
     // set system options
     options._ = {
-        headerComment: options.generator?.disableVersionLabel ? utils.generator.getStaticHeaderComment() : utils.generator.getDefaultHeaderComment(),
         writtedDir: [],
     };
 

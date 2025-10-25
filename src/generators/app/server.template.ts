@@ -24,8 +24,7 @@ export default function serverTemplate(options: {
     compilerOptions: types.compilerOptions,
     template?: string,
 }): string {
-    let template: string = options.template || `${options.compilerOptions._.headerComment || "// generated files by very-express"}
-
+    let template: string = options.template || `{{headerComment}}
 import express from 'express';
 import dotenv from 'dotenv';
 import crypto from 'crypto';
@@ -114,8 +113,6 @@ main();
     }
     
     template = template.replace(/{{dummyLoginUI}}/g, dummyLoginUI(usedProvider, options.compilerOptions));
-
-    template = template.replace(/{{headerComment}}/g, options.compilerOptions._.headerComment || "// generated files by very-express");
     template = template.replace(/{{Import}}/g, Import.join("\n"));
     template = template.replace(/{{Config}}/g, Config.join("\n"));
     template = template.replace(/{{AppUse}}/g, AppUse.join("\n    "));

@@ -1,5 +1,4 @@
 // {{headerComment}}
-
 import mongoose from "mongoose";
 import { Request, Response, NextFunction } from "express";
 import vex from "./../_utils/index.gen";

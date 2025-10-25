@@ -1,5 +1,4 @@
 // {{headerComment}}
-
 import path from "path";
 import ms from "ms";
 import { Router } from "express";

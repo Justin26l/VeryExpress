@@ -38,7 +38,6 @@ async function main() {
     // record last generation args or set default values
     config.generator = config.generator ?? {};
     config.generator.commitBeforeGenerate = config.generator.commitBeforeGenerate ?? false;
-    config.generator.disableVersionLabel = config.generator.disableVersionLabel ?? false;
 
     // app
     config.app = config.app || {},
@@ -68,6 +67,7 @@ async function main() {
     }
 
     log.process("validate vex.config.json");
+    utils.common.setCompilerOptions(config);
     utils.common.writeFile("vex.config", "vex.config.json", JSON.stringify(config, null, 4));
 
     /** 

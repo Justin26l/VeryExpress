@@ -1,5 +1,4 @@
 // {{headerComment}}
-
 import { UserModel, UserDocument } from "./../../_models/UserModel.gen";
 import { User } from "./../../_types/User.gen";
 import profileMapping, { IProfile } from "./profileMapping.gen";

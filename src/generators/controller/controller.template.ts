@@ -216,7 +216,6 @@ export default new {{documentName}}Controller().router;
     const indent3 = indent2+indent;
     const indent4 = indent3+indent;
 
-    template = template.replace(/{{headerComment}}/g, templateOptions.compilerOptions._.headerComment || "// generated files by very-express");
     template = template.replace(/{{documentName}}/g, templateOptions.documentName);
     template = template.replace(/{{modelPath}}/g, templateOptions.modelPath);
 

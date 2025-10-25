@@ -1,5 +1,4 @@
 // {{headerComment}}
-
 import { Profile } from "passport";
 import { User } from "./../../_types/User.gen";
 
