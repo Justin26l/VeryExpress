@@ -4,19 +4,18 @@ import path from "path";
 import * as types from "../types/types";
 import log from "./logger";
 import * as generator from "./generator";
-import utils from ".";
 import pkg from "package.json";
 
 export const writtedFiles: string[] = [];
 export let _compilerOptions: types.compilerOptions = generator.defaultCompilerOptions;
 
-const headerComment: string = generator.getDefaultHeaderComment(pkg.version)
+const headerComment: string = generator.getDefaultHeaderComment(pkg.version);
 
 function normalize (s: string) : string{
     return s.replace(/\r\n/g, "\n") // normalize CRLF -> LF
         .replace(/[ \t]+$/gm, "") // remove trailing spaces/tabs on each line
         .trim(); // remove leading/trailing blank lines
-};
+}
 
 
 export const relativePath = (fromPath: string, toPath: string): string => {
@@ -87,7 +86,7 @@ export function copyDir(source: string, destination: string, compilerOptions: ty
         }
         // check file exist, read it check is same content, if is then skip
         else {
-            let newContent = fs.readFileSync(sourcePath, "utf8");
+            const newContent = fs.readFileSync(sourcePath, "utf8");
             writeFile(`FILE : ${destinationPath}`, destinationPath, newContent);
 
         }
