@@ -21,28 +21,41 @@ export async function compile(
         envOutput = envTemplate;
     }
     else {
-        const existingEnv = fs.readFileSync(envOutPath, "utf-8");
-        const existingEnvMap: { [key: string]: string } = {};
-        existingEnv.split("\n").forEach((line) => {
-            const [key, ...rest] = line.split("=");
-            existingEnvMap[key] = rest.join("=");
+        envOutput = fs.readFileSync(envOutPath, "utf-8");
+        const existingEnvProps: string[] = [];
+        const templateEnvProps : string[] = [];
+        const newProps: string[] = [];
+
+        envOutput.split("\n").forEach((line) => {
+            if(!/=/g.test(line)) return;
+            const key = line.split("=",2)[0];
+            if(key) existingEnvProps.push(key);
         });
 
-        const templateEnvMap: { [key: string]: string } = {};
         envTemplate.split("\n").forEach((line) => {
-            const [key, ...rest] = line.split("=")
-            key.replace(' ', '');
-            templateEnvMap[key] = rest.join("=");
+            if(!/=/g.test(line)) return;
+            const key = line.split("=",2)[0];
+            if(key) templateEnvProps.push(key);
         });
 
-        console.log("Updated .env contents:", existingEnvMap, templateEnvMap);
+        // find missing props
+        templateEnvProps.forEach(key => {
+            if(!existingEnvProps.includes(key)){
+                newProps.push(key)
+            }
+        });
 
-        // envOutput = Object.entries(existingEnvMap)
-        //     .map(([key, value]) => `${key}=${value}`)
-        //     .join("\n");
+        // add missing props
+        if(newProps.length > 0){
+            envOutput += `\n\n# New Props from very-express`;
+            newProps.forEach(key => {
+                envOutput += `\n${key}=`;
+            });
+        }
     };
 
-    // utils.common.writeFile(`Project Settings : ${envOutPath}`, envOutPath, envOutput);
+
+    utils.common.writeFile(`Project Settings : ${envOutPath}`, envOutPath, envOutput);
 
     return;
 }
