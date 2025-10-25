@@ -1,5 +1,4 @@
 // {{headerComment}}
-
 import dotenv from "dotenv";
 import { Algorithm } from "jsonwebtoken";
 
@@ -14,21 +13,21 @@ export interface keyObj {
 export class JWTKeyStore{
     readonly algorithm: Algorithm = this.getAlgorithm(process.env.JWT_ALGORITHM);
     readonly expireTime: string | undefined = process.env.JWT_EXPIRE_TIME || "1h";
-    private keys: string[] = [];
+    private secrets: string[] = [];
 
     constructor(){
-        this.keys = [
-            process.env.JWT_KEY0 || undefined,
-            process.env.JWT_KEY1 || undefined,
-            process.env.JWT_KEY2 || undefined,
-            process.env.JWT_KEY3 || undefined,
-            process.env.JWT_KEY4 || undefined,
-            process.env.JWT_KEY5 || undefined,
-            process.env.JWT_KEY6 || undefined,
-            process.env.JWT_KEY7 || undefined,
-            process.env.JWT_KEY8 || undefined,
-            process.env.JWT_KEY9 || undefined,
-        ].filter((key) => key !== undefined);
+        this.secrets = [
+            process.env.JWT_SECRET0 || "",
+            process.env.JWT_SECRET1 || "",
+            process.env.JWT_SECRET2 || "",
+            process.env.JWT_SECRET3 || "",
+            process.env.JWT_SECRET4 || "",
+            process.env.JWT_SECRET5 || "",
+            process.env.JWT_SECRET6 || "",
+            process.env.JWT_SECRET7 || "",
+            process.env.JWT_SECRET8 || "",
+            process.env.JWT_SECRET9 || "",
+        ].filter((key) => key !== "");
     }
 
     /**
@@ -38,8 +37,8 @@ export class JWTKeyStore{
      * - client index (index with random string)
      */
     public getRandomKey(): keyObj {
-        // get leng of keys and return random key
-        const len = this.keys.length;
+        // get leng of secrets and return random key
+        const len = this.secrets.length;
         const tokenInfo = {
             index: 0,
             clientIndex: "",
@@ -50,7 +49,7 @@ export class JWTKeyStore{
         }
 
         tokenInfo.clientIndex = this.getRandomCharString() + tokenInfo.index;
-        tokenInfo.key = this.keys[tokenInfo.index];
+        tokenInfo.key = this.secrets[tokenInfo.index];
 
         return tokenInfo;
     }
@@ -58,24 +57,24 @@ export class JWTKeyStore{
     /**
      * retrive key by index or client index
      */
-    public getKey(index:number|string): string {
+    public getSecret(index:number|string): string {
         if (typeof index === "string") {
             index = parseInt(index.replace(/\D/g, ""));
         }
 
-        return this.keys[index];
+        return this.secrets[index];
     }
 
     /**
      * retrive key by index or client index
      */
-    public getKeyObj(index:number|string): keyObj {
+    public getSecretObj(index:number|string): keyObj {
         if (typeof index === "string") {
             index = parseInt(index.replace(/\D/g, ""));
         }
 
         return {
-            key: this.keys[index]
+            key: this.secrets[index]
         };
     }
 

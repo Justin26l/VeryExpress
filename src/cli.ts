@@ -28,15 +28,16 @@ async function main() {
         }
     }
 
-    // record last generation args or set default values
-    config.commitBeforeGenerate = config.commitBeforeGenerate ?? false;
-
-    // generator
+    // directories
     config.jsonSchemaDir = args.j || args.jsonSchemaDir || config.jsonSchemaDir || "./jsonSchema";
     config.rootDir = args.o || args.rootDir || config.rootDir || ".";
     config.srcDir = config.srcDir || config.rootDir + "/src";
     config.sysDir = config.sysDir || config.srcDir + "/system";
     config.openapiDir = config.srcDir + "/openapi";
+    
+    // record last generation args or set default values
+    config.generator = config.generator ?? {};
+    config.generator.commitBeforeGenerate = config.generator.commitBeforeGenerate ?? false;
 
     // app
     config.app = config.app || {},
@@ -53,12 +54,12 @@ async function main() {
     config.useRBAC.schemaIncluded = config.useRBAC.schemaIncluded || ["user"];
 
     // oauth
-    config.useOauth = config.useOauth || {};
-    config.useOauth.google = config.useOauth.google || false;
-    config.useOauth.github = config.useOauth.github || false;
-    // config.useOauth.apple = config.useOauth.apple || false;
-    // config.useOauth.facebook = config.useOauth.facebook || false;
-    // config.useOauth.azure = config.useOauth.microsoft || false;
+    config.sso.oauthProviders = config.sso.oauthProviders || {};
+    config.sso.oauthProviders.google = config.sso.oauthProviders.google || false;
+    config.sso.oauthProviders.github = config.sso.oauthProviders.github || false;
+    // config.sso.oauthProviders.apple = config.sso.oauthProviders.apple || false;
+    // config.sso.oauthProviders.facebook = config.sso.oauthProviders.facebook || false;
+    // config.sso.oauthProviders.azure = config.sso.oauthProviders.microsoft || false;
 
     // warning
     if (config.app.useObjectID && config.app.allowApiCreateUpdate_id) {
@@ -66,6 +67,7 @@ async function main() {
     }
 
     log.process("validate vex.config.json");
+    utils.common.setCompilerOptions(config);
     utils.common.writeFile("vex.config", "vex.config.json", JSON.stringify(config, null, 4));
 
     /** 
@@ -128,7 +130,7 @@ async function main() {
         }
 
         // commit before generate
-        if (config.commitBeforeGenerate === true) {
+        if (config.generator.commitBeforeGenerate === true) {
             try {
                 log.info("git commit \"before vex-gen\"");
                 childProcess.execSync("git add . && git commit -m \"before vex-gen\"", { stdio: "inherit" });

@@ -24,44 +24,13 @@ export default class AuthRouter {
     constructor() {
         const vexSystem = new VexSystem();
 
-        // exchange an authorization code for tokens.
-        this.router.post('/token', (req, res) => vexSystem.RouteHandler(req, res, async ()=> {
-            if (!req.query.code) {
-                return responseGen.send(res, 401);
-            }
-
-            const sessionCode = req.query.code;
-            // find code in database
-            const sessionDoc = await SessionModel.findOne<SessionDocument>({ sessionCode: sessionCode }).exec();
-
-            if (!sessionDoc) {
-                return responseGen.send(res, 404, { message: 'invalid code' });
-            }
-            else {
-                await SessionModel.deleteOne({ sessionCode: sessionCode }).exec();
-                // log.info("Session Found & Deleted", sessionDoc);
-            };
-
-            if (sessionDoc?.get('expired') < Date.now()) {
-                return responseGen.send(res, 401, { message: 'code expired' });
-            };
-
-            // generate tokens based on code's user profile
-            const accessToken = await generateAccessToken(sessionDoc.get("userId"));
-            const refreshToken = generateRefreshToken({_id: sessionDoc.get("userId")});
-
-            return responseGen.send(res, 200, {
-                result: {
-                    accessToken: accessToken.token,
-                    accessTokenIndex: accessToken.clientIndex,
-                    refreshToken: refreshToken.token,
-                    refreshTokenIndex: refreshToken.clientIndex
-                }
-            });
-        }));
+        {{pathToken}}
 
         // refresh expired tokens by refresh token.
         this.router.post('/refresh', (req, res) => vexSystem.RouteHandler(req, res, async () => {
+            
+            // todo: change this return if use httpOnly Cookie
+
             if (
                 !req.body.refreshToken || 
                 !req.body.refreshTokenIndex
@@ -94,6 +63,7 @@ export default class AuthRouter {
         return this.router;
     }
 }`;
+
 
     const providers: string[] = utilsGenerator.OAuthProviders(compilerOptions);
     const providersTemplate = providers.map((providerName) => {
@@ -133,8 +103,47 @@ export default class AuthRouter {
         `;
         }
     }).join("\n");
-    template = template.replace(/{{headerComment}}/g, compilerOptions.headerComment || "// generated files by very-express");
     template = template.replace(/{{OAuthRouteProviders}}/g, providersTemplate);
+    
+    template = template.replace(/{{pathToken}}/g, `
+        // exchange an authorization code for tokens.
+        this.router.post('/token', (req, res) => vexSystem.RouteHandler(req, res, async ()=> {
+            
+            // todo: disable this route if use httpOnly Cookie
+            
+            if (!req.query.code) {
+                return responseGen.send(res, 401);
+            }
+
+            const sessionCode = req.query.code;
+            // find code in database
+            const sessionDoc = await SessionModel.findOne<SessionDocument>({ sessionCode: sessionCode }).exec();
+
+            if (!sessionDoc) {
+                return responseGen.send(res, 404, { message: 'invalid code' });
+            }
+            else {
+                await SessionModel.deleteOne({ sessionCode: sessionCode }).exec();
+                // log.info("Session Found & Deleted", sessionDoc);
+            };
+
+            if (sessionDoc?.get('expired') < Date.now()) {
+                return responseGen.send(res, 401, { message: 'code expired' });
+            };
+
+            // generate tokens based on code's user profile
+            const accessToken = await generateAccessToken(sessionDoc.get("userId"));
+            const refreshToken = generateRefreshToken({_id: sessionDoc.get("userId")});
+
+            return responseGen.send(res, 200, {
+                result: {
+                    accessToken: accessToken.token,
+                    accessTokenIndex: accessToken.clientIndex,
+                    refreshToken: refreshToken.token,
+                    refreshTokenIndex: refreshToken.clientIndex
+                }
+            });
+        }));`);
 
     return template;
 }

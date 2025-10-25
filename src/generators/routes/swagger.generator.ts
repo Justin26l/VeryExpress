@@ -1,7 +1,5 @@
-import * as types from "../../types/types";
-
-export function compile( compilerOptions: types.compilerOptions ): string {
-    return `${compilerOptions.headerComment}
+export function compile(): string {
+    return `{{headerComment}}
 import { Router } from "express";
 import swaggerUi, { JsonObject } from "swagger-ui-express";
 import { loadYaml } from "./../_utils/common.gen";

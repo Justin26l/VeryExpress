@@ -1,13 +1,13 @@
 export interface compilerOptions {
-    commitBeforeGenerate: boolean;
-    headerComment: string;
-
     jsonSchemaDir: string,
     openapiDir: string,
     rootDir: string,
     srcDir: string,
     sysDir: string,
-    writtedDir: string[],
+
+    generator: {
+        commitBeforeGenerate: boolean;
+    },
 
     app: {
         enableSwagger: boolean,
@@ -22,13 +22,21 @@ export interface compilerOptions {
         default: string,
         schemaIncluded: string[]
     },
-    useOauth?: {
-        google?: boolean,
-        microsoft?: boolean,
-        apple?: boolean,
-        github?: boolean,
-        [key: string]: boolean | undefined;
-    };
+
+    sso:{
+        useHttpOnlyCookieToken?: boolean,
+        oauthProviders?: {
+            google?: boolean,
+            microsoft?: boolean,
+            apple?: boolean,
+            github?: boolean,
+            [key: string]: boolean | undefined;
+        };
+    },
+
+    _: {
+        writtedDir: string[],
+    },
 }
 
 export interface roleJson {

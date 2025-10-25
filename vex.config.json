@@ -1,9 +1,9 @@
 {
-    "commitBeforeGenerate": false,
     "jsonSchemaDir": "./output/jsonSchema",
     "rootDir": "./output",
     "srcDir": "./output/src",
     "openapiDir": "./output/src/openapi",
+    "sysDir": "output/src/system",
     "app": {
         "enableSwagger": true,
         "useUserSchema": true,
@@ -11,9 +11,12 @@
         "allowApiCreateUpdate_id": false,
         "useStatefulRedisAuth": true
     },
-    "useOauth": {
-        "google": true,
-        "github": false
+    "sso": {
+        "useHttpOnlyCookieToken": true,
+        "oauthProviders": {
+            "google": true,
+            "github": true
+        }
     },
     "useRBAC": {
         "roles": [
@@ -26,5 +29,8 @@
             "User"
         ]
     },
-    "sysDir": "output/src/system"
+    "generator": {
+        "commitBeforeGenerate": false,
+        "disableVersionLabel": false
+    }
 }

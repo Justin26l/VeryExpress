@@ -22,7 +22,6 @@ export default class Role{{role}} extends roleFactory._RoleFactory<accessAction{
 }
 `;
 
-    template = template.replace(/{{headerComment}}/g, options.compilerOptions.headerComment || "// generated files by very-express");
     template = template.replace(/{{role}}/g, options.role);
     template = template.replace(/{{roleContent}}/g, JSON.stringify(options.roleContent, null, 4));
     template = template.replace(/{{RoleAccessActionString}}/g, options.RoleAccessActionString.join(" | "));

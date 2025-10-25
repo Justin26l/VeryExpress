@@ -1,10 +1,11 @@
 // {{headerComment}}
-
+import path from "path";
+import ms from "ms";
 import { Router } from "express";
 import passport, { PassportStatic, Profile } from "passport";
 import * as oauth2 from "passport-oauth2";
 import { SessionModel } from "../../_models/SessionModel.gen";
-import path from "path";
+import { generateAccessToken, generateRefreshToken } from "../../_plugins/auth/jwt.gen";
 
 export type { Profile };
 
@@ -57,7 +58,7 @@ export default class OAuthRouteFactory {
         // insert temporary sessionCode to database
         this.router.get("/callback", 
             this.passport.authenticate(this.config.strategyName, this.config.authenticateOptions), 
-            (req, res) => {
+            async (req, res) => {
                 const { state, error } = req.query;
 
                 if(error){
@@ -70,6 +71,32 @@ export default class OAuthRouteFactory {
                     return res.redirect(`${this.loginFailedRedirectPath}?error=invalid user`);
                 }
 
+                // @ts-expect-error custom var
+                const accessToken = await generateAccessToken(req.user.profile._id);
+                // @ts-expect-error custom var
+                const refreshToken = await generateRefreshToken({_id: req.user.profile._id});
+
+                res.cookie("vex-access-token", {
+                    accessToken: accessToken.token,
+                    accessTokenIndex: accessToken.clientIndex
+                }, {
+                    maxAge: ms(process.env.ACCESS_TOKEN_EXPIRE_TIME as ms.StringValue),
+                    httpOnly: true,
+                    secure: true,
+                    sameSite: "strict",
+                });
+
+                res.cookie("vex-refresh-token", {
+                    accessToken: refreshToken.token,
+                    accessTokenIndex: refreshToken.clientIndex,
+                }, {
+                    maxAge: ms(process.env.REFRESH_TOKEN_EXPIRE_TIME as ms.StringValue),
+                    httpOnly: true,
+                    secure: true,
+                    sameSite: "strict",
+                });
+
+
                 const sessionCode = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
                 SessionModel.create({ 
@@ -80,14 +107,11 @@ export default class OAuthRouteFactory {
                     provider: req.user.provider || "", 
                     expired: Date.now() + 5000 
                 });
-
-                // dummy code, need client side key's encoding
                 
                 // return appAuthCode to client
                 res.redirect(`${this.loginSuccessRedirectPath}?code=${sessionCode}`);
             }
         );
-
     }
     public getRouter() {
         return this.router;

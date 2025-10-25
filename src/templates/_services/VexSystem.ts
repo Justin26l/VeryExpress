@@ -1,5 +1,4 @@
 // {{headerComment}}
-
 import { Request, Response } from "express";
 import vex from "./../_utils/index.gen";
 import { VexResponseError } from "../_utils/response.gen";

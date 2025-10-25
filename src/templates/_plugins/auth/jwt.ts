@@ -1,12 +1,11 @@
 // {{headerComment}}
-
 import jwt from "jsonwebtoken";
+import ms from "ms";
 import JWTKeyStore from "./JWTKeyStore.gen";
 import responseCode from "../../_types/response/responseCode.gen";
 import { UserModel } from "../../_models/UserModel.gen";
 import { sanitizeUser } from "../../_plugins/auth/token.gen";
 import { VexResponseError } from "../../_utils/response.gen";
-import { StringValue } from "ms";
 
 interface tokenObj { 
     token: string, 
@@ -22,12 +21,12 @@ export function generateToken(
     expiresIn?: string
 ): tokenObj {
     data = JSON.parse(JSON.stringify(data));
-    const keyInfo = typeof index == "number" ? keys.getKeyObj(index) : keys.getRandomKey();
+    const keyInfo = typeof index == "number" ? keys.getSecretObj(index) : keys.getRandomKey();
     const token = jwt.sign(
         data,
         keyInfo.key as jwt.Secret,
         {
-            expiresIn: (expiresIn || keys.expireTime || "1h") as StringValue,
+            expiresIn: (expiresIn || keys.expireTime || "1h") as ms.StringValue,
             algorithm: keys.algorithm
         }
     );
@@ -67,7 +66,7 @@ export function verifyToken(token: string, index?: number|string): jwt.JwtPayloa
         token = token.split("Bearer ")[1]; 
     }
 
-    const key = keys.getKey(index || 0);
+    const key = keys.getSecret(index || 0);
 
     try{
         return jwt.verify(token, key) as jwt.JwtPayload;
