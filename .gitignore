@@ -19,3 +19,4 @@ jspm_packages/
 build/Release
 plan/appstructure.drawio
 plan/hostStructure.drawio
+.DS_Store

@@ -15,8 +15,12 @@ export async function compile(
     const openapiDir = utils.common.relativePath(compilerOptions.rootDir, compilerOptions.openapiDir);
     template = template.replace("{{openapiDir}}", openapiDir);
     
-    utils.common.writeFile("Controller",
+    utils.common.writeFile("Build Scripts",
         path.join(compilerOptions.rootDir, "scripts/build.js"),
         template
     );
 }
+
+export default {
+    compile
+};
