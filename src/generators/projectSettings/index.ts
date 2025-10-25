@@ -17,6 +17,6 @@ export function compile(compilerOptions: types.compilerOptions): void {
     packageJson.compile(packageOutPath, compilerOptions);
     
     // process .env
-    environment.compile(envOutPath, compilerOptions);
+    environment.compile(envOutPath);
 
 }

@@ -1,14 +1,10 @@
 import fs from "fs";
-import path from "path";
 
 import utils from "./../../utils";
 import log from "./../../utils/logger";
 
-import * as types from "./../../types/types";
-
 export async function compile(
     envOutPath: string,
-    compilerOptions: types.compilerOptions
 ): Promise<void> {
     // read env and add
     log.process(`Project Settings : ${envOutPath}`);

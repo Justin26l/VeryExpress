@@ -14,7 +14,7 @@ export default async function oauthVerify(accessToken: string, refreshToken: str
         // find user by authProfiles.authId or email
         const existingUser = await UserModel.findOne<UserDocument>({ 
             email: authUser.email,
-            $or: authUser.authProfiles?.map((p) => {
+            $or: authUser.authProfiles?.map((p:any) => {
                 return { "authProfiles.authId": p.authId };
             }),
         });
@@ -59,7 +59,7 @@ async function processExistingUser( authUser: User, existingUser: UserDocument):
     }
 
     // B.1. check current provider exist in authProfiles
-    const providerExists = userProfiles.length > 0 &&  userProfiles.find((p) => {
+    const providerExists = userProfiles.length > 0 &&  userProfiles.find((p:any) => {
         return (p.provider === authProfile.provider) && (p.authId === authProfile.authId);
     });
 
