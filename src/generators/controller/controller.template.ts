@@ -23,7 +23,7 @@ import * as controllerFactory from "./_ControllerFactory.gen";
 import { Router, Request, Response } from 'express';
 
 import { checkSchema, validationResult } from 'express-validator';
-import vex from "./../../system/_utils/index.gen";
+import utils from "./../../system/_utils";
 import MongoQS from 'mongo-ts-querystring';
 
 import { {{documentName}}Model } from '{{modelPath}}';
@@ -57,8 +57,8 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
         try {
             const validationError = validationResult(req);
             if ( ! validationError.isEmpty() ) {
-                return vex.response.send(res, 400, {
-                    code: vex.response.code.err_validation, 
+                return utils.response.send(res, 400, {
+                    code: utils.response.code.err_validation, 
                     result: validationError.array()
                 });
             };
@@ -66,13 +66,13 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
             const result = await {{documentName}}Model.findById(req.params.id){{populateAll}};
 
             if (!result) {
-                return vex.response.send(res, 404);
+                return utils.response.send(res, 404);
             }
             else {
-                return vex.response.send(res, 200, { result });
+                return utils.response.send(res, 200, { result });
             };
         } catch (err:any) {
-            return vex.response.send(res, 500, { message: err.message });
+            return utils.response.send(res, 500, { message: err.message });
         }
     }
 
@@ -80,8 +80,8 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
         try {
             const validationError = validationResult(req);
             if ( ! validationError.isEmpty() ) {
-                return vex.response.send(res, 400, {
-                    code: vex.response.code.err_validation, 
+                return utils.response.send(res, 400, {
+                    code: utils.response.code.err_validation, 
                     result: validationError.array()
                 });
             };
@@ -94,20 +94,20 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
             let populateOptions : any | undefined = undefined;
 
             try { 
-                selectedFields = vex.common.parseFieldsSelect(req);
-                populateOptions = vex.common.parseCollectionJoin(req, {{populateOptions}});
+                selectedFields = utils.common.parseFieldsSelect(req);
+                populateOptions = utils.common.parseCollectionJoin(req, {{populateOptions}});
             } 
             catch (err:any) { 
-                return vex.response.send(res, 400, {
-                    code: vex.response.code.err_validation, 
+                return utils.response.send(res, 400, {
+                    code: utils.response.code.err_validation, 
                     result: err.message
                 });
             };
 
             const result = await {{documentName}}Model.find(searchFilter, selectedFields).populate(populateOptions);
-            return vex.response.send(res, 200, { result });
+            return utils.response.send(res, 200, { result });
         } catch (err:any) {
-            return vex.response.send(res, 500, { result: err.message });
+            return utils.response.send(res, 500, { result: err.message });
         }
     }
 
@@ -115,23 +115,23 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
         try {
             const validationError = validationResult(req);
             if ( ! validationError.isEmpty() ) {
-                return vex.response.send(res, 400, {
-                    code: vex.response.code.err_validation, 
+                return utils.response.send(res, 400, {
+                    code: utils.response.code.err_validation, 
                     result: validationError.array()
                 });
             };{{check_id}}
             
             const result = await {{documentName}}Model.create(req.body);
             if (!result) {
-                return vex.response.send(res, 400, {
-                    code: vex.response.code.err_create
+                return utils.response.send(res, 400, {
+                    code: utils.response.code.err_create
                 });
             }
             else {
-                return vex.response.send(res, 201, {result});
+                return utils.response.send(res, 201, {result});
             };
         } catch (err:any) {
-            return vex.response.send(res, 500, { message: err.message });
+            return utils.response.send(res, 500, { message: err.message });
         };
     };
 
@@ -139,23 +139,23 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
         try {
             const validationError = validationResult(req);
             if ( ! validationError.isEmpty() ) {
-                return vex.response.send(res, 400, {
-                    code: vex.response.code.err_validation, 
+                return utils.response.send(res, 400, {
+                    code: utils.response.code.err_validation, 
                     result: validationError.array()
                 });
             };{{check_id}}
 
             const result = await {{documentName}}Model.findByIdAndUpdate(req.params.id, req.body, { new: true });
             if (!result) {
-                return vex.response.send(res, 404, {
-                    code: vex.response.code.err_update
+                return utils.response.send(res, 404, {
+                    code: utils.response.code.err_update
                 });
             }
             else {
-                return vex.response.send(res, 200, { result });
+                return utils.response.send(res, 200, { result });
             };
         } catch (err:any) {
-            return vex.response.send(res, 500, { message: err.message });
+            return utils.response.send(res, 500, { message: err.message });
         }
     }
 
@@ -163,23 +163,23 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
         try {
             const validationError = validationResult(req);
             if ( ! validationError.isEmpty() ) {
-                return vex.response.send(res, 400, {
-                    code: vex.response.code.err_validation, 
+                return utils.response.send(res, 400, {
+                    code: utils.response.code.err_validation, 
                     result: validationError.array()
                 });
             };{{check_id}}
 
             const result = await {{documentName}}Model.replaceOne({_id: req.params.id}, req.body);
             if (!result) {
-                return vex.response.send(res, 404, { 
-                    code: vex.response.code.err_update
+                return utils.response.send(res, 404, { 
+                    code: utils.response.code.err_update
                 });
             }
             else {
-                return vex.response.send(res, 200, { result });
+                return utils.response.send(res, 200, { result });
             };
         } catch (err:any) {
-            return vex.response.send(res, 500, { message: err.message });
+            return utils.response.send(res, 500, { message: err.message });
         }
     }
 
@@ -187,23 +187,23 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
         try {
             const validationError = validationResult(req);
             if ( ! validationError.isEmpty() ) {
-                return vex.response.send(res, 400, {
-                    code: vex.response.code.err_validation, 
+                return utils.response.send(res, 400, {
+                    code: utils.response.code.err_validation, 
                     result: validationError.array()
                 });
             };
 
             const result = await {{documentName}}Model.findByIdAndDelete(req.params.id);
             if (!result) {
-                return vex.response.send(res, 404, {
-                    code: vex.response.code.err_delete
+                return utils.response.send(res, 404, {
+                    code: utils.response.code.err_delete
                 });
             }
             else {
-                return vex.response.send(res, 204, { result });
+                return utils.response.send(res, 204, { result });
             };
         } catch (err:any) {
-            return vex.response.send(res, 500, { message: err.message });
+            return utils.response.send(res, 500, { message: err.message });
         }
     }
 }

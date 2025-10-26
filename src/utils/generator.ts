@@ -26,8 +26,8 @@ export function getSimpleStaticHeaderComment(): string {
 }
 
 export function OAuthProviders(compilerOptions: types.compilerOptions): string[] {
-    return Object.keys(compilerOptions.sso.oauthProviders!).filter((key) => {
-        return compilerOptions.sso.oauthProviders![key] === true;
+    return Object.keys(compilerOptions.auth.oauthProviders!).filter((key) => {
+        return compilerOptions.auth.oauthProviders![key] === true;
     });
 }
 
@@ -57,7 +57,8 @@ export const defaultCompilerOptions: types.compilerOptions = {
         default: "user",
         schemaIncluded: ["user"],
     },
-    sso: {
+    auth: {
+        localAuth: true,
         useHttpOnlyCookieToken: false,
         oauthProviders: {
             google: false,
@@ -67,7 +68,7 @@ export const defaultCompilerOptions: types.compilerOptions = {
         },
     },
     _:{
-        headerComment: "",
+        // headerComment: "",
         writtedDir: [],
     }
 };

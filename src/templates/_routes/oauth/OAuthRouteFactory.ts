@@ -1,17 +1,16 @@
 // {{headerComment}}
 import path from "path";
-import ms from "ms";
 import { Router } from "express";
 import passport, { PassportStatic, Profile } from "passport";
 import * as oauth2 from "passport-oauth2";
-import { SessionModel } from "../../_models/SessionModel.gen";
-import { generateAccessToken, generateRefreshToken } from "../../_plugins/auth/jwt.gen";
+import JWTService from "../../_services/auth/JWTService.gen";
+import { User } from "../../_types/User.gen";
 
 export type { Profile };
 
 export interface passportFactoryConfig {
     strategyName: string,
-    strategy: oauth2.Strategy,
+    strategy: oauth2.Strategy | passport.Strategy,
     authenticateOptions?: any,
 }
 
@@ -21,6 +20,7 @@ export default class OAuthRouteFactory {
     private config: passportFactoryConfig;
     private router: Router = Router();
     private passport: PassportStatic = passport;
+    private JWTService = new JWTService();
 
     private loginSuccessRedirectPath = "";
     private loginFailedRedirectPath = "";
@@ -71,45 +71,10 @@ export default class OAuthRouteFactory {
                     return res.redirect(`${this.loginFailedRedirectPath}?error=invalid user`);
                 }
 
-                // @ts-expect-error custom var
-                const accessToken = await generateAccessToken(req.user.profile._id);
-                // @ts-expect-error custom var
-                const refreshToken = await generateRefreshToken({_id: req.user.profile._id});
-
-                res.cookie("vex-access-token", {
-                    accessToken: accessToken.token,
-                    accessTokenIndex: accessToken.clientIndex
-                }, {
-                    maxAge: ms(process.env.ACCESS_TOKEN_EXPIRE_TIME as ms.StringValue),
-                    httpOnly: true,
-                    secure: true,
-                    sameSite: "strict",
-                });
-
-                res.cookie("vex-refresh-token", {
-                    accessToken: refreshToken.token,
-                    accessTokenIndex: refreshToken.clientIndex,
-                }, {
-                    maxAge: ms(process.env.REFRESH_TOKEN_EXPIRE_TIME as ms.StringValue),
-                    httpOnly: true,
-                    secure: true,
-                    sameSite: "strict",
-                });
-
-
-                const sessionCode = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-
-                SessionModel.create({ 
-                    sessionCode: sessionCode, 
-                    // @ts-expect-error custom var
-                    userId: req.user.profile._id, 
-                    // @ts-expect-error custom var
-                    provider: req.user.provider || "", 
-                    expired: Date.now() + 5000 
-                });
-                
                 // return appAuthCode to client
-                res.redirect(`${this.loginSuccessRedirectPath}?code=${sessionCode}`);
+                const redirectUrl = await this.JWTService.assignTokens(req.user as User, res);
+                return res.redirect(redirectUrl);
+                
             }
         );
     }

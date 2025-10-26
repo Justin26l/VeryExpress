@@ -9,9 +9,10 @@
         "useUserSchema": true,
         "useObjectID": true,
         "allowApiCreateUpdate_id": false,
-        "useStatefulRedisAuth": true
+        "useStatefulRedisAuth": false
     },
-    "sso": {
+    "auth": {
+        "localAuth": true,
         "useHttpOnlyCookieToken": true,
         "oauthProviders": {
             "google": true,

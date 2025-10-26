@@ -1,7 +1,7 @@
 // {{headerComment}}
 import mongoose from "mongoose";
 import { Request, Response, NextFunction } from "express";
-import vex from "./../_utils/index.gen";
+import utils from "./../_utils";
 
 export default class VexDbConnector {
     private mongoUrl: string;
@@ -25,31 +25,31 @@ export default class VexDbConnector {
     
     connectMongo() : mongoose.Connection | void {
         if ( !this.mongoUrl ){
-            vex.log.error("VexDbConnector : MongoUrl is not invalid");
+            utils.log.error("VexDbConnector : MongoUrl is not invalid");
             return;
         }
         /**
          * @param retryTime time in second
          */
         const connectWithRetry = (retryTime: number = 10) : Promise<void | typeof mongoose> => {
-            // vex.log.infoMongo("Connection with retry");
+            // utils.log.infoMongo("Connection with retry");
             return mongoose.connect(this.mongoUrl, {
                 autoCreate: true,
                 connectTimeoutMS: 5000,
             })
                 .catch((err) => {
-                    vex.log.errorMongo(`Failed to Connect DB, Retrying in ${retryTime} seconds.`, err);
+                    utils.log.errorMongo(`Failed to Connect DB, Retrying in ${retryTime} seconds.`, err);
                     setTimeout(connectWithRetry, retryTime*1000);
                 });
         };
         connectWithRetry(10);
 
         mongoose.connection.on("open", () => {
-            vex.log.infoMongo("MongoDB Connection open");
+            utils.log.infoMongo("MongoDB Connection open");
         });
 
         mongoose.connection.on("error", (err: any) => {
-            vex.log.errorMongo("MongoDB Connection error: ", err.message, err);
+            utils.log.errorMongo("MongoDB Connection error: ", err.message, err);
         });
 
         return mongoose.connection;
@@ -63,8 +63,8 @@ export default class VexDbConnector {
      **/
     middleware(req: Request, res: Response, next: NextFunction) {
         if (mongoose.connection.readyState !== 1) { 
-            vex.response.send(res, 503, {
-                code: vex.response.code.DB_CONN_ERR,
+            utils.response.send(res, 503, {
+                code: utils.response.code.DB_CONN_ERR,
             });
         }
         else if (this.recordAccessLog){

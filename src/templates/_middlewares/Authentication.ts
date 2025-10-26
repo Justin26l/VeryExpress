@@ -1,11 +1,13 @@
 // {{headerComment}}
 import { Request, Response, NextFunction } from "express";
 import { JsonWebTokenError } from "jsonwebtoken";
-import * as jwt from "../_plugins/auth/jwt.gen";
+import JWTService from "../_services/auth/JWTService.gen";
 import log from "../_utils/logger.gen";
-import responseGen from "../_utils/response.gen";
+import response from "../_utils/response.gen";
 
 export default class Authentication {
+
+    private JWTService = new JWTService();
 
     public middleware = (req: Request, res: Response, next: NextFunction) => {
         try {
@@ -23,7 +25,7 @@ export default class Authentication {
             }
 
             // verify token
-            const tokenData = jwt.verifyToken(token, accessTokenIndex);
+            const tokenData = this.JWTService.verifyToken(token, accessTokenIndex);
 
             // set req.user to the decoded token
             log.info("tokenValid", tokenData);
@@ -32,14 +34,14 @@ export default class Authentication {
         }
         catch (e: any) {
             if (typeof e === "number") {
-                responseGen.send(res, e);
+                response.send(res, e);
             }
             else if (e instanceof JsonWebTokenError) {
-                responseGen.send(res, 400, { message: e?.message});
+                response.send(res, 400, { message: e?.message});
             }
             else {
                 log.errorNoExit(e);
-                responseGen.send(res, 500, { message: e?.message});
+                response.send(res, 500, { message: e?.message});
             }
         }
     };

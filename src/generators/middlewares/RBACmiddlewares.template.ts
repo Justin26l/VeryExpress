@@ -9,7 +9,7 @@ export default function RBACmiddlewareTemplate(options: {
     let template: string = options.template || `{{headerComment}}
 import { Request, Response, NextFunction } from "express";
 import * as roles from "../_roles";
-import responseGen from "../_utils/response.gen";
+import utils from "../_utils";
 import log from "../_utils/logger.gen";
 
 export { roles };
@@ -43,10 +43,10 @@ export default class RoleBaseAccessControl {
         catch (e: any) {
             log.errorNoExit(e);
             if (typeof e === 'number') {
-                responseGen.send(res, e);
+                utils.response.send(res, e);
             }
             else {
-                responseGen.send(res, 500, { message: e.errorMessages });
+                utils.response.send(res, 500, { message: e.errorMessages });
             }
         }
     }

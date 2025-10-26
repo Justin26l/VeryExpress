@@ -54,18 +54,29 @@ async function main() {
     config.useRBAC.schemaIncluded = config.useRBAC.schemaIncluded || ["user"];
 
     // oauth
-    config.sso.oauthProviders = config.sso.oauthProviders || {};
-    config.sso.oauthProviders.google = config.sso.oauthProviders.google || false;
-    config.sso.oauthProviders.github = config.sso.oauthProviders.github || false;
-    // config.sso.oauthProviders.apple = config.sso.oauthProviders.apple || false;
-    // config.sso.oauthProviders.facebook = config.sso.oauthProviders.facebook || false;
-    // config.sso.oauthProviders.azure = config.sso.oauthProviders.microsoft || false;
+    config.auth = config.auth || {};
+    config.auth.localAuth = config.auth.localAuth || false;
+    config.auth.oauthProviders = config.auth.oauthProviders || {};
+    config.auth.oauthProviders.google = config.auth.oauthProviders.google || false;
+    config.auth.oauthProviders.github = config.auth.oauthProviders.github || false;
+    // config.auth.oauthProviders.apple = config.auth.oauthProviders.apple || false;
+    // config.auth.oauthProviders.microsoft = config.auth.oauthProviders.microsoft || false;
+    // config.auth.oauthProviders.facebook = config.auth.oauthProviders.facebook || false;
+    // config.auth.oauthProviders.azure = config.auth.oauthProviders.microsoft || false;
 
-    // warning
+
+    // warnings
     if (config.app.useObjectID && config.app.allowApiCreateUpdate_id) {
-        log.warn("Not recommended to use \"useObjectID\" with \"allowApiCreateUpdate_id\",\nthis may cause some logic issues");
+        log.warn("Not recommended to use \"useObjectID\" with \"allowApiCreateUpdate_id\",\nthis may cause logic issues");
     }
 
+    // errors
+    if(config.auth.localAuth && !config.app.useUserSchema){
+        log.error("localAuth requires useUserSchema to be true, please change vex.config.json \"app.useUserSchema\" to true or disable \"auth.localAuth\".");
+        process.exit(1);
+    }
+
+    // set compiler options
     log.process("validate vex.config.json");
     utils.common.setCompilerOptions(config);
     utils.common.writeFile("vex.config", "vex.config.json", JSON.stringify(config, null, 4));

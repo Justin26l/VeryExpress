@@ -1,8 +1,7 @@
 // {{headerComment}}
 import { Request, Response } from "express";
-import vex from "./../_utils/index.gen";
-import { VexResponseError } from "../_utils/response.gen";
-import responseCode from "../_types/response/responseCode.gen";
+import utils from "./../_utils";
+import VexResponseError from "../_types/VexResponseError.gen";
 
 export default class VexSystem {
   
@@ -20,14 +19,14 @@ export default class VexSystem {
         return handler(req, res).catch((err: any) => {
       
             if ( err instanceof VexResponseError ) {
-                return vex.response.send(res, err.status, { 
+                return utils.response.send(res, err.status, { 
                     code: err.ret_code,
                     message: err.message
                 });
             }
             else {
-                return vex.response.send(res, 500, { 
-                    code: responseCode.SERVER_ERROR, 
+                return utils.response.send(res, 500, { 
+                    code: utils.response.code.SERVER_ERROR, 
                     message: err.message || "Internal Server Error"
                 });
             }

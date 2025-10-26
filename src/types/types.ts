@@ -23,7 +23,8 @@ export interface compilerOptions {
         schemaIncluded: string[]
     },
 
-    sso:{
+    auth:{
+        localAuth: boolean,
         useHttpOnlyCookieToken?: boolean,
         oauthProviders?: {
             google?: boolean,

@@ -6,51 +6,28 @@ export default function template(
 ): string {
     let template = `{{headerComment}}
 import { Router } from 'express';
-import responseGen from '../_utils/response.gen';
-import { generateAccessToken, generateRefreshToken, verifyToken } from '../_plugins/auth/jwt.gen';
-import oauthVerify from '../_plugins/auth/oauthVerify.gen';
-import jwt from "jsonwebtoken";
+import utils from '../_utils';
+
+import JWTService from '../_services/auth/JWTService.gen';
+import OAuthStrategyService from '../_services/oauth/OAuthStrategyService.gen';
 
 import OAuthRouteFactory from './oauth/OAuthRouteFactory.gen';
 import { Strategy as GithubStrategy } from 'passport-github';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { SessionDocument, SessionModel } from '../_models/SessionModel.gen';
+{{localAuthImport}}
 import VexSystem from '../_services/VexSystem.gen';
 
 export default class AuthRouter {
-
+    
+    private JWTService = new JWTService();
+    private OAuthStrategyService = new OAuthStrategyService();
     private router: Router = Router();
 
     constructor() {
         const vexSystem = new VexSystem();
-
-        {{pathToken}}
-
-        // refresh expired tokens by refresh token.
-        this.router.post('/refresh', (req, res) => vexSystem.RouteHandler(req, res, async () => {
-            
-            // todo: change this return if use httpOnly Cookie
-
-            if (
-                !req.body.refreshToken || 
-                !req.body.refreshTokenIndex
-            ) {
-                console.log("invalid /refresh payload");
-                return responseGen.send(res, 401);
-            };
-
-            let refreshTokenPayload = verifyToken(req.body.refreshToken, req.body.refreshTokenIndex);
-            
-            // new tokens generated
-            const accessToken = await generateAccessToken(refreshTokenPayload._id);
-            
-            return responseGen.send(res, 200, {
-                result: {
-                    accessToken: accessToken.token,
-                    accessTokenIndex: accessToken.clientIndex
-                }
-            });
-        }));
+        {{pathTokenExchangeAndRefresh}}
+        {{localAuthRoutes}}
 
         this.initOAuthRoutes();
     }
@@ -63,7 +40,6 @@ export default class AuthRouter {
         return this.router;
     }
 }`;
-
 
     const providers: string[] = utilsGenerator.OAuthProviders(compilerOptions);
     const providersTemplate = providers.map((providerName) => {
@@ -79,7 +55,7 @@ export default class AuthRouter {
                     clientSecret: process.env.OAUTH_GOOGLE_CLIENTSECRET || "",
                     callbackURL: \`\${process.env.APP_HOST}/auth/\${google}/callback\`,
                 },
-                oauthVerify
+                this.OAuthStrategyService.verify
             )
         });
         this.router.use(\`/\${google}\`, OAuthGoogle.getRouter());
@@ -96,7 +72,7 @@ export default class AuthRouter {
                     clientSecret: process.env.OAUTH_GITHUB_CLIENTSECRET || "",
                     callbackURL: \`\${process.env.APP_HOST}/auth/\${github}/callback\`,
                 },
-                oauthVerify
+                this.OAuthStrategyService.verify
             )
         });
         this.router.use(\`/\${github}\`, OAuthGithub.getRouter());
@@ -104,15 +80,16 @@ export default class AuthRouter {
         }
     }).join("\n");
     template = template.replace(/{{OAuthRouteProviders}}/g, providersTemplate);
-    
-    template = template.replace(/{{pathToken}}/g, `
-        // exchange an authorization code for tokens.
+
+    if(compilerOptions.auth.localAuth || compilerOptions.auth.oauthProviders) {
+        template = template.replace(/{{pathTokenExchangeAndRefresh}}/g, `
+        // Exchange an authorization code for tokens.
         this.router.post('/token', (req, res) => vexSystem.RouteHandler(req, res, async ()=> {
             
             // todo: disable this route if use httpOnly Cookie
             
             if (!req.query.code) {
-                return responseGen.send(res, 401);
+                return utils.response.send(res, 401);
             }
 
             const sessionCode = req.query.code;
@@ -120,7 +97,7 @@ export default class AuthRouter {
             const sessionDoc = await SessionModel.findOne<SessionDocument>({ sessionCode: sessionCode }).exec();
 
             if (!sessionDoc) {
-                return responseGen.send(res, 404, { message: 'invalid code' });
+                return utils.response.send(res, 404, { message: 'invalid code' });
             }
             else {
                 await SessionModel.deleteOne({ sessionCode: sessionCode }).exec();
@@ -128,14 +105,14 @@ export default class AuthRouter {
             };
 
             if (sessionDoc?.get('expired') < Date.now()) {
-                return responseGen.send(res, 401, { message: 'code expired' });
+                return utils.response.send(res, 401, { message: 'code expired' });
             };
 
             // generate tokens based on code's user profile
-            const accessToken = await generateAccessToken(sessionDoc.get("userId"));
-            const refreshToken = generateRefreshToken({_id: sessionDoc.get("userId")});
+            const accessToken = await this.JWTService.generateAccessToken(sessionDoc.get("userId"));
+            const refreshToken = this.JWTService.generateRefreshToken({_id: sessionDoc.get("userId")});
 
-            return responseGen.send(res, 200, {
+            return utils.response.send(res, 200, {
                 result: {
                     accessToken: accessToken.token,
                     accessTokenIndex: accessToken.clientIndex,
@@ -143,7 +120,116 @@ export default class AuthRouter {
                     refreshTokenIndex: refreshToken.clientIndex
                 }
             });
-        }));`);
+        }));
 
+        // Refresh expired tokens by refresh token.
+        this.router.post('/refresh', (req, res) => vexSystem.RouteHandler(req, res, async () => {
+            
+            // todo: change this return if use httpOnly Cookie
+
+            if (
+                !req.body.refreshToken || 
+                !req.body.refreshTokenIndex
+            ) {
+                console.log("invalid /refresh payload");
+                return utils.response.send(res, 401);
+            };
+
+            let refreshTokenPayload = this.JWTService.verifyToken(req.body.refreshToken, req.body.refreshTokenIndex);
+            
+            // new tokens generated
+            const accessToken = await this.JWTService.generateAccessToken(refreshTokenPayload._id);
+
+            return utils.response.send(res, 200, {
+                result: {
+                    accessToken: accessToken.token,
+                    accessTokenIndex: accessToken.clientIndex
+                }
+            });
+        }));`);
+    }
+
+    if(compilerOptions.auth.localAuth) {
+        template = template.replace(/{{localAuthImport}}/g, "import { UserModel } from '../_models/UserModel.gen';\n");
+        template = template.replace(/{{localAuthRoutes}}/g, `
+        // Local Auth register & login
+        this.router.post('/register', async (req, res) => {
+            try {
+                const { email, password } = req.body;
+                if (!email || !password) {
+                    return utils.response.send(res, 400, { message: "Email and password are required." });
+                }
+
+                // Check if user already exists
+                const existingUser = await UserModel.findOne({ email }).exec();
+                if (existingUser) {
+                    return utils.response.send(res, 409, { message: "Email already registered." });
+                }
+
+                // Hash password with salt (email)
+                const hashedPassword = utils.hash.hashPassword(password, email);
+
+                // Create user with local auth profile
+                const user = new UserModel({
+                    name: email.split('@')[0],
+                    email,
+                    authProfiles: [
+                        {
+                            provider: 'local',
+                            password: hashedPassword
+                        }
+                    ]
+                });
+                await user.save();
+
+                return utils.response.send(res, 201, { message: "Registration successful." });
+            } catch (err:any) {
+                return utils.response.send(res, 500, { message: err?.message || "Registration failed." });
+            }
+        });
+
+
+        this.router.use('/local', 
+            async (req, res, next) => {
+                const { email, password } = req.body;
+                if (!email || !password) {
+                    return utils.response.send(res, 400, { message: "Email and password are required." });
+                }
+
+                try {
+                    // verify user credentials
+                    const user = await UserModel.findOne({ email }).exec();
+                    if (!user) {
+                        return utils.response.send(res, 400, { message:"incorrect email or password." });
+                    }
+                    
+                    const localAuthProfile = user.authProfiles?.find(profile => profile.provider === 'local');
+                    if (!localAuthProfile) {
+                        return utils.response.send(res, 400, { message:"incorrect email or password." });
+                    }
+
+                    const isMatch = await utils.hash.verifyPassword(user, password);
+                    if (!isMatch) {
+                        return utils.response.send(res, 400, { message:"incorrect email or password." });
+                    }
+
+                    // return tokens to client
+                    const redirectUrl = await this.JWTService.assignTokens(user, res);
+                    return utils.response.send(res, 302, {
+                        result: {
+                            url: redirectUrl,
+                        }
+                    });
+
+                } catch (err: any) {
+                    console.error("Login error:", err);
+                    return utils.response.send(res, 500, { message: err?.message || "Login failed." });
+                }
+            }
+        );
+
+        `);
+    }
+    
     return template;
 }

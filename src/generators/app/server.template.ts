@@ -75,7 +75,7 @@ async function main(): Promise<void> {
     // Routes
     {{AppRouter}}
 
-    {{dummyLoginUI}}
+    {{loginUI}}
 
     app.listen(3000, () => {
         if (!process.env.MONGODB_URI) throw new Error('MONGODB_URI is not defined');
@@ -112,7 +112,7 @@ main();
         AppRoute.push(UseAuthRouter);
     }
     
-    template = template.replace(/{{dummyLoginUI}}/g, dummyLoginUI(usedProvider, options.compilerOptions));
+    template = template.replace(/{{loginUI}}/g, loginUI(usedProvider, options.compilerOptions));
     template = template.replace(/{{Import}}/g, Import.join("\n"));
     template = template.replace(/{{Config}}/g, Config.join("\n"));
     template = template.replace(/{{AppUse}}/g, AppUse.join("\n    "));
@@ -121,15 +121,53 @@ main();
     return template;
 }
 
-function loginHtml(providers: string[]) {
-    let html = "<p> login with : </p>";
-    providers.forEach((provider) => {
-        html += `<a href="\${process.env.APP_HOST}/auth/${provider}">${provider}</a><br/>\n`;
-    });
-    return `${html}`;
+function loginHandler(providers: string[], compilerOptions: types.compilerOptions) {
+    let handler = "";
+    let html = "";
+
+    // local auth
+    if ( compilerOptions.auth.localAuth) {
+        html += `
+                <p>Email:</p>
+                <input type="email" id="email"/>
+                <p>Password:</p>
+                <input type="password" id="password"/>
+                <br/>
+                <br/>
+                <button id="localLoginBtn">Login</button>
+                <button id="localRegisterBtn">Register</button>
+                <br/>
+                <br/>\n`;
+    }
+
+    
+    // sso links
+    html += "                <p> login with sso : </p>\n";
+    if( providers.length === 0 ){
+        html += "                <p> No OAuth provider configured. </p>\n";
+    }
+    else{
+        providers.forEach((provider) => {
+            html += `                <a href="\${process.env.APP_HOST}/auth/${provider}">${provider}</a><br/>\n`;
+        });
+    }
+
+    handler =  compilerOptions.auth.localAuth ? `
+        const nonce = crypto.randomBytes(16).toString("base64");
+        res.setHeader("Content-Security-Policy", \`script-src 'self' 'nonce-\${nonce}'\`);
+        res.send(\`
+            <script nonce="\${nonce}" src="\${process.env.APP_HOST}/js/login.js"></script>
+            <body>${html}
+        </body>\`);
+        ` : `
+        res.send(\`<body>${html}
+        </body>\`);
+        `;
+
+    return handler;
 }
 
-function dummyLoginUI(providers: string[], compilerOptions: types.compilerOptions) {
+function loginUI(providers: string[], compilerOptions: types.compilerOptions) {
     return `
     app.get('/', (req, res) => {
         res.send(\`
@@ -161,7 +199,7 @@ function dummyLoginUI(providers: string[], compilerOptions: types.compilerOption
      * - list all available provider
      */
     app.get('/login', (req, res) => {
-        res.send(\`${loginHtml(providers)}\`);
+        ${loginHandler(providers, compilerOptions)}
     });
 
     /**
