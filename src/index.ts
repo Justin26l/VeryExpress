@@ -41,7 +41,6 @@ export async function generate(
         modelDir: path.posix.join(options.sysDir, "_models"),
         typeDir: path.posix.join(options.sysDir, "_types"),
         serviceDir: path.posix.join(options.sysDir, "_services"),
-        pluginDir: path.posix.join(options.sysDir, "_plugins"),
         utilsDir: path.posix.join(options.sysDir, "_utils"),
     };
 
@@ -64,7 +63,6 @@ export async function generate(
     // copy static files
     utils.common.copyDir(`${__dirname}/templates/_controllers`, dir.controllerDir, options, true);
     utils.common.copyDir(`${__dirname}/templates/_middlewares`, dir.middlewareDir, options, true);
-    utils.common.copyDir(`${__dirname}/templates/_plugins`, dir.pluginDir, options, true);
     utils.common.copyDir(`${__dirname}/templates/_roles`, dir.roleDir, options, true);
     utils.common.copyDir(`${__dirname}/templates/_routes`, dir.routeDir, options, true);
     utils.common.copyDir(`${__dirname}/templates/_services`, dir.serviceDir, options, true);
