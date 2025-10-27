@@ -73,8 +73,11 @@ export function copyDir(source: string, destination: string, compilerOptions: ty
     const files: string[] = fs.readdirSync(source);
 
     for (let i = 0; i < files.length; i++) {
-        const sourcePath = path.posix.join(source,files[i]);
-        const destinationPath = path.posix.join(destination, files[i].replace(".ts", ".gen.ts"));            
+        const fileName = files[i];
+        const outputFileName = fileName == "index.ts" ? fileName : fileName.replace(".ts", ".gen.ts");
+
+        const sourcePath = path.posix.join(source,fileName);
+        const destinationPath = path.posix.join(destination, outputFileName);            
 
         // recursive copy dir
         if ( fs.lstatSync(sourcePath).isDirectory() ) {
