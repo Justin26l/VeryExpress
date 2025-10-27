@@ -31,8 +31,8 @@ export function OAuthProviders(compilerOptions: types.compilerOptions): string[]
     });
 }
 
-export function isOAuthEnabled(compilerOptions: types.compilerOptions): boolean {
-    return OAuthProviders(compilerOptions).length > 0;
+export function isAuthEnabled(compilerOptions: types.compilerOptions): boolean {
+    return compilerOptions.auth.localAuth || OAuthProviders(compilerOptions).length > 0;
 }
 
 export const defaultCompilerOptions: types.compilerOptions = {
@@ -80,5 +80,5 @@ export default {
     getSimpleHeaderComment,
     getSimpleStaticHeaderComment,
     OAuthProviders,
-    isOAuthEnabled,
+    isAuthEnabled,
 };

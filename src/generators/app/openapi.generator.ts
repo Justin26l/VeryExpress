@@ -36,7 +36,7 @@ export async function compile(
     };
 
     // set auth method
-    if (utils.generator.isOAuthEnabled(compilerOptions)) {
+    if (utils.generator.isAuthEnabled(compilerOptions)) {
         openapiJson.components.securitySchemes = {
             BearerAuth: {
                 type: "http",
@@ -160,7 +160,7 @@ function jsonToOpenapiPath(
         routes[route][httpMethod] = {
             operationId: jsonSchemaMethod + documentName,
             tags: [lowerDocName],
-            security: utils.generator.isOAuthEnabled(compilerOptions) ? authParams : undefined,
+            security: utils.generator.isAuthEnabled(compilerOptions) ? authParams : undefined,
             parameters: parameters,
             requestBody: requestBody,
             responses: Object.assign(

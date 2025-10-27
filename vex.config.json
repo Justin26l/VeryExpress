@@ -15,8 +15,8 @@
         "localAuth": true,
         "useHttpOnlyCookieToken": true,
         "oauthProviders": {
-            "google": true,
-            "github": true
+            "google": false,
+            "github": false
         }
     },
     "useRBAC": {

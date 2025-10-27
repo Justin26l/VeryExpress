@@ -1,7 +1,7 @@
 import  utils from "../../utils";
 
 import * as types from "../../types/types";
-import { isOAuthEnabled } from "~/utils/generator";
+import { isAuthEnabled } from "~/utils/generator";
 
 // import
 const importCookieParser = "import cookieParser from 'cookie-parser';";
@@ -175,7 +175,7 @@ function loginUI(providers: string[], compilerOptions: types.compilerOptions) {
                 <h1>Hello World</h1>
                 <ul>
                     ${ 
-    isOAuthEnabled(compilerOptions) ? 
+    isAuthEnabled(compilerOptions) ? 
         `<li><a href="/login">Login</a></li>
                     <li><a href="/mytokens">myTokens</a></li>
                     <li><a href="/refreshtoken">RefreshToken</a></li>
