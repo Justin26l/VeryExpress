@@ -1,7 +1,6 @@
 import  utils from "../../utils";
 
 import * as types from "../../types/types";
-import { isAuthEnabled } from "~/utils/generator";
 
 // import
 const importCookieParser = "import cookieParser from 'cookie-parser';";
@@ -87,8 +86,8 @@ async function main(): Promise<void> {
 
 main();
 `;
-
-    const usedProvider: string[] = utils.generator.OAuthProviders(options.compilerOptions);
+    const isAuthEnabled = utils.generator.isAuthEnabled(options.compilerOptions);
+    const OAuthProviders: string[] = utils.generator.OAuthProviders(options.compilerOptions);
     const Import: string[] = [];
     const Config: string[] = [];
     const AppUse: string[] = [];
@@ -103,7 +102,7 @@ main();
         AppRoute.push(UseSwaggerRouter);
     }
 
-    if (usedProvider.length > 0) {
+    if (isAuthEnabled) {
         Import.push(importCookieParser);
         AppUse.push(UseCookieParser);
 
@@ -112,7 +111,7 @@ main();
         AppRoute.push(UseAuthRouter);
     }
     
-    template = template.replace(/{{loginUI}}/g, loginUI(usedProvider, options.compilerOptions));
+    template = template.replace(/{{loginUI}}/g, loginUI(OAuthProviders, options.compilerOptions));
     template = template.replace(/{{Import}}/g, Import.join("\n"));
     template = template.replace(/{{Config}}/g, Config.join("\n"));
     template = template.replace(/{{AppUse}}/g, AppUse.join("\n    "));
@@ -175,7 +174,7 @@ function loginUI(providers: string[], compilerOptions: types.compilerOptions) {
                 <h1>Hello World</h1>
                 <ul>
                     ${ 
-    isAuthEnabled(compilerOptions) ? 
+    utils.generator.isAuthEnabled(compilerOptions) ? 
         `<li><a href="/login">Login</a></li>
                     <li><a href="/mytokens">myTokens</a></li>
                     <li><a href="/refreshtoken">RefreshToken</a></li>
