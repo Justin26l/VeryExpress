@@ -76,10 +76,10 @@ async function main(): Promise<void> {
 
     {{loginUI}}
 
-    app.listen(3000, () => {
+    app.listen(process.env.APP_PORT, () => {
         if (!process.env.MONGODB_URI) throw new Error('MONGODB_URI is not defined');
         vexDB.connectMongo();
-        log.ok(\`Server is running on : \${process.env.APP_HOST}\`);
+        log.ok(\`Server is running on : \${process.env.APP_HOST}:\${process.env.APP_PORT}\`);
     });
 
 }
