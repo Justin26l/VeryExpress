@@ -2,6 +2,8 @@
 import jsYaml from "js-yaml";
 import fs from "fs";
 import { Request } from "express";
+import VexResponseError from "../_types/VexResponseError.gen";
+import response from "./response.gen";
 
 export function loadYaml(yamlFilePath: string) {
     try {
@@ -17,31 +19,35 @@ export function loadYaml(yamlFilePath: string) {
  * @param fieldsString json stringified array of string
  * @error may throw an error if the fieldsString is not a valid JSON
  */
-export function parseFieldsSelect(req: Request) : { [key: string]: number } | undefined {
+export function parseFieldsSelect(req: Request) : ({ [key: string]: number } | undefined) {
     
-    const selectString = req.query._select;    
-    const ErrorArrStrMsg = "Invalid \"_select\" string, only json array accepted";
+    let _selectRaw: string[] = [];
+    const ErrorDataType = new VexResponseError(400, response.code.err_validation, "Invalid field \"_select\", only json array accepted");
 
-    if (typeof selectString === "undefined" || selectString === "") {
-        return undefined;
+    if(req.method === "GET") {
+        const selectString = String(req.query._select);
+
+        if (typeof selectString === "undefined" || selectString === "") {
+            return undefined;
+        };
+        _selectRaw = JSON.parse(selectString);
     }
-    else if (typeof selectString !== "string") {
-        throw new Error(ErrorArrStrMsg);
-    }
+    else{
+        _selectRaw = req.body._select;
+    };
 
-    const fieldArr: string[] = JSON.parse(selectString);
+    if (!Array.isArray(_selectRaw)) {
+        throw ErrorDataType
+    };
 
-    if (!Array.isArray(fieldArr)) {
-        throw new Error(ErrorArrStrMsg);
-    }
-
-    for (let i = 0; i < fieldArr.length; i++) {
-        if (typeof fieldArr[i] !== "string") {
-            throw new Error(ErrorArrStrMsg);
+    for (let i = 0; i < _selectRaw.length; i++) {
+        if (typeof _selectRaw[i] !== "string") {
+            throw ErrorDataType
         }
-    }
+    };
+    
     // Convert the fieldArr to an object that can be used in the select method
-    const selectFields = fieldArr.reduce((obj: any, field: string) => {
+    const selectFields = _selectRaw.reduce((obj: any, field: string) => {
         obj[field] = 1;
         return obj;
     }, {} as Record<string, number>);
@@ -51,23 +57,28 @@ export function parseFieldsSelect(req: Request) : { [key: string]: number } | un
 
 export function parseCollectionJoin(req: Request, availablePopulateOptions:{[key:string]: string}) : { [key: string]: string } | undefined {
     
-    const joinString = req.query._join;
-    const ErrorArrStrMsg = "Invalid \"_select\" string, only json array accepted";
-    const populateOptions: any = [];
+    let _joinRaw: string[] = [];
+    const ErrorDataType = new VexResponseError(400, response.code.err_validation, "Invalid field \"_join\", only json array accepted");
 
-    if (typeof joinString === "undefined" || joinString === "") {
-        return undefined;
+    if(req.method === "GET") {
+        const rawString = String(req.query._join);
+        if (typeof rawString === "undefined" || rawString === "") {
+            return undefined;
+        };
+        _joinRaw = JSON.parse(rawString);
     }
-    else if (typeof joinString !== "string") {
-        throw new Error(ErrorArrStrMsg);
-    }
+    else{
+        _joinRaw = req.body._join;
+    };
 
-    const joinArr: string[] = JSON.parse(joinString);
+    if (!Array.isArray(_joinRaw)) {
+        throw ErrorDataType
+    };
  
     // switch joinArr's item to populate options
-    if(joinArr.length > 0) {
-        joinArr.forEach((refKey: any) => {
-
+    let populateOptions: {[key:string]:any} = [];
+    if(_joinRaw.length > 0) {
+        _joinRaw.forEach((refKey: any) => {
             if(availablePopulateOptions[refKey]) {
                 populateOptions.push({
                     path: refKey,

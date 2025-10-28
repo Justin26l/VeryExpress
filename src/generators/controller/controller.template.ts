@@ -16,15 +16,13 @@ export default function controllerTemplate(templateOptions: {
     },
     compilerOptions: types.compilerOptions,
 }) : string {
-
-
     let template :string = templateOptions.template || `{{headerComment}}
 import * as controllerFactory from "./_ControllerFactory.gen";
 import { Router, Request, Response } from 'express';
 
 import { checkSchema, validationResult } from 'express-validator';
 import utils from "./../../system/_utils";
-import MongoQS from 'mongo-ts-querystring';
+import VexResponseError from "../_types/VexResponseError.gen";
 
 import { {{documentName}}Model } from '{{modelPath}}';
 
@@ -78,36 +76,20 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
 
     public async getList{{documentName}}(req: Request, res: Response): Promise<Response> {
         try {
-            const validationError = validationResult(req);
-            if ( ! validationError.isEmpty() ) {
-                return utils.response.send(res, 400, {
-                    code: utils.response.code.err_validation, 
-                    result: validationError.array()
-                });
-            };
-            
-            const searchFilter = new MongoQS().parse(req.query);
-            delete searchFilter._select;
-            delete searchFilter._join;
-            
-            let selectedFields : {[key: string]: number} | undefined = undefined;
-            let populateOptions : any | undefined = undefined;
-
-            try { 
-                selectedFields = utils.common.parseFieldsSelect(req);
-                populateOptions = utils.common.parseCollectionJoin(req, {{populateOptions}});
-            } 
-            catch (err:any) { 
-                return utils.response.send(res, 400, {
-                    code: utils.response.code.err_validation, 
-                    result: err.message
-                });
-            };
+            const searchFilter = req.body.filter;
+            const selectedFields = utils.common.parseFieldsSelect(req);
+            const populateOptions = utils.common.parseCollectionJoin(req, {{populateOptions}});
 
             const result = await {{documentName}}Model.find(searchFilter, selectedFields).populate(populateOptions);
             return utils.response.send(res, 200, { result });
-        } catch (err:any) {
-            return utils.response.send(res, 500, { result: err.message });
+        } 
+        catch (err:any) {
+            if(err instanceof VexResponseError) {
+                throw err;
+            }
+            else { 
+                return utils.response.send(res, 500, { result: err.message });
+            }
         }
     }
 
@@ -221,10 +203,9 @@ export default new {{documentName}}Controller().router;
 
     template = template.replace(
         /{{getListRoute}}/g, 
-        !templateOptions.validators[templateOptions.endpoint].get ? `
+        !templateOptions.validators[templateOptions.endpoint+'/search']?.post ? `
         // getListRoute disabled` : `
-        this.router.get('/', 
-            checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint].get, { depth: null }).replace(/^/gm, indent3) }),
+        this.router.post('/search', 
             this.getList${templateOptions.documentName}.bind(this)
         );`
     );
@@ -238,10 +219,10 @@ export default new {{documentName}}Controller().router;
     template = template.replace(/{{populateAll}}/g, populateTemplate);
 
     template = template.replace(/{{populateOptions}}/g, JSON.stringify(templateOptions.populateOptions));
-
+    
     template = template.replace(
         /{{getRoute}}/g, 
-        !templateOptions.validators[templateOptions.endpoint+"/{id}"].get ? `
+        !templateOptions.validators[templateOptions.endpoint+"/{id}"]?.get ? `
         // getRoute disabled` : `
         this.router.get('/:id', 
             checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint+"/{id}"].get, { depth: null }).replace(/^/gm, indent3) }),
@@ -251,7 +232,7 @@ export default new {{documentName}}Controller().router;
 
     template = template.replace(
         /{{postRoute}}/g, 
-        !templateOptions.validators[templateOptions.endpoint].post ? `
+        !templateOptions.validators[templateOptions.endpoint]?.post ? `
         // postRoute disabled` : `
         this.router.post('/', 
             checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint].post, { depth: null }).replace(/^/gm, indent3) }),
@@ -261,7 +242,7 @@ export default new {{documentName}}Controller().router;
 
     template = template.replace(
         /{{putRoute}}/g, 
-        !templateOptions.validators[templateOptions.endpoint+"/{id}"].put ? `
+        !templateOptions.validators[templateOptions.endpoint+"/{id}"]?.put ? `
         // putRoute disabled` : `
         this.router.put('/:id', 
             checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint+"/{id}"].put, { depth: null }).replace(/^/gm, indent3) }),
@@ -270,7 +251,7 @@ export default new {{documentName}}Controller().router;
     );
     template = template.replace(
         /{{patchRoute}}/g, 
-        !templateOptions.validators[templateOptions.endpoint+"/{id}"].patch ? `
+        !templateOptions.validators[templateOptions.endpoint+"/{id}"]?.patch ? `
         // patchRoute disabled` : `
         this.router.patch('/:id', 
             checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint+"/{id}"].patch, { depth: null }).replace(/^/gm, indent3) }),
@@ -280,7 +261,7 @@ export default new {{documentName}}Controller().router;
 
     template = template.replace(
         /{{deleteRoute}}/g, 
-        !templateOptions.validators[templateOptions.endpoint+"/{id}"].delete ? `
+        !templateOptions.validators[templateOptions.endpoint+"/{id}"]?.delete ? `
         // deleteRoute disabled` : `
         this.router.delete('/:id', 
             checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint+"/{id}"].delete, { depth: null }).replace(/^/gm, indent3) }),

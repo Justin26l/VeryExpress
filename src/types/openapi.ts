@@ -11,7 +11,7 @@ export interface openapi {
 }
 
 export interface paths {
-    [key:string]: {
+    [key: string]: {
         "x-documentName"?: string, // 'x-documentName' is a custom field for specify documentName
         summary?: string,
         get?: method,
@@ -29,8 +29,8 @@ export interface paths {
 export interface method {
     summary?: string,
     operationId: string, // method + documentName
-    tags: string[], 
-    security?: {[key:string]: Array<never>}[],
+    tags: string[],
+    security?: { [key: string]: Array<never> }[],
     parameters: parameter[],
     requestBody?: requestBody,
     responses: responses,
@@ -74,7 +74,7 @@ export interface requestBody {
 }
 
 export interface responses {
-    [key:number]: responseItem,
+    [key: number]: responseItem,
 }
 
 export interface responseItem {
@@ -83,7 +83,7 @@ export interface responseItem {
         "application/json"?: {
             schema: {
                 $ref?: string;
-                [key:string]:any
+                [key: string]: any
             };
         };
     };
@@ -106,7 +106,7 @@ export interface components {
         },
     },
     schemas: {
-        [key:string]: componentsSchemaValue
+        [key: string]: componentsSchemaValue
     }
 }
 
@@ -115,7 +115,7 @@ export interface componentsSchemaValue {
     items?: any,
     required?: string[],
     properties?: {
-        [key:string]: fieldsItem,
+        [key: string]: fieldsItem,
     }
 }
 
@@ -130,5 +130,5 @@ export interface fieldsItem {
     maxProperties?: number;
     uniqueItems?: boolean;
     enum?: string[];
-    [key:string]: any;
+    [key: string]: any;
 }

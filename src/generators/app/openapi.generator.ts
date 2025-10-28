@@ -93,6 +93,9 @@ function jsonToOpenapiPath(
         ["/api/" + lowerDocName]: {
             "x-documentName": documentName,
         },
+        ["/api/" + lowerDocName + "/search"]: {
+            "x-documentName": documentName,
+        },
         ["/api/" + lowerDocName + "/{id}"]: {
             "x-documentName": documentName,
         },
@@ -100,9 +103,10 @@ function jsonToOpenapiPath(
 
     documentConfig.methods.forEach((jsonSchemaMethod) => {
         const routeWithId: boolean = ["get", "put", "patch", "delete"].includes(jsonSchemaMethod);
+        const routeWithSearch: boolean = "getList" == jsonSchemaMethod;
         const useBody: boolean = ["post", "put", "patch"].includes(jsonSchemaMethod);
-        const route: string = "/api/" + lowerDocName + (routeWithId ? "/{id}" : "");
-        
+        const route: string = "/api/" + lowerDocName + (routeWithId ? "/{id}" : routeWithSearch ? "/search" : "");
+
         const httpMethod: types.httpMethod = utils.jsonSchema.httpMethod(jsonSchemaMethod, jsonSchemaFilePath);
         const parameters: openapiType.parameter[] = [];
         let requestBody: openapiType.requestBody | undefined = undefined;
@@ -110,7 +114,7 @@ function jsonToOpenapiPath(
             200: {
                 description: "OK",
                 content: {
-                    "application/json": { schema: { $ref: `#/components/schemas/${httpMethod}${documentName}Response` } },
+                    "application/json": { schema: { $ref: `#/components/schemas/${jsonSchemaMethod}${documentName}Response` } },
                 },
             },
         };
@@ -149,10 +153,10 @@ function jsonToOpenapiPath(
         
         if (useBody) {
             requestBody = {
-                description: `${httpMethod} ${documentConfig.documentName}`,
+                description: `${jsonSchemaMethod} ${documentConfig.documentName}`,
                 required: false,
                 content: {
-                    "application/json": { schema: { $ref: `#/components/schemas/${httpMethod}${documentName}Body` } },
+                    "application/json": { schema: { $ref: `#/components/schemas/${jsonSchemaMethod}${documentName}Body` } },
                 },
             };
         }
@@ -179,7 +183,6 @@ function jsonToOpenapiPath(
                 successResponse
             )
         };
-
     });
 
     openapiJson.paths = Object.assign(openapiJson.paths, routes);
@@ -251,84 +254,45 @@ function jsonToOpenapiComponentSchema(
             componentSchemaPath[httpMethod + documentName + "Response"] = componentSchemaResponse;
             break;
         case "getList":{
+            // add standard search query
+            openapiJson.paths["/api/" + lowerDocName + "/search"][httpMethod]!.requestBody = {
+                description: `Search ${documentConfig.documentName}`,
+                required: false,
+                content: { 
+                    "application/json": {
+                        schema: {
+                            $ref: `#/components/schemas/${jsonSchemaMethod}${documentName}Body`,
+                        },
+                    },
+                },
+            };
 
-            // add query params
-            const parameters: openapiType.parameter[] = [];
-
-            Object.keys(jsonSchema.properties).forEach((key) => {
-                const props :types.jsonSchemaPropsItem = jsonSchema.properties[key];
-
-                // skip object, it should not be in query
-                if (props.type == "object") return;
-
-                // make array to stingified array
-                if (props.type == "array") {
-                    props.type = "string";
-                }
-
-                parameters.push({
-                    name: key,
-                    in: "query",
-                    required: false,
-                    schema: {
-                        type: props.type,
-                        format: props.format,
-                        "x-format": props["x-format"],
-                        minLength: props.minLength,
-                        maxLength: props.maxLength,
-                        minimum: props.minimum,
-                        maximum: props.maximum,
-                        enum: props.enum,
+            componentSchemaPath[jsonSchemaMethod + documentName + "Body"] = {
+                type: "object",
+                properties: {
+                    _filter: {
+                        type: "object",
+                    },
+                    _select: {
+                        type: "array",
+                        items: {
+                            type: "string",
+                        },
+                    },
+                    _join: {
+                        type: "array",
+                        items: {
+                            type: "string",
+                        },
                     }
-                });
+                },
+            };
 
-                switch (props["x-format"]) {
-                case "minMax":
-                    // add filter from, to
-                    parameters.push({
-                        name: "min_" + key,
-                        in: "query",
-                        required: false,
-                        schema: {
-                            type: props.type,
-                            format: props.format,
-                            "x-format": props["x-format"],
-                            minLength: props.minLength,
-                            maxLength: props.maxLength,
-                            minimum: props.minimum,
-                            maximum: props.maximum,
-                            enum: props.enum,
-                        }
-                    });
-                    parameters.push({
-                        name: "max_" + key,
-                        in: "query",
-                        required: false,
-                        schema: {
-                            type: props.type,
-                            format: props.format,
-                            "x-format": props["x-format"],
-                            minLength: props.minLength,
-                            maxLength: props.maxLength,
-                            minimum: props.minimum,
-                            maximum: props.maximum,
-                            enum: props.enum,
-                        }
-                    });
-                    break;
-                default:
-                    break;
-                }
-            });
-
-                openapiJson.paths["/api/" + lowerDocName][httpMethod]!.parameters = parameters;
-
-                componentSchemaPath[httpMethod + documentName + "Response"] = componentSchemaResponse;
-                componentSchemaPath[httpMethod + documentName + "ResponseList"] = {
-                    type: "array",
-                    items: componentSchemaResponse,
-                };
-                break;
+            componentSchemaPath[jsonSchemaMethod + documentName + "ResponseList"] = {
+                type: "array",
+                items: componentSchemaResponse,
+            };
+            break;
         }
         case "patch":    
             componentSchemaPath[httpMethod + documentName + "Body"] = componentSchemaBody;

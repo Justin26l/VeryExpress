@@ -60,7 +60,7 @@ export function cleanXcustomValue(
 /** filter "getList" which not a http method */
 export function httpMethod(jsonSchemaMethod: string, documentName: string) : types.httpMethod {
     if (jsonSchemaMethod == "getList"){ 
-        return "get";
+        return "post";
     }
     else if (types.httpMethodArr.includes(jsonSchemaMethod as types.httpMethod)){
         return jsonSchemaMethod as types.httpMethod;

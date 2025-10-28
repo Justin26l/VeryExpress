@@ -29,17 +29,30 @@ export async function compile(options: {
     const controllerToModelBasePath: string = utils.common.relativePath(options.compilerOptions.sysDir, options.modelDir);
 
     const openApi: openapiType.openapi = jsYaml.load(file) as openapiType.openapi;
+    const docsToBeGenerate: {[key:string]: string} = {}; // {documentName:endpoint}
     const endpointsValidator: {
         [key: string]: { // path
             [key: string]: Schema // methods
         }
     } = {};
-    const writtedEndpoint: string[] = [];
 
     // loop path
     Object.keys(openApi.paths).forEach((endpoint: string) => {
-        log.process(`Controller : ${options.compilerOptions.openapiDir} > ${endpoint}`);
 
+        // build docsToBeGenerate
+        const documentName: string | undefined = openApi.paths[endpoint]["x-documentName"];
+        const endpointFormatted = endpoint.replace("/{id}", "").toLowerCase();
+        log.process(`Controller : ${documentName} > ${endpoint}`);
+
+        if (documentName === undefined) {
+            log.error(`"x-documentName" not found in openapi spec's path "${endpoint}"\n     - opanapi source: ${options.compilerOptions.openapiDir}`);
+            return;
+        }
+        else if (!docsToBeGenerate[documentName]) {
+            docsToBeGenerate[documentName] = endpointFormatted;
+        };
+
+        // build endpointsValidator
         endpointsValidator[endpoint] = {};
 
         // make validator
@@ -58,42 +71,26 @@ export async function compile(options: {
         });
     });
 
-    // create and write file
-    Object.keys(openApi.paths).forEach((endpoint: string) => {
-        // remove '/{id}' from path and check is in writtedEndpoint
-        const documentName: string | undefined = openApi.paths[endpoint]["x-documentName"];
-        const endpointFormatted = endpoint.replace("/{id}", "").toLowerCase();
 
-        if (documentName === undefined) {
-            log.error(`"x-documentName" not found in openapi spec's path "${endpoint}"\n     - opanapi source: ${options.compilerOptions.openapiDir}`);
-            return;
-        }
-        else if (writtedEndpoint.includes(endpointFormatted)) {
-            return;
-        }
-        else {
-            // write controller
+    // create controllers for each json schema document
+    Object.keys(docsToBeGenerate).forEach((documentName: string) => {
+        const endpoint: string = docsToBeGenerate[documentName];
 
-            // build populate options by each foreign key
-            const schema = utils.common.loadJson<types.jsonSchemaPropsItem>(options.documentPaths[documentName]);
-            const foreignKeysOptions: types.populateOptions = buildForeinKeyOptions(schema);
-
-            const outPath = `${options.controllerOutDir}/${documentName}Controller.gen.ts`;
-            const controllerToModelPath = `../${controllerToModelBasePath}/${documentName}Model.gen`;
-
-            utils.common.writeFile("Controller",
-                outPath,
-                controllerTemplate({
-                    endpoint: endpoint,
-                    modelPath: controllerToModelPath,
-                    documentName: documentName,
-                    validators: endpointsValidator,
-                    populateOptions: foreignKeysOptions,
-                    compilerOptions: options.compilerOptions,
-                })
-            );
-            writtedEndpoint.push(endpointFormatted);
-        }
+        const schema = utils.common.loadJson<types.jsonSchemaPropsItem>(options.documentPaths[documentName]);
+        const foreignKeysOptions: types.populateOptions = buildForeinKeyOptions(schema);
+        const outPath = `${options.controllerOutDir}/${documentName}Controller.gen.ts`;
+        const controllerToModelPath = `../${controllerToModelBasePath}/${documentName}Model.gen`;
+        utils.common.writeFile("Controller",
+            outPath,
+            controllerTemplate({
+                endpoint: endpoint,
+                modelPath: controllerToModelPath,
+                documentName: documentName,
+                validators: endpointsValidator,
+                populateOptions: foreignKeysOptions,
+                compilerOptions: options.compilerOptions,
+            })
+        );
     });
 
     return;
