@@ -1,6 +1,6 @@
 {
     "name": "very-express",
-    "version": "0.5.17",
+    "version": "0.5.18",
     "description": "based on json schema and openapi, generate Express RestApi server with mongoDb ",
     "author": "Justin26l",
     "license": "MIT",
