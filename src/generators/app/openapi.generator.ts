@@ -155,7 +155,7 @@ function jsonToOpenapiPath(
             requestBody = {
                 description: `${jsonSchemaMethod} ${documentConfig.documentName}`,
                 required: false,
-                content: jsonSchemaMethod == 'getList' ? {
+                content: jsonSchemaMethod == "getList" ? {
                     schema: { $ref: `#/components/schemas/${jsonSchemaMethod}${documentName}Body` },
                 } : {
                     "application/json": {
@@ -249,35 +249,35 @@ function jsonToOpenapiComponentSchema(
         const httpMethod: types.httpMethod = utils.jsonSchema.httpMethod(jsonSchemaMethod, jsonSchemaFilePath);
 
         switch (jsonSchemaMethod) {
-            case "delete":
-                // no param, no response
-                break;
-            case "get":
-                componentSchemaPath[httpMethod + documentName + "Response"] = componentSchemaResponse;
-                break;
-            case "getList": {
-                componentSchemaPath[jsonSchemaMethod + documentName + "Body"] = getListRequestBodySchema();
-                componentSchemaPath[jsonSchemaMethod + documentName + "ResponseList"] = {
-                    type: "array",
-                    items: componentSchemaResponse,
-                };
-                break;
-            }
-            case "patch":
-                componentSchemaPath[httpMethod + documentName + "Body"] = componentSchemaBody;
-                componentSchemaPath[httpMethod + documentName + "Response"] = componentSchemaResponse;
-                break;
+        case "delete":
+            // no param, no response
+            break;
+        case "get":
+            componentSchemaPath[httpMethod + documentName + "Response"] = componentSchemaResponse;
+            break;
+        case "getList": {
+            componentSchemaPath[jsonSchemaMethod + documentName + "Body"] = getListRequestBodySchema();
+            componentSchemaPath[jsonSchemaMethod + documentName + "ResponseList"] = {
+                type: "array",
+                items: componentSchemaResponse,
+            };
+            break;
+        }
+        case "patch":
+            componentSchemaPath[httpMethod + documentName + "Body"] = componentSchemaBody;
+            componentSchemaPath[httpMethod + documentName + "Response"] = componentSchemaResponse;
+            break;
 
-            case "post":
-                componentSchemaPath[httpMethod + documentName + "Body"] = compilerOptions.app.allowApiCreateUpdate_id ? componentSchemaBodyRequired : componentSchemaBodyRequiredWithoutId;
-                componentSchemaPath[httpMethod + documentName + "Response"] = componentSchemaResponse;
-                break;
-            case "put":
-                componentSchemaPath[httpMethod + documentName + "Body"] = compilerOptions.app.allowApiCreateUpdate_id ? componentSchemaBodyRequired : componentSchemaBodyRequiredWithoutId;
-                componentSchemaPath[httpMethod + documentName + "Response"] = componentSchemaResponse;
-                break;
-            default:
-                break;
+        case "post":
+            componentSchemaPath[httpMethod + documentName + "Body"] = compilerOptions.app.allowApiCreateUpdate_id ? componentSchemaBodyRequired : componentSchemaBodyRequiredWithoutId;
+            componentSchemaPath[httpMethod + documentName + "Response"] = componentSchemaResponse;
+            break;
+        case "put":
+            componentSchemaPath[httpMethod + documentName + "Body"] = compilerOptions.app.allowApiCreateUpdate_id ? componentSchemaBodyRequired : componentSchemaBodyRequiredWithoutId;
+            componentSchemaPath[httpMethod + documentName + "Response"] = componentSchemaResponse;
+            break;
+        default:
+            break;
         }
     });
 
@@ -317,5 +317,5 @@ function getListRequestBodySchema(): openapiType.componentsSchemaValue {
             ]
         },
     };
-};
+}
 export default compile;
