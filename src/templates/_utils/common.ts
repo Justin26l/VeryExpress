@@ -29,22 +29,22 @@ export function parseFieldsSelect(req: Request) : ({ [key: string]: number } | u
 
         if (typeof selectString === "undefined" || selectString === "") {
             return undefined;
-        };
+        }
         _selectRaw = JSON.parse(selectString);
     }
     else{
         _selectRaw = req.body._select;
-    };
+    }
 
     if (!Array.isArray(_selectRaw)) {
-        throw ErrorDataType
-    };
+        throw ErrorDataType;
+    }
 
     for (let i = 0; i < _selectRaw.length; i++) {
         if (typeof _selectRaw[i] !== "string") {
-            throw ErrorDataType
+            throw ErrorDataType;
         }
-    };
+    }
     
     // Convert the fieldArr to an object that can be used in the select method
     const selectFields = _selectRaw.reduce((obj: any, field: string) => {
@@ -64,19 +64,19 @@ export function parseCollectionJoin(req: Request, availablePopulateOptions:{[key
         const rawString = String(req.query._join);
         if (typeof rawString === "undefined" || rawString === "") {
             return undefined;
-        };
+        }
         _joinRaw = JSON.parse(rawString);
     }
     else{
         _joinRaw = req.body._join;
-    };
+    }
 
     if (!Array.isArray(_joinRaw)) {
-        throw ErrorDataType
-    };
+        throw ErrorDataType;
+    }
  
     // switch joinArr's item to populate options
-    let populateOptions: {[key:string]:any} = [];
+    const populateOptions: {[key:string]:any} = [];
     if(_joinRaw.length > 0) {
         _joinRaw.forEach((refKey: any) => {
             if(availablePopulateOptions[refKey]) {

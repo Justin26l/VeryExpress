@@ -80,7 +80,11 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
             const selectedFields = utils.common.parseFieldsSelect(req);
             const populateOptions = utils.common.parseCollectionJoin(req, {{populateOptions}});
 
-            const result = await {{documentName}}Model.find(searchFilter, selectedFields).populate(populateOptions);
+            let query = {{documentName}}Model.find(searchFilter, selectedFields);
+            if (populateOptions && Array.isArray(populateOptions) && populateOptions.length > 0) {
+                query = query.populate(populateOptions);
+            }
+            const result = await query;
             return utils.response.send(res, 200, { result });
         } 
         catch (err:any) {
@@ -203,7 +207,7 @@ export default new {{documentName}}Controller().router;
 
     template = template.replace(
         /{{getListRoute}}/g, 
-        !templateOptions.validators[templateOptions.endpoint+'/search']?.post ? `
+        !templateOptions.validators[templateOptions.endpoint+"/search"]?.post ? `
         // getListRoute disabled` : `
         this.router.post('/search', 
             this.getList${templateOptions.documentName}.bind(this)

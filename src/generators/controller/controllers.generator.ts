@@ -50,7 +50,7 @@ export async function compile(options: {
         }
         else if (!docsToBeGenerate[documentName]) {
             docsToBeGenerate[documentName] = endpointFormatted;
-        };
+        }
 
         // build endpointsValidator
         endpointsValidator[endpoint] = {};
