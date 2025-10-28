@@ -65,10 +65,13 @@ export interface requestBody {
     description: string;
     required: boolean;
     content?: {
-        "application/json": {
+        "application/json"?: {
             schema: {
                 $ref: string;
             };
+        };
+        schema?: {
+            $ref: string;
         };
     };
 }
@@ -99,7 +102,7 @@ export interface components {
             scheme: string,
             bearerFormat: string
         },
-        AuthIndex: {
+        AuthIndex?: {
             type: string,
             in: string,
             name: string,
@@ -116,6 +119,9 @@ export interface componentsSchemaValue {
     required?: string[],
     properties?: {
         [key: string]: fieldsItem,
+    },
+    example?:{
+        [key: string]: any
     }
 }
 

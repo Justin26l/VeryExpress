@@ -127,7 +127,7 @@ function buildBodyValidator(
 
     const validators: Schema = {};
 
-    const referencePath: string | undefined = openapi.paths[endpoint][httpMethod]?.requestBody?.content?.["application/json"].schema.$ref;
+    const referencePath: string | undefined = openapi.paths[endpoint][httpMethod]?.requestBody?.content?.["application/json"]?.schema.$ref || openapi.paths[endpoint][httpMethod]?.requestBody?.content?.schema?.$ref;
     const reference: string | undefined = referencePath ? referencePath.split("/").pop() : undefined;
     const components: openapiType.componentsSchemaValue | undefined = reference ? openapi.components.schemas[reference] : undefined;
 

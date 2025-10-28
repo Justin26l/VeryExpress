@@ -16,7 +16,7 @@ import * as openapiType from "./../../types/openapi";
  * @param compilerOptions 
  */
 export async function compile(
-    openapiOutFileName: string, 
+    openapiOutFileName: string,
     compilerOptions: types.compilerOptions
 ): Promise<void> {
 
@@ -61,8 +61,8 @@ export async function compile(
 
         const jsonSchemaBuffer = fs.readFileSync(`${compilerOptions.jsonSchemaDir}/${file}`);
         const jsonSchema: types.jsonSchema = JSON.parse(jsonSchemaBuffer.toString());
-        openapiJson = jsonToOpenapiPath(openapiJson, jsonSchema, { jsonSchemaFilePath: jsonSchemaFilePath }, compilerOptions);
-        openapiJson = jsonToOpenapiComponentSchema(openapiJson, jsonSchema, { jsonSchemaFilePath: jsonSchemaFilePath }, compilerOptions);
+        openapiJson = jsonToOpenapiPath(openapiJson, jsonSchema, jsonSchemaFilePath, compilerOptions);
+        openapiJson = jsonToOpenapiComponentSchema(openapiJson, jsonSchema, jsonSchemaFilePath, compilerOptions);
     });
 
     const validOpenApi = json2openapi(openapiJson, { version: 3.0 });
@@ -85,7 +85,7 @@ function jsonToOpenapiPath(
     const documentConfig: types.documentConfig = jsonSchema["x-documentConfig"];
     const lowerDocName: string = documentConfig.documentName.toLowerCase();
     const documentName: string = documentConfig.documentName;
-    const authParams: {[key:string]: Array<never>}[] = [{ BearerAuth: [] }, { AuthIndex: [] }];
+    const authParams: { [key: string]: Array<never> }[] = [{ BearerAuth: [] }, { AuthIndex: [] }];
 
     const properties: types.jsonSchema["properties"] = jsonSchema.properties;
 
@@ -104,7 +104,7 @@ function jsonToOpenapiPath(
     documentConfig.methods.forEach((jsonSchemaMethod) => {
         const routeWithId: boolean = ["get", "put", "patch", "delete"].includes(jsonSchemaMethod);
         const routeWithSearch: boolean = "getList" == jsonSchemaMethod;
-        const useBody: boolean = ["post", "put", "patch"].includes(jsonSchemaMethod);
+        const useBody: boolean = ["getList", "post", "put", "patch"].includes(jsonSchemaMethod);
         const route: string = "/api/" + lowerDocName + (routeWithId ? "/{id}" : routeWithSearch ? "/search" : "");
 
         const httpMethod: types.httpMethod = utils.jsonSchema.httpMethod(jsonSchemaMethod, jsonSchemaFilePath);
@@ -118,9 +118,9 @@ function jsonToOpenapiPath(
                 },
             },
         };
-        
+
         // update parameters/body & responses
-        if ( routeWithId && properties["_id"] ) {
+        if (routeWithId && properties["_id"]) {
             const idParameter: openapiType.parameter = {
                 name: "id",
                 in: "path",
@@ -149,14 +149,18 @@ function jsonToOpenapiPath(
         }
         else if (httpMethod == "delete") {
             delete successResponse[200].content;
-        }   
-        
+        }
+
         if (useBody) {
             requestBody = {
                 description: `${jsonSchemaMethod} ${documentConfig.documentName}`,
                 required: false,
-                content: {
-                    "application/json": { schema: { $ref: `#/components/schemas/${jsonSchemaMethod}${documentName}Body` } },
+                content: jsonSchemaMethod == 'getList' ? {
+                    schema: { $ref: `#/components/schemas/${jsonSchemaMethod}${documentName}Body` },
+                } : {
+                    "application/json": {
+                        schema: { $ref: `#/components/schemas/${jsonSchemaMethod}${documentName}Body` },
+                    }
                 },
             };
         }
@@ -179,7 +183,7 @@ function jsonToOpenapiPath(
                     500: { description: "Internal Server Error", },
                     502: { description: "Bad Gateway", },
                     503: { description: "Service Unavailable", },
-                }, 
+                },
                 successResponse
             )
         };
@@ -202,9 +206,7 @@ function jsonToOpenapiComponentSchema(
 
     // get jsonschema properties
     const documentConfig = jsonSchema["x-documentConfig"];
-    const lowerDocName = documentConfig.documentName.toLowerCase();
     const documentName = documentConfig.documentName;
-
 
     const componentSchemaResponse: openapiType.componentsSchemaValue = {
         type: "object",
@@ -223,16 +225,16 @@ function jsonToOpenapiComponentSchema(
         ),
         required: jsonSchema.required,
     };
-    
+
     // without [ _id:obj, index:bool, unique:bool, required:bool ]
     const componentSchemaBodyRequiredWithoutId: openapiType.componentsSchemaValue = {
         type: "object",
         properties: json2openapi(
-            utils.jsonSchema.cleanXcustomValue(componentSchemaBodyRequired.properties as any, { _id: "object"}),
+            utils.jsonSchema.cleanXcustomValue(componentSchemaBodyRequired.properties as any, { _id: "object" }),
             { version: 3.0 }
         ),
         required: jsonSchema.required,
-    }; 
+    };
 
     // without [ _id, index, unique, required:any ]
     const componentSchemaBody: openapiType.componentsSchemaValue = {
@@ -241,74 +243,41 @@ function jsonToOpenapiComponentSchema(
             utils.jsonSchema.cleanXcustomValue(componentSchemaBodyRequiredWithoutId.properties as any, ["required"]),
             { version: 3.0 }
         ),
-    };   
+    };
 
     documentConfig.methods.forEach((jsonSchemaMethod) => {
         const httpMethod: types.httpMethod = utils.jsonSchema.httpMethod(jsonSchemaMethod, jsonSchemaFilePath);
 
         switch (jsonSchemaMethod) {
-        case "delete":
-            // no param, no response
-            break;
-        case "get":
-            componentSchemaPath[httpMethod + documentName + "Response"] = componentSchemaResponse;
-            break;
-        case "getList":{
-            // add standard search query
-            openapiJson.paths["/api/" + lowerDocName + "/search"][httpMethod]!.requestBody = {
-                description: `Search ${documentConfig.documentName}`,
-                required: false,
-                content: { 
-                    "application/json": {
-                        schema: {
-                            $ref: `#/components/schemas/${jsonSchemaMethod}${documentName}Body`,
-                        },
-                    },
-                },
-            };
+            case "delete":
+                // no param, no response
+                break;
+            case "get":
+                componentSchemaPath[httpMethod + documentName + "Response"] = componentSchemaResponse;
+                break;
+            case "getList": {
+                componentSchemaPath[jsonSchemaMethod + documentName + "Body"] = getListRequestBodySchema();
+                componentSchemaPath[jsonSchemaMethod + documentName + "ResponseList"] = {
+                    type: "array",
+                    items: componentSchemaResponse,
+                };
+                break;
+            }
+            case "patch":
+                componentSchemaPath[httpMethod + documentName + "Body"] = componentSchemaBody;
+                componentSchemaPath[httpMethod + documentName + "Response"] = componentSchemaResponse;
+                break;
 
-            componentSchemaPath[jsonSchemaMethod + documentName + "Body"] = {
-                type: "object",
-                properties: {
-                    _filter: {
-                        type: "object",
-                    },
-                    _select: {
-                        type: "array",
-                        items: {
-                            type: "string",
-                        },
-                    },
-                    _join: {
-                        type: "array",
-                        items: {
-                            type: "string",
-                        },
-                    }
-                },
-            };
-
-            componentSchemaPath[jsonSchemaMethod + documentName + "ResponseList"] = {
-                type: "array",
-                items: componentSchemaResponse,
-            };
-            break;
-        }
-        case "patch":    
-            componentSchemaPath[httpMethod + documentName + "Body"] = componentSchemaBody;
-            componentSchemaPath[httpMethod + documentName + "Response"] = componentSchemaResponse;
-            break;
-
-        case "post":
-            componentSchemaPath[httpMethod + documentName + "Body"] = compilerOptions.app.allowApiCreateUpdate_id ? componentSchemaBodyRequired : componentSchemaBodyRequiredWithoutId ;
-            componentSchemaPath[httpMethod + documentName + "Response"] = componentSchemaResponse;
-            break;
-        case "put":
-            componentSchemaPath[httpMethod + documentName + "Body"] = compilerOptions.app.allowApiCreateUpdate_id ? componentSchemaBodyRequired : componentSchemaBodyRequiredWithoutId ;
-            componentSchemaPath[httpMethod + documentName + "Response"] = componentSchemaResponse;
-            break;
-        default:
-            break;
+            case "post":
+                componentSchemaPath[httpMethod + documentName + "Body"] = compilerOptions.app.allowApiCreateUpdate_id ? componentSchemaBodyRequired : componentSchemaBodyRequiredWithoutId;
+                componentSchemaPath[httpMethod + documentName + "Response"] = componentSchemaResponse;
+                break;
+            case "put":
+                componentSchemaPath[httpMethod + documentName + "Body"] = compilerOptions.app.allowApiCreateUpdate_id ? componentSchemaBodyRequired : componentSchemaBodyRequiredWithoutId;
+                componentSchemaPath[httpMethod + documentName + "Response"] = componentSchemaResponse;
+                break;
+            default:
+                break;
         }
     });
 
@@ -316,4 +285,37 @@ function jsonToOpenapiComponentSchema(
     return openapiJson;
 }
 
+function getListRequestBodySchema(): openapiType.componentsSchemaValue {
+    return {
+        type: "object",
+        properties: {
+            _filter: {
+                type: "object",
+            },
+            _select: {
+                type: "array",
+                items: {
+                    type: "string",
+                },
+            },
+            _join: {
+                type: "array",
+                items: {
+                    type: "string",
+                },
+            }
+        },
+        example: {
+            _filter: {
+                fieldName: { $regex: /wildcard/ }
+            },
+            _select: [
+                "FieldName"
+            ],
+            _join: [
+                "CollectionName"
+            ]
+        },
+    };
+};
 export default compile;
