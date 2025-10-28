@@ -20,22 +20,21 @@ export function loadYaml(yamlFilePath: string) {
  * @error may throw an error if the fieldsString is not a valid JSON
  */
 export function parseFieldsSelect(req: Request) : ({ [key: string]: number } | undefined) {
-    
     let _selectRaw: string[] = [];
-    const ErrorDataType = new VexResponseError(400, response.code.err_validation, "Invalid field \"_select\", only json array accepted");
+
+    if(!req.query._select && !req.body._select) {
+        return undefined;
+    }
 
     if(req.method === "GET") {
         const selectString = String(req.query._select);
-
-        if (typeof selectString === "undefined" || selectString === "") {
-            return undefined;
-        }
         _selectRaw = JSON.parse(selectString);
     }
     else{
         _selectRaw = req.body._select;
     }
 
+    const ErrorDataType = new VexResponseError(400, response.code.err_validation, "Invalid field \"_select\", only json array of string accepted");
     if (!Array.isArray(_selectRaw)) {
         throw ErrorDataType;
     }
@@ -56,9 +55,11 @@ export function parseFieldsSelect(req: Request) : ({ [key: string]: number } | u
 }
 
 export function parseCollectionJoin(req: Request, availablePopulateOptions:{[key:string]: string}) : { [key: string]: string } | undefined {
-    
+    if(!req.query._select && !req.body._select) {
+        return undefined;
+    }
+
     let _joinRaw: string[] = [];
-    const ErrorDataType = new VexResponseError(400, response.code.err_validation, "Invalid field \"_join\", only json array accepted");
 
     if(req.method === "GET") {
         const rawString = String(req.query._join);
@@ -71,8 +72,14 @@ export function parseCollectionJoin(req: Request, availablePopulateOptions:{[key
         _joinRaw = req.body._join;
     }
 
+    const ErrorDataType = new VexResponseError(400, response.code.err_validation, "Invalid field \"_join\", only json array of string accepted");
     if (!Array.isArray(_joinRaw)) {
         throw ErrorDataType;
+    }
+    for (let i = 0; i < _joinRaw.length; i++) {
+        if (typeof _joinRaw[i] !== "string") {
+            throw ErrorDataType;
+        }
     }
  
     // switch joinArr's item to populate options
