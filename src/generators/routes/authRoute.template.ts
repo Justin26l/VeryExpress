@@ -53,7 +53,7 @@ export default class AuthRouter {
                 {
                     clientID: process.env.OAUTH_GOOGLE_CLIENTID || "",
                     clientSecret: process.env.OAUTH_GOOGLE_CLIENTSECRET || "",
-                    callbackURL: \`\${process.env.APP_HOST}/auth/\${google}/callback\`,
+                    callbackURL: \`\${process.env.APP_HOST}:\${process.env.APP_PORT}/auth/\${google}/callback\`,
                 },
                 this.OAuthStrategyService.verify
             )
@@ -70,7 +70,7 @@ export default class AuthRouter {
                 {
                     clientID: process.env.OAUTH_GITHUB_CLIENTID || "",
                     clientSecret: process.env.OAUTH_GITHUB_CLIENTSECRET || "",
-                    callbackURL: \`\${process.env.APP_HOST}/auth/\${github}/callback\`,
+                    callbackURL: \`\${process.env.APP_HOST}:\${process.env.APP_PORT}/auth/\${github}/callback\`,
                 },
                 this.OAuthStrategyService.verify
             )

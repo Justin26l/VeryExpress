@@ -42,14 +42,18 @@ export async function compile(options: {
         // build docsToBeGenerate
         const documentName: string | undefined = openApi.paths[endpoint]["x-documentName"];
         const endpointFormatted = endpoint.replace("/{id}", "").toLowerCase();
-        log.process(`Controller : ${documentName} > ${endpoint}`);
 
         if (documentName === undefined) {
             log.error(`"x-documentName" not found in openapi spec's path "${endpoint}"\n     - opanapi source: ${options.compilerOptions.openapiDir}`);
             return;
         }
+        // skip sensitive controller generation
+        else if (['Session'].includes(documentName)) {
+            return;
+        }
         else if (!docsToBeGenerate[documentName]) {
             docsToBeGenerate[documentName] = endpointFormatted;
+            log.process(`Controller : ${documentName} > ${endpointFormatted}`);
         }
 
         // build endpointsValidator

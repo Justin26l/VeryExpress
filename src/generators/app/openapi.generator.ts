@@ -257,7 +257,7 @@ function jsonToOpenapiComponentSchema(
             break;
         case "getList": {
             componentSchemaPath[jsonSchemaMethod + documentName + "Body"] = getListRequestBodySchema();
-            componentSchemaPath[jsonSchemaMethod + documentName + "ResponseList"] = {
+            componentSchemaPath[jsonSchemaMethod + documentName + "Response"] = {
                 type: "array",
                 items: componentSchemaResponse,
             };

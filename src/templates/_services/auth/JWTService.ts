@@ -2,7 +2,7 @@
 import jwt from "jsonwebtoken";
 import ms from "ms";
 import path from "path";
-import express from "express";
+import express, { CookieOptions } from "express";
 
 import JWTKeyStore from "./JWTKeyStore.gen";
 import utils from "../../_utils";
@@ -64,25 +64,25 @@ export default class JWTService {
         const accessToken = await this.generateAccessToken(user._id);
         const refreshToken = await this.generateRefreshToken({ _id: user._id });
 
-        res.cookie("vex-access-token", {
-            accessToken: accessToken.token,
-            accessTokenIndex: accessToken.clientIndex
-        }, {
+        const accessTokenOptions: CookieOptions = {
             maxAge: ms(process.env.ACCESS_TOKEN_EXPIRE_TIME as ms.StringValue),
             httpOnly: true,
             secure: true,
             sameSite: "strict",
-        });
+        };
 
-        res.cookie("vex-refresh-token", {
-            refreshToken: refreshToken.token,
-            refreshTokenIndex: refreshToken.clientIndex,
-        }, {
-            maxAge: ms(process.env.REFRESH_TOKEN_EXPIRE_TIME as ms.StringValue),
-            httpOnly: true,
-            secure: true,
-            sameSite: "strict",
-        });
+        res.cookie("authorization", accessToken.token, accessTokenOptions);
+        res.cookie("x-auth-index", accessToken.clientIndex, accessTokenOptions);
+        
+        // res.cookie("vex-refresh-token", {
+        //     refreshToken: refreshToken.token,
+        //     refreshTokenIndex: refreshToken.clientIndex,
+        // }, {
+        //     maxAge: ms(process.env.REFRESH_TOKEN_EXPIRE_TIME as ms.StringValue),
+        //     httpOnly: true,
+        //     secure: true,
+        //     sameSite: "strict",
+        // });
 
         const sessionCode = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 

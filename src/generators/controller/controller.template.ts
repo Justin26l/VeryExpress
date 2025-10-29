@@ -22,16 +22,19 @@ import { Router, Request, Response } from 'express';
 
 import { checkSchema, validationResult } from 'express-validator';
 import utils from "./../../system/_utils";
+import VexSystem from '../_services/VexSystem.gen';
 import VexResponseError from "../_types/VexResponseError.gen";
 
 import { {{documentName}}Model } from '{{modelPath}}';
 
 class {{documentName}}Controller extends controllerFactory._ControllerFactory {
     public router: Router;
+    private vexSystem: VexSystem;
 
     constructor() {
         super();
         this.router = Router();
+        this.vexSystem = new VexSystem();
         this.routes();
     }
 
@@ -209,9 +212,9 @@ export default new {{documentName}}Controller().router;
         /{{getListRoute}}/g, 
         !templateOptions.validators[templateOptions.endpoint+"/search"]?.post ? `
         // getListRoute disabled` : `
-        this.router.post('/search', 
-            this.getList${templateOptions.documentName}.bind(this)
-        );`
+        this.router.post('/search', (req, res) => this.vexSystem.RouteHandler(req, res, () =>  
+            this.getList${templateOptions.documentName}(req,res)
+        ));`
     );
 
     // populate options
@@ -228,49 +231,59 @@ export default new {{documentName}}Controller().router;
         /{{getRoute}}/g, 
         !templateOptions.validators[templateOptions.endpoint+"/{id}"]?.get ? `
         // getRoute disabled` : `
-        this.router.get('/:id', 
-            checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint+"/{id}"].get, { depth: null }).replace(/^/gm, indent3) }),
-            this.get${templateOptions.documentName}.bind(this)
-        );`
+        this.router.get('/:id', (req, res) => {
+            checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint+"/{id}"].get, { depth: null }).replace(/^/gm, indent3) });
+            return this.vexSystem.RouteHandler(req, res, () => 
+                this.get${templateOptions.documentName}(req,res)
+            );
+        });`
     );
 
     template = template.replace(
         /{{postRoute}}/g, 
         !templateOptions.validators[templateOptions.endpoint]?.post ? `
         // postRoute disabled` : `
-        this.router.post('/', 
-            checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint].post, { depth: null }).replace(/^/gm, indent3) }),
-            this.create${templateOptions.documentName}.bind(this)
-        );`
+        this.router.post('/', (req, res) => {
+            checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint].post, { depth: null }).replace(/^/gm, indent3) });
+            return this.vexSystem.RouteHandler(req, res, () => 
+                this.create${templateOptions.documentName}(req,res)
+            );
+        });`
     );
 
     template = template.replace(
         /{{putRoute}}/g, 
         !templateOptions.validators[templateOptions.endpoint+"/{id}"]?.put ? `
         // putRoute disabled` : `
-        this.router.put('/:id', 
-            checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint+"/{id}"].put, { depth: null }).replace(/^/gm, indent3) }),
-            this.replace${templateOptions.documentName}.bind(this)
-        );`
+        this.router.put('/:id', (req, res) => {
+            checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint+"/{id}"].put, { depth: null }).replace(/^/gm, indent3) });
+            return this.vexSystem.RouteHandler(req, res, () => 
+                this.replace${templateOptions.documentName}(req,res)
+            );
+        });`
     );
     template = template.replace(
         /{{patchRoute}}/g, 
         !templateOptions.validators[templateOptions.endpoint+"/{id}"]?.patch ? `
         // patchRoute disabled` : `
-        this.router.patch('/:id', 
-            checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint+"/{id}"].patch, { depth: null }).replace(/^/gm, indent3) }),
-            this.update${templateOptions.documentName}.bind(this)
-        );`
+        this.router.patch('/:id', (req, res) => {
+            checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint+"/{id}"].patch, { depth: null }).replace(/^/gm, indent3) });
+            return this.vexSystem.RouteHandler(req, res, () => 
+                this.update${templateOptions.documentName}(req,res)
+            );
+        });`
     );
 
     template = template.replace(
         /{{deleteRoute}}/g, 
         !templateOptions.validators[templateOptions.endpoint+"/{id}"]?.delete ? `
         // deleteRoute disabled` : `
-        this.router.delete('/:id', 
-            checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint+"/{id}"].delete, { depth: null }).replace(/^/gm, indent3) }),
-            this.delete${templateOptions.documentName}.bind(this)
-        );`
+        this.router.delete('/:id', (req, res) => {
+            checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint+"/{id}"].delete, { depth: null }).replace(/^/gm, indent3) });
+            return this.vexSystem.RouteHandler(req, res, () => 
+                this.delete${templateOptions.documentName}(req,res)
+            );
+        });`
     );
 
     template = template.replace(

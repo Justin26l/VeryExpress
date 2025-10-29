@@ -24,7 +24,7 @@ export async function compile(
 
         envOutput.split("\n").forEach((line) => {
             if(!/=/g.test(line)) return;
-            const key = line.split("=",2)[0];
+            const key = line.split("=",2)[0].replace('# ','');
             if(key) existingEnvProps.push(key);
         });
 
@@ -36,7 +36,7 @@ export async function compile(
 
         // find missing props
         templateEnvProps.forEach(key => {
-            if(!existingEnvProps.includes(key)){
+            if(!existingEnvProps.includes(key.replace('# ',''))){
                 newProps.push(key);
             }
         });
