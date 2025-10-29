@@ -55,145 +55,114 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
     };
 
     public async get{{documentName}}(req: Request, res: Response): Promise<Response> {
-        try {
-            const validationError = validationResult(req);
-            if ( ! validationError.isEmpty() ) {
-                return utils.response.send(res, 400, {
-                    code: utils.response.code.err_validation, 
-                    result: validationError.array()
-                });
-            };
+        const validationError = validationResult(req);
+        if ( ! validationError.isEmpty() ) {
+            return utils.response.send(res, 400, {
+                code: utils.response.code.err_validation, 
+                result: validationError.array()
+            });
+        };
 
-            const result = await {{documentName}}Model.findById(req.params.id){{populateAll}};
-
-            if (!result) {
-                return utils.response.send(res, 404);
-            }
-            else {
-                return utils.response.send(res, 200, { result });
-            };
-        } catch (err:any) {
-            return utils.response.send(res, 500, { message: err.message });
+        const result = await {{documentName}}Model.findById(req.params.id){{populateAll}};
+        if (!result) {
+            return utils.response.send(res, 404);
         }
+        else {
+            return utils.response.send(res, 200, { result });
+        };
     }
 
     public async getList{{documentName}}(req: Request, res: Response): Promise<Response> {
-        try {
-            const searchFilter = req.body.filter;
-            const selectedFields = utils.common.parseFieldsSelect(req);
-            const populateOptions = utils.common.parseCollectionJoin(req, {{populateOptions}});
+        const searchFilter = req.body.filter;
+        const selectedFields = utils.common.parseFieldsSelect(req);
+        const populateOptions = utils.common.parseCollectionJoin(req, {{populateOptions}});
 
-            let query = {{documentName}}Model.find(searchFilter, selectedFields);
-            if (populateOptions && Array.isArray(populateOptions) && populateOptions.length > 0) {
-                query = query.populate(populateOptions);
-            }
-            const result = await query;
-            return utils.response.send(res, 200, { result });
-        } 
-        catch (err:any) {
-            if(err instanceof VexResponseError) {
-                throw err;
-            }
-            else { 
-                return utils.response.send(res, 500, { result: err.message });
-            }
+        let query = {{documentName}}Model.find(searchFilter, selectedFields);
+        if (populateOptions && Array.isArray(populateOptions) && populateOptions.length > 0) {
+            query = query.populate(populateOptions);
         }
+        const result = await query;
+        return utils.response.send(res, 200, { result });
     }
 
     public async create{{documentName}}(req: Request, res: Response): Promise<Response> {
-        try {
-            const validationError = validationResult(req);
-            if ( ! validationError.isEmpty() ) {
-                return utils.response.send(res, 400, {
-                    code: utils.response.code.err_validation, 
-                    result: validationError.array()
-                });
-            };{{check_id}}
-            
-            const result = await {{documentName}}Model.create(req.body);
-            if (!result) {
-                return utils.response.send(res, 400, {
-                    code: utils.response.code.err_create
-                });
-            }
-            else {
-                return utils.response.send(res, 201, {result});
-            };
-        } catch (err:any) {
-            return utils.response.send(res, 500, { message: err.message });
+        const validationError = validationResult(req);
+        if ( ! validationError.isEmpty() ) {
+            return utils.response.send(res, 400, {
+                code: utils.response.code.err_validation, 
+                result: validationError.array()
+            });
+        };{{check_id}}
+        
+        const result = await {{documentName}}Model.create(req.body);
+        if (!result) {
+            return utils.response.send(res, 400, {
+                code: utils.response.code.err_create
+            });
+        }
+        else {
+            return utils.response.send(res, 201, {result});
         };
     };
 
     public async update{{documentName}}(req: Request, res: Response): Promise<Response> {
-        try {
-            const validationError = validationResult(req);
-            if ( ! validationError.isEmpty() ) {
-                return utils.response.send(res, 400, {
-                    code: utils.response.code.err_validation, 
-                    result: validationError.array()
-                });
-            };{{check_id}}
+        const validationError = validationResult(req);
+        if ( ! validationError.isEmpty() ) {
+            return utils.response.send(res, 400, {
+                code: utils.response.code.err_validation, 
+                result: validationError.array()
+            });
+        };{{check_id}}
 
-            const result = await {{documentName}}Model.findByIdAndUpdate(req.params.id, req.body, { new: true });
-            if (!result) {
-                return utils.response.send(res, 404, {
-                    code: utils.response.code.err_update
-                });
-            }
-            else {
-                return utils.response.send(res, 200, { result });
-            };
-        } catch (err:any) {
-            return utils.response.send(res, 500, { message: err.message });
+        const result = await {{documentName}}Model.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (!result) {
+            return utils.response.send(res, 404, {
+                code: utils.response.code.err_update
+            });
         }
+        else {
+            return utils.response.send(res, 200, { result });
+        };
     }
 
     public async replace{{documentName}}(req: Request, res: Response): Promise<Response> {
-        try {
-            const validationError = validationResult(req);
-            if ( ! validationError.isEmpty() ) {
-                return utils.response.send(res, 400, {
-                    code: utils.response.code.err_validation, 
-                    result: validationError.array()
-                });
-            };{{check_id}}
-
-            const result = await {{documentName}}Model.replaceOne({_id: req.params.id}, req.body);
-            if (!result) {
-                return utils.response.send(res, 404, { 
-                    code: utils.response.code.err_update
-                });
-            }
-            else {
-                return utils.response.send(res, 200, { result });
-            };
-        } catch (err:any) {
-            return utils.response.send(res, 500, { message: err.message });
+        const validationError = validationResult(req);
+        if ( ! validationError.isEmpty() ) {
+            return utils.response.send(res, 400, {
+                code: utils.response.code.err_validation, 
+                result: validationError.array()
+            });
+        };{{check_id}}
+        
+        const result = await {{documentName}}Model.replaceOne({_id: req.params.id}, req.body);
+        if (!result) {
+            return utils.response.send(res, 404, { 
+                code: utils.response.code.err_update
+            });
         }
+        else {
+            return utils.response.send(res, 200, { result });
+        };
     }
 
     public async delete{{documentName}}(req: Request, res: Response): Promise<Response> {
-        try {
-            const validationError = validationResult(req);
-            if ( ! validationError.isEmpty() ) {
-                return utils.response.send(res, 400, {
-                    code: utils.response.code.err_validation, 
-                    result: validationError.array()
-                });
-            };
-
-            const result = await {{documentName}}Model.findByIdAndDelete(req.params.id);
-            if (!result) {
-                return utils.response.send(res, 404, {
-                    code: utils.response.code.err_delete
-                });
-            }
-            else {
-                return utils.response.send(res, 204, { result });
-            };
-        } catch (err:any) {
-            return utils.response.send(res, 500, { message: err.message });
+        const validationError = validationResult(req);
+        if ( ! validationError.isEmpty() ) {
+            return utils.response.send(res, 400, {
+                code: utils.response.code.err_validation, 
+                result: validationError.array()
+            });
+        };
+        
+        const result = await {{documentName}}Model.findByIdAndDelete(req.params.id);
+        if (!result) {
+            return utils.response.send(res, 404, {
+                code: utils.response.code.err_delete
+            });
         }
+        else {
+            return utils.response.send(res, 204, { result });
+        };
     }
 }
 
