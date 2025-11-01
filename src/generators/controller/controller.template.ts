@@ -73,7 +73,7 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
     }
 
     public async getList{{documentName}}(req: Request, res: Response): Promise<Response> {
-        const searchFilter = req.body.filter;
+        const searchFilter = req.body._filter;
         const selectedFields = utils.common.parseFieldsSelect(req);
         const populateOptions = utils.common.parseCollectionJoin(req, {{populateOptions}});
 

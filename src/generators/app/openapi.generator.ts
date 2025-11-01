@@ -156,7 +156,7 @@ function jsonToOpenapiPath(
             requestBody = {
                 description: `${jsonSchemaMethod} ${documentConfig.documentName}`,
                 required: false,
-                content: jsonSchemaMethod == "getList" ? { "text/plain": schema } : { "application/json": schema },
+                content: { "application/json": schema } // jsonSchemaMethod == "getList" ? { "text/plain": schema } : { "application/json": schema },
             };
         }
 
@@ -302,7 +302,10 @@ function getListRequestBodySchema(): openapiType.componentsSchemaValue {
         },
         example: {
             _filter: {
-                fieldName: { $regex: /wildcardText/ }
+                fieldName: { 
+                    $regex: "str", 
+                    $options: "i"
+                }
             },
             _select: [
                 "FieldName"
