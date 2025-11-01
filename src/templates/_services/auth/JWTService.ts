@@ -89,7 +89,7 @@ export default class JWTService {
         SessionModel.create({
             sessionCode: sessionCode,
             userId: user._id,
-            // provider: "local",
+            provider: "local",
             expired: Date.now() + 5000
         });
 
