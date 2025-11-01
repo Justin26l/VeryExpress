@@ -2,24 +2,25 @@
 
  
 # Quick Start
+1. install `very-express` from npm  
+    `npm install -g very-express` or `npm update -g very-express`  
 
-1. check configuration file **vex.config.json** under your project root directory.
-[vex.config.json](./vex.config.json)
-   
-2. generate the app with your vex.config settings.  
-*Note : every db schema changes require to regenerate app.  
+2. check configuration file [vex.config.json](./vex.config.json) under project root directory and keep it updated (re-generate the app with very-express).  
     `vex`  
-3. you should saw a express typescript app being generated.  
+
+3. we should have a express typescript app.  
     ```
     ├── src/ 
-    │   └── ...
+    │   └── openapi
+    │   └── roles (role based access control settings)
+    │   └── system (very express generated app)
     ├── package.json  
     ├── tsconfig.json  
     ├── vex.config.json  
     ├── .env  
     └── ... 
     ```  
-      
+
 4. start the generated express app.  
     ```
     npm i  
@@ -32,7 +33,7 @@
     npm run docker-build  
     npm run docker-start
     ```
+
 # Resource
 - [Documents](https://github.com/Justin26l/VeryExpress/blob/main/README.md)
-
-- [Discord](https://discord.gg/PZGMzDp7)
+- [VeryExpress Discord](https://discord.gg/PZGMzDp7)
