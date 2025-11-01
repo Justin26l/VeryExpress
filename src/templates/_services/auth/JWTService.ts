@@ -2,7 +2,7 @@
 import jwt from "jsonwebtoken";
 import ms from "ms";
 import path from "path";
-import express, { CookieOptions } from "express";
+// import express, { CookieOptions } from "express";
 
 import JWTKeyStore from "./JWTKeyStore.gen";
 import utils from "../../_utils";
@@ -56,23 +56,23 @@ export default class JWTService {
     /**
      * Process of login user, assign tokens and create session.
      */
-    public async assignTokens(user: User, res: express.Response) {
+    public async assignTokens(user: User) {
         if(!user._id) {
             throw new VexResponseError(500, utils.response.code.err_db_data, "User Data Error, User._id missing.");
         }
 
-        const accessToken = await this.generateAccessToken(user._id);
-        const refreshToken = await this.generateRefreshToken({ _id: user._id });
+        // const accessToken = await this.generateAccessToken(user._id);
+        // const refreshToken = await this.generateRefreshToken({ _id: user._id });
 
-        const accessTokenOptions: CookieOptions = {
-            maxAge: ms(process.env.ACCESS_TOKEN_EXPIRE_TIME as ms.StringValue),
-            httpOnly: true,
-            secure: true,
-            sameSite: "strict",
-        };
+        // const accessTokenOptions: CookieOptions = {
+        //     maxAge: ms(process.env.ACCESS_TOKEN_EXPIRE_TIME as ms.StringValue),
+        //     httpOnly: true,
+        //     secure: true,
+        //     sameSite: "strict",
+        // };
 
-        res.cookie("authorization", accessToken.token, accessTokenOptions);
-        res.cookie("x-auth-index", accessToken.clientIndex, accessTokenOptions);
+        // res.cookie("authorization", accessToken.token, accessTokenOptions);
+        // res.cookie("x-auth-index", accessToken.clientIndex, accessTokenOptions);
         
         // res.cookie("vex-refresh-token", {
         //     refreshToken: refreshToken.token,
@@ -89,7 +89,7 @@ export default class JWTService {
         SessionModel.create({
             sessionCode: sessionCode,
             userId: user._id,
-            provider: "local",
+            // provider: "local",
             expired: Date.now() + 5000
         });
 

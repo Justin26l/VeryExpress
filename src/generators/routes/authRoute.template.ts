@@ -214,7 +214,7 @@ export default class AuthRouter {
                     }
 
                     // return tokens to client
-                    const redirectUrl = await this.JWTService.assignTokens(user, res);
+                    const redirectUrl = await this.JWTService.assignTokens(user);
                     return utils.response.send(res, 302, {
                         result: {
                             url: redirectUrl,

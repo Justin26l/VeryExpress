@@ -48,7 +48,7 @@ export async function compile(options: {
             return;
         }
         // skip sensitive controller generation
-        else if (['Session'].includes(documentName)) {
+        else if (["Session"].includes(documentName)) {
             return;
         }
         else if (!docsToBeGenerate[documentName]) {
