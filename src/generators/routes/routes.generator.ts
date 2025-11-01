@@ -48,7 +48,9 @@ export async function compile(options: {
         );
     }
 
-    // write json schema api routes
+    // write json schema api routes & skip sensitive controller generation
+    options.routesArr = options.routesArr.filter((r=>r.documentName!=="Session"))
+
     utils.common.writeFile(
         "Route API", 
         routesApiOutPath, 
