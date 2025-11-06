@@ -13,7 +13,8 @@
         "dev": "npm run compile && npm run start",
         "build": "npm run lint && npm run compile",
         "lint": "eslint ./src --ext .ts --fix",
-        "compile": "node ./scripts/build.js && node ./scripts/copyTsTemplates.js"
+        "compile": "node ./scripts/build.js && node ./scripts/copyTsTemplates.js",
+        "version-dev": "node scripts/bump-dev-version.js"
     },
     "keywords": [
         "jsonSchema",
