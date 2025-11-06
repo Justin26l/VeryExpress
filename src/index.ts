@@ -127,14 +127,12 @@ export async function generate(
             `${doc.path}`,
             `${utils.common.relativePath(dir.modelDir, dir.typeDir)}/${doc.config.documentName}.gen`,
             `${dir.modelDir}/${doc.config.documentName}Model.gen.ts`,
-            options || utils.generator.defaultCompilerOptions
         );
 
         // make interface
         await json2mongoose.typesGen.compileFromFile(
             `${doc.path}`,
             `${dir.typeDir}/${doc.config.documentName}.gen.ts`,
-            options || utils.generator.defaultCompilerOptions
         );
 
         // replace interface <import xxx from "./xxx";> to <import xxx from "./xxx.gen";>

@@ -72,7 +72,7 @@ export default class OAuthRouteFactory {
                 }
 
                 // return appAuthCode to client
-                const redirectUrl = await this.JWTService.assignTokens(req.user as User, res);
+                const redirectUrl = await this.JWTService.assignTokens(req.user as User);
                 return res.redirect(redirectUrl);
                 
             }

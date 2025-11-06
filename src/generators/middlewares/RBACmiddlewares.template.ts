@@ -17,11 +17,12 @@ export { roles };
 export default class RoleBaseAccessControl {
     private collection: string;
     private actions: {[key:string]: string} = {
-        GET: 'read',
-        POST: 'create',
-        PUT: 'update',
-        PATCH: 'update',
-        DELETE: 'delete',
+        "GET": 'read',
+        "POST /": 'create',
+        "POST /search": 'search',
+        "PUT": 'update',
+        "PATCH": 'update',
+        "DELETE": 'delete',
     };
 
     constructor(
@@ -38,6 +39,7 @@ export default class RoleBaseAccessControl {
             }
 
             const user :any = req.user;
+            const actionKey = req.method !== "POST" ? req.method : \`\${req.method} \${req.path}\`;
             {{roleSwitch}}
         }
         catch (e: any) {
@@ -56,7 +58,7 @@ export default class RoleBaseAccessControl {
     let counter = 0;
     options.roles.forEach(role => {
         roleSwitchCode += `
-            ${ counter == 0 ? "" : "else " }if ( user.roles.includes('${role}') && new roles.${role}().checkAccess(this.collection, this.actions[req.method]) ) {
+            ${ counter == 0 ? "" : "else " }if ( user.roles.includes('${role}') && new roles.${role}().checkAccess(this.collection, this.actions[actionKey]) ) {
                 next();
             }`;
         counter++;

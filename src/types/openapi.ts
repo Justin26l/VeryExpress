@@ -70,9 +70,11 @@ export interface requestBody {
                 $ref: string;
             };
         };
-        schema?: {
-            $ref: string;
-        };
+        "text/plain"?: {
+            schema: {
+                $ref: string;
+            };
+        },
     };
 }
 

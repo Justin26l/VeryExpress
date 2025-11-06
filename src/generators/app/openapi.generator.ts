@@ -152,16 +152,11 @@ function jsonToOpenapiPath(
         }
 
         if (useBody) {
+            const schema = { schema: { $ref: `#/components/schemas/${jsonSchemaMethod}${documentName}Body` } };
             requestBody = {
                 description: `${jsonSchemaMethod} ${documentConfig.documentName}`,
                 required: false,
-                content: jsonSchemaMethod == "getList" ? {
-                    schema: { $ref: `#/components/schemas/${jsonSchemaMethod}${documentName}Body` },
-                } : {
-                    "application/json": {
-                        schema: { $ref: `#/components/schemas/${jsonSchemaMethod}${documentName}Body` },
-                    }
-                },
+                content: { "application/json": schema } // jsonSchemaMethod == "getList" ? { "text/plain": schema } : { "application/json": schema },
             };
         }
 
@@ -257,7 +252,7 @@ function jsonToOpenapiComponentSchema(
             break;
         case "getList": {
             componentSchemaPath[jsonSchemaMethod + documentName + "Body"] = getListRequestBodySchema();
-            componentSchemaPath[jsonSchemaMethod + documentName + "ResponseList"] = {
+            componentSchemaPath[jsonSchemaMethod + documentName + "Response"] = {
                 type: "array",
                 items: componentSchemaResponse,
             };
@@ -307,7 +302,10 @@ function getListRequestBodySchema(): openapiType.componentsSchemaValue {
         },
         example: {
             _filter: {
-                fieldName: { $regex: /wildcard/ }
+                fieldName: { 
+                    $regex: "str", 
+                    $options: "i"
+                }
             },
             _select: [
                 "FieldName"

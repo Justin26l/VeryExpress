@@ -147,7 +147,7 @@ function loginHandler(providers: string[], compilerOptions: types.compilerOption
     }
     else{
         providers.forEach((provider) => {
-            html += `                <a href="\${process.env.APP_HOST}/auth/${provider}">${provider}</a><br/>\n`;
+            html += `                <a href="\${process.env.APP_HOST}:\${process.env.APP_PORT}/auth/${provider}">${provider}</a><br/>\n`;
         });
     }
 
@@ -155,7 +155,7 @@ function loginHandler(providers: string[], compilerOptions: types.compilerOption
         const nonce = crypto.randomBytes(16).toString("base64");
         res.setHeader("Content-Security-Policy", \`script-src 'self' 'nonce-\${nonce}'\`);
         res.send(\`
-            <script nonce="\${nonce}" src="\${process.env.APP_HOST}/js/login.js"></script>
+            <script nonce="\${nonce}" src="\${process.env.APP_HOST}:\${process.env.APP_PORT}/js/login.js"></script>
             <body>${html}
         </body>\`);
         ` : `
@@ -208,8 +208,8 @@ function loginUI(providers: string[], compilerOptions: types.compilerOptions) {
         const nonce = crypto.randomBytes(16).toString("base64");
         res.setHeader("Content-Security-Policy", \`script-src 'self' 'nonce-\${nonce}'\`);
         res.send(\`
-            <script nonce="\${nonce}" src="\${process.env.APP_HOST}/js/mytokens.js"></script>
-            <link rel="stylesheet" href="\${process.env.APP_HOST}/css/style.css">
+            <script nonce="\${nonce}" src="\${process.env.APP_HOST}:\${process.env.APP_PORT}/js/mytokens.js"></script>
+            <link rel="stylesheet" href="\${process.env.APP_HOST}:\${process.env.APP_PORT}/css/style.css">
             <body>
                 <h1>My Token</h1>
                 <pre id="tokenData">{a:1,B:2}<code></pre>
@@ -225,8 +225,8 @@ function loginUI(providers: string[], compilerOptions: types.compilerOptions) {
         const nonce = crypto.randomBytes(16).toString("base64");
         res.setHeader("Content-Security-Policy", \`script-src 'self' 'nonce-\${nonce}'\`);
         res.send(\`
-            <script nonce="\${nonce}" src="\${process.env.APP_HOST}/js/refreshtokens.js"></script>
-            <link rel="stylesheet" href="\${process.env.APP_HOST}/css/style.css">
+            <script nonce="\${nonce}" src="\${process.env.APP_HOST}:\${process.env.APP_PORT}/js/refreshtokens.js"></script>
+            <link rel="stylesheet" href="\${process.env.APP_HOST}:\${process.env.APP_PORT}/css/style.css">
             <body>
                 <h1>New Token</h1>
                 <pre id="tokenData">{a:1,B:2}<code></pre>
@@ -243,8 +243,8 @@ function loginUI(providers: string[], compilerOptions: types.compilerOptions) {
 
         res.setHeader("Content-Security-Policy", \`script-src 'self' 'nonce-\${nonce}'\`);
         res.send(\`
-            <script nonce="\${nonce}" src="\${process.env.APP_HOST}/js/logincallback.js"></script>
-            <link rel="stylesheet" href="\${process.env.APP_HOST}/css/style.css">
+            <script nonce="\${nonce}" src="\${process.env.APP_HOST}:\${process.env.APP_PORT}/js/logincallback.js"></script>
+            <link rel="stylesheet" href="\${process.env.APP_HOST}:\${process.env.APP_PORT}/css/style.css">
             <body>
                 <h1>Profile Data</h1>
                 <pre id="tokenData"></pre>
