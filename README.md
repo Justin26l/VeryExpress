@@ -54,7 +54,20 @@ eventually lead to a usefull and powerful framework.
     npm run start
     ```
 
-# Resource
+## Project Versioning
+This project use versioning based on (Semantic Versioning)[https://semver.org/]
+
+Use this instead :  
+  ```cmd
+  npm run v <version-type>
+  ```
+Version Types :  
+- `major` version when you make incompatible API changes  
+- `minor` version when you add functionality in a backward compatible manner  
+- `patch` version when you make backward compatible bug fixes  
+- `dev` simply mark for development, you should not publish under this versions  
+
+# Resources
 - [Documents](./docs/)
 - [Road Map](./docs/roadMap/)
 - [ReleaseNote](./docs/releaseNote)
