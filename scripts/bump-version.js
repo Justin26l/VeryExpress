@@ -46,8 +46,9 @@ pkg.version = newVersion;
 fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
 console.log(`Bumped version (${mode}) to`, newVersion);
 
-// Add git tag for dev versioning
+// Add git tag for versioning
 try {
+  execSync(`git commit -am "v${newVersion}"`);
   execSync(`git tag v${newVersion}`);
   console.log(`Created git tag v${newVersion}`);
 } catch (e) {
