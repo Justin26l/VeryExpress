@@ -174,6 +174,7 @@ function buildForeinKeyOptions(
 
     return foreignKeys;
 }
+
 function processSchema(options: {
     fieldName: string,
     required?: boolean,
