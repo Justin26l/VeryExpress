@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 
 import json2mongoose from "json2mongoose";
-import * as openapiGen from "./generators/app/openapi.generator";
+// import * as openapiGen from "./generators/app/openapi.generator";
 
 import utils from "./utils";
 import log from "./utils/logger";
@@ -23,7 +23,7 @@ export async function generate(
     options: types.compilerOptions
 ): Promise<void> {
     utils.configChecker.checkConfigValid(options);
-    const openapiFile: string = "/openapi.gen.yaml";
+    // const openapiFile: string = "/openapi.gen.yaml";
     const documents: { path: string, config: types.documentConfig, schema: types.jsonSchema }[] = [];
     const documentPaths: { [key: string]: string } = {};
 
@@ -54,7 +54,7 @@ export async function generate(
     if (!fs.existsSync(options.rootDir)) { fs.mkdirSync(options.rootDir); }
     if (!fs.existsSync(options.srcDir)) { fs.mkdirSync(options.srcDir); }
     if (!fs.existsSync(options.sysDir)) { fs.mkdirSync(options.sysDir); }
-    if (!fs.existsSync(options.openapiDir)) { fs.mkdirSync(options.openapiDir); }
+    // if (!fs.existsSync(options.openapiDir)) { fs.mkdirSync(options.openapiDir); }
     if (!fs.existsSync(dir.roleSrcDir)) { fs.mkdirSync(dir.roleSrcDir); }
     Object.values(dir).forEach((path: string) => {
         if (!fs.existsSync(path)) { fs.mkdirSync(path); }
@@ -68,7 +68,7 @@ export async function generate(
     utils.common.copyDir(`${__dirname}/templates/_services`, dir.serviceDir, options, true);
     utils.common.copyDir(`${__dirname}/templates/_types`, dir.typeDir, options, true);
     utils.common.copyDir(`${__dirname}/templates/_utils`, dir.utilsDir, options, true);
-    utils.common.copyDir(`${__dirname}/templates/root`, options.rootDir, options, true);
+    utils.common.copyDir(`${__dirname}/templates/root`, options.rootDir, options, false);
     utils.common.copyDir(`${__dirname}/templates/jsonSchema`, options.jsonSchemaDir, options, true);
 
     // format role schema
@@ -114,11 +114,11 @@ export async function generate(
     }
 
     // generate openapi from jsonSchema
-    await openapiGen.compile(
-        openapiFile, 
-        options
-    );
-    utils.common.copyDir(`${options.openapiDir}`, path.posix.join(options.srcDir, "openapi"), options, true);
+    // await openapiGen.compile(
+    //     openapiFile, 
+    //     options
+    // );
+    // utils.common.copyDir(`${options.openapiDir}`, path.posix.join(options.srcDir, "openapi"), options, true);
 
     // generate dynamic files
     await Promise.all(documents.map( async (doc: { path: string, config: types.documentConfig, schema: types.jsonSchema }) => {
@@ -165,7 +165,6 @@ export async function generate(
     // make route from routeData
     await routeGen.compile({
         routesArr: routeData,
-        openapiFile: openapiFile,
         routesDir: dir.routeDir,
         compilerOptions: options || utils.generator.defaultCompilerOptions
     });
