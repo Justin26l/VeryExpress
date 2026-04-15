@@ -34,7 +34,7 @@ export async function compile(options: {
     const controllerToModelBasePath: string = utils.common.relativePath(options.compilerOptions.sysDir, options.modelDir);
     const endpointsValidator: {
         [key: string]: { // path
-            [key: string]: Schema | Boolean // methods
+            [key: string]: Schema | boolean // methods
         }
     } = {};
 
@@ -64,7 +64,7 @@ export async function compile(options: {
     endpointsValidator[endpoint + "/{id}"] = {};
     endpointsValidator[endpoint + "/search"] = {};
     if (schemaConfig.methods.includes("get")) endpointsValidator[endpoint + "/{id}"].get = idValidators;
-    if (schemaConfig.methods.includes("put")) endpointsValidator[endpoint + "/{id}"].put = Object.assign({}, idValidators, bodyValidators);;
+    if (schemaConfig.methods.includes("put")) endpointsValidator[endpoint + "/{id}"].put = Object.assign({}, idValidators, bodyValidators);
     if (schemaConfig.methods.includes("patch")) endpointsValidator[endpoint + "/{id}"].patch = Object.assign({}, idValidators, bodyValidators); 
     if (schemaConfig.methods.includes("delete")) endpointsValidator[endpoint + "/{id}"].delete = idValidators;
     if (schemaConfig.methods.includes("post")) endpointsValidator[endpoint].post = bodyValidators; // body validator will be assigned later after processing schema properties

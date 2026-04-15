@@ -121,9 +121,9 @@ export default class VexDbConnector {
             this.sqlConnection.raw("select 1").then(() => {
                 utils.log.infoSql("SQL DB Connection established");
             })
-            .catch((err:any) => {
-                utils.log.errorSql("Failed to establish SQL DB connection", err);
-            });
+                .catch((err:any) => {
+                    utils.log.errorSql("Failed to establish SQL DB connection", err);
+                });
 
             return this.sqlConnection;
         }
