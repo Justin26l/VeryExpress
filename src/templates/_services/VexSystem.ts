@@ -22,7 +22,7 @@ export default class VexSystem {
         return async (req: Request, res: Response) => {
             try {
                 const validation = validationResult(req);
-		        if (!validation.isEmpty()) throw new VexResponsePayloadError(validation.array());
+                if (!validation.isEmpty()) throw new VexResponsePayloadError(validation.array());
                 return await handler(req, res);
             }
             catch (err: any) {
@@ -33,7 +33,7 @@ export default class VexSystem {
                     });
                 }
                 else if (err instanceof VexResponsePayloadError) {
-                    return utils.response.send(res, err.status, { 
+                    return utils.response.send(res, err.status, {
                         code: err.ret_code,
                         message: err.message,
                         result: err.result  
