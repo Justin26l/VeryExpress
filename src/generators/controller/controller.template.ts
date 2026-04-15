@@ -128,9 +128,9 @@ export default new {{documentName}}Controller().router;
         /{{getListRoute}}/g, 
         !templateOptions.validators[templateOptions.endpoint+"/search"]?.post ? `
         // getListRoute disabled` : `
-        this.router.post('/search',  
-            this.vexSystem.RouteHandler(getList${templateOptions.documentName}.bind(this)),
-        ));`
+        this.router.post('/search',
+            this.vexSystem.RouteHandler(this.getList${templateOptions.documentName}.bind(this))
+        );`
     );
 
     // populate options

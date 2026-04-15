@@ -2,7 +2,7 @@
 import { Request, Response } from "express";
 import utils from "./../_utils";
 import VexResponseError from "../_types/VexResponseError.gen";
-import VexResponsePayloadError from "../_types/VexResponsePayloadError";
+import VexResponsePayloadError from "../_types/VexResponsePayloadError.gen";
 import { validationResult } from "express-validator";
 
 export default class VexSystem {

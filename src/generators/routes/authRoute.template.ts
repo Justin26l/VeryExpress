@@ -84,7 +84,7 @@ export default class AuthRouter {
     if(compilerOptions.auth.localAuth || compilerOptions.auth.oauthProviders) {
         template = template.replace(/{{pathTokenExchangeAndRefresh}}/g, `
         // Exchange an authorization code for tokens.
-        this.router.post('/token', (req, res) => vexSystem.RouteHandler(req, res, async ()=> {
+        this.router.post('/token', vexSystem.RouteHandler(async (req, res) => {
             
             // todo: disable this route if use httpOnly Cookie
             
@@ -123,7 +123,7 @@ export default class AuthRouter {
         }));
 
         // Refresh expired tokens by refresh token.
-        this.router.post('/refresh', (req, res) => vexSystem.RouteHandler(req, res, async () => {
+        this.router.post('/refresh', vexSystem.RouteHandler(async (req, res) => {
             
             // todo: change this return if use httpOnly Cookie
 
