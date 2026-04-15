@@ -50,6 +50,63 @@ export function formatJsonSchema(jsonSchemaPath: string, compilerOptions: types.
     // format properties boolean "required" into array of string
     jsonSchema.required = getRequiredArrStr(jsonSchema, jsonSchemaPath);
 
+    // additional validation for SQL target
+    if (compilerOptions && compilerOptions.dbType === "sql") {
+        // walk schema and warn if nested object/array contain unsupported metadata
+        const problems: string[] = [];
+        const walk = (schemaItem: types.jsonSchemaPropsItem | types.jsonSchema, ctxPath: string) => {
+            if (!schemaItem) return;
+            // if object type, examine properties
+            if (schemaItem.type === "object" && schemaItem.properties) {
+                for (const k of Object.keys(schemaItem.properties)) {
+                    const p = schemaItem.properties[k];
+                    const pPath = ctxPath ? `${ctxPath}.${k}` : k;
+                    // if nested object or array-of-object, check metadata inside it
+                    if (p.type === "object") {
+                        // check properties of this nested object for forbidden flags
+                        if (p.properties) {
+                            for (const nn of Object.keys(p.properties)) {
+                                const np = p.properties[nn];
+                                if (np && (np.index || np["x-foreignKey"] || np["x-vexData"] || np["x-vex-data"])) {
+                                    problems.push(`${pPath}.${nn}`);
+                                }
+                            }
+                        }
+                        walk(p, pPath);
+                    }
+                    else if (p.type === "array" && p.items && p.items.type === "object") {
+                        // array of objects - inspect item properties
+                        if (p.items.properties) {
+                            for (const nn of Object.keys(p.items.properties)) {
+                                const np = p.items.properties[nn];
+                                if (np && (np.index || np["x-foreignKey"] || np["x-vexData"] || np["x-vex-data"])) {
+                                    problems.push(`${pPath}[].${nn}`);
+                                }
+                            }
+                        }
+                        walk(p.items, pPath + "[]");
+                    }
+                    else {
+                        // normal property, but if it's object/array further down
+                        walk(p, pPath);
+                    }
+                }
+            }
+            // if array root with object items
+            else if (schemaItem.type === "array" && schemaItem.items) {
+                walk(schemaItem.items, ctxPath + "[]");
+            }
+        };
+
+        walk(jsonSchema, "");
+
+        if (problems.length > 0) {
+            problems.forEach((p) => {
+                log.warn(`SQL target: ${jsonSchemaPath} nested object/array contains unsupported index/x-foreignKey/x-vex-data -> ${p}. Consider modelling as separate document/table.`);
+            });
+        }
+    }
+
     utils.common.writeFile("Json Schema Formatting", jsonSchemaPath, JSON.stringify(jsonSchema, null, 4));
 
     return jsonSchema;

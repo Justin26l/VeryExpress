@@ -24,7 +24,7 @@
                         "type": "string",
                         "index": true
                     },
-                    "authId": {
+                    "oauthId": {
                         "type": "string",
                         "index": true
                     },

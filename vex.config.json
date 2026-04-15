@@ -33,5 +33,6 @@
     "generator": {
         "commitBeforeGenerate": false,
         "disableVersionLabel": false
-    }
+    },
+    "dbType": "sql"
 }

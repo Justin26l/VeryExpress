@@ -18,6 +18,8 @@ import * as roleGen from "./generators/role/role.generator";
 import * as controllerGen from "./generators/controller/controllers.generator";
 import * as routeGen from "./generators/routes/routes.generator";
 import * as serverGen from "./generators/app/server.generator";
+import * as knexGen from "./generators/db/knex.generator";
+import * as interfaceGen from "./generators/interface/generator";
 
 export async function generate(
     options: types.compilerOptions
@@ -103,6 +105,64 @@ export async function generate(
     });
 
     // generate roles
+    // If SQL target and normalization enabled, split nested object/array schemas into child documents
+    if (options.dbType === "sql" && options.generator) {
+        const newDocs: { path: string, config: types.documentConfig, schema: types.jsonSchema }[] = [];
+        const existingNames = new Set(documents.map(d => d.config.documentName));
+        for (const doc of documents) {
+            const props = doc.schema.properties || {};
+            for (const key of Object.keys(props)) {
+                const p = props[key];
+                if (!p) continue;
+                const isObj = p.type === "object" || (p.type === "json" && p.properties);
+                const isArrObj = p.type === "array" && p.items && (p.items.type === "object" || (p.items.type === "json" && p.items.properties));
+                if (isObj || isArrObj) {
+                    // generate unique child document name
+                    let childName = `${doc.config.documentName}_${key}`;
+                    let suffix = 1;
+                    while (existingNames.has(childName)) {
+                        suffix += 1;
+                        childName = `${doc.config.documentName}_${key}_${suffix}`;
+                    }
+                    existingNames.add(childName);
+
+                    // build child schema
+                    const childSchema: types.jsonSchema = {
+                        type: "object",
+                        ["x-documentConfig"]: { documentName: childName, methods: [] },
+                        properties: {},
+                    } as any;
+
+                    // source properties
+                    const sourceProps = isArrObj ? (p.items?.properties || {}) : (p.properties || {});
+                    for (const ck of Object.keys(sourceProps)) {
+                        childSchema.properties[ck] = sourceProps[ck];
+                    }
+
+                    // add parent foreign key property
+                    const parentFkName = `${doc.config.documentName.toLowerCase()}_id`;
+                    childSchema.properties[parentFkName] = {
+                        type: "integer",
+                        "x-foreignKey": doc.config.documentName,
+                        required: true,
+                    } as any;
+
+                    // add child doc to newDocs
+                    newDocs.push({ path: doc.path + `#${key}`, config: childSchema["x-documentConfig"], schema: childSchema });
+
+                    // remove nested prop from parent schema to avoid duplicate columns
+                    delete doc.schema.properties[key];
+                    if (Array.isArray(doc.schema.required)) {
+                        doc.schema.required = doc.schema.required.filter(r => r !== key);
+                    }
+                }
+            }
+        }
+
+        // append generated child docs to documents list
+        for (const nd of newDocs) documents.push(nd);
+    }
+
     if ( options.useRBAC && options.useRBAC.roles.length > 0 ){
         await roleGen.compile({
             collectionList: documents.map((doc) => doc.config.documentName),
@@ -122,20 +182,32 @@ export async function generate(
 
     // generate dynamic files
     await Promise.all(documents.map( async (doc: { path: string, config: types.documentConfig, schema: types.jsonSchema }) => {
-        
-        // make model
-        json2mongoose.modelsGen.compileFromFile(
-            doc.path,
-            `${utils.common.relativePath(dir.modelDir, dir.typeDir)}/${doc.config.documentName}.gen`,
-            `${dir.modelDir}/${doc.config.documentName}Model.gen.ts`,
-        );
-
-        // make interface
-        await json2mongoose.typesGen.compileFromFile(
-            doc.path,
-            `${dir.typeDir}/${doc.config.documentName}.gen.ts`,
-        );
-
+                
+        // generate knex migration when target is sql
+        if (options.dbType === "sql") {
+            await knexGen.compile({
+                jsonSchema: doc.schema,
+                outDir: dir.modelDir,
+                compilerOptions: options || utils.generator.defaultCompilerOptions,
+            });
+            await interfaceGen.compile(
+                doc.schema as any,
+                `${dir.typeDir}/${doc.config.documentName}.gen.ts`,
+                options || utils.generator.defaultCompilerOptions
+            );
+        }
+        // generate mongoose model & interfacewhen target is document
+        else if (options.dbType === "document") {
+            json2mongoose.modelsGen.compileFromFile(
+                doc.path,
+                `${utils.common.relativePath(dir.modelDir, dir.typeDir)}/${doc.config.documentName}.gen`,
+                `${dir.modelDir}/${doc.config.documentName}Model.gen.ts`,
+            );
+            await json2mongoose.typesGen.compileFromFile(
+                doc.path,
+                `${dir.typeDir}/${doc.config.documentName}.gen.ts`,
+            );
+        }
         // replace interface <import xxx from "./xxx";> to <import xxx from "./xxx.gen";>
         const interfaceContent = fs.readFileSync(`${dir.typeDir}/${doc.config.documentName}.gen.ts`, "utf8");
         const remappedContent = interfaceContent.replace(/import (.*) from ".\/(.*)";/g, (match,a,b)=>{

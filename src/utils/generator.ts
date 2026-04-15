@@ -70,7 +70,8 @@ export const defaultCompilerOptions: types.compilerOptions = {
     _:{
         // headerComment: "",
         writtedDir: [],
-    }
+    },
+    dbType: "sql",
 };
 
 export default {
