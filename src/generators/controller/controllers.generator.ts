@@ -70,8 +70,6 @@ export async function compile(options: {
     if (schemaConfig.methods.includes("post")) endpointsValidator[endpoint].post = bodyValidators; // body validator will be assigned later after processing schema properties
     if (schemaConfig.methods.includes("getList")) endpointsValidator[endpoint + "/search"].post = true; // no validator for getList (can be extended in the future)
 
-    console.log({endpointsValidator});
-
     const foreignKeysOptions: types.populateOptions = buildForeinKeyOptions(schema as types.jsonSchemaPropsItem);
     const outPath = `${options.controllerOutDir}/${schemaConfig.documentName}Controller.gen.ts`;
     const controllerToModelPath = `../${controllerToModelBasePath}/${schemaConfig.documentName}Model.gen`;

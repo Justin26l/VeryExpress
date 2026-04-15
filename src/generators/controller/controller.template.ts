@@ -41,20 +41,17 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
     public routes() {
         
         {{getListRoute}}
-
         {{getRoute}}
-
         {{postRoute}}
-
         {{putRoute}}
-
         {{patchRoute}}
-
         {{deleteRoute}}
 
     };
 
-    public async get{{documentName}}(req: Request, res: Response): Promise<Response> {
+
+    
+    protected async get{{documentName}}(req: Request, res: Response): Promise<Response> {
         const validationError = validationResult(req);
         if ( ! validationError.isEmpty() ) {
             return utils.response.send(res, 400, {
@@ -72,7 +69,7 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
         };
     }
 
-    public async getList{{documentName}}(req: Request, res: Response): Promise<Response> {
+    protected async getList{{documentName}}(req: Request, res: Response): Promise<Response> {
         const searchFilter = req.body._filter;
         const selectedFields = utils.common.parseFieldsSelect(req);
         const populateOptions = utils.common.parseCollectionJoin(req, {{populateOptions}});
@@ -85,7 +82,7 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
         return utils.response.send(res, 200, { result });
     }
 
-    public async create{{documentName}}(req: Request, res: Response): Promise<Response> {
+    protected async create{{documentName}}(req: Request, res: Response): Promise<Response> {
         const validationError = validationResult(req);
         if ( ! validationError.isEmpty() ) {
             return utils.response.send(res, 400, {
@@ -105,7 +102,7 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
         };
     };
 
-    public async update{{documentName}}(req: Request, res: Response): Promise<Response> {
+    protected async update{{documentName}}(req: Request, res: Response): Promise<Response> {
         const validationError = validationResult(req);
         if ( ! validationError.isEmpty() ) {
             return utils.response.send(res, 400, {
@@ -125,7 +122,7 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
         };
     }
 
-    public async replace{{documentName}}(req: Request, res: Response): Promise<Response> {
+    protected async replace{{documentName}}(req: Request, res: Response): Promise<Response> {
         const validationError = validationResult(req);
         if ( ! validationError.isEmpty() ) {
             return utils.response.send(res, 400, {
@@ -145,7 +142,7 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
         };
     }
 
-    public async delete{{documentName}}(req: Request, res: Response): Promise<Response> {
+    protected async delete{{documentName}}(req: Request, res: Response): Promise<Response> {
         const validationError = validationResult(req);
         if ( ! validationError.isEmpty() ) {
             return utils.response.send(res, 400, {
@@ -181,8 +178,8 @@ export default new {{documentName}}Controller().router;
         /{{getListRoute}}/g, 
         !templateOptions.validators[templateOptions.endpoint+"/search"]?.post ? `
         // getListRoute disabled` : `
-        this.router.post('/search', (req, res) => this.vexSystem.RouteHandler(req, res, () =>  
-            this.getList${templateOptions.documentName}(req,res)
+        this.router.post('/search',  
+            this.vexSystem.RouteHandler(getList${templateOptions.documentName}.bind(this)),
         ));`
     );
 
