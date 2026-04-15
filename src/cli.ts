@@ -51,7 +51,7 @@ async function main() {
     config.useRBAC = config.useRBAC || { roles: [], default: "", schemaIncluded: [] };
     config.useRBAC.roles = config.useRBAC.roles || ["user"];
     config.useRBAC.default = config.useRBAC.default || "user";
-    config.useRBAC.schemaIncluded = config.useRBAC.schemaIncluded || ["user"];
+    config.useRBAC.schemaIncluded = config.useRBAC.schemaIncluded || ["user"]; // TODO : remove this field, it is to find which file have "x-vexData=role", but we can just check "x-vexData" field directly. 
 
     // oauth
     config.auth = config.auth || {};

@@ -1,6 +1,8 @@
 APP_HOST=http://localhost
 APP_PORT=3000
 MONGODB_URI=mongodb://localhost:27017/veryExpressDB
+SQL_URI=postgresql://username:password@localhost:5432/mydatabase
+SQL_CA=""
 
 LOGIN_SUCCESS_REDIRECT_PATH=/logincallback
 LOGIN_FAILED_REDIRECT_PATH=/logincallback

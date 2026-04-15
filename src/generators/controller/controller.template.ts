@@ -202,9 +202,7 @@ export default new {{documentName}}Controller().router;
         // getRoute disabled` : `
         this.router.get('/:id', (req, res) => {
             checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint+"/{id}"].get, { depth: null }).replace(/^/gm, indent3) });
-            return this.vexSystem.RouteHandler(req, res, () => 
-                this.get${templateOptions.documentName}(req,res)
-            );
+            return this.vexSystem.RouteHandler(req, res, this.get${templateOptions.documentName}.bind(this));
         });`
     );
 
@@ -214,9 +212,7 @@ export default new {{documentName}}Controller().router;
         // postRoute disabled` : `
         this.router.post('/', (req, res) => {
             checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint].post, { depth: null }).replace(/^/gm, indent3) });
-            return this.vexSystem.RouteHandler(req, res, () => 
-                this.create${templateOptions.documentName}(req,res)
-            );
+            return this.vexSystem.RouteHandler(req, res, this.create${templateOptions.documentName}.bind(this));
         });`
     );
 
@@ -226,9 +222,7 @@ export default new {{documentName}}Controller().router;
         // putRoute disabled` : `
         this.router.put('/:id', (req, res) => {
             checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint+"/{id}"].put, { depth: null }).replace(/^/gm, indent3) });
-            return this.vexSystem.RouteHandler(req, res, () => 
-                this.replace${templateOptions.documentName}(req,res)
-            );
+            return this.vexSystem.RouteHandler(req, res, this.replace${templateOptions.documentName}.bind(this));
         });`
     );
     template = template.replace(
@@ -237,9 +231,7 @@ export default new {{documentName}}Controller().router;
         // patchRoute disabled` : `
         this.router.patch('/:id', (req, res) => {
             checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint+"/{id}"].patch, { depth: null }).replace(/^/gm, indent3) });
-            return this.vexSystem.RouteHandler(req, res, () => 
-                this.update${templateOptions.documentName}(req,res)
-            );
+            return this.vexSystem.RouteHandler(req, res, this.update${templateOptions.documentName}.bind(this));
         });`
     );
 
@@ -249,9 +241,7 @@ export default new {{documentName}}Controller().router;
         // deleteRoute disabled` : `
         this.router.delete('/:id', (req, res) => {
             checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint+"/{id}"].delete, { depth: null }).replace(/^/gm, indent3) });
-            return this.vexSystem.RouteHandler(req, res, () => 
-                this.delete${templateOptions.documentName}(req,res)
-            );
+            return this.vexSystem.RouteHandler(req, res, this.delete${templateOptions.documentName}.bind(this));
         });`
     );
 
