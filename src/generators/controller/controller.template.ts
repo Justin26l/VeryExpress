@@ -41,38 +41,22 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
     public routes() {
         
         {{getListRoute}}
-
         {{getRoute}}
-
         {{postRoute}}
-
         {{putRoute}}
-
         {{patchRoute}}
-
         {{deleteRoute}}
 
-    };
-
-    public async get{{documentName}}(req: Request, res: Response): Promise<Response> {
-        const validationError = validationResult(req);
-        if ( ! validationError.isEmpty() ) {
-            return utils.response.send(res, 400, {
-                code: utils.response.code.err_validation, 
-                result: validationError.array()
-            });
-        };
-
-        const result = await {{documentName}}Model.findById(req.params.id){{populateAll}};
-        if (!result) {
-            return utils.response.send(res, 404);
-        }
-        else {
-            return utils.response.send(res, 200, { result });
-        };
     }
 
-    public async getList{{documentName}}(req: Request, res: Response): Promise<Response> {
+    public async get{{documentName}}(req: Request, res: Response): Promise<Response> {
+        const result = await {{documentName}}Model.findById(req.params.id){{populateAll}};
+        if (!result) throw new VexResponseError(404, utils.response.code.err_not_found);
+        
+        return utils.response.send(res, 200, { result });
+    }
+
+    protected async getList{{documentName}}(req: Request, res: Response): Promise<Response> {
         const searchFilter = req.body._filter;
         const selectedFields = utils.common.parseFieldsSelect(req);
         const populateOptions = utils.common.parseCollectionJoin(req, {{populateOptions}});
@@ -86,83 +70,37 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
     }
 
     public async create{{documentName}}(req: Request, res: Response): Promise<Response> {
-        const validationError = validationResult(req);
-        if ( ! validationError.isEmpty() ) {
-            return utils.response.send(res, 400, {
-                code: utils.response.code.err_validation, 
-                result: validationError.array()
-            });
-        };{{check_id}}
+        {{clean_id}}
         
         const result = await {{documentName}}Model.create(req.body);
-        if (!result) {
-            return utils.response.send(res, 400, {
-                code: utils.response.code.err_create
-            });
-        }
-        else {
-            return utils.response.send(res, 201, {result});
-        };
-    };
+        if (!result) throw new VexResponseError(400, utils.response.code.err_create);
+        
+        return utils.response.send(res, 201, {result});
+    }
 
     public async update{{documentName}}(req: Request, res: Response): Promise<Response> {
-        const validationError = validationResult(req);
-        if ( ! validationError.isEmpty() ) {
-            return utils.response.send(res, 400, {
-                code: utils.response.code.err_validation, 
-                result: validationError.array()
-            });
-        };{{check_id}}
+        {{clean_id}}
 
         const result = await {{documentName}}Model.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        if (!result) {
-            return utils.response.send(res, 404, {
-                code: utils.response.code.err_update
-            });
-        }
-        else {
-            return utils.response.send(res, 200, { result });
-        };
+        if (!result) throw new VexResponseError(404, utils.response.code.err_update);
+        
+        return utils.response.send(res, 200, { result });
     }
 
     public async replace{{documentName}}(req: Request, res: Response): Promise<Response> {
-        const validationError = validationResult(req);
-        if ( ! validationError.isEmpty() ) {
-            return utils.response.send(res, 400, {
-                code: utils.response.code.err_validation, 
-                result: validationError.array()
-            });
-        };{{check_id}}
-        
+        {{clean_id}}
+
         const result = await {{documentName}}Model.replaceOne({_id: req.params.id}, req.body);
-        if (!result) {
-            return utils.response.send(res, 404, { 
-                code: utils.response.code.err_update
-            });
-        }
-        else {
-            return utils.response.send(res, 200, { result });
-        };
+        if (!result) throw new VexResponseError(404, utils.response.code.err_update);
+
+        return utils.response.send(res, 200, { result });
     }
 
     public async delete{{documentName}}(req: Request, res: Response): Promise<Response> {
-        const validationError = validationResult(req);
-        if ( ! validationError.isEmpty() ) {
-            return utils.response.send(res, 400, {
-                code: utils.response.code.err_validation, 
-                result: validationError.array()
-            });
-        };
-        
         const result = await {{documentName}}Model.findByIdAndDelete(req.params.id);
-        if (!result) {
-            return utils.response.send(res, 404, {
-                code: utils.response.code.err_delete
-            });
-        }
-        else {
-            return utils.response.send(res, 204, { result });
-        };
+        if (!result) throw new VexResponseError(404, utils.response.code.err_delete);
+        
+        return utils.response.send(res, 204, { result });
     }
 }
 
@@ -174,6 +112,15 @@ export default new {{documentName}}Controller().router;
     const indent3 = indent2+indent;
     const indent4 = indent3+indent;
 
+    function renderSchemaOneLevel(obj: any, baseIndent: string) {
+        if (!obj) return "{}";
+        const lines: string[] = [];
+        for (const key of Object.keys(obj)) {
+            lines.push(`${key}: ${util.inspect(obj[key], { depth: null, compact: true, breakLength: Infinity })}`);
+        }
+        return `{\n${lines.map(l => baseIndent + indent + l).join(",\n")}\n${baseIndent}}`;
+    }
+
     template = template.replace(/{{documentName}}/g, templateOptions.documentName);
     template = template.replace(/{{modelPath}}/g, templateOptions.modelPath);
 
@@ -181,9 +128,9 @@ export default new {{documentName}}Controller().router;
         /{{getListRoute}}/g, 
         !templateOptions.validators[templateOptions.endpoint+"/search"]?.post ? `
         // getListRoute disabled` : `
-        this.router.post('/search', (req, res) => this.vexSystem.RouteHandler(req, res, () =>  
-            this.getList${templateOptions.documentName}(req,res)
-        ));`
+        this.router.post('/search',
+            this.vexSystem.RouteHandler(this.getList${templateOptions.documentName}.bind(this))
+        );`
     );
 
     // populate options
@@ -200,67 +147,54 @@ export default new {{documentName}}Controller().router;
         /{{getRoute}}/g, 
         !templateOptions.validators[templateOptions.endpoint+"/{id}"]?.get ? `
         // getRoute disabled` : `
-        this.router.get('/:id', (req, res) => {
-            checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint+"/{id}"].get, { depth: null }).replace(/^/gm, indent3) });
-            return this.vexSystem.RouteHandler(req, res, () => 
-                this.get${templateOptions.documentName}(req,res)
-            );
-        });`
+        this.router.get('/:id', 
+            checkSchema(${ renderSchemaOneLevel(templateOptions.validators[templateOptions.endpoint+"/{id}"].get, indent3) }),
+            this.vexSystem.RouteHandler((this.get${templateOptions.documentName}.bind(this)))
+        );`
     );
 
     template = template.replace(
         /{{postRoute}}/g, 
         !templateOptions.validators[templateOptions.endpoint]?.post ? `
         // postRoute disabled` : `
-        this.router.post('/', (req, res) => {
-            checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint].post, { depth: null }).replace(/^/gm, indent3) });
-            return this.vexSystem.RouteHandler(req, res, () => 
-                this.create${templateOptions.documentName}(req,res)
-            );
-        });`
+        this.router.post('/', 
+            checkSchema(${ renderSchemaOneLevel(templateOptions.validators[templateOptions.endpoint].post, indent3) }),
+            this.vexSystem.RouteHandler((this.create${templateOptions.documentName}.bind(this)))
+        );`
     );
 
     template = template.replace(
         /{{putRoute}}/g, 
         !templateOptions.validators[templateOptions.endpoint+"/{id}"]?.put ? `
         // putRoute disabled` : `
-        this.router.put('/:id', (req, res) => {
-            checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint+"/{id}"].put, { depth: null }).replace(/^/gm, indent3) });
-            return this.vexSystem.RouteHandler(req, res, () => 
-                this.replace${templateOptions.documentName}(req,res)
-            );
-        });`
+        this.router.put('/:id', 
+            checkSchema(${ renderSchemaOneLevel(templateOptions.validators[templateOptions.endpoint+"/{id}"].put, indent3) }),
+            this.vexSystem.RouteHandler((this.replace${templateOptions.documentName}.bind(this)))
+        );`
     );
     template = template.replace(
         /{{patchRoute}}/g, 
         !templateOptions.validators[templateOptions.endpoint+"/{id}"]?.patch ? `
         // patchRoute disabled` : `
-        this.router.patch('/:id', (req, res) => {
-            checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint+"/{id}"].patch, { depth: null }).replace(/^/gm, indent3) });
-            return this.vexSystem.RouteHandler(req, res, () => 
-                this.update${templateOptions.documentName}(req,res)
-            );
-        });`
+        this.router.patch('/:id', 
+            checkSchema(${ renderSchemaOneLevel(templateOptions.validators[templateOptions.endpoint+"/{id}"].patch, indent3) }),
+            this.vexSystem.RouteHandler((this.update${templateOptions.documentName}.bind(this)))
+        );`
     );
 
     template = template.replace(
         /{{deleteRoute}}/g, 
         !templateOptions.validators[templateOptions.endpoint+"/{id}"]?.delete ? `
         // deleteRoute disabled` : `
-        this.router.delete('/:id', (req, res) => {
-            checkSchema(${ util.inspect(templateOptions.validators[templateOptions.endpoint+"/{id}"].delete, { depth: null }).replace(/^/gm, indent3) });
-            return this.vexSystem.RouteHandler(req, res, () => 
-                this.delete${templateOptions.documentName}(req,res)
-            );
-        });`
+        this.router.delete('/:id', 
+            checkSchema(${ renderSchemaOneLevel(templateOptions.validators[templateOptions.endpoint+"/{id}"].delete, indent3) }),
+            this.vexSystem.RouteHandler((this.delete${templateOptions.documentName}.bind(this)))
+        );`
     );
 
     template = template.replace(
-        /{{check_id}}/g, 
-        templateOptions.compilerOptions.app.allowApiCreateUpdate_id ? "" : `
-            if (req.body._id) {
-                delete req.body._id;
-            };`
+        /{{clean_id}}/g, 
+        templateOptions.compilerOptions.app.allowApiCreateUpdate_id ? "" : "if (req.body._id) delete req.body._id;"
     );
 
     return utils.template.format(template);

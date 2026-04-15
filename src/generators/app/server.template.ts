@@ -1,5 +1,4 @@
 import  utils from "../../utils";
-
 import * as types from "../../types/types";
 
 // import
@@ -47,7 +46,9 @@ const helmetConfig = {
 };
 
 const vexDB = new VexDbConnector({
-    mongoUrl: process.env.MONGODB_URI,
+    mongoUrl: process.env.MONGODB_URI ?? undefined,
+    sqlUrl: process.env.SQL_URI ?? undefined,
+    sqlCa: process.env.SQL_CA ?? undefined,
     recordAccessLog: false,
 });
 
@@ -77,8 +78,7 @@ async function main(): Promise<void> {
     {{loginUI}}
 
     app.listen(process.env.APP_PORT, () => {
-        if (!process.env.MONGODB_URI) throw new Error('MONGODB_URI is not defined');
-        vexDB.connectMongo();
+        vexDB.connect();
         log.ok(\`Server is running on : \${process.env.APP_HOST}:\${process.env.APP_PORT}\`);
     });
 

@@ -39,6 +39,21 @@ export async function compile(
         packageJson.scripts.start = "node ./dist/server.js";
     }
 
+
+    // compare loaded packageJson with template, if there are missing packages in loaded packageJson, add them from template
+    for (const [key, value] of Object.entries(packangeJsonTemplate.dependencies)) {
+        if (!packageJson.dependencies[key]) {
+            log.process(`package.json : Add dependency : ${key} > ${value}`);
+            packageJson.dependencies[key] = value;
+        }
+    }
+    for (const [key, value] of Object.entries(packangeJsonTemplate.devDependencies)) {
+        if (!packageJson.devDependencies[key]) {
+            log.process(`package.json : Add devDependency : ${key} > ${value}`);
+            packageJson.devDependencies[key] = value;
+        }
+    }
+
     utils.common.writeFile(`Project Settings : ${packageOutPath}`, packageOutPath, JSON.stringify(packageJson, null, 4));
 
     return;

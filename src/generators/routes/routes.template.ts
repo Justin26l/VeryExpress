@@ -3,7 +3,6 @@ import * as utilsGenerator from "./../../utils/generator";
 
 export default function routesTemplate(options: {
     template?: string,
-    openapiFile?: string,
     routes: {
         route: string,
         documentName: string,

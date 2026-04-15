@@ -1,6 +1,3 @@
-import fs from "fs";
-import jsYaml from "js-yaml";
-import path from "path";
 
 import controllerTemplate from "./controller.template";
 
@@ -11,144 +8,83 @@ import * as types from "./../../types/types";
 import * as openapiType from "./../../types/openapi";
 import { Schema } from "express-validator";
 
+// id validator
+const idValidators: Schema = processSchema({ fieldName: "id", required: true, param: {
+    name: "id",
+    in: "path",
+    required: true,
+    schema: { type: "string", ["x-format"]: "ObjectId" } as any,
+}});
+
 /**
- * compile openapi to controller source code
+ * compile jsonschema to controller source code
  * @param controllerOutDir output directory
  * @param modelDir
- * @param openapiFile
  * @param options 
  */
 export async function compile(options: {
-    documentPaths: { [key: string]: string },
-    openapiFile: string,
+    jsonSchema: types.jsonSchema,
     controllerOutDir: string,
     modelDir: string,
     compilerOptions: types.compilerOptions
 }): Promise<void> {
-    const file: string = fs.readFileSync(path.posix.join(options.compilerOptions.openapiDir, options.openapiFile), "utf8");
+    const schema = options.jsonSchema as types.jsonSchema;
+    const schemaConfig = schema["x-documentConfig"];
+    const endpoint = (`/${schemaConfig.documentName}`).toLowerCase();
     const controllerToModelBasePath: string = utils.common.relativePath(options.compilerOptions.sysDir, options.modelDir);
-
-    const openApi: openapiType.openapi = jsYaml.load(file) as openapiType.openapi;
-    const docsToBeGenerate: {[key:string]: string} = {}; // {documentName:endpoint}
     const endpointsValidator: {
         [key: string]: { // path
-            [key: string]: Schema // methods
+            [key: string]: Schema | boolean // methods
         }
     } = {};
 
-    // loop path
-    Object.keys(openApi.paths).forEach((endpoint: string) => {
+    log.process(`Controller : ${schemaConfig.documentName} > ${endpoint}`);
 
-        // build docsToBeGenerate
-        const documentName: string | undefined = openApi.paths[endpoint]["x-documentName"];
-        const endpointFormatted = endpoint.replace("/{id}", "").toLowerCase();
-
-        if (documentName === undefined) {
-            log.error(`"x-documentName" not found in openapi spec's path "${endpoint}"\n     - opanapi source: ${options.compilerOptions.openapiDir}`);
-            return;
-        }
-        // skip sensitive controller generation
-        else if (["Session"].includes(documentName)) {
-            return;
-        }
-        else if (!docsToBeGenerate[documentName]) {
-            docsToBeGenerate[documentName] = endpointFormatted;
-            log.process(`Controller : ${documentName} > ${endpointFormatted}`);
-        }
-
-        // build endpointsValidator
-        endpointsValidator[endpoint] = {};
-
-        // make validator
-        Object.keys(openApi.paths[endpoint]).forEach((httpMethod: string) => {
-
-            // check method is in enum types.schemaMethod
-            if (!Object.values(types.httpMethodArr).includes(httpMethod as types.httpMethod)) return;
-            const methodEnum: types.httpMethod = httpMethod as types.httpMethod;
-
-            const validators: Schema = Object.assign(
-                buildParamValidator(endpoint, methodEnum, openApi),
-                buildBodyValidator(endpoint, methodEnum, openApi)
-            );
-
-            endpointsValidator[endpoint][httpMethod] = validators;
-        });
-    });
-
-
-    // create controllers for each json schema document
-    Object.keys(docsToBeGenerate).forEach((documentName: string) => {
-        const endpoint: string = docsToBeGenerate[documentName];
-
-        const schema = utils.common.loadJson<types.jsonSchemaPropsItem>(options.documentPaths[documentName]);
-        const foreignKeysOptions: types.populateOptions = buildForeinKeyOptions(schema);
-        const outPath = `${options.controllerOutDir}/${documentName}Controller.gen.ts`;
-        const controllerToModelPath = `../${controllerToModelBasePath}/${documentName}Model.gen`;
-        utils.common.writeFile("Controller",
-            outPath,
-            controllerTemplate({
-                endpoint: endpoint,
-                modelPath: controllerToModelPath,
-                documentName: documentName,
-                validators: endpointsValidator,
-                populateOptions: foreignKeysOptions,
-                compilerOptions: options.compilerOptions,
-            })
-        );
-    });
-
-    return;
-
-}
-
-function buildParamValidator(
-    endpoint: string,
-    httpMethod: types.httpMethod,
-    openapi: openapiType.openapi,
-): Schema {
-
-    const validators: Schema = {};
-
-    openapi.paths[endpoint][httpMethod]!.parameters.forEach((parameter: openapiType.parameter) => {
-        Object.assign(
-            validators,
-            processSchema({
-                fieldName: parameter.name,
-                required: parameter.required,
-                param: parameter,
-            })
-        );
-    });
-
-    return validators;
-}
-
-function buildBodyValidator(
-    endpoint: string,
-    httpMethod: types.httpMethod,
-    openapi: openapiType.openapi,
-): Schema {
-
-    const validators: Schema = {};
-
-    const referencePath: string | undefined = openapi.paths[endpoint][httpMethod]?.requestBody?.content?.["application/json"]?.schema.$ref || openapi.paths[endpoint][httpMethod]?.requestBody?.content?.schema?.$ref;
-    const reference: string | undefined = referencePath ? referencePath.split("/").pop() : undefined;
-    const components: openapiType.componentsSchemaValue | undefined = reference ? openapi.components.schemas[reference] : undefined;
-
-    if (components !== undefined) {
-        for (const key in components.properties) {
+    // Build endpointsValidator paths
+    // /endpoint : "post" | 
+    // /endpoint/{id} : "get" | "put" | "patch" | "delete"
+    // /endpoint/search "getList";
+    // build body validators for create/replace/update from schema properties
+    const bodyValidators: Schema = {};
+    if (schema && schema.type === "object") {
+        for (const key in schema.properties) {
             Object.assign(
-                validators,
+                bodyValidators,
                 processSchema({
                     fieldName: key,
-                    body: components.properties[key],
-                    required: components.required?.includes(key) || components.properties[key].required,
+                    body: schema.properties[key],
+                    required: schema.required?.includes(key) || schema.properties[key].required,
                 })
             );
         }
     }
 
-    return validators;
+    // assign validators for routes
+    endpointsValidator[endpoint] = {};
+    endpointsValidator[endpoint + "/{id}"] = {};
+    endpointsValidator[endpoint + "/search"] = {};
+    if (schemaConfig.methods.includes("get")) endpointsValidator[endpoint + "/{id}"].get = idValidators;
+    if (schemaConfig.methods.includes("put")) endpointsValidator[endpoint + "/{id}"].put = Object.assign({}, idValidators, bodyValidators);
+    if (schemaConfig.methods.includes("patch")) endpointsValidator[endpoint + "/{id}"].patch = Object.assign({}, idValidators, bodyValidators); 
+    if (schemaConfig.methods.includes("delete")) endpointsValidator[endpoint + "/{id}"].delete = idValidators;
+    if (schemaConfig.methods.includes("post")) endpointsValidator[endpoint].post = bodyValidators; // body validator will be assigned later after processing schema properties
+    if (schemaConfig.methods.includes("getList")) endpointsValidator[endpoint + "/search"].post = true; // no validator for getList (can be extended in the future)
+
+    const foreignKeysOptions: types.populateOptions = buildForeinKeyOptions(schema as types.jsonSchemaPropsItem);
+    const outPath = `${options.controllerOutDir}/${schemaConfig.documentName}Controller.gen.ts`;
+    const controllerToModelPath = `../${controllerToModelBasePath}/${schemaConfig.documentName}Model.gen`;
+    
+    utils.common.writeFile("Controller",
+        outPath,
+        controllerTemplate({
+            endpoint: endpoint,
+            modelPath: controllerToModelPath,
+            documentName: schemaConfig.documentName,
+            validators: endpointsValidator,
+            populateOptions: foreignKeysOptions,
+            compilerOptions: options.compilerOptions,
+        })
+    );
 }
 
 function buildForeinKeyOptions(
@@ -159,21 +95,23 @@ function buildForeinKeyOptions(
     }
 
     let foreignKeys: types.populateOptions = {};
+    const props = schema.properties || {};
 
-    for (const key in schema.properties) {
-        if (schema.properties[key]["x-foreignKey"]) {
-            foreignKeys[key] = schema.properties[key]["x-foreignValue"]?.join(" ") || "";
+    for (const key in props) {
+        if (props[key]["x-foreignKey"]) {
+            foreignKeys[key] = props[key]["x-foreignValue"]?.join(" ") || "";
         }
-        else if (schema.properties[key].type === "array" && schema.properties[key].items?.["x-foreignKey"]) {
-            foreignKeys[key] = schema.properties[key].items["x-foreignValue"]?.join(" ") || "";
+        else if (props[key].type === "array" && props[key].items?.["x-foreignKey"]) {
+            foreignKeys[key] = props[key].items["x-foreignValue"]?.join(" ") || "";
         }
-        else if (schema.properties[key].type === "object") {
-            foreignKeys = Object.assign(foreignKeys, buildForeinKeyOptions(schema.properties[key]));
+        else if (props[key].type === "object") {
+            foreignKeys = Object.assign(foreignKeys, buildForeinKeyOptions(props[key]));
         }
     }
 
     return foreignKeys;
 }
+
 function processSchema(options: {
     fieldName: string,
     required?: boolean,
@@ -237,7 +175,6 @@ function processSchema(options: {
             if (typeof validatorParam.custom !== "object" || validatorParam.custom === null) {
                 validatorParam.custom = {};
             }
-            // @ts-expect-error - type hell
             validatorParam.custom.options = "FUNC{{this.isObjectId}}";
             // call controller base class : _ControllerFactory.isObjectId()
             break;

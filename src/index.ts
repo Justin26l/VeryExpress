@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 
 import json2mongoose from "json2mongoose";
-import * as openapiGen from "./generators/app/openapi.generator";
+// import * as openapiGen from "./generators/app/openapi.generator";
 
 import utils from "./utils";
 import log from "./utils/logger";
@@ -23,8 +23,8 @@ export async function generate(
     options: types.compilerOptions
 ): Promise<void> {
     utils.configChecker.checkConfigValid(options);
-    const openapiFile: string = "/openapi.gen.yaml";
-    const documents: { path: string, config: types.documentConfig }[] = [];
+    // const openapiFile: string = "/openapi.gen.yaml";
+    const documents: { path: string, config: types.documentConfig, schema: types.jsonSchema }[] = [];
     const documentPaths: { [key: string]: string } = {};
 
     // set system options
@@ -54,7 +54,7 @@ export async function generate(
     if (!fs.existsSync(options.rootDir)) { fs.mkdirSync(options.rootDir); }
     if (!fs.existsSync(options.srcDir)) { fs.mkdirSync(options.srcDir); }
     if (!fs.existsSync(options.sysDir)) { fs.mkdirSync(options.sysDir); }
-    if (!fs.existsSync(options.openapiDir)) { fs.mkdirSync(options.openapiDir); }
+    // if (!fs.existsSync(options.openapiDir)) { fs.mkdirSync(options.openapiDir); }
     if (!fs.existsSync(dir.roleSrcDir)) { fs.mkdirSync(dir.roleSrcDir); }
     Object.values(dir).forEach((path: string) => {
         if (!fs.existsSync(path)) { fs.mkdirSync(path); }
@@ -68,7 +68,7 @@ export async function generate(
     utils.common.copyDir(`${__dirname}/templates/_services`, dir.serviceDir, options, true);
     utils.common.copyDir(`${__dirname}/templates/_types`, dir.typeDir, options, true);
     utils.common.copyDir(`${__dirname}/templates/_utils`, dir.utilsDir, options, true);
-    utils.common.copyDir(`${__dirname}/templates/root`, options.rootDir, options, true);
+    utils.common.copyDir(`${__dirname}/templates/root`, options.rootDir, options, false);
     utils.common.copyDir(`${__dirname}/templates/jsonSchema`, options.jsonSchemaDir, options, true);
 
     // format role schema
@@ -93,6 +93,7 @@ export async function generate(
             documents.push({
                 path: schemaPath,
                 config: jsonSchema["x-documentConfig"],
+                schema: jsonSchema,
             });
             documentPaths[jsonSchema["x-documentConfig"].documentName] = schemaPath;
         }
@@ -112,26 +113,26 @@ export async function generate(
         });
     }
 
-    // genarate opanapi from jsonSchema
-    await openapiGen.compile(
-        openapiFile, 
-        options
-    );
-    utils.common.copyDir(`${options.openapiDir}`, path.posix.join(options.srcDir, "openapi"), options, true);
+    // generate openapi from jsonSchema
+    // await openapiGen.compile(
+    //     openapiFile, 
+    //     options
+    // );
+    // utils.common.copyDir(`${options.openapiDir}`, path.posix.join(options.srcDir, "openapi"), options, true);
 
     // generate dynamic files
-    await Promise.all(documents.map( async (doc: { path: string, config: types.documentConfig }) => {
+    await Promise.all(documents.map( async (doc: { path: string, config: types.documentConfig, schema: types.jsonSchema }) => {
         
         // make model
         json2mongoose.modelsGen.compileFromFile(
-            `${doc.path}`,
+            doc.path,
             `${utils.common.relativePath(dir.modelDir, dir.typeDir)}/${doc.config.documentName}.gen`,
             `${dir.modelDir}/${doc.config.documentName}Model.gen.ts`,
         );
 
         // make interface
         await json2mongoose.typesGen.compileFromFile(
-            `${doc.path}`,
+            doc.path,
             `${dir.typeDir}/${doc.config.documentName}.gen.ts`,
         );
 
@@ -142,31 +143,28 @@ export async function generate(
         });
         utils.common.writeFile("Type-Remap",`${dir.typeDir}/${doc.config.documentName}.gen.ts`, remappedContent);
 
+        // generate controller
+        await controllerGen.compile({
+            jsonSchema: doc.schema,
+            controllerOutDir: dir.controllerDir,
+            modelDir: dir.modelDir,
+            compilerOptions: options || utils.generator.defaultCompilerOptions
+        });
 
-        // prepair route data
+        // prepare route data
         routeData.push({
             route: `/${doc.config.documentName}`,
             documentName: doc.config.documentName,
             controllerPath: path.posix.join(utils.common.relativePath(dir.routeDir, dir.controllerDir), doc.config.documentName + "Controller.gen"),
         });
 
-        
         return;
     }));
-
-    // genarate controller from open api
-    await controllerGen.compile({
-        documentPaths: documentPaths,
-        openapiFile: openapiFile,
-        controllerOutDir: dir.controllerDir,
-        modelDir: dir.modelDir,
-        compilerOptions: options || utils.generator.defaultCompilerOptions
-    });
+    
 
     // make route from routeData
     await routeGen.compile({
         routesArr: routeData,
-        openapiFile: openapiFile,
         routesDir: dir.routeDir,
         compilerOptions: options || utils.generator.defaultCompilerOptions
     });

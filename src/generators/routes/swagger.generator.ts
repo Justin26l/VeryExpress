@@ -9,7 +9,7 @@ export default class SwaggerRouter{
     private router: Router = Router();
 
     constructor() {
-        this.router.use("/", swaggerUi.serve, swaggerUi.setup(loadYaml(__dirname+"/../../openapi/openapi.gen.yaml") as JsonObject));
+        // this.router.use("/", swaggerUi.serve, swaggerUi.setup(loadYaml(__dirname+"/../../openapi/openapi.gen.yaml") as JsonObject));
     }
 
     public getRouter() {

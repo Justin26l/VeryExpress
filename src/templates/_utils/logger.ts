@@ -36,8 +36,8 @@ export function infoSql(msg: any, ...optionalParams: any[]): void {
     info("[SQL]", msg, optionalParams);
 }
 
-export function errorSql(msg: any, ...optionalParams: any[]): never {
-    error("[SQL]", msg, optionalParams);
+export function errorSql(msg: any, ...optionalParams: any[]): void {
+    errorNoExit("[SQL]", msg, optionalParams);
 }
 
 export default {

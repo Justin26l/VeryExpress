@@ -20,7 +20,6 @@ export async function compile(options: {
         controllerPath: string,
     }[],
     routesDir: string,
-    openapiFile: string,
     compilerOptions: types.compilerOptions
 }): Promise<void> {
 
@@ -56,7 +55,6 @@ export async function compile(options: {
         routesApiOutPath, 
         routesTemplate({
             routes: options.routesArr,
-            openapiFile: options.openapiFile,
             compilerOptions: options.compilerOptions,
         })
     );
