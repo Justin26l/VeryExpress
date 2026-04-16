@@ -1,23 +1,23 @@
 import * as jsonToTypescript from "json-schema-to-typescript";
 import log from "../../utils/logger";
-import { compilerOptions } from "../../types/types";
-import process from "process";
+import utils from "~/utils";
+import * as types from "~/types/types";
+// import { compilerOptions } from "../../types/types";
+// import process from "process";
 
-export async function compile(jsonSchema: jsonToTypescript.JSONSchema, outputPath: string, options?: compilerOptions) {
+export async function compile(jsonSchema: jsonToTypescript.JSONSchema, outputPath: string, compilerOptions: types.compilerOptions): Promise<void> {
     const title = String(outputPath.split("/").pop()?.split(".")[0]);
-    log.process(`Type : ${title} > ${outputPath}`);
-
-    return await jsonToTypescript
+    log.process(`Type : ${title} > ${outputPath}`); 
+    const content = await jsonToTypescript
         .compile(jsonSchema, title, {
             $refOptions: {},
             additionalProperties: false, // TODO: default to empty schema (as per spec) instead
-            bannerComment: "{{headerComment}}\n",
-            cwd: process.cwd(),
+            bannerComment: "",
+            // cwd: process.cwd(),
             declareExternallyReferenced: true,
             enableConstEnums: true,
             format: true,
-            ignoreMinAndMaxItems: false,
-            maxItems: -1,
+            ignoreMinAndMaxItems: true,
             strictIndexSignatures: false,
             style: {
                 bracketSpacing: false,
@@ -32,9 +32,12 @@ export async function compile(jsonSchema: jsonToTypescript.JSONSchema, outputPat
             unknownAny: true,
         })
         .then((ts: string) => {
-            const fkTs = updateFkTypes(ts, jsonSchema);
+            const fkTs = updateRelations(ts, jsonSchema, compilerOptions);
             return fkTs;
         });
+
+    utils.common.writeFile(title, outputPath, "// {{headerComment}}\n" + content);
+    return;
 }
 
 /**
@@ -44,9 +47,9 @@ export async function compile(jsonSchema: jsonToTypescript.JSONSchema, outputPat
  * @param jsonSchema 
  * @returns 
  */
-function updateFkTypes(interfaceString: string, jsonSchema: any): string {
+function updateRelations(interfaceString: string, jsonSchema: any, compilerOptions: types.compilerOptions): string {
     let result: string = interfaceString;
-    const modelNames = Object.keys(jsonSchema.definitions || {});
+    const relationInterfaces = Object.keys(jsonSchema.childSchemas || {});
 
     Object.keys(jsonSchema.properties).forEach((key: any) => {
         const props = jsonSchema.properties[key];
@@ -56,32 +59,35 @@ function updateFkTypes(interfaceString: string, jsonSchema: any): string {
             const item = props;
             const itemTypeString = isArray ? props.items.type+"[]" : item.type;
             const modelName = isArray ? props.items["x-foreignKey"] : props["x-foreignKey"];
-            modelNames.push(modelName);
+            relationInterfaces.push(modelName);
 
             // replace be "key?: type" and "key: type"
             result = result.replace(
                 `${key}?: ${itemTypeString}`,
-                `${key}?: ObjectId | ${modelName}`
+                `${key}?: ${compilerOptions.dbType === "document" ? "ObjectId" : "string"} | ${modelName}`
             );
         }
         else if (props.type === "object") {
-            result = updateFkTypes(result, props);
+            result = updateRelations(result, props, compilerOptions);
         }
     });
 
-    // add import ObjectId, Models
-    // todo : check imported model are exist.
-    if (modelNames.length > 0) {
-        const imports = [
-            "import { ObjectId } from \"mongodb\";"
-        ];
 
-        modelNames.forEach(modelName => {
-            imports.push(`import { ${modelName} } from "./${modelName}";`);
-        });
+    const imports: string[] = [];
 
-        result = imports.join("\n") + "\n" + result;
+    // if is dbtype is document, add import ObjectId & relationInterfaces
+    if (compilerOptions.dbType === "document") {
+        imports.push("import { ObjectId } from \"mongodb\";");
     }
+
+    // add import for relations
+    if (relationInterfaces.length > 0) {
+        relationInterfaces.forEach(modelName => {
+            imports.push(`import { ${modelName} } from "./${modelName}.gen";`);
+        });
+    }
+
+    result = imports.join("\n") + "\n\n" + result;
 
     return result;
 }

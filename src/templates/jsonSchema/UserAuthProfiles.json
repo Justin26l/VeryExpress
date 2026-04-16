@@ -1,0 +1,36 @@
+{
+  "type": "object",
+  "x-documentConfig": {
+    "methods": [
+      "get",
+      "getList",
+      "post",
+      "patch",
+      "delete"
+    ],
+    "documentName": "UserAuthProfiles"
+  },
+  "properties": {
+    "userId": {
+      "type": "string",
+      "index": true
+    },
+    "provider": {
+      "type": "string",
+      "index": true
+    },
+    "oauthId": {
+      "type": "string",
+      "index": true
+    },
+    "email": {
+      "type": "string"
+    },
+    "username": {
+      "type": "string"
+    },
+    "password": {
+      "type": "string"
+    }
+  }
+}

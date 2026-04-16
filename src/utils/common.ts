@@ -18,6 +18,8 @@ function normalize (s: string) : string{
 }
 
 
+
+
 export const relativePath = (fromPath: string, toPath: string): string => {
     return path.relative(fromPath, toPath).replace(/\\/g, "/");
 };

@@ -1,0 +1,42 @@
+{
+    "type": "object",
+    "x-documentConfig": {
+        "methods": [
+            "get",
+            "getList",
+            "post",
+            "patch",
+            "delete"
+        ],
+        "documentName": "UserAuthProfiles"
+    },
+    "properties": {
+        "userId": {
+            "type": "string",
+            "index": true
+        },
+        "provider": {
+            "type": "string",
+            "index": true
+        },
+        "oauthId": {
+            "type": "string",
+            "index": true
+        },
+        "email": {
+            "type": "string"
+        },
+        "username": {
+            "type": "string"
+        },
+        "password": {
+            "type": "string"
+        },
+        "_id": {
+            "type": "string",
+            "description": "Unique Identifier",
+            "example": "60c8c9d2b2b4f2c3e8d6f3e1"
+        }
+    },
+    "required": []
+}
