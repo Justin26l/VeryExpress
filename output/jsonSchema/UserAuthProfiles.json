@@ -13,7 +13,12 @@
     "properties": {
         "userId": {
             "type": "string",
-            "index": true
+            "index": true,
+            "x-foreignKey": {
+                "schema": "User",
+                "field": "_id",
+                "relationType": "one-to-many"
+            }
         },
         "provider": {
             "type": "string",

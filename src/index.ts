@@ -6,6 +6,7 @@ import json2mongoose from "json2mongoose";
 
 import utils from "./utils";
 import log from "./utils/logger";
+import { applyParentSchemasMetadata } from "./preprocess/childSchema";
 import { formatJsonSchema } from "./preprocess/jsonschemaFormat";
 import { roleSchemaFormat } from "./preprocess/roleSetupFile";
 
@@ -104,6 +105,8 @@ export async function generate(
         }
     });
 
+    applyParentSchemasMetadata(documents);
+
     if ( options.useRBAC && options.useRBAC.roles.length > 0 ){
         await roleGen.compile({
             collectionList: documents.map((doc) => doc.config.documentName),
@@ -141,7 +144,6 @@ export async function generate(
                 `${dir.typeDir}/${doc.config.documentName}.gen.ts`,
             );
         }
-
         // interface post-processing handled by interface generator
 
         // generate controller

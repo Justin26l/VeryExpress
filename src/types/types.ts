@@ -46,6 +46,8 @@ export interface roleJson {
     [key: string]: string[];
 }
 
+export type DbRelationType = "one-to-one" | "one-to-many";
+
 export interface jsonSchema {
     type: string;
     "x-documentConfig": documentConfig;
@@ -54,7 +56,16 @@ export interface jsonSchema {
     };
     required?: string[];
     index?: string[];
+    parentSchemas?: {
+        [key: string]: foreignKeyConfig;
+    };
     [key: string]: any;
+}
+
+export interface foreignKeyConfig {
+    schemaName: string;
+    fieldName: string;
+    relationType: DbRelationType;
 }
 
 export interface jsonSchemaPropsItem {
@@ -75,9 +86,9 @@ export interface jsonSchemaPropsItem {
     maximum?: number;
     "x-vexData"?: string;
     "x-format"?: string;
-    "x-foreignKey"?: string;
+    "x-foreignKey"?: foreignKeyConfig;
     "x-foreignValue"?: string[];
-    [key: string]: string | boolean | number | string[] | jsonSchemaPropsItem | { [key: string]: jsonSchemaPropsItem;} | any[] | undefined;
+    [key: string]: string | boolean | number | string[] | jsonSchemaPropsItem | foreignKeyConfig | { [key: string]: jsonSchemaPropsItem;} | any[] | undefined;
 }
 
 export interface populateOptions { 
