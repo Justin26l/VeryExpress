@@ -20,7 +20,7 @@ import * as controllerGen from "./generators/controller/controllers.generator";
 import * as routeGen from "./generators/routes/routes.generator";
 import * as serverGen from "./generators/app/server.generator";
 import * as knexGen from "./generators/db/knex.generator";
-import * as knexModelGen from "./generators/db/knexModel.generator";
+import * as objectionGen from "./generators/db/objection.generator";
 import * as interfaceGen from "./generators/interface/generator";
 
 export async function generate(
@@ -132,8 +132,8 @@ export async function generate(
                 path.join(dir.typeDir, `${doc.config.documentName}.gen.ts`),
                 options || utils.generator.defaultCompilerOptions
             );
-            // generate Knex model wrappers (thin Mongoose-like API)
-            await knexModelGen.compile({
+            // generate Objection models (Mongoose-like compatibility wrapper)
+            await objectionGen.compile({
                 jsonSchema: doc.schema,
                 outDir: dir.modelDir,
                 compilerOptions: options || utils.generator.defaultCompilerOptions,

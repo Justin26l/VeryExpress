@@ -94,13 +94,13 @@ export default class AuthRouter {
 
             const sessionCode = req.query.code;
             // find code in database
-            const sessionDoc = await SessionModel.findOne<SessionDocument>({ sessionCode: sessionCode }).exec();
+            const sessionDoc = await SessionModel.findOne({ sessionCode: sessionCode });
 
             if (!sessionDoc) {
                 return utils.response.send(res, 404, { message: 'invalid code' });
             }
             else {
-                await SessionModel.deleteOne({ sessionCode: sessionCode }).exec();
+                await SessionModel.deleteOne({ sessionCode: sessionCode });
                 // log.info("Session Found & Deleted", sessionDoc);
             };
 
@@ -161,7 +161,7 @@ export default class AuthRouter {
                 }
 
                 // Check if user already exists
-                const existingUser = await UserModel.findOne({ email }).exec();
+                const existingUser = await UserModel.findOne({ email });
                 if (existingUser) {
                     return utils.response.send(res, 409, { message: "Email already registered." });
                 }
@@ -173,7 +173,7 @@ export default class AuthRouter {
                 const user = new UserModel({
                     name: email.split('@')[0],
                     email,
-                    authProfiles: [
+                    userAuthProfiles: [
                         {
                             provider: 'local',
                             password: hashedPassword
@@ -198,12 +198,12 @@ export default class AuthRouter {
 
                 try {
                     // verify user credentials
-                    const user = await UserModel.findOne({ email }).exec();
+                    const user = await UserModel.findOne({ email });
                     if (!user) {
                         return utils.response.send(res, 400, { message:"incorrect email or password." });
                     }
                     
-                    const localAuthProfile = user.authProfiles?.find(profile => profile.provider === 'local');
+                    const localAuthProfile = user.userAuthProfiles?.find((profile: any) => profile.provider === 'local');
                     if (!localAuthProfile) {
                         return utils.response.send(res, 400, { message:"incorrect email or password." });
                     }

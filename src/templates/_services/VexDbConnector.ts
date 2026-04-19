@@ -117,6 +117,9 @@ export default class VexDbConnector {
                 pool: { min: 0, max: 10 }
             });
 
+            // expose sql connection on global for model binding (used by generated Objection models)
+            try { (globalThis as any).__vex_sql = this.sqlConnection; } catch (e) { /* ignore */ }
+
             // quick health check
             this.sqlConnection.raw("select 1").then(() => {
                 utils.log.infoSql("SQL DB Connection established");
@@ -151,6 +154,10 @@ export default class VexDbConnector {
                 utils.log.errorSql("Error closing SQL DB connection", err);
             });
         }
+    }
+
+    public getSqlConnection(): Knex | undefined {
+        return this.sqlConnection;
     }
 
     /**

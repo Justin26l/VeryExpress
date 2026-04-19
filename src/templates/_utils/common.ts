@@ -54,8 +54,9 @@ export function parseFieldsSelect(req: Request) : ({ [key: string]: number } | u
     return selectFields;
 }
 
-export function parseCollectionJoin(req: Request, availablePopulateOptions:{[key:string]: string}) : { [key: string]: string } | undefined {
-    if(!req.query._select && !req.body._select) {
+export function parseCollectionJoin(req: Request, availablePopulateOptions?: {[key:string]: string}) : Array<{ path: string; select?: string; options?: any }> | undefined {
+    // if no _join param provided, nothing to do
+    if(!req.query._join && !req.body._join) {
         return undefined;
     }
 
@@ -83,20 +84,25 @@ export function parseCollectionJoin(req: Request, availablePopulateOptions:{[key
     }
  
     // switch joinArr's item to populate options
-    const populateOptions: {[key:string]:any} = [];
+    const populateOptions: Array<{ path: string; select?: string; options?: any }> = [];
+    const available = availablePopulateOptions || {};
     if(_joinRaw.length > 0) {
         _joinRaw.forEach((refKey: any) => {
-            if(availablePopulateOptions[refKey]) {
+            if(available[refKey]) {
                 populateOptions.push({
                     path: refKey,
-                    select: availablePopulateOptions[refKey],
+                    select: available[refKey],
                     options: { lean: true }
                 });
+            }
+            else {
+                // include basic populate entry even if no select mapping provided
+                populateOptions.push({ path: refKey, options: { lean: true } });
             }
         });
     }
 
-    return populateOptions;
+    return populateOptions.length > 0 ? populateOptions : undefined;
 }
 
 export default {

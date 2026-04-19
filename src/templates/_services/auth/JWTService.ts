@@ -121,7 +121,7 @@ export default class JWTService {
             email: user.email,
             name: user.name,
             locale: user.locale,
-            roles: user.roles,
+            roles: [],
             profileErrors: user.profileErrors,
             active: user.active
         };
@@ -152,7 +152,7 @@ export default class JWTService {
 
     public async generateAccessToken(userId: string, index?: number): Promise<tokenObj> {
 
-        const userDoc = await UserModel.findById(userId).exec();
+        const userDoc = await UserModel.findById(userId);
         if (!userDoc) {
             throw new VexResponseError(404, utils.response.code.err_payload, "Invalid User Id");
         }

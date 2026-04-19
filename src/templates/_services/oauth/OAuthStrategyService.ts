@@ -11,14 +11,14 @@ export default class OAuthStrategyService {
     public async verify(accessToken: string, refreshToken: string, profile: IProfile, done: (error: any, user?: any) => void) : Promise<void> {
         try {
 
-            let user: UserDocument;
+            let user: any;
             const authUser = new OAuthProfileMap().map(profile);
 
-            // find user by authProfiles.authId or email
-            const existingUser = await UserModel.findOne<UserDocument>({ 
+            // find user by userAuthProfiles.oauthId or email
+            const existingUser = await UserModel.findOne({ 
                 email: authUser.email,
-                $or: authUser.authProfiles?.map((p) => {
-                    return { "authProfiles.authId": p.authId };
+                $or: authUser.userAuthProfiles?.map((p: any) => {
+                    return { "userAuthProfiles.oauthId": p.oauthId };
                 }),
             });
 
@@ -49,12 +49,12 @@ export default class OAuthStrategyService {
         return await newUser.save();
     }
 
-    private async processExistingUser( authUser: User, existingUser: UserDocument): Promise<UserDocument>{    
+    private async processExistingUser( authUser: User, existingUser: any): Promise<any>{    
         utils.log.info("OAuthVerify > processExistingUser");
 
         let userUpdated = false;
-        const authProfile = authUser.authProfiles?.[0] || undefined;
-        const userProfiles = existingUser.authProfiles as User["authProfiles"] || [];
+        const authProfile = authUser.userAuthProfiles?.[0] || undefined;
+        const userProfiles = existingUser.userAuthProfiles as User["userAuthProfiles"] || [];
 
         if(!authProfile){
             utils.log.errorNoExit("OAuthVerify > Invalid OAuth Callback \"authProfile\"");
@@ -63,7 +63,7 @@ export default class OAuthStrategyService {
 
         // B.1. check current provider exist in authProfiles
         const providerExists = userProfiles.length > 0 &&  userProfiles.find((p: any) => {
-            return (p.provider === authProfile.provider) && (p.authId === authProfile.authId);
+            return (p.provider === authProfile.provider) && (p.oauthId === authProfile.oauthId);
         });
 
         // B.2. add if not exist
@@ -81,7 +81,7 @@ export default class OAuthStrategyService {
 
         if (userUpdated){
             utils.log.info("OAuthVerify > Update user");
-            return await existingUser.updateOne({ authProfiles: userProfiles });
+            return await existingUser.updateOne({ userAuthProfiles: userProfiles });
         }
         else {
             return existingUser;

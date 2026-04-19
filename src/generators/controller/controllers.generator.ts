@@ -174,7 +174,6 @@ function processSchema(options: {
             if (typeof validatorParam.custom !== "object" || validatorParam.custom === null) {
                 validatorParam.custom = {};
             }
-            // @ts-expect-error - custom validator template
             validatorParam.custom.options = "FUNC{{this.isObjectId}}";
             // call controller base class : _ControllerFactory.isObjectId()
             break;

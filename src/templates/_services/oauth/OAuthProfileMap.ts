@@ -27,16 +27,15 @@ export default class OAuthProfileMap {
     private GithubProfileMapping(oauthProfile: IProfile): User {
         const user: User = {
             active: true,
-            authProfiles: [{
+            userAuthProfiles: [{
                 provider: oauthProfile.provider,
-                authId: oauthProfile.id,
+                oauthId: oauthProfile.id,
                 username: oauthProfile.username || oauthProfile.displayName
             }],
-            roles: undefined,
             name: oauthProfile.username || oauthProfile.displayName,
             email: oauthProfile._json.email || oauthProfile._json.notification_email || undefined,
             locale: undefined,
-            profileErrors: []
+            profileErrors: ""
         };
 
         return user;
@@ -44,17 +43,16 @@ export default class OAuthProfileMap {
     private GoogleProfileMapping(oauthProfile: IProfile): User {
         const user: User = {
             active: true,
-            authProfiles: [{
+            userAuthProfiles: [{
                 provider: oauthProfile.provider,
-                authId: oauthProfile.id,
+                oauthId: oauthProfile.id,
                 username: oauthProfile.username || oauthProfile.displayName
             }],
-            roles: undefined,
             name: oauthProfile.username || oauthProfile.displayName,
             // data below could be missing depend on the provider
             email: oauthProfile._json.email || oauthProfile._json.notification_email || undefined,
             locale: oauthProfile._json.locale || undefined,
-            profileErrors: []
+            profileErrors: ""
         };
 
         return user;
