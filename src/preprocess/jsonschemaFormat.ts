@@ -3,7 +3,6 @@ import * as types from "./../types/types";
 import utils from "./../utils";
 import log from "./../utils/logger";
 
-
 /**
  * - format the json schema file
  * - create role file (RBAC)
@@ -16,6 +15,93 @@ export function formatJsonSchema(jsonSchemaPath: string, compilerOptions: types.
     
     const jsonSchema: types.jsonSchema = utils.jsonSchema.loadJsonSchema(jsonSchemaPath);
 
+    checkDocumentConfig(jsonSchema, fileName, jsonSchemaPath);
+    checkForeignKeyConfig(jsonSchema, jsonSchemaPath);
+
+    // json schema structure check 
+    if (typeof jsonSchema.properties !== "object") {
+        log.error(`properties is invalid in ${jsonSchemaPath}`);
+    }
+
+    // format properties boolean "required" into array of string
+    jsonSchema.required = getRequiredArrStr(jsonSchema, jsonSchemaPath);
+
+    // additional validation for SQL target
+    if (compilerOptions && compilerOptions.dbType === "sql") {
+        // walk schema and warn if nested object/array contain unsupported metadata
+        const problems: string[] = [];
+
+        const hasForbiddenFlags = (prop?: types.jsonSchemaPropsItem): boolean => {
+            if (!prop) return false;
+            return Boolean(
+                prop.index ||
+                prop["x-foreignKey"] ||
+                prop["x-vexData"] ||
+                prop["x-vex-data"]
+            );
+        };
+
+        const pushIfForbidden = (basePath: string, propName: string, prop?: types.jsonSchemaPropsItem, isArrayItem = false) => {
+            if (hasForbiddenFlags(prop)) {
+                problems.push(isArrayItem ? `${basePath}[].${propName}` : `${basePath}.${propName}`);
+            }
+        };
+
+        const walk = (schemaItem: types.jsonSchemaPropsItem | types.jsonSchema, ctxPath: string) => {
+            if (!schemaItem) return;
+
+            // Handle object nodes with properties
+            if (schemaItem.type === "object" && schemaItem.properties) {
+                for (const k of Object.keys(schemaItem.properties)) {
+                    const p = schemaItem.properties[k];
+                    const pPath = ctxPath ? `${ctxPath}.${k}` : k;
+
+                    // nested object -> inspect its direct properties for forbidden flags
+                    if (p.type === "object") {
+                        if (p.properties) {
+                            for (const nn of Object.keys(p.properties)) {
+                                pushIfForbidden(pPath, nn, p.properties[nn], false);
+                            }
+                        }
+                        walk(p, pPath);
+                    }
+                    // array of objects -> inspect item properties
+                    else if (p.type === "array" && p.items && p.items.type === "object") {
+                        if (p.items.properties) {
+                            for (const nn of Object.keys(p.items.properties)) {
+                                pushIfForbidden(pPath, nn, p.items.properties[nn], true);
+                            }
+                        }
+                        walk(p.items, pPath + "[]");
+                    }
+                    // other types -> continue recursion in case deeper structures exist
+                    else {
+                        walk(p, pPath);
+                    }
+                }
+            }
+
+            // array root with object items
+            else if (schemaItem.type === "array" && schemaItem.items) {
+                walk(schemaItem.items, ctxPath + "[]");
+            }
+        };
+
+        walk(jsonSchema, "");
+
+        if (problems.length > 0) {
+            problems.forEach((p) => {
+                log.warn(`SQL target: ${jsonSchemaPath} nested object/array contains unsupported index/x-foreignKey/x-vex-data -> ${p}. Consider modelling as separate document/table.`);
+            });
+        }
+    }
+
+    utils.common.writeFile("Json Schema Formatting", jsonSchemaPath, JSON.stringify(jsonSchema, null, 4));
+
+    return jsonSchema;
+}
+
+function checkDocumentConfig(jsonSchema: types.jsonSchema, fileName: string, jsonSchemaPath?: string): void {
     // check documentConfig exist
     if (!jsonSchema["x-documentConfig"]) {
         log.error(`Json Schema Formatting: "${jsonSchemaPath}" x-documentConfig not found.`);
@@ -36,80 +122,23 @@ export function formatJsonSchema(jsonSchemaPath: string, compilerOptions: types.
     if (jsonSchema["x-documentConfig"].documentName != fileName) {
         log.error(`Json Schema Formatting: "${jsonSchemaPath}" x-documentConfig.documentName is not consistant with file name.`);
     }
+}
 
-    // json schema structure check 
-    if (typeof jsonSchema.properties !== "object") {
-        log.error(`properties is invalid in ${jsonSchemaPath}`);
-    }
+function checkForeignKeyConfig(schema: types.jsonSchema, jsonSchemaPath?: string): boolean {
+    // loop through all properties and check if "x-foreignKey" exist and valid
 
-    // _id fields check
-    if (compilerOptions.app.useObjectID){
-        checkField_id(jsonSchema, jsonSchemaPath);
-    }
+    const isForeignKeyValid = (fkConfig: types.foreignKeyConfig) => fkConfig && typeof fkConfig === "object"
+        && typeof fkConfig.schemaName === "string"
+        && typeof fkConfig.fieldName === "string"
+        && (fkConfig.relationType === types.DbRelationType.OneToOne || fkConfig.relationType === types.DbRelationType.OneToMany);
 
-    // format properties boolean "required" into array of string
-    jsonSchema.required = getRequiredArrStr(jsonSchema, jsonSchemaPath);
-
-    // additional validation for SQL target
-    if (compilerOptions && compilerOptions.dbType === "sql") {
-        // walk schema and warn if nested object/array contain unsupported metadata
-        const problems: string[] = [];
-        const walk = (schemaItem: types.jsonSchemaPropsItem | types.jsonSchema, ctxPath: string) => {
-            if (!schemaItem) return;
-            // if object type, examine properties
-            if (schemaItem.type === "object" && schemaItem.properties) {
-                for (const k of Object.keys(schemaItem.properties)) {
-                    const p = schemaItem.properties[k];
-                    const pPath = ctxPath ? `${ctxPath}.${k}` : k;
-                    // if nested object or array-of-object, check metadata inside it
-                    if (p.type === "object") {
-                        // check properties of this nested object for forbidden flags
-                        if (p.properties) {
-                            for (const nn of Object.keys(p.properties)) {
-                                const np = p.properties[nn];
-                                if (np && (np.index || np["x-foreignKey"] || np["x-vexData"] || np["x-vex-data"])) {
-                                    problems.push(`${pPath}.${nn}`);
-                                }
-                            }
-                        }
-                        walk(p, pPath);
-                    }
-                    else if (p.type === "array" && p.items && p.items.type === "object") {
-                        // array of objects - inspect item properties
-                        if (p.items.properties) {
-                            for (const nn of Object.keys(p.items.properties)) {
-                                const np = p.items.properties[nn];
-                                if (np && (np.index || np["x-foreignKey"] || np["x-vexData"] || np["x-vex-data"])) {
-                                    problems.push(`${pPath}[].${nn}`);
-                                }
-                            }
-                        }
-                        walk(p.items, pPath + "[]");
-                    }
-                    else {
-                        // normal property, but if it's object/array further down
-                        walk(p, pPath);
-                    }
-                }
-            }
-            // if array root with object items
-            else if (schemaItem.type === "array" && schemaItem.items) {
-                walk(schemaItem.items, ctxPath + "[]");
-            }
-        };
-
-        walk(jsonSchema, "");
-
-        if (problems.length > 0) {
-            problems.forEach((p) => {
-                log.warn(`SQL target: ${jsonSchemaPath} nested object/array contains unsupported index/x-foreignKey/x-vex-data -> ${p}. Consider modelling as separate document/table.`);
-            });
+    for (const key in schema.properties) {
+        const fkConfig = schema.properties[key]["x-foreignKey"];
+        if (fkConfig && !isForeignKeyValid(fkConfig)) {
+            log.error(`Json Schema Formatting: "${jsonSchemaPath}" x-foreignKey config is invalid on property "${key}".`);
         }
     }
-
-    utils.common.writeFile("Json Schema Formatting", jsonSchemaPath, JSON.stringify(jsonSchema, null, 4));
-
-    return jsonSchema;
+    return true;
 }
 
 /**
@@ -163,20 +192,4 @@ function getRequiredArrStr(schema: types.jsonSchemaPropsItem | types.jsonSchema,
 
     return requiredArr;
     
-}
-
-/**
- * check if _id field is not exist, add it
- * @param schema
- * @param jsonSchemaPath
- **/
-function checkField_id(schema: types.jsonSchemaPropsItem | types.jsonSchema, jsonSchemaPath?: string){
-    if (schema.properties && !schema.properties._id) {
-        schema.properties._id = {
-            type: "string",
-            description: "Unique Identifier",
-            example: "60c8c9d2b2b4f2c3e8d6f3e1",
-        };
-        log.info(`formatJsonSchema : "_id" field added to ${jsonSchemaPath}`);
-    }
 }

@@ -15,8 +15,8 @@
       "type": "string",
       "index": true,
       "x-foreignKey": {
-        "schema": "User",
-        "field": "_id",
+        "schemaName": "User",
+        "fieldName": "_id",
         "relationType": "one-to-many"
       }
     },

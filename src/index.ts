@@ -6,7 +6,7 @@ import json2mongoose from "json2mongoose";
 
 import utils from "./utils";
 import log from "./utils/logger";
-import { applyParentSchemasMetadata } from "./preprocess/childSchema";
+import { applyFkMetadata } from "./preprocess/jsonSchemaForeignKeys";
 import { formatJsonSchema } from "./preprocess/jsonschemaFormat";
 import { roleSchemaFormat } from "./preprocess/roleSetupFile";
 
@@ -20,6 +20,7 @@ import * as controllerGen from "./generators/controller/controllers.generator";
 import * as routeGen from "./generators/routes/routes.generator";
 import * as serverGen from "./generators/app/server.generator";
 import * as knexGen from "./generators/db/knex.generator";
+import * as knexModelGen from "./generators/db/knexModel.generator";
 import * as interfaceGen from "./generators/interface/generator";
 
 export async function generate(
@@ -64,15 +65,15 @@ export async function generate(
     });
 
     // copy static files
-    utils.common.copyDir(`${__dirname}/templates/_controllers`, dir.controllerDir, options, true);
-    utils.common.copyDir(`${__dirname}/templates/_middlewares`, dir.middlewareDir, options, true);
-    utils.common.copyDir(`${__dirname}/templates/_roles`, dir.roleDir, options, true);
-    utils.common.copyDir(`${__dirname}/templates/_routes`, dir.routeDir, options, true);
-    utils.common.copyDir(`${__dirname}/templates/_services`, dir.serviceDir, options, true);
-    utils.common.copyDir(`${__dirname}/templates/_types`, dir.typeDir, options, true);
-    utils.common.copyDir(`${__dirname}/templates/_utils`, dir.utilsDir, options, true);
-    utils.common.copyDir(`${__dirname}/templates/root`, options.rootDir, options, false);
-    utils.common.copyDir(`${__dirname}/templates/jsonSchema`, options.jsonSchemaDir, options, true);
+    utils.common.copyDir(path.join(__dirname, "templates", "_controllers"), dir.controllerDir, options, true);
+    utils.common.copyDir(path.join(__dirname, "templates", "_middlewares"), dir.middlewareDir, options, true);
+    utils.common.copyDir(path.join(__dirname, "templates", "_roles"), dir.roleDir, options, true);
+    utils.common.copyDir(path.join(__dirname, "templates", "_routes"), dir.routeDir, options, true);
+    utils.common.copyDir(path.join(__dirname, "templates", "_services"), dir.serviceDir, options, true);
+    utils.common.copyDir(path.join(__dirname, "templates", "_types"), dir.typeDir, options, true);
+    utils.common.copyDir(path.join(__dirname, "templates", "_utils"), dir.utilsDir, options, true);
+    utils.common.copyDir(path.join(__dirname, "templates", "root"), options.rootDir, options, false);
+    utils.common.copyDir(path.join(__dirname, "templates", "jsonSchema"), options.jsonSchemaDir, options, true);
 
     // format role schema
     roleSchemaFormat({ compilerOptions: options || utils.generator.defaultCompilerOptions });
@@ -104,9 +105,9 @@ export async function generate(
             log.error(`Processing File : ${schemaPath}\n`, err);
         }
     });
+    applyFkMetadata(documents);
 
-    applyParentSchemasMetadata(documents);
-
+    // generate role & permissions if RBAC enabled
     if ( options.useRBAC && options.useRBAC.roles.length > 0 ){
         await roleGen.compile({
             collectionList: documents.map((doc) => doc.config.documentName),
@@ -119,32 +120,37 @@ export async function generate(
 
     // generate models & types
     await Promise.all(documents.map( async (doc: { path: string, config: types.documentConfig, schema: types.jsonSchema }) => {
-        // generate knex model when target is sql
+        // generate knex migrations, Objective Models, types when target is sql
         if (options.dbType === "sql") {
             await knexGen.compile({
                 jsonSchema: doc.schema,
-                outDir: dir.modelDir,
+                outDir: path.join(dir.modelDir, "migrations"),
                 compilerOptions: options || utils.generator.defaultCompilerOptions,
             });
             await interfaceGen.compile(
                 doc.schema as any,
-                `${dir.typeDir}/${doc.config.documentName}.gen.ts`,
+                path.join(dir.typeDir, `${doc.config.documentName}.gen.ts`),
                 options || utils.generator.defaultCompilerOptions
             );
+            // generate Knex model wrappers (thin Mongoose-like API)
+            await knexModelGen.compile({
+                jsonSchema: doc.schema,
+                outDir: dir.modelDir,
+                compilerOptions: options || utils.generator.defaultCompilerOptions,
+            });
         }
         // generate mongoose model & interfacewhen target is document
         else if (options.dbType === "document") {
             json2mongoose.modelsGen.compileFromFile(
                 doc.path,
-                `${utils.common.relativePath(dir.modelDir, dir.typeDir)}/${doc.config.documentName}.gen`,
-                `${dir.modelDir}/${doc.config.documentName}Model.gen.ts`,
+                path.join(utils.common.relativePath(dir.modelDir, dir.typeDir), `${doc.config.documentName}.gen`),
+                path.join(dir.modelDir, `${doc.config.documentName}Model.gen.ts`),
             );
             await json2mongoose.typesGen.compileFromFile(
                 doc.path,
-                `${dir.typeDir}/${doc.config.documentName}.gen.ts`,
+                path.join(dir.typeDir, `${doc.config.documentName}.gen.ts`),
             );
         }
-        // interface post-processing handled by interface generator
 
         // generate controller
         await controllerGen.compile({

@@ -14,12 +14,7 @@ export async function compile(options: {
     compilerOptions: types.compilerOptions,
 }): Promise<void> {
     const schema = options.jsonSchema as types.jsonSchema;
-    if (schema.type !== "object") {
-        throw new Error("Knex generator: root schema must be object");
-    }
-
-    const schemaConfig = schema["x-documentConfig"] || { documentName: "Unknown" };
-    const documentName = schemaConfig.documentName || "Unknown";
+    const documentName = schema["x-documentConfig"].documentName;
 
     log.process(`Knex : ${documentName}`);
 
@@ -37,9 +32,8 @@ export async function compile(options: {
         return t;
     }
 
-    const mainTableName = documentName.toLowerCase();
     // ensure main table exists
-    getOrCreateTable(mainTableName);
+    getOrCreateTable(documentName);
 
     function addPrimitiveColumnToTable(tbl: TableDef, colName: string, prop: types.jsonSchemaPropsItem | undefined, tblName: string) {
         if (!prop) return;
@@ -92,8 +86,9 @@ export async function compile(options: {
         }
 
         if (prop["x-foreignKey"]) {
-            const ref = prop["x-foreignValue"]?.[0] || "id";
-            const fkTable = String(prop["x-foreignKey"]).toLowerCase();
+            const fkConfig = prop["x-foreignKey"];
+            const ref = fkConfig.fieldName;
+            const fkTable = String(fkConfig.schemaName).toLowerCase();
             tbl.foreigns.push(`    table.foreign("${colName}").references("${ref}").inTable("${fkTable}");`);
         }
     }
@@ -115,9 +110,9 @@ export async function compile(options: {
         }
     }
 
-    processProperties(schema.properties, mainTableName);
+    processProperties(schema.properties, documentName);
 
-    const outPath = `${options.outDir}/${documentName}Table.gen.ts`;
+    const outPath = `${options.outDir}/${documentName}Migration.gen.ts`;
     utils.common.writeFile("Knex",
         outPath,
         knexTemplate({

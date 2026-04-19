@@ -21,12 +21,6 @@ export default class OAuthProfileMap {
             throw new Error("Invalid OAuth Provider");
             break;
         }
-
-        // if ( !authProfile.email){
-        //     console.log('missingEmail');
-        //     authProfile.profileErrors?.push('missingEmail');
-        //     authProfile.active = false;
-        // }
         return authProfile;
     }
 

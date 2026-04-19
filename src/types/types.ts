@@ -46,7 +46,10 @@ export interface roleJson {
     [key: string]: string[];
 }
 
-export type DbRelationType = "one-to-one" | "one-to-many";
+export enum DbRelationType {
+    OneToOne = "one-to-one",
+    OneToMany = "one-to-many"
+}
 
 export interface jsonSchema {
     type: string;
@@ -56,8 +59,12 @@ export interface jsonSchema {
     };
     required?: string[];
     index?: string[];
-    parentSchemas?: {
-        [key: string]: foreignKeyConfig;
+    interface?: {
+        fkProps: {
+            propName: string;
+            interfaceName: string;
+            relationType: DbRelationType;
+        }[];
     };
     [key: string]: any;
 }

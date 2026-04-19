@@ -1,12 +1,12 @@
 export default function knexTemplate(options: {
-  documentName: string,
-  tables: Array<{
-    name: string;
-    columns: string[]; // lines to execute inside createTable
-    indexes?: string[];
-    foreigns?: string[];
-  }>;
-  compilerOptions?: any,
+    documentName: string,
+    tables: Array<{
+        name: string;
+        columns: string[]; // lines to execute inside createTable
+        indexes?: string[];
+        foreigns?: string[];
+    }>;
+    compilerOptions?: any,
 }) {
     const tables = options.tables || [];
 

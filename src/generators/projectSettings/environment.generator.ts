@@ -11,8 +11,6 @@ export async function compile(
     let envOutput: string = "";
     const envTemplate: string = fs.readFileSync(__dirname+"/templates/_projectSettings/env", "utf8");
 
-    console.log(`Processing .env file at ${envOutPath}`);
-
     if (!fs.existsSync(envOutPath)) {
         envOutput = envTemplate;
     }

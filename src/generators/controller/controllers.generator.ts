@@ -34,7 +34,7 @@ export async function compile(options: {
     const controllerToModelBasePath: string = utils.common.relativePath(options.compilerOptions.sysDir, options.modelDir);
     const endpointsValidator: {
         [key: string]: { // path
-            [key: string]: Schema | boolean // methods
+            [key: string]: Schema // methods
         }
     } = {};
 
@@ -53,7 +53,7 @@ export async function compile(options: {
                 processSchema({
                     fieldName: key,
                     body: schema.properties[key],
-                    required: schema.required?.includes(key) || schema.properties[key].required,
+                    required: schema.required?.includes(key) || (typeof schema.properties[key].required == "object" ? schema.properties[key].required.includes(key) : Boolean(schema.properties[key].required)),
                 })
             );
         }
@@ -68,9 +68,9 @@ export async function compile(options: {
     if (schemaConfig.methods.includes("patch")) endpointsValidator[endpoint + "/{id}"].patch = Object.assign({}, idValidators, bodyValidators); 
     if (schemaConfig.methods.includes("delete")) endpointsValidator[endpoint + "/{id}"].delete = idValidators;
     if (schemaConfig.methods.includes("post")) endpointsValidator[endpoint].post = bodyValidators; // body validator will be assigned later after processing schema properties
-    if (schemaConfig.methods.includes("getList")) endpointsValidator[endpoint + "/search"].post = true; // no validator for getList (can be extended in the future)
+    if (schemaConfig.methods.includes("getList")) endpointsValidator[endpoint + "/search"].post = {}; // no validator for getList (can be extended in the future)
 
-    const foreignKeysOptions: types.populateOptions = buildForeinKeyOptions(schema as types.jsonSchemaPropsItem);
+    // const foreignKeysOptions: types.populateOptions = buildForeinKeyOptions(schema as types.jsonSchemaPropsItem);
     const outPath = `${options.controllerOutDir}/${schemaConfig.documentName}Controller.gen.ts`;
     const controllerToModelPath = `../${controllerToModelBasePath}/${schemaConfig.documentName}Model.gen`;
     
@@ -81,36 +81,35 @@ export async function compile(options: {
             modelPath: controllerToModelPath,
             documentName: schemaConfig.documentName,
             validators: endpointsValidator,
-            populateOptions: foreignKeysOptions,
             compilerOptions: options.compilerOptions,
         })
     );
 }
 
-function buildForeinKeyOptions(
-    schema: types.jsonSchemaPropsItem,
-): types.populateOptions {
-    if(schema.type !== "object") {
-        throw new Error("buildForeinKeyOptions : root schema type must be object");
-    }
+// function buildForeinKeyOptions(
+//     schema: types.jsonSchemaPropsItem,
+// ): types.populateOptions {
+//     if(schema.type !== "object") {
+//         throw new Error("buildForeinKeyOptions : root schema type must be object");
+//     }
 
-    let foreignKeys: types.populateOptions = {};
-    const props = schema.properties || {};
+//     let foreignKeys: types.populateOptions = {};
+//     const props = schema.properties || {};
 
-    for (const key in props) {
-        if (props[key]["x-foreignKey"]) {
-            foreignKeys[key] = props[key]["x-foreignValue"]?.join(" ") || "";
-        }
-        else if (props[key].type === "array" && props[key].items?.["x-foreignKey"]) {
-            foreignKeys[key] = props[key].items["x-foreignValue"]?.join(" ") || "";
-        }
-        else if (props[key].type === "object") {
-            foreignKeys = Object.assign(foreignKeys, buildForeinKeyOptions(props[key]));
-        }
-    }
+//     for (const key in props) {
+//         if (props[key]["x-foreignKey"]) {
+//             foreignKeys[key] = props[key]["x-foreignValue"]?.join(" ") || "";
+//         }
+//         else if (props[key].type === "array" && props[key].items?.["x-foreignKey"]) {
+//             foreignKeys[key] = props[key].items["x-foreignValue"]?.join(" ") || "";
+//         }
+//         else if (props[key].type === "object") {
+//             foreignKeys = Object.assign(foreignKeys, buildForeinKeyOptions(props[key]));
+//         }
+//     }
 
-    return foreignKeys;
-}
+//     return foreignKeys;
+// }
 
 function processSchema(options: {
     fieldName: string,
@@ -175,6 +174,7 @@ function processSchema(options: {
             if (typeof validatorParam.custom !== "object" || validatorParam.custom === null) {
                 validatorParam.custom = {};
             }
+            // @ts-expect-error - custom validator template
             validatorParam.custom.options = "FUNC{{this.isObjectId}}";
             // call controller base class : _ControllerFactory.isObjectId()
             break;

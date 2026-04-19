@@ -17,6 +17,13 @@ function normalize (s: string) : string{
         .trim(); // remove leading/trailing blank lines
 }
 
+function pascalCase(str: string): string {
+    return str.replace(/(^\w|_\w)/g, (match) =>  match.replace(/_/, "").toUpperCase());
+}
+
+function camelCase(str: string): string {
+    return str.replace(/(^\w|_\w)/g, (match) =>  match.replace(/_/, "").toLowerCase());
+}
 
 
 
@@ -46,6 +53,10 @@ export function loadJson<T = any>(filePath: string, fileNotExistHandler?: () => 
 
 export function writeFile(title: string, destination: string, newContent: string): boolean {
     // read file, check difference, if yes write file
+    const destinationDir = path.dirname(destination);
+    if (!fs.existsSync(destinationDir)) {
+        fs.mkdirSync(destinationDir, { recursive: true });
+    };
     const oldContent = fs.existsSync(destination) ? fs.readFileSync(destination, "utf8") : "";
 
     // remove header comment for comparison
@@ -108,6 +119,8 @@ export function getCompilerOptions(): types.compilerOptions {
 }
 
 export default {
+    pascalCase,
+    camelCase,
     relativePath,
     copyDir,
     loadJson,
