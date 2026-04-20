@@ -54,6 +54,8 @@ export async function generate(
         controllerPath: string,
     }[] = [];
 
+    fs.rmSync(options.sysDir, { recursive: true, force: true });
+
     // create all directories if not exist
     if (!fs.existsSync(options.rootDir)) { fs.mkdirSync(options.rootDir); }
     if (!fs.existsSync(options.srcDir)) { fs.mkdirSync(options.srcDir); }

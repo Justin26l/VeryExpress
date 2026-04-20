@@ -92,48 +92,83 @@ export default class VexDbConnector {
             else this.sqlClient = "mysql2";
         }
 
-        try {
-            const caRaw = this.sqlCa || undefined;
-            let ca: string | undefined;
-            if (caRaw) {
-                ca = caRaw.startsWith("-----BEGIN") ? caRaw : Buffer.from(caRaw, "base64").toString("utf8");
-            }
-            const insecure = (process.env.SQL_INSECURE_TLS || "").toLowerCase() === "true";
-            const ssl = insecure ? { rejectUnauthorized: false } : (ca ? { rejectUnauthorized: true, ca } : undefined);
+        /**
+         * @param retryTime time in second
+         */
+        const connectWithRetry = (retryTime: number = 10): Knex | void => {
+            try {
+                const caRaw = this.sqlCa || undefined;
+                let ca: string | undefined;
+                if (caRaw) {
+                    ca = caRaw.startsWith("-----BEGIN") ? caRaw : Buffer.from(caRaw, "base64").toString("utf8");
+                }
+                const insecure = (process.env.SQL_INSECURE_TLS || "").toLowerCase() === "true";
+                const ssl = insecure ? { rejectUnauthorized: false } : (ca ? { rejectUnauthorized: true, ca } : undefined);
+                const sqlUrl = new URL(this.sqlUrl);
 
-            utils.log.infoSql(`Using SQL client: ${this.sqlClient}, SSL: ${ssl ? "enabled" : "disabled"}`);
-            const connection: Knex.Config["connection"] | string = this.sqlClient === "pg" ? { 
-                user: new URL(this.sqlUrl).username,
-                password: new URL(this.sqlUrl).password,
-                host: new URL(this.sqlUrl).hostname,
-                port: Number(new URL(this.sqlUrl).port),
-                database: new URL(this.sqlUrl).pathname.slice(1),
-                ssl
-            } : this.sqlUrl;
+                utils.log.infoSql(`Using SQL client: ${this.sqlClient}, SSL: ${ssl ? "enabled" : "disabled"}`);
+                const connection: Knex.Config["connection"] | string = this.sqlClient === "pg" ? {
+                    user: sqlUrl.username,
+                    password: sqlUrl.password,
+                    host: sqlUrl.hostname,
+                    port: Number(sqlUrl.port),
+                    database: sqlUrl.pathname.slice(1),
+                    ssl
+                } : this.sqlUrl;
 
-            this.sqlConnection = knex({
-                client: this.sqlClient,
-                connection,
-                pool: { min: 0, max: 10 }
-            });
-
-            // expose sql connection on global for model binding (used by generated Objection models)
-            try { (globalThis as any).__vex_sql = this.sqlConnection; } catch (e) { /* ignore */ }
-
-            // quick health check
-            this.sqlConnection.raw("select 1").then(() => {
-                utils.log.infoSql("SQL DB Connection established");
-            })
-                .catch((err:any) => {
-                    utils.log.errorSql("Failed to establish SQL DB connection", err);
+                const sqlConnection = knex({
+                    client: this.sqlClient,
+                    connection,
+                    pool: { min: 0, max: 10 }
                 });
 
-            return this.sqlConnection;
-        }
-        catch (err:any) {
-            utils.log.errorSql("VexDbConnector: connectSql error", err);
-            return;
-        }
+                this.sqlConnection = sqlConnection;
+
+                // expose sql connection on global for model binding (used by generated Objection models)
+                try { (globalThis as any).__vex_sql = sqlConnection; } catch (e) { /* ignore */ }
+
+                sqlConnection.raw("select 1").then(() => {
+                    utils.log.infoSql("SQL DB Connection established");
+                    // Optionally run migrations once after connection
+                    if ((process.env.SQL_RUN_MIGRATIONS || "").toLowerCase() === "true") {
+                        try {
+                            const migDir = process.env.SQL_MIGRATIONS_DIR || "src/system/_models/migrations";
+                            (sqlConnection as any).migrate?.latest({ directory: migDir })
+                                .then(() => utils.log.infoSql(`SQL migrations applied from ${migDir}`))
+                                .catch((mErr: any) => utils.log.errorSql("Failed to apply SQL migrations", mErr));
+                        }
+                        catch (mErr:any) {
+                            utils.log.errorSql("Error while running SQL migrations", mErr);
+                        }
+                    }
+                })
+                    .catch((err:any) => {
+                        this.sqlConnection = undefined;
+                        try {
+                            if ((globalThis as any).__vex_sql === sqlConnection) {
+                                delete (globalThis as any).__vex_sql;
+                            }
+                        } catch (e) { /* ignore */ }
+
+                        sqlConnection.destroy().catch(() => undefined);
+                        utils.log.errorSql(`Failed to Connect SQL DB, Retrying in ${retryTime} seconds.`, err);
+                        setTimeout(() => {
+                            connectWithRetry(retryTime);
+                        }, retryTime*1000);
+                    });
+
+                return sqlConnection;
+            }
+            catch (err:any) {
+                utils.log.errorSql(`VexDbConnector: connectSql error, Retrying in ${retryTime} seconds.`, err);
+                setTimeout(() => {
+                    connectWithRetry(retryTime);
+                }, retryTime*1000);
+                return;
+            }
+        };
+
+        return connectWithRetry(10);
     }
 
     closeMongo(): void {

@@ -173,6 +173,7 @@ export default class AuthRouter {
                 const user = new UserModel({
                     name: email.split('@')[0],
                     email,
+                    active: true,
                     userAuthProfiles: [
                         {
                             provider: 'local',
