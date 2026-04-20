@@ -172,6 +172,11 @@ export async function generate(
         return;
     }));
     
+    // generate migrations manifest (created by knex generator helper)
+    if (options.dbType === "sql") {
+        const manifestPath = path.posix.join(dir.modelDir, "migrations", "migrations-manifest.json");
+        await knexGen.compileMigrationsManifest(manifestPath, documents);
+    }
 
     // make route from routeData
     await routeGen.compile({

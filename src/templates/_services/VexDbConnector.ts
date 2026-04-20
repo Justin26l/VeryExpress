@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import { Request, Response, NextFunction } from "express";
 import knex, { Knex } from "knex";
 import utils from "./../_utils";
+import runSqlMigrations from "./VexDbHelper.gen";
 
 export default class VexDbConnector {
     private mongoUrl: string;
@@ -127,20 +128,9 @@ export default class VexDbConnector {
                 // expose sql connection on global for model binding (used by generated Objection models)
                 try { (globalThis as any).__vex_sql = sqlConnection; } catch (e) { /* ignore */ }
 
-                sqlConnection.raw("select 1").then(() => {
+                sqlConnection.raw("select 1").then(async () => {
                     utils.log.infoSql("SQL DB Connection established");
-                    // Optionally run migrations once after connection
-                    if ((process.env.SQL_RUN_MIGRATIONS || "").toLowerCase() === "true") {
-                        try {
-                            const migDir = process.env.SQL_MIGRATIONS_DIR || "src/system/_models/migrations";
-                            (sqlConnection as any).migrate?.latest({ directory: migDir })
-                                .then(() => utils.log.infoSql(`SQL migrations applied from ${migDir}`))
-                                .catch((mErr: any) => utils.log.errorSql("Failed to apply SQL migrations", mErr));
-                        }
-                        catch (mErr:any) {
-                            utils.log.errorSql("Error while running SQL migrations", mErr);
-                        }
-                    }
+                    await runSqlMigrations(sqlConnection);
                 })
                     .catch((err:any) => {
                         this.sqlConnection = undefined;

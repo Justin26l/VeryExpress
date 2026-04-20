@@ -150,7 +150,7 @@ export default class AuthRouter {
     }
 
     if(compilerOptions.auth.localAuth) {
-        template = template.replace(/{{localAuthImport}}/g, "import { UserModel } from '../_models/UserModel.gen';\n");
+        template = template.replace(/{{localAuthImport}}/g, "import { UserModel } from '../_models/UserModel.gen';\nimport { UserAuthProfilesModel } from '../_models/UserAuthProfilesModel.gen';\n");
         template = template.replace(/{{localAuthRoutes}}/g, `
         // Local Auth register & login
         this.router.post('/register', async (req, res) => {
@@ -169,19 +169,26 @@ export default class AuthRouter {
                 // Hash password with salt (email)
                 const hashedPassword = utils.hash.hashPassword(password, email);
 
-                // Create user with local auth profile
+                // Create user
                 const user = new UserModel({
                     name: email.split('@')[0],
                     email,
                     active: true,
-                    userAuthProfiles: [
-                        {
-                            provider: 'local',
-                            password: hashedPassword
-                        }
-                    ]
                 });
                 await user.save();
+
+                // create local auth profile row linked to the user
+                try {
+                    await UserAuthProfilesModel.create({
+                        userId: user.get('_id') || user.get('id'),
+                        provider: 'local',
+                        password: hashedPassword
+                    });
+                } catch (e) {
+                    // if profile creation fails, delete the created user to avoid partial state
+                    try { await UserModel.deleteOne({ _id: user.get('_id') || user.get('id') }); } catch (ee) {}
+                    throw e;
+                }
 
                 return utils.response.send(res, 201, { message: "Registration successful." });
             } catch (err:any) {

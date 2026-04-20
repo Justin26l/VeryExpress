@@ -126,3 +126,29 @@ export async function compile(options: {
 export default {
     compile,
 };
+
+export async function compileMigrationsManifest(manifestPath: string, documents: Array<{ path: string; config: types.documentConfig; schema: types.jsonSchema }>): Promise<void> {
+    try {
+        const manifest: Array<{ filename: string; table: string; dependsOn: string[] }> = [];
+        for (const doc of documents) {
+            const deps: string[] = [];
+            const props = (doc.schema && (doc.schema as any).properties) || {};
+            Object.keys(props).forEach((key) => {
+                const p: any = props[key];
+                if (p && p["x-foreignKey"]) {
+                    const fk = p["x-foreignKey"];
+                    if (fk && fk.schemaName) deps.push(String(fk.schemaName).toLowerCase());
+                }
+            });
+            manifest.push({
+                filename: `${doc.config.documentName}Migration.gen.ts`,
+                table: String(doc.config.documentName).toLowerCase(),
+                dependsOn: Array.from(new Set(deps)),
+            });
+        }
+        utils.common.writeFile("Migrations Manifest", manifestPath, JSON.stringify(manifest, null, 2));
+    }
+    catch (e:any) {
+        log.error("Failed to write migrations manifest", e);
+    }
+}
