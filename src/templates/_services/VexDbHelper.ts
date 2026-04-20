@@ -1,9 +1,8 @@
-import { Knex } from "knex";
+import { DataSource } from "typeorm";
 import utils from "../_utils";
 import path from "path";
 
-
-export default async function runSqlMigrations(sqlConnection: Knex, migDir?: string): Promise<void> {
+export default async function runSqlMigrations(dataSource: DataSource, migDir?: string): Promise<void> {
     if ((process.env.SQL_RUN_MIGRATIONS || "").toLowerCase() !== "true") {
         return;
     }
@@ -16,29 +15,28 @@ export default async function runSqlMigrations(sqlConnection: Knex, migDir?: str
         }
         for (const fname of ordered) {
             const fullPath = path.join(process.cwd(), dir, fname);
-            let mod: any;
+            let mod: { up?: (ds: DataSource) => Promise<void> } | undefined;
             try { mod = require(fullPath); }
             catch (e1) {
-                try { mod = require(fullPath + '.ts'); }
+                try { mod = require(fullPath + ".ts"); }
                 catch (e2) {
-                    try { mod = require(fullPath + '.js'); }
+                    try { mod = require(fullPath + ".js"); }
                     catch (e3) {
-                        utils.log.errorSql(`Failed requiring migration file ${fname}`, e3 || e2 || e1);
+                        utils.log.errorSql(`Failed requiring migration ${fname}`, e3 || e2 || e1);
                         throw e3 || e2 || e1;
                     }
                 }
             }
-            if (mod && typeof mod.up === 'function') {
-                await mod.up(sqlConnection);
+            if (mod && typeof mod.up === "function") {
+                await mod.up(dataSource);
                 utils.log.infoSql(`Applied migration ${fname}`);
-            }
-            else {
+            } else {
                 utils.log.infoSql(`Skipping migration ${fname}, no exported up()`);
             }
         }
         utils.log.infoSql(`SQL migrations applied from ${dir}`);
     }
-    catch (mErr: any) {
+    catch (mErr: unknown) {
         utils.log.errorSql("Failed to apply SQL migrations", mErr);
     }
 }

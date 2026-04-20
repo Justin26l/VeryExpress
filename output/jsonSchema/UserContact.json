@@ -14,11 +14,11 @@
     "properties": {
         "_id": {
             "type": "string",
-            "x-format": "PrimaryIncrements",
+            "x-format": "PrimaryUUID",
             "index": true
         },
         "userId": {
-            "type": "string",
+            "type": "integer",
             "x-foreignKey": {
                 "schemaName": "User",
                 "fieldName": "_id",

@@ -14,7 +14,9 @@ import OAuthStrategyService from '../_services/oauth/OAuthStrategyService.gen';
 import OAuthRouteFactory from './oauth/OAuthRouteFactory.gen';
 import { Strategy as GithubStrategy } from 'passport-github';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
-import { SessionDocument, SessionModel } from '../_models/SessionModel.gen';
+import AppDataSource from '../_services/VexDbConnector.gen';
+import { SessionEntity } from '../_models/SessionModel.gen';
+import VexResponseError from '../_types/VexResponseError.gen';
 {{localAuthImport}}
 import VexSystem from '../_services/VexSystem.gen';
 
@@ -92,25 +94,29 @@ export default class AuthRouter {
                 return utils.response.send(res, 401);
             }
 
-            const sessionCode = req.query.code;
+            const sessionCode = String(req.query.code);
+            const ds = AppDataSource.sqlDataSource;
+            if (!ds) throw new VexResponseError(503, utils.response.code.DB_CONN_ERR);
+            const sessionRepo = ds.getRepository(SessionEntity);
+
             // find code in database
-            const sessionDoc = await SessionModel.findOne({ sessionCode: sessionCode });
+            const sessionDoc = await sessionRepo.findOne({ where: { sessionCode } });
 
             if (!sessionDoc) {
                 return utils.response.send(res, 404, { message: 'invalid code' });
             }
             else {
-                await SessionModel.deleteOne({ sessionCode: sessionCode });
+                await sessionRepo.delete({ sessionCode });
                 // log.info("Session Found & Deleted", sessionDoc);
             };
 
-            if (sessionDoc?.get('expired') < Date.now()) {
+            if (sessionDoc.expired < Date.now()) {
                 return utils.response.send(res, 401, { message: 'code expired' });
             };
 
             // generate tokens based on code's user profile
-            const accessToken = await this.JWTService.generateAccessToken(sessionDoc.get("userId"));
-            const refreshToken = this.JWTService.generateRefreshToken({_id: sessionDoc.get("userId")});
+            const accessToken = await this.JWTService.generateAccessToken(sessionDoc.userId);
+            const refreshToken = this.JWTService.generateRefreshToken({_id: sessionDoc.userId});
 
             return utils.response.send(res, 200, {
                 result: {
@@ -150,7 +156,7 @@ export default class AuthRouter {
     }
 
     if(compilerOptions.auth.localAuth) {
-        template = template.replace(/{{localAuthImport}}/g, "import { UserModel } from '../_models/UserModel.gen';\nimport { UserAuthProfilesModel } from '../_models/UserAuthProfilesModel.gen';\n");
+        template = template.replace(/{{localAuthImport}}/g, "import { UserEntity } from '../_models/UserModel.gen';\nimport { UserAuthProfilesEntity } from '../_models/UserAuthProfilesModel.gen';\n");
         template = template.replace(/{{localAuthRoutes}}/g, `
         // Local Auth register & login
         this.router.post('/register', async (req, res) => {
@@ -160,8 +166,13 @@ export default class AuthRouter {
                     return utils.response.send(res, 400, { message: "Email and password are required." });
                 }
 
+                const ds = AppDataSource.sqlDataSource;
+                if (!ds) throw new VexResponseError(503, utils.response.code.DB_CONN_ERR);
+                const userRepo = ds.getRepository(UserEntity);
+                const uapRepo = ds.getRepository(UserAuthProfilesEntity);
+
                 // Check if user already exists
-                const existingUser = await UserModel.findOne({ email });
+                const existingUser = await userRepo.findOne({ where: { email } });
                 if (existingUser) {
                     return utils.response.send(res, 409, { message: "Email already registered." });
                 }
@@ -170,23 +181,22 @@ export default class AuthRouter {
                 const hashedPassword = utils.hash.hashPassword(password, email);
 
                 // Create user
-                const user = new UserModel({
+                const user = await userRepo.save(userRepo.create({
                     name: email.split('@')[0],
                     email,
                     active: true,
-                });
-                await user.save();
+                }));
 
                 // create local auth profile row linked to the user
                 try {
-                    await UserAuthProfilesModel.create({
-                        userId: user.get('_id') || user.get('id'),
+                    await uapRepo.save(uapRepo.create({
+                        userId: user._id,
                         provider: 'local',
                         password: hashedPassword
-                    });
+                    }));
                 } catch (e) {
                     // if profile creation fails, delete the created user to avoid partial state
-                    try { await UserModel.deleteOne({ _id: user.get('_id') || user.get('id') }); } catch (ee) {}
+                    try { await userRepo.delete({ _id: user._id }); } catch (ee) {}
                     throw e;
                 }
 
@@ -205,18 +215,26 @@ export default class AuthRouter {
                 }
 
                 try {
+                    const ds = AppDataSource.sqlDataSource;
+                    if (!ds) throw new VexResponseError(503, utils.response.code.DB_CONN_ERR);
+                    const userRepo = ds.getRepository(UserEntity);
+                    const uapRepo = ds.getRepository(UserAuthProfilesEntity);
+
                     // verify user credentials
-                    const user = await UserModel.findOne({ email });
+                    const user = await userRepo.findOne({ where: { email } });
                     if (!user) {
                         return utils.response.send(res, 400, { message:"incorrect email or password." });
                     }
-                    
-                    const localAuthProfile = user.userAuthProfiles?.find((profile: any) => profile.provider === 'local');
+
+                    // load auth profiles separately (no ORM relation defined)
+                    const authProfiles = await uapRepo.find({ where: { userId: user._id } });
+                    const localAuthProfile = authProfiles.find((p) => p.provider === 'local');
                     if (!localAuthProfile) {
                         return utils.response.send(res, 400, { message:"incorrect email or password." });
                     }
 
-                    const isMatch = await utils.hash.verifyPassword(user, password);
+                    // verify password using hash util (pass combined user+profiles object)
+                    const isMatch = utils.hash.verifyPassword({ ...user, userAuthProfiles: authProfiles } as any, password);
                     if (!isMatch) {
                         return utils.response.send(res, 400, { message:"incorrect email or password." });
                     }
@@ -237,6 +255,10 @@ export default class AuthRouter {
         );
 
         `);
+    }
+    else {
+        template = template.replace(/{{localAuthImport}}/g, "");
+        template = template.replace(/{{localAuthRoutes}}/g, "");
     }
     
     return template;

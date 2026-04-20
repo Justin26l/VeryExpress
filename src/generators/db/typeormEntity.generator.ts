@@ -1,4 +1,4 @@
-import objectionTemplate from "./objection.template";
+import typeormEntityTemplate from "./typeormEntity.template";
 import utils from "../../utils";
 import log from "../../utils/logger";
 import * as types from "../../types/types";
@@ -32,12 +32,14 @@ export async function compile(options: {
     const props = schema.properties || {};
     const columns = Object.keys(props).map(key => {
         const p = props[key] as types.jsonSchemaPropsItem;
-        const isPrimary = key === "_id" || p["x-format"] === "PrimaryIncrements" || p["x-format"] === "Primary";
+        const isUuidPrimary = key === "_id" && p["x-format"] === "PrimaryUUID";
+        const isPrimary = isUuidPrimary || p["x-format"] === "PrimaryIncrements" || p["x-format"] === "Primary";
         const nullable = !requiredFields.includes(key) && !isPrimary;
         return {
             name: key,
-            tsType: jsonTypeToTs(p.type),
+            tsType: isUuidPrimary ? "string" : jsonTypeToTs(p.type),
             isPrimary,
+            isUUID: isUuidPrimary,
             isGenerated: isPrimary,
             nullable,
             maxLength: p.maxLength,
@@ -46,13 +48,13 @@ export async function compile(options: {
 
     // ensure _id primary column exists
     if (!columns.find(c => c.isPrimary)) {
-        columns.unshift({ name: "_id", tsType: "number", isPrimary: true, isGenerated: true, nullable: false });
+        columns.unshift({ name: "_id", tsType: "string", isPrimary: true, isUUID: true, isGenerated: true, nullable: false });
     }
 
     const outPath = `${options.outDir}/${documentName}Model.gen.ts`;
     utils.common.writeFile("TypeORM Entity",
         outPath,
-        objectionTemplate({
+        typeormEntityTemplate({
             documentName,
             tableName,
             columns,

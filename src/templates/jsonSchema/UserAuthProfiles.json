@@ -11,8 +11,14 @@
     "documentName": "UserAuthProfiles"
   },
   "properties": {
+    "_id": {
+      "type": "string",
+      "x-format": "PrimaryUUID",
+      "index": true
+    },
     "userId": {
       "type": "string",
+      "x-format": "UUID",
       "index": true,
       "x-foreignKey": {
         "schemaName": "User",

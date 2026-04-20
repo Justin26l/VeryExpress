@@ -26,8 +26,7 @@ export function formatJsonSchema(jsonSchemaPath: string, compilerOptions: types.
     // format properties boolean "required" into array of string
     jsonSchema.required = getRequiredArrStr(jsonSchema, jsonSchemaPath);
 
-    // normalize x-format depending on target DB: ObjectId <-> PrimaryIncrements
-    const toSql = compilerOptions.dbType === "sql";
+    // normalize x-format: ObjectId -> PrimaryUUID for SQL/TypeORM target
     const convertXFormat = (schemaItem: types.jsonSchemaPropsItem | types.jsonSchema | undefined) => {
         if (!schemaItem) return;
         if (schemaItem.type === "object" && (schemaItem as any).properties) {
@@ -35,21 +34,11 @@ export function formatJsonSchema(jsonSchemaPath: string, compilerOptions: types.
             for (const k of Object.keys(props)) {
                 const p = props[k];
                 if (!p) continue;
-                if (toSql) {
-                    if (p["x-format"] === "ObjectId") {
-                        const isId = k === "_id";
-                        p["x-format"] = isId ? "PrimaryIncrements" : undefined;
-                        p.type = "integer";
-
-                        log.warn("[JsonSchema]", `SQL target: ${isId ? "converted" : "removed"} x-format ObjectId ${isId ? "-> PrimaryIncrements" : ""} for property "${k}" in ${jsonSchemaPath}`);
-                    }
-                }
-                else {
-                    if (p["x-format"] === "PrimaryIncrements" || p["x-format"] === "Primary") {
-                        p["x-format"] = "ObjectId";
-                        p.type = "string";
-                        log.warn("[JsonSchema]", `Non-SQL target: converted x-format PrimaryIncrements -> ObjectId for property "${k}" in ${jsonSchemaPath}`);
-                    }
+                if (p["x-format"] === "ObjectId") {
+                    const isId = k === "_id";
+                    p["x-format"] = isId ? "PrimaryUUID" : undefined;
+                    p.type = "string";
+                    log.warn("[JsonSchema]", `SQL target: ${isId ? "converted" : "removed"} x-format ObjectId ${isId ? "-> PrimaryUUID" : ""} for property "${k}" in ${jsonSchemaPath}`);
                 }
                 if (p && (p.type === "object" || (p.type === "array" && p.items))) {
                     convertXFormat(p);
@@ -62,12 +51,10 @@ export function formatJsonSchema(jsonSchemaPath: string, compilerOptions: types.
     };
     convertXFormat(jsonSchema);
 
-    // additional validation for SQL target
-    if (compilerOptions && compilerOptions.dbType === "sql") {
-        // walk schema and warn if nested object/array contain unsupported metadata
-        const problems: string[] = [];
+    // additional validation: warn if nested object/array contain unsupported metadata
+    const problems: string[] = [];
 
-        const hasForbiddenFlags = (prop?: types.jsonSchemaPropsItem): boolean => {
+    const hasForbiddenFlags = (prop?: types.jsonSchemaPropsItem): boolean => {
             if (!prop) return false;
             return Boolean(
                 prop.index ||
@@ -125,11 +112,10 @@ export function formatJsonSchema(jsonSchemaPath: string, compilerOptions: types.
 
         walk(jsonSchema, "");
 
-        if (problems.length > 0) {
-            problems.forEach((p) => {
-                log.warn(`SQL target: ${jsonSchemaPath} nested object/array contains unsupported index/x-foreignKey/x-vex-data -> ${p}. Consider modelling as separate document/table.`);
-            });
-        }
+    if (problems.length > 0) {
+        problems.forEach((p) => {
+            log.warn(`SQL target: ${jsonSchemaPath} nested object/array contains unsupported index/x-foreignKey/x-vex-data -> ${p}. Consider modelling as separate document/table.`);
+        });
     }
 
     utils.common.writeFile("Json Schema Formatting", jsonSchemaPath, JSON.stringify(jsonSchema, null, 4));

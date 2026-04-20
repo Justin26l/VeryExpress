@@ -15,11 +15,11 @@ export function loadYaml(yamlFilePath: string) {
 }
 
 /** 
- * build mongoose select object
+ * Parse _select query/body param into a fields array
  * @param fieldsString json stringified array of string
  * @error may throw an error if the fieldsString is not a valid JSON
  */
-export function parseFieldsSelect(req: Request) : ({ [key: string]: number } | undefined) {
+export function parseFieldsSelect(req: Request) : string[] | undefined {
     let _selectRaw: string[] = [];
 
     if(!req.query._select && !req.body._select) {
@@ -45,13 +45,7 @@ export function parseFieldsSelect(req: Request) : ({ [key: string]: number } | u
         }
     }
     
-    // Convert the fieldArr to an object that can be used in the select method
-    const selectFields = _selectRaw.reduce((obj: any, field: string) => {
-        obj[field] = 1;
-        return obj;
-    }, {} as Record<string, number>);
-
-    return selectFields;
+    return _selectRaw;
 }
 
 export function parseCollectionJoin(req: Request, availablePopulateOptions?: {[key:string]: string}) : Array<{ path: string; select?: string; options?: any }> | undefined {
@@ -105,8 +99,42 @@ export function parseCollectionJoin(req: Request, availablePopulateOptions?: {[k
     return populateOptions.length > 0 ? populateOptions : undefined;
 }
 
+/**
+ * Parse _join query/body param into a TypeORM relations array
+ * @param req Express request
+ * @param allowedRelations optional allowlist — if provided, only matching relation names are returned
+ */
+export function parseRelations(req: Request, allowedRelations?: string[]): string[] | undefined {
+    if (!req.query._join && !req.body._join) {
+        return undefined;
+    }
+
+    let _joinRaw: string[] = [];
+
+    if (req.method === "GET") {
+        const rawString = String(req.query._join);
+        if (!rawString) return undefined;
+        _joinRaw = JSON.parse(rawString);
+    } else {
+        _joinRaw = req.body._join;
+    }
+
+    const err = new VexResponseError(400, response.code.err_validation, "Invalid field \"_join\", only json array of relation names accepted");
+    if (!Array.isArray(_joinRaw)) throw err;
+    for (const item of _joinRaw) {
+        if (typeof item !== "string") throw err;
+    }
+
+    const filtered = allowedRelations && allowedRelations.length > 0
+        ? _joinRaw.filter(r => allowedRelations.includes(r))
+        : _joinRaw;
+
+    return filtered.length > 0 ? filtered : undefined;
+}
+
 export default {
     loadYaml,
     parseFieldsSelect,
-    parseCollectionJoin
+    parseCollectionJoin,
+    parseRelations
 };

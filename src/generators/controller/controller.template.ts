@@ -8,7 +8,6 @@ export default function controllerTemplate(templateOptions: {
     endpoint: string,
     modelPath: string,
     documentName: string,
-    populateOptions?: types.populateOptions
     validators: {
         [key:string]: {
             [key:string]: Schema
@@ -19,13 +18,21 @@ export default function controllerTemplate(templateOptions: {
     let template :string = templateOptions.template || `{{headerComment}}
 import * as controllerFactory from "./_ControllerFactory.gen";
 import { Router, Request, Response } from 'express';
+import { FindOptionsWhere, DeepPartial } from 'typeorm';
 
 import { checkSchema, validationResult } from 'express-validator';
 import utils from "./../../system/_utils";
 import VexSystem from '../_services/VexSystem.gen';
 import VexResponseError from "../_types/VexResponseError.gen";
+import AppDataSource from '../_services/VexDbConnector.gen';
 
-import { {{documentName}}Model } from '{{modelPath}}';
+import { {{documentName}}Entity } from '{{modelPath}}';
+
+function repo() {
+    const ds = AppDataSource.sqlDataSource;
+    if (!ds) throw new VexResponseError(503, utils.response.code.DB_CONN_ERR);
+    return ds.getRepository({{documentName}}Entity);
+}
 
 class {{documentName}}Controller extends controllerFactory._ControllerFactory {
     public router: Router;
@@ -50,7 +57,7 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
     }
 
     public async get{{documentName}}(req: Request, res: Response): Promise<Response> {
-        const result = await {{documentName}}Model.findById(req.params.id){{populateAll}};
+        const result = await repo().findOne({ where: { _id: req.params.id } as FindOptionsWhere<{{documentName}}Entity> });
         if (!result) throw new VexResponseError(404, utils.response.code.err_not_found);
         
         return utils.response.send(res, 200, { result });
@@ -59,29 +66,33 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
     protected async getList{{documentName}}(req: Request, res: Response): Promise<Response> {
         const searchFilter = req.body._filter;
         const selectedFields = utils.common.parseFieldsSelect(req);
-        const populateOptions = utils.common.parseCollectionJoin(req, {{populateOptions}});
+        const relations = utils.common.parseRelations(req);
 
-        let query = {{documentName}}Model.find(searchFilter, selectedFields);
-        if (populateOptions && Array.isArray(populateOptions) && populateOptions.length > 0) {
-            query = query.populate(populateOptions);
-        }
-        const result = await query;
+        const result = await repo().find({
+            where: searchFilter,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            select: selectedFields as any,
+            relations: relations,
+        });
         return utils.response.send(res, 200, { result });
     }
 
     public async create{{documentName}}(req: Request, res: Response): Promise<Response> {
         {{clean_id}}
         
-        const result = await {{documentName}}Model.create(req.body);
+        const r = repo();
+        const result = await r.save(r.create(req.body as DeepPartial<{{documentName}}Entity>));
         if (!result) throw new VexResponseError(400, utils.response.code.err_create);
         
-        return utils.response.send(res, 201, {result});
+        return utils.response.send(res, 201, { result });
     }
 
     public async update{{documentName}}(req: Request, res: Response): Promise<Response> {
         {{clean_id}}
 
-        const result = await {{documentName}}Model.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const r = repo();
+        await r.update({ _id: req.params.id } as FindOptionsWhere<{{documentName}}Entity>, req.body as DeepPartial<{{documentName}}Entity>);
+        const result = await r.findOne({ where: { _id: req.params.id } as FindOptionsWhere<{{documentName}}Entity> });
         if (!result) throw new VexResponseError(404, utils.response.code.err_update);
         
         return utils.response.send(res, 200, { result });
@@ -90,17 +101,21 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
     public async replace{{documentName}}(req: Request, res: Response): Promise<Response> {
         {{clean_id}}
 
-        const result = await {{documentName}}Model.replaceOne({_id: req.params.id}, req.body);
-        if (!result) throw new VexResponseError(404, utils.response.code.err_update);
+        const r = repo();
+        const existing = await r.findOne({ where: { _id: req.params.id } as FindOptionsWhere<{{documentName}}Entity> });
+        if (!existing) throw new VexResponseError(404, utils.response.code.err_update);
+        const result = await r.save(r.merge(existing, req.body as DeepPartial<{{documentName}}Entity>));
 
         return utils.response.send(res, 200, { result });
     }
 
     public async delete{{documentName}}(req: Request, res: Response): Promise<Response> {
-        const result = await {{documentName}}Model.findByIdAndDelete(req.params.id);
-        if (!result) throw new VexResponseError(404, utils.response.code.err_delete);
+        const r = repo();
+        const existing = await r.findOne({ where: { _id: req.params.id } as FindOptionsWhere<{{documentName}}Entity> });
+        if (!existing) throw new VexResponseError(404, utils.response.code.err_delete);
+        await r.delete({ _id: req.params.id } as FindOptionsWhere<{{documentName}}Entity>);
         
-        return utils.response.send(res, 204, { result });
+        return utils.response.send(res, 204, { result: existing });
     }
 }
 
@@ -133,16 +148,6 @@ export default new {{documentName}}Controller().router;
         );`
     );
 
-    // populate options
-    let populateTemplate = "";
-    if(templateOptions.populateOptions){
-        const populateParam: string = JSON.stringify(Object.keys(templateOptions.populateOptions));
-        populateTemplate = Object.keys(templateOptions.populateOptions).length>0 ? `\n${indent4}.populate(${ populateParam })` : "";
-    }
-    template = template.replace(/{{populateAll}}/g, populateTemplate);
-
-    template = template.replace(/{{populateOptions}}/g, JSON.stringify(templateOptions.populateOptions));
-    
     template = template.replace(
         /{{getRoute}}/g, 
         !templateOptions.validators[templateOptions.endpoint+"/{id}"]?.get ? `

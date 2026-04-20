@@ -9,8 +9,9 @@ import utils from "../../_utils";
 
 import VexResponseError from "../../_types/VexResponseError.gen";
 
-import { UserModel } from "../../_models/UserModel.gen";
-import { SessionModel } from "../../_models/SessionModel.gen";
+import AppDataSource from "../VexDbConnector.gen";
+import { UserEntity } from "../../_models/UserModel.gen";
+import { SessionEntity } from "../../_models/SessionModel.gen";
 import { User } from "../../_types/User.gen";
 
 interface tokenObj {
@@ -86,12 +87,16 @@ export default class JWTService {
 
         const sessionCode = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
-        SessionModel.create({
-            sessionCode: sessionCode,
-            userId: user._id,
-            provider: "local",
-            expired: Date.now() + 5000
-        });
+        const sessionRepo = AppDataSource.sqlDataSource?.getRepository(SessionEntity);
+        if (sessionRepo) {
+            const session = sessionRepo.create({
+                sessionCode,
+                userId: user._id,
+                provider: "local",
+                expired: Date.now() + 5000,
+            });
+            sessionRepo.save(session);
+        }
 
         // return appAuthCode to client
         const redirectPath = `${path.posix.join("/", process.env.LOGIN_SUCCESS_REDIRECT_PATH || "/logincallback")}?code=${sessionCode}`;
@@ -152,7 +157,9 @@ export default class JWTService {
 
     public async generateAccessToken(userId: string, index?: number): Promise<tokenObj> {
 
-        const userDoc = await UserModel.findById(userId);
+        const userDoc = await AppDataSource.sqlDataSource
+            ?.getRepository(UserEntity)
+            .findOne({ where: { _id: userId } as any });
         if (!userDoc) {
             throw new VexResponseError(404, utils.response.code.err_payload, "Invalid User Id");
         }

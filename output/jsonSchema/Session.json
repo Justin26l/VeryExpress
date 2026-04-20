@@ -6,8 +6,8 @@
     },
     "properties": {
         "_id": {
-            "type": "integer",
-            "x-format": "PrimaryIncrements",
+            "type": "string",
+            "x-format": "PrimaryUUID",
             "index": true
         },
         "sessionCode": {
@@ -19,7 +19,7 @@
             "required": true
         },
         "userId": {
-            "type": "integer",
+            "type": "string",
             "x-foreignKey": {
                 "schemaName": "User",
                 "fieldName": "_id",

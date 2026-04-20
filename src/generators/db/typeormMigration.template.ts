@@ -1,6 +1,6 @@
 import type { MigrationInterface, QueryRunner } from "typeorm";
 
-export default function knexTemplate(options: {
+export default function typeormMigrationTemplate(options: {
     documentName: string,
     tables: Array<{
         name: string;

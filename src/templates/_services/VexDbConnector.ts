@@ -1,258 +1,124 @@
 // {{headerComment}}
-import mongoose from "mongoose";
-import { Request, Response, NextFunction } from "express";
-import knex, { Knex } from "knex";
-import utils from "./../_utils";
-import runSqlMigrations from "./VexDbHelper.gen";
+import { Request, Response, NextFunction } from 'express';
+import { DataSource } from 'typeorm';
+import utils from './../_utils';
 
-export default class VexDbConnector {
-    private mongoUrl: string;
+export class VexDbConnector {
     private sqlUrl: string;
-
-    private sqlConnection?: Knex;
-    private sqlClient?: string;
     private sqlCa: string;
     private recordAccessLog: boolean = false;
 
-    constructor(options:{
-        mongoUrl?: string;
+    public sqlDataSource?: DataSource;
+
+    constructor(options: {
         sqlUrl?: string;
         sqlCa?: string;
         recordAccessLog?: boolean;
-    }){
-        this.mongoUrl = options.mongoUrl || "";
-        this.sqlUrl = options.sqlUrl || "";
-        this.sqlCa = options.sqlCa || "";
+    }) {
+        this.sqlUrl = options.sqlUrl || '';
+        this.sqlCa = options.sqlCa || '';
         this.recordAccessLog = options.recordAccessLog || false;
-
-        // Bind the middleware method to the instance
         this.middleware = this.middleware.bind(this);
     }
-    
+
     connect(): void {
-        if (this.mongoUrl) this.connectMongo();
         if (this.sqlUrl) this.connectSql();
     }
 
     close(): void {
-        if (this.mongoUrl) this.closeMongo();
         if (this.sqlUrl) this.closeSql();
     }
-    
-    connectMongo() : mongoose.Connection | void {
-        if ( !this.mongoUrl ){
-            utils.log.error("VexDbConnector : MongoUrl is not invalid");
-            return;
-        }
-        else {
-            utils.log.infoMongo("Connecting to MongoDB...");
-        }
-        /**
-         * @param retryTime time in second
-         */
-        const connectWithRetry = (retryTime: number = 10) : Promise<void | typeof mongoose> => {
-            // utils.log.infoMongo("Connection with retry");
-            return mongoose.connect(this.mongoUrl, {
-                autoCreate: true,
-                connectTimeoutMS: 5000,
-            })
-                .catch((err) => {
-                    utils.log.errorMongo(`Failed to Connect DB, Retrying in ${retryTime} seconds.`, err);
-                    setTimeout(connectWithRetry, retryTime*1000);
-                });
-        };
-        connectWithRetry(10);
 
-        mongoose.connection.on("open", () => {
-            utils.log.infoMongo("MongoDB Connection open");
+    connectSql(): void {
+        utils.log.infoSql('Connecting to SQL DB (TypeORM)...');
+
+        const caRaw = this.sqlCa || undefined;
+        let ca: string | undefined;
+        if (caRaw) {
+            ca = caRaw.startsWith('-----BEGIN') ? caRaw : Buffer.from(caRaw, 'base64').toString('utf8');
+        }
+        const insecure = (process.env.SQL_INSECURE_TLS || '').toLowerCase() === 'true';
+        const ssl = insecure
+            ? { rejectUnauthorized: false }
+            : (ca ? { rejectUnauthorized: true, ca } : undefined);
+
+        const sqlUrl = new URL(this.sqlUrl);
+        const ds = new DataSource({
+            type: 'postgres',
+            host: sqlUrl.hostname,
+            port: Number(sqlUrl.port) || 5432,
+            username: sqlUrl.username,
+            password: sqlUrl.password,
+            database: sqlUrl.pathname.slice(1),
+            ssl,
+            synchronize: (process.env.SQL_SYNCHRONIZE || '').toLowerCase() === 'true',
+            logging: false,
+            entities: [],
+            migrations: [],
         });
 
-        mongoose.connection.on("error", (err: any) => {
-            utils.log.errorMongo("MongoDB Connection error: ", err.message, err);
-        });
-
-        return mongoose.connection;
-    }
-
-    connectSql(): Knex | void {
-        if (!this.sqlUrl) {
-            return;
-        }
-        else {
-            utils.log.infoSql("Connecting to SQL DB...");
-        }
-
-        const url = this.sqlUrl.toLowerCase();
-        if (url.startsWith("postgres://") || url.startsWith("postgresql://")) {
-            this.sqlClient = "pg";
-        } else if (url.startsWith("mysql://") || url.startsWith("mariadb://")) {
-            this.sqlClient = "mysql2";
-        } else {
-            // try to guess by common keywords
-            if (url.indexOf("postgres") !== -1) this.sqlClient = "pg";
-            else this.sqlClient = "mysql2";
-        }
-
-        /**
-         * @param retryTime time in second
-         */
-        const connectWithRetry = (retryTime: number = 10): Knex | void => {
-            try {
-                const caRaw = this.sqlCa || undefined;
-                let ca: string | undefined;
-                if (caRaw) {
-                    ca = caRaw.startsWith("-----BEGIN") ? caRaw : Buffer.from(caRaw, "base64").toString("utf8");
-                }
-                const insecure = (process.env.SQL_INSECURE_TLS || "").toLowerCase() === "true";
-                const ssl = insecure ? { rejectUnauthorized: false } : (ca ? { rejectUnauthorized: true, ca } : undefined);
-                const sqlUrl = new URL(this.sqlUrl);
-
-                utils.log.infoSql(`Using SQL client: ${this.sqlClient}, SSL: ${ssl ? "enabled" : "disabled"}`);
-                const connection: Knex.Config["connection"] | string = this.sqlClient === "pg" ? {
-                    user: sqlUrl.username,
-                    password: sqlUrl.password,
-                    host: sqlUrl.hostname,
-                    port: Number(sqlUrl.port),
-                    database: sqlUrl.pathname.slice(1),
-                    ssl
-                } : this.sqlUrl;
-
-                const sqlConnection = knex({
-                    client: this.sqlClient,
-                    connection,
-                    pool: { min: 0, max: 10 }
-                });
-
-                this.sqlConnection = sqlConnection;
-
-                // expose sql connection on global for model binding (used by generated Objection models)
-                try { (globalThis as any).__vex_sql = sqlConnection; } catch (e) { /* ignore */ }
-
-                sqlConnection.raw("select 1").then(async () => {
-                    utils.log.infoSql("SQL DB Connection established");
-                    await runSqlMigrations(sqlConnection);
+        const connectWithRetry = (retryTime = 10): void => {
+            ds.initialize()
+                .then(() => {
+                    this.sqlDataSource = ds;
+                    utils.log.infoSql('TypeORM DataSource initialized');
                 })
-                    .catch((err:any) => {
-                        this.sqlConnection = undefined;
-                        try {
-                            if ((globalThis as any).__vex_sql === sqlConnection) {
-                                delete (globalThis as any).__vex_sql;
-                            }
-                        } catch (e) { /* ignore */ }
-
-                        sqlConnection.destroy().catch(() => undefined);
-                        utils.log.errorSql(`Failed to Connect SQL DB, Retrying in ${retryTime} seconds.`, err);
-                        setTimeout(() => {
-                            connectWithRetry(retryTime);
-                        }, retryTime*1000);
-                    });
-
-                return sqlConnection;
-            }
-            catch (err:any) {
-                utils.log.errorSql(`VexDbConnector: connectSql error, Retrying in ${retryTime} seconds.`, err);
-                setTimeout(() => {
-                    connectWithRetry(retryTime);
-                }, retryTime*1000);
-                return;
-            }
+                .catch((err) => {
+                    utils.log.errorSql(`Failed to initialize TypeORM, retrying in ${retryTime}s`, err);
+                    setTimeout(() => connectWithRetry(retryTime), retryTime * 1000);
+                });
         };
 
-        return connectWithRetry(10);
-    }
-
-    closeMongo(): void {
-        if (mongoose.connection.readyState === 1) {
-            mongoose.connection.close().then(() => {
-                utils.log.infoMongo("MongoDB Connection closed");
-            }).catch((err:any) => {
-                utils.log.errorMongo("Error closing MongoDB connection", err);
-            });
-        }
+        connectWithRetry(10);
     }
 
     closeSql(): void {
-        if (this.sqlConnection) {
-            this.sqlConnection.destroy().then(() => {
-                utils.log.infoSql("SQL DB Connection closed");
-            }).catch((err:any) => {
-                utils.log.errorSql("Error closing SQL DB connection", err);
-            });
+        if (this.sqlDataSource?.isInitialized) {
+            this.sqlDataSource.destroy()
+                .then(() => utils.log.infoSql('TypeORM DataSource closed'))
+                .catch((err) => utils.log.errorSql('Error closing TypeORM DataSource', err));
         }
     }
 
-    public getSqlConnection(): Knex | undefined {
-        return this.sqlConnection;
+    getSqlDataSource(): DataSource | undefined {
+        return this.sqlDataSource;
     }
 
-    /**
-     * Database Middleware  
-     * Feature: 
-     * - restrict access to app when DB connection down.
-     * - record access log
-     **/
     async middleware(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            if (this.mongoUrl && mongoose.connection.readyState !== 1) {
+            if (this.sqlUrl && (!this.sqlDataSource || !this.sqlDataSource.isInitialized)) {
                 utils.response.send(res, 503, { code: utils.response.code.DB_CONN_ERR });
                 return;
             }
 
-            if (this.sqlUrl && this.sqlConnection) {
-                try {
-                    await this.sqlConnection.raw("select 1");
-                }
-                catch (err:any) {
-                    utils.response.send(res, 503, { code: utils.response.code.DB_CONN_ERR });
-                    return;
-                }
-            }
-
-            if (this.recordAccessLog) {
+            if (this.recordAccessLog && this.sqlDataSource?.isInitialized) {
                 const logEntry = {
                     timestamp: new Date().getTime(),
-                    ipa: req.socket.remoteAddress || req.headers["x-forwarded-for"],
+                    ipa: req.socket.remoteAddress || req.headers['x-forwarded-for'],
                     method: req.method,
-                    url: req.url.split("?")[0],
-                    headers: req.headers,
-                    query: req.query,
-                } as any;
-
-                // write to Mongo if available
-                if (this.mongoUrl && mongoose.connection.readyState === 1) {
-                    try {
-                        mongoose.connection.collection("accessLogs").insertOne(logEntry);
-                    }
-                    catch (e:any) {
-                        utils.log.error("Failed to write access log to Mongo", e);
-                    }
+                    url: req.url.split('?')[0],
+                    headers: JSON.stringify(req.headers),
+                    query: JSON.stringify(req.query),
+                };
+                try {
+                    const repo = this.sqlDataSource.getRepository('AccessLog');
+                    await repo.save(logEntry);
                 }
-
-                // write to SQL if available
-                if (this.sqlUrl && this.sqlConnection) {
-                    try {
-                        const table = "accessLogs";
-                        const insert = { ...logEntry };
-                        // knex may not accept headers/query objects directly for some DBs,
-                        // so stringify them to be safe
-                        insert.headers = JSON.stringify(insert.headers || {});
-                        insert.query = JSON.stringify(insert.query || {});
-                        await this.sqlConnection(table).insert(insert as any).catch(()=>{});
-                    }
-                    catch (e:any) {
-                        utils.log.error("Failed to write access log to SQL", e);
-                    }
-                }
-
-                next();
-                return;
+                catch { /* table may not exist */ }
             }
 
             next();
         }
-        catch (err:any) {
-            utils.response.send(res, 503, { code: utils.response.code.DB_Action_ERR, message: err.message });
+        catch (err: unknown) {
+            utils.response.send(res, 503, { code: utils.response.code.DB_Action_ERR, message: (err as Error).message });
         }
     }
 }
 
+const AppDataSource = new VexDbConnector({
+    sqlUrl: process.env.SQL_URI ?? undefined,
+    sqlCa: process.env.SQL_CA ?? undefined,
+    recordAccessLog: false,
+});
+
+export default AppDataSource;

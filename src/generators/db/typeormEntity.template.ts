@@ -2,6 +2,7 @@ interface ColumnDef {
     name: string;
     tsType: string;
     isPrimary: boolean;
+    isUUID?: boolean;
     isGenerated: boolean;
     nullable: boolean;
     maxLength?: number;
@@ -19,7 +20,8 @@ export default function objectionTemplate(options: {
     const columnDecorators = options.columns.map(col => {
         const decorators: string[] = [];
         if (col.isPrimary) {
-            decorators.push(`    @PrimaryGeneratedColumn()`);
+            const pkArg = col.isUUID ? '"uuid"' : '"increment"';
+            decorators.push(`    @PrimaryGeneratedColumn(${pkArg})`);
             decorators.push(`    ${col.name}!: ${col.tsType};`);
         } else {
             const colArgs = col.maxLength ? `{ length: ${col.maxLength}, nullable: ${col.nullable} }` : `{ nullable: ${col.nullable} }`;
@@ -30,10 +32,8 @@ export default function objectionTemplate(options: {
     }).join("\n\n");
 
     return `{{headerComment}}
-import { Entity, Column, PrimaryGeneratedColumn, DataSource } from 'typeorm';
-import ModelRepository from '../_utils/objectionShim.gen';
+import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 import { ${doc} } from './../_types/${doc}.gen';
-import AppDataSource from '../_services/VexDbConnector.gen';
 
 export interface ${doc}Document extends ${doc} {}
 
@@ -41,8 +41,5 @@ export interface ${doc}Document extends ${doc} {}
 export class ${doc}Entity implements Partial<${doc}Document> {
 ${columnDecorators}
 }
-
-export const ${doc}Model = new ModelRepository<${doc}Entity>(AppDataSource, ${doc}Entity);
-export default ${doc}Model;
 `;
 }

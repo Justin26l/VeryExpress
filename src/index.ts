@@ -1,7 +1,6 @@
 import fs from "fs";
 import path from "path";
 
-import json2mongoose from "json2mongoose";
 // import * as openapiGen from "./generators/app/openapi.generator";
 
 import utils from "./utils";
@@ -19,8 +18,8 @@ import * as roleGen from "./generators/role/role.generator";
 import * as controllerGen from "./generators/controller/controllers.generator";
 import * as routeGen from "./generators/routes/routes.generator";
 import * as serverGen from "./generators/app/server.generator";
-import * as knexGen from "./generators/db/knex.generator";
-import * as objectionGen from "./generators/db/objection.generator";
+import * as typeormMigrationGen from "./generators/db/typeormMigration.generator";
+import * as typeormEntityGen from "./generators/db/typeormEntity.generator";
 import * as interfaceGen from "./generators/interface/generator";
 
 export async function generate(
@@ -121,37 +120,22 @@ export async function generate(
 
     // generate models & types
     await Promise.all(documents.map( async (doc: { path: string, config: types.documentConfig, schema: types.jsonSchema }) => {
-        // generate knex migrations, Objective Models, types when target is sql
-        if (options.dbType === "sql") {
-            await knexGen.compile({
-                jsonSchema: doc.schema,
-                outDir: dir.migrations,
-                compilerOptions: options || utils.generator.defaultCompilerOptions,
-            });
-            await interfaceGen.compile(
-                doc.schema as any,
-                path.join(dir.typeDir, `${doc.config.documentName}.gen.ts`),
-                options || utils.generator.defaultCompilerOptions
-            );
-            // generate Objection models (Mongoose-like compatibility wrapper)
-            await objectionGen.compile({
-                jsonSchema: doc.schema,
-                outDir: dir.modelDir,
-                compilerOptions: options || utils.generator.defaultCompilerOptions,
-            });
-        }
-        // generate mongoose model & interfacewhen target is document
-        else if (options.dbType === "document") {
-            json2mongoose.modelsGen.compileFromFile(
-                doc.path,
-                path.join(utils.common.relativePath(dir.modelDir, dir.typeDir), `${doc.config.documentName}.gen`),
-                path.join(dir.modelDir, `${doc.config.documentName}Model.gen.ts`),
-            );
-            await json2mongoose.typesGen.compileFromFile(
-                doc.path,
-                path.join(dir.typeDir, `${doc.config.documentName}.gen.ts`),
-            );
-        }
+        // generate TypeORM migrations, entities, types
+        await typeormMigrationGen.compile({
+            jsonSchema: doc.schema,
+            outDir: dir.migrations,
+            compilerOptions: options || utils.generator.defaultCompilerOptions,
+        });
+        await interfaceGen.compile(
+            doc.schema as any,
+            path.join(dir.typeDir, `${doc.config.documentName}.gen.ts`),
+            options || utils.generator.defaultCompilerOptions
+        );
+        await typeormEntityGen.compile({
+            jsonSchema: doc.schema,
+            outDir: dir.modelDir,
+            compilerOptions: options || utils.generator.defaultCompilerOptions,
+        });
 
         // generate controller
         await controllerGen.compile({
@@ -171,8 +155,8 @@ export async function generate(
         return;
     }));
     
-    // generate migrations manifest for sql
-    await knexGen.compileMigrationsManifest(path.posix.join(dir.migrations, "migrations-manifest.json"), documents, options);
+    // generate migrations manifest
+    await typeormMigrationGen.compileMigrationsManifest(path.posix.join(dir.migrations, "migrations-manifest.json"), documents, options);
 
     // make route from routeData
     await routeGen.compile({

@@ -8,8 +8,8 @@ export interface compilerOptions {
     generator: {
         commitBeforeGenerate: boolean;
     },
-    // database target type: 'document' for MongoDB, 'sql' for SQL/Knex
-    dbType?: "document" | "sql",
+    // database target type: always 'sql' (TypeORM)
+    dbType?: "sql",
 
     app: {
         enableSwagger: boolean,

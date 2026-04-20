@@ -30,7 +30,7 @@ import helmet from 'helmet';
 
 import log from './system/_utils/logger.gen';
 import processTimer from './system/_utils/processTimer.gen';
-import VexDbConnector from './system/_services/VexDbConnector.gen';
+import vexDB from './system/_services/VexDbConnector.gen';
 
 import ApiRouter from './system/_routes/ApiRouter.gen';
 {{Import}}
@@ -44,13 +44,6 @@ const helmetConfig = {
     xPoweredBy: false,
     xDnsPrefetchControl: { allow: false },
 };
-
-const vexDB = new VexDbConnector({
-    mongoUrl: process.env.MONGODB_URI ?? undefined,
-    sqlUrl: process.env.SQL_URI ?? undefined,
-    sqlCa: process.env.SQL_CA ?? undefined,
-    recordAccessLog: false,
-});
 
 {{Config}}
 

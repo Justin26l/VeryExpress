@@ -31,24 +31,15 @@ export async function compile(options: {
         }
     } = {};
 
-    // build id validator according to target DB type
-    let idValidators: Schema;
-    if (options.compilerOptions && options.compilerOptions.dbType === "sql") {
-        idValidators = processSchema({ fieldName: "id", required: true, param: {
-            name: "id",
-            in: "path",
-            required: true,
-            schema: { type: "integer", ["x-format"]: options.jsonSchema.properties['_id']?.["x-format"] || undefined  } as any,
-        }});
-    }
-    else {
-        idValidators = processSchema({ fieldName: "id", required: true, param: {
-            name: "id",
-            in: "path",
-            required: true,
-            schema: { type: "string", ["x-format"]: "ObjectId" } as any,
-        }});
-    }
+    // UUID primary key — id path param is a string
+    const idXFormat = options.jsonSchema.properties['_id']?.["x-format"];
+    const idType = idXFormat === "PrimaryUUID" ? "string" : "integer";
+    const idValidators: Schema = processSchema({ fieldName: "id", required: true, param: {
+        name: "id",
+        in: "path",
+        required: true,
+        schema: { type: idType, ["x-format"]: idXFormat || undefined  } as any,
+    }});
 
     log.process(`Controller : ${schemaConfig.documentName} > ${endpoint}`);
 
