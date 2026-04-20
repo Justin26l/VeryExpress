@@ -39,10 +39,20 @@ export async function compile(options: {
         if (!prop) return;
         // avoid duplicate column
         if (tbl.columns.some((c) => c.includes(`"${colName}"`))) return;
+        // special-case when x-format indicates a SQL primary/increment
+        if (prop["x-format"] === "Primary") {
+            const line = `      table.primary("${colName}");`;
+            tbl.columns.push(line);
+            return;
+        }
+        else if (prop["x-format"] === "PrimaryIncrements") {
+            const line = `      table.increments("${colName}").primary();`;
+            tbl.columns.push(line);
+            return;
+        }
 
         // determine column type
         let line = "";
-        // const tname = tblName;
         switch (prop.type) {
         case "string":
             if (prop.maxLength) {

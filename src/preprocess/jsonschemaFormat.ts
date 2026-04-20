@@ -20,11 +20,47 @@ export function formatJsonSchema(jsonSchemaPath: string, compilerOptions: types.
 
     // json schema structure check 
     if (typeof jsonSchema.properties !== "object") {
-        log.error(`properties is invalid in ${jsonSchemaPath}`);
+        log.error(`"properties" format is invalid in ${jsonSchemaPath}`);
     }
 
     // format properties boolean "required" into array of string
     jsonSchema.required = getRequiredArrStr(jsonSchema, jsonSchemaPath);
+
+    // normalize x-format depending on target DB: ObjectId <-> PrimaryIncrements
+    const toSql = compilerOptions.dbType === "sql";
+    const convertXFormat = (schemaItem: types.jsonSchemaPropsItem | types.jsonSchema | undefined) => {
+        if (!schemaItem) return;
+        if (schemaItem.type === "object" && (schemaItem as any).properties) {
+            const props = (schemaItem as any).properties as { [key: string]: types.jsonSchemaPropsItem };
+            for (const k of Object.keys(props)) {
+                const p = props[k];
+                if (!p) continue;
+                if (toSql) {
+                    if (p["x-format"] === "ObjectId") {
+                        const isId = k === "_id";
+                        p["x-format"] = isId ? "PrimaryIncrements" : undefined;
+                        p.type = "integer";
+
+                        log.warn("[JsonSchema]", `SQL target: ${isId ? "converted" : "removed"} x-format ObjectId ${isId ? "-> PrimaryIncrements" : ""} for property "${k}" in ${jsonSchemaPath}`);
+                    }
+                }
+                else {
+                    if (p["x-format"] === "PrimaryIncrements" || p["x-format"] === "Primary") {
+                        p["x-format"] = "ObjectId";
+                        p.type = "string";
+                        log.warn("[JsonSchema]", `Non-SQL target: converted x-format PrimaryIncrements -> ObjectId for property "${k}" in ${jsonSchemaPath}`);
+                    }
+                }
+                if (p && (p.type === "object" || (p.type === "array" && p.items))) {
+                    convertXFormat(p);
+                }
+            }
+        }
+        else if (schemaItem.type === "array" && (schemaItem as any).items) {
+            convertXFormat((schemaItem as any).items);
+        }
+    };
+    convertXFormat(jsonSchema);
 
     // additional validation for SQL target
     if (compilerOptions && compilerOptions.dbType === "sql") {

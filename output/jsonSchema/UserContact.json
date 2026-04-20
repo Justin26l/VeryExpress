@@ -14,7 +14,17 @@
     "properties": {
         "_id": {
             "type": "string",
-            "x-format": "ObjectId",
+            "x-format": "PrimaryIncrements",
+            "index": true
+        },
+        "userId": {
+            "type": "string",
+            "x-foreignKey": {
+                "schemaName": "User",
+                "fieldName": "_id",
+                "relationType": "one-to-one"
+            },
+            "required": true,
             "index": true
         },
         "phoneNo": {
@@ -27,5 +37,7 @@
         }
     },
     "additionalProperties": false,
-    "required": []
+    "required": [
+        "userId"
+    ]
 }

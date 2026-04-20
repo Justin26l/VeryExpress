@@ -8,13 +8,6 @@ import * as types from "./../../types/types";
 import * as openapiType from "./../../types/openapi";
 import { Schema } from "express-validator";
 
-// id validator
-const idValidators: Schema = processSchema({ fieldName: "id", required: true, param: {
-    name: "id",
-    in: "path",
-    required: true,
-    schema: { type: "string", ["x-format"]: "ObjectId" } as any,
-}});
 
 /**
  * compile jsonschema to controller source code
@@ -37,6 +30,25 @@ export async function compile(options: {
             [key: string]: Schema // methods
         }
     } = {};
+
+    // build id validator according to target DB type
+    let idValidators: Schema;
+    if (options.compilerOptions && options.compilerOptions.dbType === "sql") {
+        idValidators = processSchema({ fieldName: "id", required: true, param: {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", ["x-format"]: options.jsonSchema.properties['_id']?.["x-format"] || undefined  } as any,
+        }});
+    }
+    else {
+        idValidators = processSchema({ fieldName: "id", required: true, param: {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "string", ["x-format"]: "ObjectId" } as any,
+        }});
+    }
 
     log.process(`Controller : ${schemaConfig.documentName} > ${endpoint}`);
 
@@ -176,6 +188,10 @@ function processSchema(options: {
             }
             validatorParam.custom.options = "FUNC{{this.isObjectId}}";
             // call controller base class : _ControllerFactory.isObjectId()
+            break;
+        case "PrimaryIncrements":
+        case "Primary":
+            validatorParam.isInt = true;
             break;
         }
         break;

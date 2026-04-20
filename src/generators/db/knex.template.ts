@@ -15,7 +15,7 @@ export default function knexTemplate(options: {
         const cols = (t.columns || []).join("\n");
         const idxs = (t.indexes || []).join("\n");
         const fgs = (t.foreigns || []).join("\n");
-        upParts.push(`  const exists_${t.name} = await knex.schema.hasTable("${t.name}");\n  if (!exists_${t.name}) {\n    await knex.schema.createTable("${t.name}", function(table) {\n      table.increments("id").primary();\n${cols}\n${idxs ? "\n" + idxs : ""}\n${fgs ? "\n" + fgs : ""}\n    });\n  }`);
+        upParts.push(`  const exists_${t.name} = await knex.schema.hasTable("${t.name}");\n  if (!exists_${t.name}) {\n    await knex.schema.createTable("${t.name}", function(table) {\n${cols}\n${idxs ? "\n" + idxs : ""}\n${fgs ? "\n" + fgs : ""}\n    });\n  }`);
     }
 
     const downParts: string[] = [];
