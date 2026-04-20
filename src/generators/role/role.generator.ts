@@ -20,7 +20,7 @@ export async function compile(options: {
     middlewareDir: string,
     compilerOptions: types.compilerOptions,
 }): Promise<void> {
-    if(!options.compilerOptions.useRBAC){ return; }
+    if(!options.compilerOptions.useRBAC && options.compilerOptions.useRBAC!.roles.length <= 0 ) return;
 
     roleSetupFile({
         collectionList: options.collectionList,

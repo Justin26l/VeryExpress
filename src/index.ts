@@ -110,16 +110,14 @@ export async function generate(
     });
     applyFkMetadata(documents);
 
-    // generate role & permissions if RBAC enabled
-    if ( options.useRBAC && options.useRBAC.roles.length > 0 ){
-        await roleGen.compile({
-            collectionList: documents.map((doc) => doc.config.documentName),
-            roleSourceDir: dir.roleSrcDir,
-            roleOutDir: dir.roleDir, 
-            middlewareDir: dir.middlewareDir,
-            compilerOptions: options || utils.generator.defaultCompilerOptions
-        });
-    }
+    // generate role & permissions
+    await roleGen.compile({
+        collectionList: documents.map((doc) => doc.config.documentName),
+        roleSourceDir: dir.roleSrcDir,
+        roleOutDir: dir.roleDir, 
+        middlewareDir: dir.middlewareDir,
+        compilerOptions: options || utils.generator.defaultCompilerOptions
+    });
 
     // generate models & types
     await Promise.all(documents.map( async (doc: { path: string, config: types.documentConfig, schema: types.jsonSchema }) => {
@@ -183,11 +181,12 @@ export async function generate(
         compilerOptions: options || utils.generator.defaultCompilerOptions
     });
 
-    // make server
+    // make server/entrypoint
     await serverGen.compile(options);
 
     // make project files
     await projectSettingsGen.compile(options);
+
     // await configGen.compile(options);
 
     return ;
