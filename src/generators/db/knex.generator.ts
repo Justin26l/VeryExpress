@@ -127,7 +127,8 @@ export default {
     compile,
 };
 
-export async function compileMigrationsManifest(manifestPath: string, documents: Array<{ path: string; config: types.documentConfig; schema: types.jsonSchema }>): Promise<void> {
+export async function compileMigrationsManifest(manifestPath: string, documents: Array<{ path: string; config: types.documentConfig; schema: types.jsonSchema }>, options: types.compilerOptions): Promise<void> {
+    if (options.dbType !== "sql") return;
     try {
         const manifest: Array<{ filename: string; table: string; dependsOn: string[] }> = [];
         for (const doc of documents) {

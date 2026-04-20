@@ -43,6 +43,7 @@ export async function generate(
         middlewareDir: path.posix.join(options.sysDir, "_middlewares"),
         controllerDir: path.posix.join(options.sysDir, "_controllers"),
         modelDir: path.posix.join(options.sysDir, "_models"),
+        migrations: path.posix.join(options.sysDir, "_models", "migrations"),
         typeDir: path.posix.join(options.sysDir, "_types"),
         serviceDir: path.posix.join(options.sysDir, "_services"),
         utilsDir: path.posix.join(options.sysDir, "_utils"),
@@ -126,7 +127,7 @@ export async function generate(
         if (options.dbType === "sql") {
             await knexGen.compile({
                 jsonSchema: doc.schema,
-                outDir: path.join(dir.modelDir, "migrations"),
+                outDir: dir.migrations,
                 compilerOptions: options || utils.generator.defaultCompilerOptions,
             });
             await interfaceGen.compile(
@@ -172,11 +173,8 @@ export async function generate(
         return;
     }));
     
-    // generate migrations manifest (created by knex generator helper)
-    if (options.dbType === "sql") {
-        const manifestPath = path.posix.join(dir.modelDir, "migrations", "migrations-manifest.json");
-        await knexGen.compileMigrationsManifest(manifestPath, documents);
-    }
+    // generate migrations manifest for sql
+    await knexGen.compileMigrationsManifest(path.posix.join(dir.migrations, "migrations-manifest.json"), documents, options);
 
     // make route from routeData
     await routeGen.compile({
