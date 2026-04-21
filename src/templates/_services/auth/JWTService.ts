@@ -95,7 +95,7 @@ export default class JWTService {
                 provider: "local",
                 expired: Date.now() + 5000,
             });
-            sessionRepo.save(session);
+            await sessionRepo.save(session);
         }
 
         // return appAuthCode to client

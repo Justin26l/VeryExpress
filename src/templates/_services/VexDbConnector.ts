@@ -2,6 +2,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { DataSource } from 'typeorm';
 import utils from './../_utils';
+import dotenv from 'dotenv';
 
 export class VexDbConnector {
     private sqlUrl: string;
@@ -53,7 +54,7 @@ export class VexDbConnector {
             ssl,
             synchronize: (process.env.SQL_SYNCHRONIZE || '').toLowerCase() === 'true',
             logging: false,
-            entities: [],
+            entities: [__dirname + '/../_models/*.gen.{ts,js}'],
             migrations: [],
         });
 
@@ -114,6 +115,8 @@ export class VexDbConnector {
         }
     }
 }
+
+dotenv.config();
 
 const AppDataSource = new VexDbConnector({
     sqlUrl: process.env.SQL_URI ?? undefined,

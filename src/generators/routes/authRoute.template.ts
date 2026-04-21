@@ -104,14 +104,14 @@ export default class AuthRouter {
 
             if (!sessionDoc) {
                 return utils.response.send(res, 404, { message: 'invalid code' });
-            }
-            else {
-                await sessionRepo.delete({ sessionCode });
-                // log.info("Session Found & Deleted", sessionDoc);
             };
 
             if (sessionDoc.expired < Date.now()) {
                 return utils.response.send(res, 401, { message: 'code expired' });
+            };
+
+            if (sessionDoc) {
+                await sessionRepo.delete({ sessionCode });
             };
 
             // generate tokens based on code's user profile
