@@ -30,6 +30,12 @@
             "default": true,
             "required": true
         },
+        "roles": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
         "locale": {
             "type": "string",
             "maxLength": 8

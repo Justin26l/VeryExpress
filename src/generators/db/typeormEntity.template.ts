@@ -6,6 +6,8 @@ interface ColumnDef {
     isGenerated: boolean;
     nullable: boolean;
     maxLength?: number;
+    isArray?: boolean;
+    isBigInt?: boolean;
 }
 
 export default function objectionTemplate(options: {
@@ -24,7 +26,16 @@ export default function objectionTemplate(options: {
             decorators.push(`    @PrimaryGeneratedColumn(${pkArg})`);
             decorators.push(`    ${col.name}!: ${col.tsType};`);
         } else {
-            const colArgs = col.maxLength ? `{ length: ${col.maxLength}, nullable: ${col.nullable} }` : `{ nullable: ${col.nullable} }`;
+            let colArgs: string;
+            if (col.isArray) {
+                colArgs = `{ type: "simple-array", nullable: ${col.nullable} }`;
+            } else if (col.isBigInt) {
+                colArgs = `{ type: "bigint", nullable: ${col.nullable}, transformer: { to: (v: number) => v, from: (v: string) => Number(v) } }`;
+            } else if (col.maxLength) {
+                colArgs = `{ length: ${col.maxLength}, nullable: ${col.nullable} }`;
+            } else {
+                colArgs = `{ nullable: ${col.nullable} }`;
+            }
             decorators.push(`    @Column(${colArgs})`);
             decorators.push(`    ${col.name}${col.nullable ? "?" : "!"}: ${col.tsType};`);
         }

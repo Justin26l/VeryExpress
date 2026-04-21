@@ -4,12 +4,12 @@ import log from "./../../utils/logger";
 
 import * as types from "./../../types/types";
 
-function jsonTypeToSqlType(type: string | undefined, maxLength?: number): string {
+function jsonTypeToSqlType(type: string | undefined, xFormat?: string, maxLength?: number): string {
     switch (type) {
-    case "integer": return "int";
-    case "number":  return "float";
+    case "integer": return "integer";
+    case "number":  return "bigint";
     case "boolean": return "boolean";
-    case "array":
+    case "array":   return "text";      // TypeORM simple-array stores as CSV text
     case "object":
     case "json":    return "jsonb";
     default:        return maxLength ? `varchar(${maxLength})` : "varchar";
@@ -54,7 +54,7 @@ export async function compile(options: {
         const isUuidPrimary = colName === "_id" && prop["x-format"] === "PrimaryUUID";
         const isPrimary = isUuidPrimary || prop["x-format"] === "PrimaryIncrements" || prop["x-format"] === "Primary";
         const isNullable = !isPrimary && !requiredFields.includes(colName);
-        const sqlType = isPrimary ? (isUuidPrimary ? "uuid" : "int") : jsonTypeToSqlType(prop.type, prop.maxLength);
+        const sqlType = isPrimary ? (isUuidPrimary ? "uuid" : "int") : jsonTypeToSqlType(prop.type, prop["x-format"], prop.maxLength);
 
         if (isPrimary && isUuidPrimary) {
             tbl.columns.push(`{ name: "${colName}", type: "uuid", isPrimary: true, isGenerated: true, generationStrategy: "uuid", default: "gen_random_uuid()" }`);

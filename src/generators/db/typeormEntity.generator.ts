@@ -3,12 +3,20 @@ import utils from "../../utils";
 import log from "../../utils/logger";
 import * as types from "../../types/types";
 
-function jsonTypeToTs(type: string | undefined): string {
-    switch (type) {
+function jsonTypeToTs(prop: types.jsonSchemaPropsItem): string {
+    switch (prop.type) {
     case "integer":
     case "number":  return "number";
     case "boolean": return "boolean";
-    case "array":
+    case "array": {
+        const itemType = (prop.items as types.jsonSchemaPropsItem | undefined)?.type;
+        switch (itemType) {
+        case "integer":
+        case "number":  return "number[]";
+        case "boolean": return "boolean[]";
+        default:        return "string[]";
+        }
+    }
     case "object":  return "Record<string, unknown>";
     default:        return "string";
     }
@@ -37,12 +45,14 @@ export async function compile(options: {
         const nullable = !requiredFields.includes(key) && !isPrimary;
         return {
             name: key,
-            tsType: isUuidPrimary ? "string" : jsonTypeToTs(p.type),
+            tsType: isUuidPrimary ? "string" : jsonTypeToTs(p),
             isPrimary,
             isUUID: isUuidPrimary,
             isGenerated: isPrimary,
             nullable,
             maxLength: p.maxLength,
+            isArray: p.type === "array",
+            isBigInt: p.type === "number",
         };
     });
 
