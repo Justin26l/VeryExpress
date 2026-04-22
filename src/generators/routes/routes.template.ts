@@ -34,7 +34,7 @@ export default class ApiRouter{
     const useRoutes = [];
 
     const rbacMiddleware = (path: string) => {
-        return options.compilerOptions.useRBAC ? `new RoleBaseAccessControl('${path}').middleware, ` : "";
+        return options.compilerOptions.useRBAC ? `new RoleBaseAccessControl('${path}').middleware,` : "";
     };
 
     if (options.compilerOptions.useRBAC) {
@@ -47,7 +47,7 @@ export default class ApiRouter{
 
     options.routes.forEach((obj) => {
         importRoutes.push(`import ${obj.documentName}Controller from '${obj.controllerPath}';`);
-        useRoutes.push(`this.router.use('${obj.route}', ${rbacMiddleware(obj.documentName)} ${obj.documentName}Controller);`);
+        useRoutes.push(`this.router.use('${obj.route}', ${rbacMiddleware(obj.documentName)} ${obj.documentName}Controller.router);`);
     });
 
     template = template.replace(/{{importRoutes}}/g, importRoutes.join("\n"));
