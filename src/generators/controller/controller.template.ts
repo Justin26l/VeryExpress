@@ -24,19 +24,14 @@ import { checkSchema, validationResult } from 'express-validator';
 import utils from "./../../system/_utils";
 import VexSystem from '../_services/VexSystem.gen';
 import VexResponseError from "../_types/VexResponseError.gen";
-import AppDataSource from '../_services/VexDbConnector.gen';
+import VexDb from '../_services/VexDb.gen';
 
 import { {{documentName}}Entity } from '{{modelPath}}';
-
-function repo() {
-    const ds = AppDataSource.sqlDataSource;
-    if (!ds) throw new VexResponseError(503, utils.response.code.DB_CONN_ERR);
-    return ds.getRepository({{documentName}}Entity);
-}
 
 class {{documentName}}Controller extends controllerFactory._ControllerFactory {
     public router: Router;
     private vexSystem: VexSystem;
+    private repo = VexDb.getRepository({{documentName}}Entity);
 
     constructor() {
         super();
@@ -57,7 +52,7 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
     }
 
     public async get{{documentName}}(req: Request, res: Response): Promise<Response> {
-        const result = await repo().findOne({ where: { _id: req.params.id } as FindOptionsWhere<{{documentName}}Entity> });
+        const result = await this.repo.findOne({ where: { _id: req.params.id } as FindOptionsWhere<{{documentName}}Entity> });
         if (!result) throw new VexResponseError(404, utils.response.code.err_not_found);
         
         return utils.response.send(res, 200, { result });
@@ -68,7 +63,7 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
         const selectedFields = utils.common.parseFieldsSelect(req);
         const relations = utils.common.parseRelations(req);
 
-        const result = await repo().find({
+        const result = await this.repo.find({
             where: searchFilter,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             select: selectedFields as any,
@@ -80,7 +75,7 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
     public async create{{documentName}}(req: Request, res: Response): Promise<Response> {
         {{clean_id}}
         
-        const r = repo();
+        const r = this.repo;
         const result = await r.save(r.create(req.body as DeepPartial<{{documentName}}Entity>));
         if (!result) throw new VexResponseError(400, utils.response.code.err_create);
         
@@ -90,7 +85,7 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
     public async update{{documentName}}(req: Request, res: Response): Promise<Response> {
         {{clean_id}}
 
-        const r = repo();
+        const r = this.repo;
         await r.update({ _id: req.params.id } as FindOptionsWhere<{{documentName}}Entity>, req.body as DeepPartial<{{documentName}}Entity>);
         const result = await r.findOne({ where: { _id: req.params.id } as FindOptionsWhere<{{documentName}}Entity> });
         if (!result) throw new VexResponseError(404, utils.response.code.err_update);
@@ -101,7 +96,7 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
     public async replace{{documentName}}(req: Request, res: Response): Promise<Response> {
         {{clean_id}}
 
-        const r = repo();
+        const r = this.repo;
         const existing = await r.findOne({ where: { _id: req.params.id } as FindOptionsWhere<{{documentName}}Entity> });
         if (!existing) throw new VexResponseError(404, utils.response.code.err_update);
         const result = await r.save(r.merge(existing, req.body as DeepPartial<{{documentName}}Entity>));
@@ -110,7 +105,7 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
     }
 
     public async delete{{documentName}}(req: Request, res: Response): Promise<Response> {
-        const r = repo();
+        const r = this.repo;
         const existing = await r.findOne({ where: { _id: req.params.id } as FindOptionsWhere<{{documentName}}Entity> });
         if (!existing) throw new VexResponseError(404, utils.response.code.err_delete);
         await r.delete({ _id: req.params.id } as FindOptionsWhere<{{documentName}}Entity>);
@@ -119,7 +114,7 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
     }
 }
 
-export default new {{documentName}}Controller().router;
+export default new {{documentName}}Controller();
 `;
     
     const indent = "    ";

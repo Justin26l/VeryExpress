@@ -31,7 +31,7 @@ import helmet from 'helmet';
 import 'reflect-metadata';
 import log from './system/_utils/logger.gen';
 import processTimer from './system/_utils/processTimer.gen';
-import vexDB from './system/_services/VexDbConnector.gen';
+import vexDB from './system/_services/VexDb.gen';
 
 import ApiRouter from './system/_routes/ApiRouter.gen';
 {{Import}}

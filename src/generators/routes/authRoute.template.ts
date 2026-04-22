@@ -14,7 +14,7 @@ import OAuthStrategyService from '../_services/oauth/OAuthStrategyService.gen';
 import OAuthRouteFactory from './oauth/OAuthRouteFactory.gen';
 import { Strategy as GithubStrategy } from 'passport-github';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
-import AppDataSource from '../_services/VexDbConnector.gen';
+import VexDb from '../_services/VexDb.gen';
 import { SessionEntity } from '../_models/SessionModel.gen';
 import VexResponseError from '../_types/VexResponseError.gen';
 {{localAuthImport}}
@@ -25,6 +25,10 @@ export default class AuthRouter {
     private JWTService = new JWTService();
     private OAuthStrategyService = new OAuthStrategyService();
     private router: Router = Router();
+
+    private userRepo = VexDb.getRepository(UserEntity);
+    private uapRepo = VexDb.getRepository(UserAuthProfilesEntity);
+    private sessionRepo = VexDb.getRepository(SessionEntity);
 
     constructor() {
         const vexSystem = new VexSystem();
@@ -95,12 +99,9 @@ export default class AuthRouter {
             }
 
             const sessionCode = String(req.query.code);
-            const ds = AppDataSource.sqlDataSource;
-            if (!ds) throw new VexResponseError(503, utils.response.code.DB_CONN_ERR);
-            const sessionRepo = ds.getRepository(SessionEntity);
 
             // find code in database
-            const sessionDoc = await sessionRepo.findOne({ where: { sessionCode } });
+            const sessionDoc = await this.sessionRepo.findOne({ where: { sessionCode } });
 
             if (!sessionDoc) {
                 return utils.response.send(res, 404, { message: 'invalid code' });
@@ -111,7 +112,7 @@ export default class AuthRouter {
             };
 
             if (sessionDoc) {
-                await sessionRepo.delete({ sessionCode });
+                await this.sessionRepo.delete({ sessionCode });
             };
 
             // generate tokens based on code's user profile
@@ -166,13 +167,8 @@ export default class AuthRouter {
                     return utils.response.send(res, 400, { message: "Email and password are required." });
                 }
 
-                const ds = AppDataSource.sqlDataSource;
-                if (!ds) throw new VexResponseError(503, utils.response.code.DB_CONN_ERR);
-                const userRepo = ds.getRepository(UserEntity);
-                const uapRepo = ds.getRepository(UserAuthProfilesEntity);
-
                 // Check if user already exists
-                const existingUser = await userRepo.findOne({ where: { email } });
+                const existingUser = await this.userRepo.findOne({ where: { email } });
                 if (existingUser) {
                     return utils.response.send(res, 409, { message: "Email already registered." });
                 }
@@ -181,7 +177,7 @@ export default class AuthRouter {
                 const hashedPassword = utils.hash.hashPassword(password, email);
 
                 // Create user
-                const user = await userRepo.save(userRepo.create({
+                const user = await this.userRepo.save(this.userRepo.create({
                     name: email.split('@')[0],
                     email,
                     active: true,
@@ -189,14 +185,14 @@ export default class AuthRouter {
 
                 // create local auth profile row linked to the user
                 try {
-                    await uapRepo.save(uapRepo.create({
+                    await this.uapRepo.save(this.uapRepo.create({
                         userId: user._id,
                         provider: 'local',
                         password: hashedPassword
                     }));
                 } catch (e) {
                     // if profile creation fails, delete the created user to avoid partial state
-                    try { await userRepo.delete({ _id: user._id }); } catch (ee) {}
+                    try { await this.userRepo.delete({ _id: user._id }); } catch (ee) {}
                     throw e;
                 }
 
@@ -215,19 +211,15 @@ export default class AuthRouter {
                 }
 
                 try {
-                    const ds = AppDataSource.sqlDataSource;
-                    if (!ds) throw new VexResponseError(503, utils.response.code.DB_CONN_ERR);
-                    const userRepo = ds.getRepository(UserEntity);
-                    const uapRepo = ds.getRepository(UserAuthProfilesEntity);
 
                     // verify user credentials
-                    const user = await userRepo.findOne({ where: { email } });
+                    const user = await this.userRepo.findOne({ where: { email } });
                     if (!user) {
                         return utils.response.send(res, 400, { message:"incorrect email or password." });
                     }
 
                     // load auth profiles separately (no ORM relation defined)
-                    const authProfiles = await uapRepo.find({ where: { userId: user._id } });
+                    const authProfiles = await this.uapRepo.find({ where: { userId: user._id } });
                     const localAuthProfile = authProfiles.find((p) => p.provider === 'local');
                     if (!localAuthProfile) {
                         return utils.response.send(res, 400, { message:"incorrect email or password." });

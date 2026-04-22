@@ -9,7 +9,7 @@ import utils from "../../_utils";
 
 import VexResponseError from "../../_types/VexResponseError.gen";
 
-import AppDataSource from "../VexDbConnector.gen";
+import VexDb from "../VexDb.gen";
 import { UserEntity } from "../../_models/UserModel.gen";
 import { SessionEntity } from "../../_models/SessionModel.gen";
 import { User } from "../../_types/User.gen";
@@ -22,6 +22,9 @@ interface tokenObj {
 
 export default class JWTService {
     private keyStore = new JWTKeyStore();
+
+    private userRepo = VexDb.getRepository(UserEntity);
+    private sessionRepo = VexDb.getRepository(SessionEntity);
 
     /**
      * Verifies a JSON Web Token (JWT) using the provided token and key index.
@@ -87,15 +90,14 @@ export default class JWTService {
 
         const sessionCode = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
-        const sessionRepo = AppDataSource.sqlDataSource?.getRepository(SessionEntity);
-        if (sessionRepo) {
-            const session = sessionRepo.create({
+        if (this.sessionRepo) {
+            const session = this.sessionRepo.create({
                 sessionCode,
                 userId: user._id,
                 provider: "local",
                 expired: Date.now() + 5000,
             });
-            await sessionRepo.save(session);
+            await this.sessionRepo.save(session);
         }
 
         // return appAuthCode to client
@@ -157,9 +159,7 @@ export default class JWTService {
 
     public async generateAccessToken(userId: string, index?: number): Promise<tokenObj> {
 
-        const userDoc = await AppDataSource.sqlDataSource
-            ?.getRepository(UserEntity)
-            .findOne({ where: { _id: userId } as any });
+        const userDoc = await this.userRepo.findOne({ where: { _id: userId } });
         if (!userDoc) {
             throw new VexResponseError(404, utils.response.code.err_payload, "Invalid User Id");
         }

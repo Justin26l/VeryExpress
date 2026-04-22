@@ -1,15 +1,14 @@
 // {{headerComment}}
 import { Request, Response, NextFunction } from 'express';
-import { DataSource } from 'typeorm';
+import { DataSource, EntityTarget, ObjectLiteral, Repository } from 'typeorm';
 import utils from './../_utils';
-import dotenv from 'dotenv';
 
 export class VexDbConnector {
     private sqlUrl: string;
     private sqlCa: string;
     private recordAccessLog: boolean = false;
 
-    public sqlDataSource?: DataSource;
+    public dataSource?: DataSource;
 
     constructor(options: {
         sqlUrl?: string;
@@ -61,7 +60,7 @@ export class VexDbConnector {
         const connectWithRetry = (retryTime = 10): void => {
             ds.initialize()
                 .then(() => {
-                    this.sqlDataSource = ds;
+                    this.dataSource = ds;
                     utils.log.infoSql('TypeORM DataSource initialized');
                 })
                 .catch((err) => {
@@ -74,25 +73,26 @@ export class VexDbConnector {
     }
 
     closeSql(): void {
-        if (this.sqlDataSource?.isInitialized) {
-            this.sqlDataSource.destroy()
+        if (this.dataSource?.isInitialized) {
+            this.dataSource.destroy()
                 .then(() => utils.log.infoSql('TypeORM DataSource closed'))
                 .catch((err) => utils.log.errorSql('Error closing TypeORM DataSource', err));
         }
     }
 
-    getSqlDataSource(): DataSource | undefined {
-        return this.sqlDataSource;
+    getRepository<Entity extends ObjectLiteral>(target: EntityTarget<Entity>): Repository<Entity> {
+        if(!this.dataSource) throw new Error('DataSource not initialized');
+        return this.dataSource.getRepository(target);
     }
 
     async middleware(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            if (this.sqlUrl && (!this.sqlDataSource || !this.sqlDataSource.isInitialized)) {
+            if (this.sqlUrl && (!this.dataSource || !this.dataSource.isInitialized)) {
                 utils.response.send(res, 503, { code: utils.response.code.DB_CONN_ERR });
                 return;
             }
 
-            if (this.recordAccessLog && this.sqlDataSource?.isInitialized) {
+            if (this.recordAccessLog && this.dataSource?.isInitialized) {
                 const logEntry = {
                     timestamp: new Date().getTime(),
                     ipa: req.socket.remoteAddress || req.headers['x-forwarded-for'],
@@ -102,7 +102,7 @@ export class VexDbConnector {
                     query: JSON.stringify(req.query),
                 };
                 try {
-                    const repo = this.sqlDataSource.getRepository('AccessLog');
+                    const repo = this.dataSource.getRepository('AccessLog');
                     await repo.save(logEntry);
                 }
                 catch { /* table may not exist */ }
@@ -116,12 +116,4 @@ export class VexDbConnector {
     }
 }
 
-dotenv.config();
-
-const AppDataSource = new VexDbConnector({
-    sqlUrl: process.env.SQL_URI ?? undefined,
-    sqlCa: process.env.SQL_CA ?? undefined,
-    recordAccessLog: false,
-});
-
-export default AppDataSource;
+export default VexDbConnector;
