@@ -18,7 +18,6 @@ import * as roleGen from "./generators/role/role.generator";
 import * as controllerGen from "./generators/controller/controllers.generator";
 import * as routeGen from "./generators/routes/routes.generator";
 import * as serverGen from "./generators/app/server.generator";
-import * as typeormMigrationGen from "./generators/db/typeormMigration.generator";
 import * as typeormEntityGen from "./generators/db/typeormEntity.generator";
 import * as interfaceGen from "./generators/interface/generator";
 
@@ -42,7 +41,6 @@ export async function generate(
         middlewareDir: path.posix.join(options.sysDir, "_middlewares"),
         controllerDir: path.posix.join(options.sysDir, "_controllers"),
         modelDir: path.posix.join(options.sysDir, "_models"),
-        migrations: path.posix.join(options.sysDir, "_models", "migrations"),
         typeDir: path.posix.join(options.sysDir, "_types"),
         serviceDir: path.posix.join(options.sysDir, "_services"),
         utilsDir: path.posix.join(options.sysDir, "_utils"),
@@ -120,12 +118,6 @@ export async function generate(
 
     // generate models & types
     await Promise.all(documents.map( async (doc: { path: string, config: types.documentConfig, schema: types.jsonSchema }) => {
-        // generate TypeORM migrations, entities, types
-        await typeormMigrationGen.compile({
-            jsonSchema: doc.schema,
-            outDir: dir.migrations,
-            compilerOptions: options || utils.generator.defaultCompilerOptions,
-        });
         await interfaceGen.compile(
             doc.schema as any,
             path.join(dir.typeDir, `${doc.config.documentName}.gen.ts`),
@@ -155,9 +147,6 @@ export async function generate(
         return;
     }));
     
-    // generate migrations manifest
-    await typeormMigrationGen.compileMigrationsManifest(path.posix.join(dir.migrations, "migrations-manifest.json"), documents, options);
-
     // make route from routeData
     await routeGen.compile({
         routesArr: routeData,

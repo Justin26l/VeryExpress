@@ -3,7 +3,6 @@ import hash from "./hash.gen";
 import logger from "./logger.gen";
 import response from "./response.gen";
 import validator from "./validator.gen";
-import migrationOrdering from "./migrationOrdering.gen";
 
 export default {
     common,
@@ -11,5 +10,4 @@ export default {
     log : logger,
     response,
     validator,
-    migrationOrdering
 };
