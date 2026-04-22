@@ -17,12 +17,12 @@ export { roles };
 export default class RoleBaseAccessControl {
     private collection: string;
     private actions: {[key:string]: string} = {
-        "GET": 'read',
-        "POST /": 'create',
-        "POST /search": 'search',
-        "PUT": 'update',
-        "PATCH": 'update',
-        "DELETE": 'delete',
+        "GET": "read",
+        "POST /": "create",
+        "POST /search": "search",
+        "PUT": "update",
+        "PATCH": "update",
+        "DELETE": "delete",
     };
 
     constructor(
@@ -44,7 +44,7 @@ export default class RoleBaseAccessControl {
         }
         catch (e: any) {
             log.errorNoExit(e);
-            if (typeof e === 'number') {
+            if (typeof e === "number") {
                 utils.response.send(res, e);
             }
             else {
@@ -58,7 +58,7 @@ export default class RoleBaseAccessControl {
     let counter = 0;
     options.roles.forEach(role => {
         roleSwitchCode += `
-            ${ counter == 0 ? "" : "else " }if ( user.roles.includes('${role}') && new roles.${role}().checkAccess(this.collection, this.actions[actionKey]) ) {
+            ${ counter == 0 ? "" : "else " }if ( user.roles.includes("${role}") && new roles.${role}().checkAccess(this.collection, this.actions[actionKey]) ) {
                 next();
             }`;
         counter++;

@@ -9,7 +9,7 @@ export async function compile(
     // read env and add
     log.process(`Project Settings : ${envOutPath}`);
     let envOutput: string = "";
-    const envTemplate: string = fs.readFileSync(__dirname+"/templates/_projectSettings/env", "utf8");
+    const envTemplate: string = fs.readFileSync( __dirname + "/templates/_projectSettings/env", "utf8");
 
     if (!fs.existsSync(envOutPath)) {
         envOutput = envTemplate;

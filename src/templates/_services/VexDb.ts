@@ -1,6 +1,6 @@
 // {{headerComment}}
-import { VexDbConnector } from './VexDbConnector.gen';
-import dotenv from 'dotenv';
+import { VexDbConnector } from "./VexDbConnector.gen";
+import dotenv from "dotenv";
 
 dotenv.config();
 

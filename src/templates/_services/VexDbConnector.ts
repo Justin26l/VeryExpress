@@ -1,7 +1,7 @@
 // {{headerComment}}
-import { Request, Response, NextFunction } from 'express';
-import { DataSource, EntityTarget, ObjectLiteral, Repository } from 'typeorm';
-import utils from './../_utils';
+import { Request, Response, NextFunction } from "express";
+import { DataSource, EntityTarget, ObjectLiteral, Repository } from "typeorm";
+import utils from "./../_utils";
 
 export class VexDbConnector {
     private sqlUrl: string;
@@ -15,8 +15,8 @@ export class VexDbConnector {
         sqlCa?: string;
         recordAccessLog?: boolean;
     }) {
-        this.sqlUrl = options.sqlUrl || '';
-        this.sqlCa = options.sqlCa || '';
+        this.sqlUrl = options.sqlUrl || "";
+        this.sqlCa = options.sqlCa || "";
         this.recordAccessLog = options.recordAccessLog || false;
         this.middleware = this.middleware.bind(this);
     }
@@ -30,30 +30,30 @@ export class VexDbConnector {
     }
 
     connectSql(): void {
-        utils.log.infoSql('Connecting to SQL DB (TypeORM)...');
+        utils.log.infoSql("Connecting to SQL DB (TypeORM)...");
 
         const caRaw = this.sqlCa || undefined;
         let ca: string | undefined;
         if (caRaw) {
-            ca = caRaw.startsWith('-----BEGIN') ? caRaw : Buffer.from(caRaw, 'base64').toString('utf8');
+            ca = caRaw.startsWith("-----BEGIN") ? caRaw : Buffer.from(caRaw, "base64").toString("utf8");
         }
-        const insecure = (process.env.SQL_INSECURE_TLS || '').toLowerCase() === 'true';
+        const insecure = (process.env.SQL_INSECURE_TLS || "").toLowerCase() === "true";
         const ssl = insecure
             ? { rejectUnauthorized: false }
             : (ca ? { rejectUnauthorized: true, ca } : undefined);
 
         const sqlUrl = new URL(this.sqlUrl);
         const ds = new DataSource({
-            type: 'postgres',
+            type: "postgres",
             host: sqlUrl.hostname,
             port: Number(sqlUrl.port) || 5432,
             username: sqlUrl.username,
             password: sqlUrl.password,
             database: sqlUrl.pathname.slice(1),
             ssl,
-            synchronize: (process.env.SQL_SYNCHRONIZE || '').toLowerCase() === 'true',
+            synchronize: (process.env.SQL_SYNCHRONIZE || "").toLowerCase() === "true",
             logging: false,
-            entities: [__dirname + '/../_models/*.gen.{ts,js}'],
+            entities: [__dirname + "/../_models/*.gen.{ts,js}"],
             migrations: [],
         });
 
@@ -61,7 +61,7 @@ export class VexDbConnector {
             ds.initialize()
                 .then(() => {
                     this.dataSource = ds;
-                    utils.log.infoSql('TypeORM DataSource initialized');
+                    utils.log.infoSql("TypeORM DataSource initialized");
                 })
                 .catch((err) => {
                     utils.log.errorSql(`Failed to initialize TypeORM, retrying in ${retryTime}s`, err);
@@ -75,13 +75,13 @@ export class VexDbConnector {
     closeSql(): void {
         if (this.dataSource?.isInitialized) {
             this.dataSource.destroy()
-                .then(() => utils.log.infoSql('TypeORM DataSource closed'))
-                .catch((err) => utils.log.errorSql('Error closing TypeORM DataSource', err));
+                .then(() => utils.log.infoSql("TypeORM DataSource closed"))
+                .catch((err) => utils.log.errorSql("Error closing TypeORM DataSource", err));
         }
     }
 
     getRepository<Entity extends ObjectLiteral>(target: EntityTarget<Entity>): Repository<Entity> {
-        if(!this.dataSource) throw new Error('DataSource not initialized');
+        if(!this.dataSource) throw new Error("DataSource not initialized");
         return this.dataSource.getRepository(target);
     }
 
@@ -95,14 +95,14 @@ export class VexDbConnector {
             if (this.recordAccessLog && this.dataSource?.isInitialized) {
                 const logEntry = {
                     timestamp: new Date().getTime(),
-                    ipa: req.socket.remoteAddress || req.headers['x-forwarded-for'],
+                    ipa: req.socket.remoteAddress || req.headers["x-forwarded-for"],
                     method: req.method,
-                    url: req.url.split('?')[0],
+                    url: req.url.split("?")[0],
                     headers: JSON.stringify(req.headers),
                     query: JSON.stringify(req.query),
                 };
                 try {
-                    await this.dataSource.getRepository('AccessLog').save(logEntry);
+                    await this.dataSource.getRepository("AccessLog").save(logEntry);
                 }
                 catch { /* table may not exist */ }
             }

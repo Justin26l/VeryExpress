@@ -22,8 +22,8 @@ export default function objectionTemplate(options: {
     const columnDecorators = options.columns.map(col => {
         const decorators: string[] = [];
         if (col.isPrimary) {
-            const pkArg = col.isUUID ? '"uuid"' : '"increment"';
-            decorators.push(`    @PrimaryGeneratedColumn(${pkArg})`);
+            const pkArg = col.isUUID ? "uuid" : "increment";
+            decorators.push(`    @PrimaryGeneratedColumn("${pkArg}")`);
             decorators.push(`    ${col.name}!: ${col.tsType};`);
         } else {
             let colArgs: string;
@@ -43,8 +43,8 @@ export default function objectionTemplate(options: {
     }).join("\n\n");
 
     return `{{headerComment}}
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
-import { ${doc} } from './../_types/${doc}.gen';
+import { Entity, Column, PrimaryGeneratedColumn } from "typeorm";
+import { ${doc} } from "./../_types/${doc}.gen";
 
 export interface ${doc}Document extends ${doc} {}
 

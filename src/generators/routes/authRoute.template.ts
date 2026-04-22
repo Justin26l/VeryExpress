@@ -5,21 +5,21 @@ export default function template(
     compilerOptions: types.compilerOptions,
 ): string {
     let template = `{{headerComment}}
-import { Router } from 'express';
-import utils from '../_utils';
+import { Router } from "express";
+import utils from "../_utils";
 
-import JWTService from '../_services/auth/JWTService.gen';
-import OAuthStrategyService from '../_services/oauth/OAuthStrategyService.gen';
+import JWTService from "../_services/auth/JWTService.gen";
+import OAuthStrategyService from "../_services/oauth/OAuthStrategyService.gen";
 
-import OAuthRouteFactory from './oauth/OAuthRouteFactory.gen';
-import { Strategy as GithubStrategy } from 'passport-github';
-import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
-import { Repository } from 'typeorm';
-import VexDb from '../_services/VexDb.gen';
-import { SessionEntity } from '../_models/SessionModel.gen';
-import VexResponseError from '../_types/VexResponseError.gen';
+import OAuthRouteFactory from "./oauth/OAuthRouteFactory.gen";
+import { Strategy as GithubStrategy } from "passport-github";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import { Repository } from "typeorm";
+import VexDb from "../_services/VexDb.gen";
+import { SessionEntity } from "../_models/SessionModel.gen";
+import VexResponseError from "../_types/VexResponseError.gen";
 {{localAuthImport}}
-import VexSystem from '../_services/VexSystem.gen';
+import VexSystem from "../_services/VexSystem.gen";
 
 export default class AuthRouter {
     
@@ -59,7 +59,7 @@ export default class AuthRouter {
         switch (providerName) {
         case "google":
             return `
-        const google = 'google';
+        const google = "google";
         const OAuthGoogle = new OAuthRouteFactory({
             strategyName: google,
             strategy: new GoogleStrategy(
@@ -76,7 +76,7 @@ export default class AuthRouter {
         
         case "github":
             return `
-        const github = 'github';
+        const github = "github";
         const OAuthGithub = new OAuthRouteFactory({
             strategyName: github,
             strategy: new GithubStrategy(
@@ -97,7 +97,7 @@ export default class AuthRouter {
     if(compilerOptions.auth.localAuth || compilerOptions.auth.oauthProviders) {
         template = template.replace(/{{pathTokenExchangeAndRefresh}}/g, `
         // Exchange an authorization code for tokens.
-        this.router.post('/token', vexSystem.RouteHandler(async (req, res) => {
+        this.router.post("/token", vexSystem.RouteHandler(async (req, res) => {
             
             // todo: disable this route if use httpOnly Cookie
             
@@ -111,11 +111,11 @@ export default class AuthRouter {
             const sessionDoc = await this.sessionRepo.findOne({ where: { sessionCode } });
 
             if (!sessionDoc) {
-                return utils.response.send(res, 404, { message: 'invalid code' });
+                return utils.response.send(res, 404, { message: "invalid code" });
             };
 
             if (sessionDoc.expired < Date.now()) {
-                return utils.response.send(res, 401, { message: 'code expired' });
+                return utils.response.send(res, 401, { message: "code expired" });
             };
 
             if (sessionDoc) {
@@ -137,7 +137,7 @@ export default class AuthRouter {
         }));
 
         // Refresh expired tokens by refresh token.
-        this.router.post('/refresh', vexSystem.RouteHandler(async (req, res) => {
+        this.router.post("/refresh", vexSystem.RouteHandler(async (req, res) => {
             
             // todo: change this return if use httpOnly Cookie
 
@@ -164,10 +164,10 @@ export default class AuthRouter {
     }
 
     if(compilerOptions.auth.localAuth) {
-        template = template.replace(/{{localAuthImport}}/g, "import { UserEntity } from '../_models/UserModel.gen';\nimport { UserAuthProfilesEntity } from '../_models/UserAuthProfilesModel.gen';\n");
+        template = template.replace(/{{localAuthImport}}/g, "import { UserEntity } from "../_models/UserModel.gen";\nimport { UserAuthProfilesEntity } from "../_models/UserAuthProfilesModel.gen";\n");
         template = template.replace(/{{localAuthRoutes}}/g, `
         // Local Auth register & login
-        this.router.post('/register', async (req, res) => {
+        this.router.post("/register", async (req, res) => {
             try {
                 const { email, password } = req.body;
                 if (!email || !password) {
@@ -185,7 +185,7 @@ export default class AuthRouter {
 
                 // Create user
                 const user = await this.userRepo.save(this.userRepo.create({
-                    name: email.split('@')[0],
+                    name: email.split("@")[0],
                     email,
                     active: true,
                 }));
@@ -194,7 +194,7 @@ export default class AuthRouter {
                 try {
                     await this.uapRepo.save(this.uapRepo.create({
                         userId: user._id,
-                        provider: 'local',
+                        provider: "local",
                         password: hashedPassword
                     }));
                 } catch (e) {
@@ -210,7 +210,7 @@ export default class AuthRouter {
         });
 
 
-        this.router.use('/local', 
+        this.router.use("/local", 
             async (req, res, next) => {
                 const { email, password } = req.body;
                 if (!email || !password) {
@@ -227,7 +227,7 @@ export default class AuthRouter {
 
                     // load auth profiles separately (no ORM relation defined)
                     const authProfiles = await this.uapRepo.find({ where: { userId: user._id } });
-                    const localAuthProfile = authProfiles.find((p) => p.provider === 'local');
+                    const localAuthProfile = authProfiles.find((p) => p.provider === "local");
                     if (!localAuthProfile) {
                         return utils.response.send(res, 400, { message:"incorrect email or password." });
                     }

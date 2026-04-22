@@ -2,9 +2,9 @@ import  utils from "../../utils";
 import * as types from "../../types/types";
 
 // import
-const importCookieParser = "import cookieParser from 'cookie-parser';";
-const importSwaggerRouter = "import SwaggerRouter from './system/_routes/SwaggerRouter.gen';";
-const importAuthRouter = "import AuthRouter from './system/_routes/AuthRouter.gen';";
+const importCookieParser = "import cookieParser from \"cookie-parser\";";
+const importSwaggerRouter = "import SwaggerRouter from \"./system/_routes/SwaggerRouter.gen\";";
+const importAuthRouter = "import AuthRouter from \"./system/_routes/AuthRouter.gen\";";
 
 // configure
 const ConfigSwaggerRouter = "const SwaggerRoute = new SwaggerRouter();";
@@ -23,15 +23,15 @@ export default function serverTemplate(options: {
     template?: string,
 }): string {
     let template: string = options.template || `{{headerComment}}
-import express from 'express';
-import dotenv from 'dotenv';
-import crypto from 'crypto';
-import helmet from 'helmet';
+import express from "express";
+import dotenv from "dotenv";
+import crypto from "crypto";
+import helmet from "helmet";
 
-import 'reflect-metadata';
-import log from './system/_utils/logger.gen';
-import processTimer from './system/_utils/processTimer.gen';
-import vexDB from './system/_services/VexDb.gen';
+import "reflect-metadata";
+import log from "./system/_utils/logger.gen";
+import processTimer from "./system/_utils/processTimer.gen";
+import vexDB from "./system/_services/VexDb.gen";
 
 import ApiRouter from './system/_routes/ApiRouter.gen';
 {{Import}}
@@ -58,7 +58,7 @@ async function main(): Promise<void> {
 
     // UseMiddleware
     app.use(express.json());
-    app.use(express.static('public'));
+    app.use(express.static("public"));
     app.use(helmet(helmetConfig));
     app.use(processTimer);
     app.use(vexDB.middleware);
@@ -162,7 +162,7 @@ function loginHandler(providers: string[], compilerOptions: types.compilerOption
 
 function loginUI(providers: string[], compilerOptions: types.compilerOptions) {
     return `
-    app.get('/', (req, res) => {
+    app.get("/", (req, res) => {
         res.send(\`
             <div>
                 <h1>Hello World</h1>
@@ -191,14 +191,14 @@ function loginUI(providers: string[], compilerOptions: types.compilerOptions) {
      * this should handle by client application (vue, react, angular, etc)
      * - list all available provider
      */
-    app.get('/login', (req, res) => {
+    app.get("/login", (req, res) => {
         ${loginHandler(providers, compilerOptions)}
     });
 
     /**
      * Dummy Token Display Page
      **/
-    app.get('/mytokens', (req, res) => {
+    app.get("/mytokens", (req, res) => {
         const nonce = crypto.randomBytes(16).toString("base64");
         res.setHeader("Content-Security-Policy", \`script-src 'self' 'nonce-\${nonce}'\`);
         res.send(\`
@@ -215,7 +215,7 @@ function loginUI(providers: string[], compilerOptions: types.compilerOptions) {
     /** 
      * Dummy Token Exchange trigger
      **/
-    app.get('/refreshtoken', (req, res) => {
+    app.get("/refreshtoken", (req, res) => {
         const nonce = crypto.randomBytes(16).toString("base64");
         res.setHeader("Content-Security-Policy", \`script-src 'self' 'nonce-\${nonce}'\`);
         res.send(\`
@@ -232,7 +232,7 @@ function loginUI(providers: string[], compilerOptions: types.compilerOptions) {
     /** 
      * Dummy Code Exchange Trigger
      **/
-    app.get('/logincallback', (req, res) => {
+    app.get("/logincallback", (req, res) => {
         const nonce = crypto.randomBytes(16).toString("base64");
 
         res.setHeader("Content-Security-Policy", \`script-src 'self' 'nonce-\${nonce}'\`);
