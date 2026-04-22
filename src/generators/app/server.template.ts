@@ -5,6 +5,7 @@ import * as types from "../../types/types";
 const importCookieParser = "import cookieParser from \"cookie-parser\";";
 const importSwaggerRouter = "import SwaggerRouter from \"./system/_routes/SwaggerRouter.gen\";";
 const importAuthRouter = "import AuthRouter from \"./system/_routes/AuthRouter.gen\";";
+const importExpressOasGenerator = "import expressOasGenerator from \"express-oas-generator\";";
 
 // configure
 const ConfigSwaggerRouter = "const SwaggerRoute = new SwaggerRouter();";
@@ -17,6 +18,7 @@ const UseCookieParser = "app.use(cookieParser());";
 const UseAuthRouter = "app.use(\"/auth\", AuthRoute.getRouter());";
 const UseSwaggerRouter = "app.use(\"/swagger\", SwaggerRoute.getRouter());";
 const UseApiRouter = "app.use(\"/api\", ApiRoute.getRouter());";
+const UseExpressOas = "expressOasGenerator.init(app);";
 
 export default function serverTemplate(options: {
     compilerOptions: types.compilerOptions,
@@ -92,8 +94,10 @@ main();
 
     if (options.compilerOptions.app.enableSwagger) {
         Import.push(importSwaggerRouter);
+        Import.push(importExpressOasGenerator);
         Config.push(ConfigSwaggerRouter);
         AppRoute.push(UseSwaggerRouter);
+        AppUse.push(UseExpressOas);
     }
 
     if (isAuthEnabled) {
