@@ -149,7 +149,6 @@ export async function generate(
     
     // make route from routeData
     await routeGen.compile({
-        routesArr: routeData,
         routesDir: dir.routeDir,
         compilerOptions: options || utils.generator.defaultCompilerOptions
     });

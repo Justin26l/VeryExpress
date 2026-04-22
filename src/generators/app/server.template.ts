@@ -5,25 +5,28 @@ import * as types from "../../types/types";
 const importCookieParser = "import cookieParser from \"cookie-parser\";";
 const importSwaggerRouter = "import SwaggerRouter from \"./system/_routes/SwaggerRouter.gen\";";
 const importAuthRouter = "import AuthRouter from \"./system/_routes/AuthRouter.gen\";";
+const importAuthentication = "import Authentication from \"./system/_middlewares/Authentication.gen\";";
+const importVexSystem = "import VexSystem from \"./system/_services/VexSystem.gen\";";
 
 // configure
 const ConfigSwaggerRouter = "const SwaggerRoute = new SwaggerRouter();";
 const ConfigAuthRouter = "const AuthRoute = new AuthRouter();";
-const ConfigApiRouter = "const ApiRoute = new ApiRouter();";
 
 
 // use
 const UseCookieParser = "app.use(cookieParser());";
 const UseAuthRouter = "app.use(\"/auth\", AuthRoute.getRouter());";
 const UseSwaggerRouter = "app.use(\"/swagger\", SwaggerRoute.getRouter());";
-const UseApiRouter = "app.use(\"/api\", ApiRoute.getRouter());";
+const UseAuthMiddleware = "app.use(\"/api\", new Authentication().middleware);";
+const UseRegisterRoutes = "RegisterRoutes(app);";
+const UseErrorHandler = "app.use(VexSystem.errorHandler);";
 
 export default function serverTemplate(options: {
     compilerOptions: types.compilerOptions,
     template?: string,
 }): string {
     let template: string = options.template || `{{headerComment}}
-import express from "express";
+import express, { Request, Response, NextFunction } from "express";
 import dotenv from "dotenv";
 import crypto from "crypto";
 import helmet from "helmet";
@@ -33,7 +36,7 @@ import log from "./system/_utils/logger.gen";
 import processTimer from "./system/_utils/processTimer.gen";
 import vexDB from "./system/_services/VexDb.gen";
 
-import ApiRouter from "./system/_routes/ApiRouter.gen";
+import { RegisterRoutes } from "./routes";
 {{Import}}
 
 /** 
@@ -87,8 +90,9 @@ main();
     const AppUse: string[] = [];
     const AppRoute: string[] = [];
 
-    Config.push(ConfigApiRouter);
-    AppRoute.push(UseApiRouter);
+    Import.push(importVexSystem);
+    AppRoute.push(UseRegisterRoutes);
+    AppRoute.push(UseErrorHandler);
 
     if (options.compilerOptions.app.enableSwagger) {
         Import.push(importSwaggerRouter);
@@ -100,6 +104,11 @@ main();
         Import.push(importCookieParser);
         AppUse.push(UseCookieParser);
 
+        Import.push(importAuthentication);
+        AppUse.push(UseAuthMiddleware);
+    }
+
+    if (OAuthProviders.length > 0) {
         Import.push(importAuthRouter);
         Config.push(ConfigAuthRouter);
         AppRoute.push(UseAuthRouter);

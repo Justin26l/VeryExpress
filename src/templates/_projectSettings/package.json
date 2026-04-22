@@ -1,9 +1,9 @@
 {
     "main": "index.js",
     "scripts": {
-        "build": "tsc -p . && node scripts/build.js",
+        "build": "tsoa spec-and-routes && tsc -p . && node scripts/build.js",
         "start": "node dist/server.js",
-        "dev": "nodemon --watch src --exec ts-node src/server.ts",
+        "dev": "tsoa spec-and-routes && nodemon --watch src --ext ts --exec ts-node src/server.ts",
         "docker-build": "docker build -t very-express .",
         "docker-start": "docker run -p 3000:3000 very-express"
     },
@@ -12,7 +12,6 @@
         "cookie-parser": "^1.4.6",
         "dotenv": "^16.4.4",
         "express": "^4.18.2",
-        "express-validator": "^7.0.1",
         "helmet": "^7.1.0",
         "js-yaml": "^4.1.0",
         "jsonwebtoken": "^9.0.2",
@@ -31,7 +30,6 @@
         "@types/crypto-js": "^4.1.2",
         "@types/dotenv": "^8.2.0",
         "@types/express": "^4.17.17",
-        "@types/express-validator": "^3.0.0",
         "@types/js-yaml": "^4.0.9",
         "@types/jsonwebtoken": "^9.0.7",
         "@types/mongodb": "^4.0.7",

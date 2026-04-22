@@ -24,20 +24,11 @@ export async function compile(
 
     const packageJson = JSON.parse(packjson);
 
-    if (!packageJson.scripts.build) {
-        log.process(`package.json : Update script : build > ${packageJson.scripts.build}`);
-        packageJson.scripts.build = "tsc -p . && node scripts/build.js";
-    }
-
-    if (!packageJson.scripts.dev) {
-        log.process(`package.json : Update script : dev > ${packageJson.scripts.dev}`);
-        packageJson.scripts.dev = `nodemon --watch src --exec ts-node ${compilerOptions.srcDir}/server.ts`;
-    }
-
-    if (!packageJson.scripts.start) {
-        log.process(`package.json : Update script : start > ${packageJson.scripts.start}`);
-        packageJson.scripts.start = "node ./dist/server.js";
-    }
+    // Always overwrite scripts — tsoa spec-and-routes must run before tsc/nodemon
+    packageJson.scripts.build = packangeJsonTemplate.scripts.build;
+    packageJson.scripts.dev = packangeJsonTemplate.scripts.dev;
+    packageJson.scripts.start = packangeJsonTemplate.scripts.start;
+    log.process(`package.json : scripts synced from template`);
 
 
     // compare loaded packageJson with template, if there are missing packages in loaded packageJson, add them from template
