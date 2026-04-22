@@ -17,16 +17,16 @@ export default function controllerTemplate(templateOptions: {
 }) : string {
     let template :string = templateOptions.template || `{{headerComment}}
 import * as controllerFactory from "./_ControllerFactory.gen";
-import { Router, Request, Response } from 'express';
-import { FindOptionsWhere, DeepPartial, Repository } from 'typeorm';
+import { Router, Request, Response } from "express";
+import { FindOptionsWhere, DeepPartial, Repository } from "typeorm";
 
-import { checkSchema, validationResult } from 'express-validator';
+import { checkSchema, validationResult } from "express-validator";
 import utils from "./../../system/_utils";
-import VexSystem from '../_services/VexSystem.gen';
+import VexSystem from "../_services/VexSystem.gen";
 import VexResponseError from "../_types/VexResponseError.gen";
-import VexDb from '../_services/VexDb.gen';
+import VexDb from "../_services/VexDb.gen";
 
-import { {{documentName}}Entity } from '{{modelPath}}';
+import { {{documentName}}Entity } from "{{modelPath}}";
 
 class {{documentName}}Controller extends controllerFactory._ControllerFactory {
     public router: Router;
@@ -136,7 +136,7 @@ export default new {{documentName}}Controller();
         /{{getListRoute}}/g, 
         !templateOptions.validators[templateOptions.endpoint+"/search"]?.post ? `
         // getListRoute disabled` : `
-        this.router.post('/search',
+        this.router.post("/search",
             this.vexSystem.RouteHandler(this.getList${templateOptions.documentName}.bind(this))
         );`
     );
@@ -145,7 +145,7 @@ export default new {{documentName}}Controller();
         /{{getRoute}}/g, 
         !templateOptions.validators[templateOptions.endpoint+"/{id}"]?.get ? `
         // getRoute disabled` : `
-        this.router.get('/:id', 
+        this.router.get("/:id", 
             checkSchema(${ renderSchemaOneLevel(templateOptions.validators[templateOptions.endpoint+"/{id}"].get, indent3) }),
             this.vexSystem.RouteHandler((this.get${templateOptions.documentName}.bind(this)))
         );`
@@ -155,7 +155,7 @@ export default new {{documentName}}Controller();
         /{{postRoute}}/g, 
         !templateOptions.validators[templateOptions.endpoint]?.post ? `
         // postRoute disabled` : `
-        this.router.post('/', 
+        this.router.post("/", 
             checkSchema(${ renderSchemaOneLevel(templateOptions.validators[templateOptions.endpoint].post, indent3) }),
             this.vexSystem.RouteHandler((this.create${templateOptions.documentName}.bind(this)))
         );`
@@ -165,7 +165,7 @@ export default new {{documentName}}Controller();
         /{{putRoute}}/g, 
         !templateOptions.validators[templateOptions.endpoint+"/{id}"]?.put ? `
         // putRoute disabled` : `
-        this.router.put('/:id', 
+        this.router.put("/:id", 
             checkSchema(${ renderSchemaOneLevel(templateOptions.validators[templateOptions.endpoint+"/{id}"].put, indent3) }),
             this.vexSystem.RouteHandler((this.replace${templateOptions.documentName}.bind(this)))
         );`
@@ -174,7 +174,7 @@ export default new {{documentName}}Controller();
         /{{patchRoute}}/g, 
         !templateOptions.validators[templateOptions.endpoint+"/{id}"]?.patch ? `
         // patchRoute disabled` : `
-        this.router.patch('/:id', 
+        this.router.patch("/:id", 
             checkSchema(${ renderSchemaOneLevel(templateOptions.validators[templateOptions.endpoint+"/{id}"].patch, indent3) }),
             this.vexSystem.RouteHandler((this.update${templateOptions.documentName}.bind(this)))
         );`
@@ -184,7 +184,7 @@ export default new {{documentName}}Controller();
         /{{deleteRoute}}/g, 
         !templateOptions.validators[templateOptions.endpoint+"/{id}"]?.delete ? `
         // deleteRoute disabled` : `
-        this.router.delete('/:id', 
+        this.router.delete("/:id", 
             checkSchema(${ renderSchemaOneLevel(templateOptions.validators[templateOptions.endpoint+"/{id}"].delete, indent3) }),
             this.vexSystem.RouteHandler((this.delete${templateOptions.documentName}.bind(this)))
         );`

@@ -33,7 +33,7 @@ import log from "./system/_utils/logger.gen";
 import processTimer from "./system/_utils/processTimer.gen";
 import vexDB from "./system/_services/VexDb.gen";
 
-import ApiRouter from './system/_routes/ApiRouter.gen';
+import ApiRouter from "./system/_routes/ApiRouter.gen";
 {{Import}}
 
 /** 
@@ -252,7 +252,7 @@ function loginUI(providers: string[], compilerOptions: types.compilerOptions) {
      * - this should handle by client application
      * - client side application should remove local storage's tokens
      **/
-    app.get('/logout', (req, res) => {
+    app.get("/logout", (req, res) => {
         const nonce = crypto.randomBytes(16).toString("base64");
         res.setHeader("Content-Security-Policy", \`script-src 'self' 'nonce-\${nonce}'\`);
         res.send(\`

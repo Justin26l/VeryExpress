@@ -1,5 +1,5 @@
 // Minimal type stubs for express-validator to satisfy TypeScript when @types/express-validator is not installed.
-declare module 'express-validator' {
+declare module "express-validator" {
     export type Schema = { [key: string]: any };
 
     export function checkSchema(schema: Schema): any;

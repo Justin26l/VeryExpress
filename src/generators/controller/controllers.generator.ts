@@ -32,7 +32,7 @@ export async function compile(options: {
     } = {};
 
     // UUID primary key — id path param is a string
-    const idXFormat = options.jsonSchema.properties['_id']?.["x-format"];
+    const idXFormat = options.jsonSchema.properties["_id"]?.["x-format"];
     const idType = idXFormat === "PrimaryUUID" ? "string" : "integer";
     const idValidators: Schema = processSchema({ fieldName: "id", required: true, param: {
         name: "id",
