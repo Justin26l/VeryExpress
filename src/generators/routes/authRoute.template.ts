@@ -164,7 +164,7 @@ export default class AuthRouter {
     }
 
     if(compilerOptions.auth.localAuth) {
-        template = template.replace(/{{localAuthImport}}/g, "import { UserEntity } from "../_models/UserModel.gen";\nimport { UserAuthProfilesEntity } from "../_models/UserAuthProfilesModel.gen";\n");
+        template = template.replace(/{{localAuthImport}}/g, "import { UserEntity } from \"../_models/UserModel.gen\";\nimport { UserAuthProfilesEntity } from \"../_models/UserAuthProfilesModel.gen\";\n");
         template = template.replace(/{{localAuthRoutes}}/g, `
         // Local Auth register & login
         this.router.post("/register", async (req, res) => {
