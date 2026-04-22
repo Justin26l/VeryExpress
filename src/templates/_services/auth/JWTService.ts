@@ -8,6 +8,7 @@ import JWTKeyStore from "./JWTKeyStore.gen";
 import utils from "../../_utils";
 
 import VexResponseError from "../../_types/VexResponseError.gen";
+import { Repository } from "typeorm";
 
 import VexDb from "../VexDb.gen";
 import { UserEntity } from "../../_models/UserModel.gen";
@@ -23,8 +24,14 @@ interface tokenObj {
 export default class JWTService {
     private keyStore = new JWTKeyStore();
 
-    private userRepo = VexDb.getRepository(UserEntity);
-    private sessionRepo = VexDb.getRepository(SessionEntity);
+    private get userRepo(): Repository<UserEntity> {
+        return VexDb.getRepository(UserEntity);
+    }
+    private get sessionRepo(): Repository<SessionEntity> {
+        return VexDb.getRepository(SessionEntity);
+    }
+
+    constructor() {}
 
     /**
      * Verifies a JSON Web Token (JWT) using the provided token and key index.

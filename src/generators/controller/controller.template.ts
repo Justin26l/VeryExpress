@@ -18,7 +18,7 @@ export default function controllerTemplate(templateOptions: {
     let template :string = templateOptions.template || `{{headerComment}}
 import * as controllerFactory from "./_ControllerFactory.gen";
 import { Router, Request, Response } from 'express';
-import { FindOptionsWhere, DeepPartial } from 'typeorm';
+import { FindOptionsWhere, DeepPartial, Repository } from 'typeorm';
 
 import { checkSchema, validationResult } from 'express-validator';
 import utils from "./../../system/_utils";
@@ -31,7 +31,9 @@ import { {{documentName}}Entity } from '{{modelPath}}';
 class {{documentName}}Controller extends controllerFactory._ControllerFactory {
     public router: Router;
     private vexSystem: VexSystem;
-    private repo = VexDb.getRepository({{documentName}}Entity);
+    private get repo(): Repository<{{documentName}}Entity> {
+        return VexDb.getRepository({{documentName}}Entity);
+    }
 
     constructor() {
         super();
@@ -74,9 +76,8 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
 
     public async create{{documentName}}(req: Request, res: Response): Promise<Response> {
         {{clean_id}}
-        
-        const r = this.repo;
-        const result = await r.save(r.create(req.body as DeepPartial<{{documentName}}Entity>));
+
+        const result = await this.repo.save(this.repo.create(req.body as DeepPartial<{{documentName}}Entity>));
         if (!result) throw new VexResponseError(400, utils.response.code.err_create);
         
         return utils.response.send(res, 201, { result });
@@ -85,9 +86,8 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
     public async update{{documentName}}(req: Request, res: Response): Promise<Response> {
         {{clean_id}}
 
-        const r = this.repo;
-        await r.update({ _id: req.params.id } as FindOptionsWhere<{{documentName}}Entity>, req.body as DeepPartial<{{documentName}}Entity>);
-        const result = await r.findOne({ where: { _id: req.params.id } as FindOptionsWhere<{{documentName}}Entity> });
+        await this.repo.update({ _id: req.params.id } as FindOptionsWhere<{{documentName}}Entity>, req.body as DeepPartial<{{documentName}}Entity>);
+        const result = await this.repo.findOne({ where: { _id: req.params.id } as FindOptionsWhere<{{documentName}}Entity> });
         if (!result) throw new VexResponseError(404, utils.response.code.err_update);
         
         return utils.response.send(res, 200, { result });
@@ -96,19 +96,17 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
     public async replace{{documentName}}(req: Request, res: Response): Promise<Response> {
         {{clean_id}}
 
-        const r = this.repo;
-        const existing = await r.findOne({ where: { _id: req.params.id } as FindOptionsWhere<{{documentName}}Entity> });
+        const existing = await this.repo.findOne({ where: { _id: req.params.id } as FindOptionsWhere<{{documentName}}Entity> });
         if (!existing) throw new VexResponseError(404, utils.response.code.err_update);
-        const result = await r.save(r.merge(existing, req.body as DeepPartial<{{documentName}}Entity>));
+        const result = await this.repo.save(this.repo.merge(existing, req.body as DeepPartial<{{documentName}}Entity>));
 
         return utils.response.send(res, 200, { result });
     }
 
     public async delete{{documentName}}(req: Request, res: Response): Promise<Response> {
-        const r = this.repo;
-        const existing = await r.findOne({ where: { _id: req.params.id } as FindOptionsWhere<{{documentName}}Entity> });
+        const existing = await this.repo.findOne({ where: { _id: req.params.id } as FindOptionsWhere<{{documentName}}Entity> });
         if (!existing) throw new VexResponseError(404, utils.response.code.err_delete);
-        await r.delete({ _id: req.params.id } as FindOptionsWhere<{{documentName}}Entity>);
+        await this.repo.delete({ _id: req.params.id } as FindOptionsWhere<{{documentName}}Entity>);
         
         return utils.response.send(res, 204, { result: existing });
     }

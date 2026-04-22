@@ -102,8 +102,7 @@ export class VexDbConnector {
                     query: JSON.stringify(req.query),
                 };
                 try {
-                    const repo = this.dataSource.getRepository('AccessLog');
-                    await repo.save(logEntry);
+                    await this.dataSource.getRepository('AccessLog').save(logEntry);
                 }
                 catch { /* table may not exist */ }
             }

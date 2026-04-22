@@ -1,5 +1,5 @@
 // {{headerComment}}
-import { DeepPartial } from "typeorm";
+import { DeepPartial, Repository } from "typeorm";
 import { UserEntity } from "./../../_models/UserModel.gen";
 import { UserAuthProfilesEntity } from "./../../_models/UserAuthProfilesModel.gen";
 import { User } from "./../../_types/User.gen";
@@ -11,8 +11,16 @@ import VexResponseError from "../../_types/VexResponseError.gen";
 import utils from "../../_utils";
 
 export default class OAuthStrategyService {
-    private userRepo = VexDb.getRepository(UserEntity);
-    private uapRepo = VexDb.getRepository(UserAuthProfilesEntity);
+
+    private get userRepo(): Repository<UserEntity> {
+        return VexDb.getRepository(UserEntity);
+    }
+
+    private get uapRepo(): Repository<UserAuthProfilesEntity> {
+        return VexDb.getRepository(UserAuthProfilesEntity);
+    }
+
+    constructor() {}
 
     public async verify(accessToken: string, refreshToken: string, profile: IProfile, done: (error: any, user?: any) => void): Promise<void> {
         try {

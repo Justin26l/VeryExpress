@@ -14,6 +14,7 @@ import OAuthStrategyService from '../_services/oauth/OAuthStrategyService.gen';
 import OAuthRouteFactory from './oauth/OAuthRouteFactory.gen';
 import { Strategy as GithubStrategy } from 'passport-github';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
+import { Repository } from 'typeorm';
 import VexDb from '../_services/VexDb.gen';
 import { SessionEntity } from '../_models/SessionModel.gen';
 import VexResponseError from '../_types/VexResponseError.gen';
@@ -26,9 +27,15 @@ export default class AuthRouter {
     private OAuthStrategyService = new OAuthStrategyService();
     private router: Router = Router();
 
-    private userRepo = VexDb.getRepository(UserEntity);
-    private uapRepo = VexDb.getRepository(UserAuthProfilesEntity);
-    private sessionRepo = VexDb.getRepository(SessionEntity);
+    private get userRepo(): Repository<UserEntity> {
+        return VexDb.getRepository(UserEntity);
+    }
+    private get uapRepo(): Repository<UserAuthProfilesEntity> {
+        return VexDb.getRepository(UserAuthProfilesEntity);
+    }
+    private get sessionRepo(): Repository<SessionEntity> {
+        return VexDb.getRepository(SessionEntity);
+    }
 
     constructor() {
         const vexSystem = new VexSystem();
@@ -37,7 +44,7 @@ export default class AuthRouter {
 
         this.initOAuthRoutes();
     }
-
+    
     private initOAuthRoutes() {
         {{OAuthRouteProviders}}
     }
