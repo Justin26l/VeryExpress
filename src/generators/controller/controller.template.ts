@@ -1,6 +1,5 @@
-import util from "util";
 import * as types from "../../types/types";
-import { Schema } from "express-validator";
+import { ZodSchemaDef, ZodFieldDef } from "./controllers.generator";
 import utils from "~/utils";
 
 export default function controllerTemplate(templateOptions: {
@@ -10,17 +9,18 @@ export default function controllerTemplate(templateOptions: {
     documentName: string,
     validators: {
         [key:string]: {
-            [key:string]: Schema
+            [key:string]: ZodSchemaDef
         }
     },
     compilerOptions: types.compilerOptions,
 }) : string {
     let template :string = templateOptions.template || `{{headerComment}}
 import * as controllerFactory from "./_ControllerFactory.gen";
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { FindOptionsWhere, DeepPartial, Repository } from 'typeorm';
 
-import { checkSchema, validationResult } from 'express-validator';
+import { z } from 'zod';
+import { oasRegistry, {{documentName}}BodySchema, {{documentName}}ParamsSchema } from '../_routes/OasRegistry.gen';
 import utils from "./../../system/_utils";
 import VexSystem from '../_services/VexSystem.gen';
 import VexResponseError from "../_types/VexResponseError.gen";
@@ -50,6 +50,7 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
         {{putRoute}}
         {{patchRoute}}
         {{deleteRoute}}
+        {{oasRegisterPaths}}
 
     }
 
@@ -115,19 +116,79 @@ class {{documentName}}Controller extends controllerFactory._ControllerFactory {
 export default new {{documentName}}Controller();
 `;
     
-    const indent = "    ";
-    const indent2 = indent+indent;
-    const indent3 = indent2+indent;
-    const indent4 = indent3+indent;
+    /** Renders a Zod validation middleware from a ZodSchemaDef for a given location */
+    function renderZodMiddleware(schemaDef: ZodSchemaDef, location: "body" | "params" | "query"): string {
+        const entries = Object.keys(schemaDef).map(k => [k, schemaDef[k]] as [string, ZodFieldDef]);
+        const fields = entries.filter(([, def]) => def.in === location);
+        if (fields.length === 0) return "";
 
-    function renderSchemaOneLevel(obj: any, baseIndent: string) {
-        if (!obj) return "{}";
-        const lines: string[] = [];
-        for (const key of Object.keys(obj)) {
-            lines.push(`${key}: ${util.inspect(obj[key], { depth: null, compact: true, breakLength: Infinity })}`);
-        }
-        return `{\n${lines.map(l => baseIndent + indent + l).join(",\n")}\n${baseIndent}}`;
+        const shape = fields
+            .filter(([field]) => !field.includes("."))
+            .map(([field, def]) => `${JSON.stringify(field)}: ${def.chain}`)
+            .join(",\n                ");
+
+        const source = location === "body" ? "req.body" : location === "params" ? "req.params" : "req.query";
+
+        return `
+        /** Zod validation: ${location} */
+        ((req: Request, res: Response, next: NextFunction) => {
+            const result = z.object({
+                ${shape}
+            }).safeParse(${source});
+            if (!result.success) {
+                return res.status(400).json({ errors: result.error.flatten() });
+            }
+            next();
+        }),`;
     }
+
+    function renderRouteMiddlewares(schemaDef: ZodSchemaDef): string {
+        return [
+            renderZodMiddleware(schemaDef, "params"),
+            renderZodMiddleware(schemaDef, "query"),
+            renderZodMiddleware(schemaDef, "body"),
+        ].filter(Boolean).join("");
+    }
+
+    function renderOasRegisterPath(method: string, oasPath: string, summary: string, hasBody: boolean, hasParams: boolean): string {
+        const docName = templateOptions.documentName;
+        const requestParts: string[] = [];
+        if (hasParams) requestParts.push(`            params: ${docName}ParamsSchema,`);
+        if (hasBody) requestParts.push(
+            `            body: {`,
+            `                content: { "application/json": { schema: ${docName}BodySchema } },`,
+            `                description: "Request body",`,
+            `            },`
+        );
+        const requestBlock = requestParts.length
+            ? `\n            request: {\n${requestParts.join("\n")}\n            },`
+            : "";
+        return `
+        oasRegistry.registerPath({
+            method: "${method}",
+            path: "${oasPath}",
+            summary: "${summary}",
+            security: [{ BearerAuth: [] }],${requestBlock}
+            responses: {
+                200: { description: "Success" },
+                400: { description: "Validation Error" },
+                401: { description: "Unauthorized" },
+                404: { description: "Not Found" },
+            },
+        });`;
+    }
+
+    const v = templateOptions.validators;
+    const ep = templateOptions.endpoint;
+    const dn = templateOptions.documentName;
+    const oasRegisterPaths = [
+        v[ep + "/search"]?.post  ? renderOasRegisterPath("post",   `${ep}/search`, `Search ${dn}`,  false, false) : "",
+        v[ep]?.post              ? renderOasRegisterPath("post",   ep,            `Create ${dn}`,  true,  false) : "",
+        v[ep + "/{id}"]?.get     ? renderOasRegisterPath("get",    `${ep}/{id}`,  `Get ${dn}`,     false, true)  : "",
+        v[ep + "/{id}"]?.put     ? renderOasRegisterPath("put",    `${ep}/{id}`,  `Replace ${dn}`, true,  true)  : "",
+        v[ep + "/{id}"]?.patch   ? renderOasRegisterPath("patch",  `${ep}/{id}`,  `Update ${dn}`,  true,  true)  : "",
+        v[ep + "/{id}"]?.delete  ? renderOasRegisterPath("delete", `${ep}/{id}`,  `Delete ${dn}`,  false, true)  : "",
+    ].filter(Boolean).join("\n");
 
     template = template.replace(/{{documentName}}/g, templateOptions.documentName);
     template = template.replace(/{{modelPath}}/g, templateOptions.modelPath);
@@ -145,8 +206,7 @@ export default new {{documentName}}Controller();
         /{{getRoute}}/g, 
         !templateOptions.validators[templateOptions.endpoint+"/{id}"]?.get ? `
         // getRoute disabled` : `
-        this.router.get('/:id', 
-            checkSchema(${ renderSchemaOneLevel(templateOptions.validators[templateOptions.endpoint+"/{id}"].get, indent3) }),
+        this.router.get('/:id', ${renderRouteMiddlewares(templateOptions.validators[templateOptions.endpoint+"/{id}"].get)}
             this.vexSystem.RouteHandler((this.get${templateOptions.documentName}.bind(this)))
         );`
     );
@@ -155,8 +215,7 @@ export default new {{documentName}}Controller();
         /{{postRoute}}/g, 
         !templateOptions.validators[templateOptions.endpoint]?.post ? `
         // postRoute disabled` : `
-        this.router.post('/', 
-            checkSchema(${ renderSchemaOneLevel(templateOptions.validators[templateOptions.endpoint].post, indent3) }),
+        this.router.post('/', ${renderRouteMiddlewares(templateOptions.validators[templateOptions.endpoint].post)}
             this.vexSystem.RouteHandler((this.create${templateOptions.documentName}.bind(this)))
         );`
     );
@@ -165,8 +224,7 @@ export default new {{documentName}}Controller();
         /{{putRoute}}/g, 
         !templateOptions.validators[templateOptions.endpoint+"/{id}"]?.put ? `
         // putRoute disabled` : `
-        this.router.put('/:id', 
-            checkSchema(${ renderSchemaOneLevel(templateOptions.validators[templateOptions.endpoint+"/{id}"].put, indent3) }),
+        this.router.put('/:id', ${renderRouteMiddlewares(templateOptions.validators[templateOptions.endpoint+"/{id}"].put)}
             this.vexSystem.RouteHandler((this.replace${templateOptions.documentName}.bind(this)))
         );`
     );
@@ -174,8 +232,7 @@ export default new {{documentName}}Controller();
         /{{patchRoute}}/g, 
         !templateOptions.validators[templateOptions.endpoint+"/{id}"]?.patch ? `
         // patchRoute disabled` : `
-        this.router.patch('/:id', 
-            checkSchema(${ renderSchemaOneLevel(templateOptions.validators[templateOptions.endpoint+"/{id}"].patch, indent3) }),
+        this.router.patch('/:id', ${renderRouteMiddlewares(templateOptions.validators[templateOptions.endpoint+"/{id}"].patch)}
             this.vexSystem.RouteHandler((this.update${templateOptions.documentName}.bind(this)))
         );`
     );
@@ -184,8 +241,7 @@ export default new {{documentName}}Controller();
         /{{deleteRoute}}/g, 
         !templateOptions.validators[templateOptions.endpoint+"/{id}"]?.delete ? `
         // deleteRoute disabled` : `
-        this.router.delete('/:id', 
-            checkSchema(${ renderSchemaOneLevel(templateOptions.validators[templateOptions.endpoint+"/{id}"].delete, indent3) }),
+        this.router.delete('/:id', ${renderRouteMiddlewares(templateOptions.validators[templateOptions.endpoint+"/{id}"].delete)}
             this.vexSystem.RouteHandler((this.delete${templateOptions.documentName}.bind(this)))
         );`
     );
@@ -194,6 +250,8 @@ export default new {{documentName}}Controller();
         /{{clean_id}}/g, 
         templateOptions.compilerOptions.app.allowApiCreateUpdate_id ? "" : "if (req.body._id) delete req.body._id;"
     );
+
+    template = template.replace(/{{oasRegisterPaths}}/g, oasRegisterPaths);
 
     return utils.template.format(template);
 }

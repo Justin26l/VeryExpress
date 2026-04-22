@@ -6,7 +6,15 @@ import log from "./../../utils/logger";
 
 import * as types from "./../../types/types";
 import * as openapiType from "./../../types/openapi";
-import { Schema } from "express-validator";
+
+/** Zod chain descriptor per field */
+export type ZodFieldDef = {
+    in: "body" | "params" | "query";
+    chain: string;  // e.g. "z.string().min(1)"
+    required: boolean;
+};
+
+export type ZodSchemaDef = Record<string, ZodFieldDef>;
 
 
 /**
@@ -27,14 +35,14 @@ export async function compile(options: {
     const controllerToModelBasePath: string = utils.common.relativePath(options.compilerOptions.sysDir, options.modelDir);
     const endpointsValidator: {
         [key: string]: { // path
-            [key: string]: Schema // methods
+            [key: string]: ZodSchemaDef // methods
         }
     } = {};
 
     // UUID primary key — id path param is a string
-    const idXFormat = options.jsonSchema.properties['_id']?.["x-format"];
+    const idXFormat = options.jsonSchema.properties["_id"]?.["x-format"];
     const idType = idXFormat === "PrimaryUUID" ? "string" : "integer";
-    const idValidators: Schema = processSchema({ fieldName: "id", required: true, param: {
+    const idValidators: ZodSchemaDef = processSchema({ fieldName: "id", required: true, param: {
         name: "id",
         in: "path",
         required: true,
@@ -48,7 +56,7 @@ export async function compile(options: {
     // /endpoint/{id} : "get" | "put" | "patch" | "delete"
     // /endpoint/search "getList";
     // build body validators for create/replace/update from schema properties
-    const bodyValidators: Schema = {};
+    const bodyValidators: ZodSchemaDef = {};
     if (schema && schema.type === "object") {
         for (const key in schema.properties) {
             Object.assign(
@@ -114,108 +122,86 @@ export async function compile(options: {
 //     return foreignKeys;
 // }
 
-function processSchema(options: {
+export function processSchema(options: {
     fieldName: string,
     required?: boolean,
     param?: openapiType.parameter,
     body?: openapiType.fieldsItem,
-}): Schema {
+}): ZodSchemaDef {
 
-    // open api "param" is "request query" 
-    // but express validator "query" is "request query"
     const inParam = options.param?.in == "path";
     const inQuery = options.param?.in == "query";
-    const inBody = options.body;
+    const inBody = options.body !== undefined && options.param === undefined;
+    const location: ZodFieldDef["in"] = inParam ? "params" : inQuery ? "query" : "body";
 
-    const validators: Schema = {
-        [options.fieldName]: {
-            in: inParam ? "params" : inQuery ? "query" : inBody ? "body" : [],
-            optional: !options.required ? { options: { values: "falsy", checkFalsy: true } } : false,
-            notEmpty: true,
-        },
-    };
-
-    const validatorParam = validators[options.fieldName];
-
-    const useBody = options.body !== undefined && options.param == undefined;
+    const useBody = inBody;
     const type: string | undefined = useBody ? options.body?.type : options.param?.schema.type;
     const useEnum = options.param?.schema?.enum ?? options.body?.enum;
 
-    const range: {
-        min: number | undefined;
-        max: number | undefined;
-    } = {
+    const range = {
         min: options.param?.schema?.minLength ?? options.param?.schema?.minimum ?? options.body?.minLength ?? options.body?.minimum,
         max: options.param?.schema?.maxLength ?? options.param?.schema?.maximum ?? options.body?.maxLength ?? options.body?.maximum,
     };
-    const rangeValidator: undefined | {
-        options: {
-            min: number | undefined;
-            max: number | undefined;
-        }
-    }
-        = range.min && range.max ? { options: range } : undefined;
+
+    const result: ZodSchemaDef = {};
+
+    let chain = "";
 
     switch (type) {
     case "string":
-        validatorParam.isString = true;
-        if (range.min && range.max) {
-            validatorParam.isLength = { options: range };
-        }
-
-        // enum validator
-        if (useEnum) {
-            validatorParam.isEmpty = false;
-            validatorParam.isIn = {
-                options: useEnum,
-            };
-        }
-
-        // x-format validator
+        chain = "z.string()";
+        if (range.min !== undefined) chain += `.min(${range.min})`;
+        if (range.max !== undefined) chain += `.max(${range.max})`;
+        if (useEnum) chain = `z.enum(${JSON.stringify(useEnum)})`;
+        // x-format
         switch (options?.param?.schema?.["x-format"]) {
         case "ObjectId":
-            if (typeof validatorParam.custom !== "object" || validatorParam.custom === null) {
-                validatorParam.custom = {};
-            }
-            validatorParam.custom.options = "FUNC{{this.isObjectId}}";
-            // call controller base class : _ControllerFactory.isObjectId()
+            chain += ".regex(/^[0-9a-fA-F]{24}$/, 'Invalid ObjectId')";
             break;
-        case "PrimaryIncrements":
-        case "Primary":
-            validatorParam.isInt = true;
+        case "PrimaryUUID":
+            chain += ".uuid()";
             break;
         }
         break;
     case "integer":
-        validatorParam.isInt = rangeValidator;
+        chain = "z.number().int()";
+        if (range.min !== undefined) chain += `.min(${range.min})`;
+        if (range.max !== undefined) chain += `.max(${range.max})`;
         break;
     case "float":
-        validatorParam.isFloat = rangeValidator;
-        break;
     case "number":
-        validatorParam.isNumeric = true;
+        chain = "z.number()";
+        if (range.min !== undefined) chain += `.min(${range.min})`;
+        if (range.max !== undefined) chain += `.max(${range.max})`;
         break;
     case "boolean":
-        validatorParam.isBoolean = true;
+        chain = "z.boolean()";
         break;
     case "array":
-        validatorParam.isArray = true;
+        chain = "z.array(z.unknown())";
         break;
     case "object":
-        if (useBody) {
-            for (const key in options.body?.properties) {
+        if (useBody && options.body?.properties) {
+            for (const key in options.body.properties) {
                 Object.assign(
-                    validators,
+                    result,
                     processSchema({
                         fieldName: options.fieldName + "." + key,
                         body: options.body.properties[key],
-                        required: options.body.required?.includes(key),
+                        required: Array.isArray(options.body.required) ? options.body.required.includes(key) : false,
                     })
                 );
             }
+            return result;
         }
+        chain = "z.record(z.unknown())";
         break;
+    default:
+        chain = "z.unknown()";
     }
 
-    return validators;
+    if (!options.required) chain += ".optional()";
+
+    result[options.fieldName] = { in: location, chain, required: !!options.required };
+    return result;
 }

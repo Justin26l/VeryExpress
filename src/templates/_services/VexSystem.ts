@@ -2,8 +2,6 @@
 import { Request, Response } from "express";
 import utils from "./../_utils";
 import VexResponseError from "../_types/VexResponseError.gen";
-import VexResponsePayloadError from "../_types/VexResponsePayloadError.gen";
-import { validationResult } from "express-validator";
 
 export default class VexSystem {
   
@@ -21,22 +19,13 @@ export default class VexSystem {
     public RouteHandler(handler: (req: Request, res: Response) => Promise<any>) {
         return async (req: Request, res: Response) => {
             try {
-                const validation = validationResult(req);
-                if (!validation.isEmpty()) throw new VexResponsePayloadError(validation.array());
                 return await handler(req, res);
             }
             catch (err: any) {
-                if ( err instanceof VexResponseError ) {
+                if (err instanceof VexResponseError) {
                     return utils.response.send(res, err.status, { 
                         code: err.ret_code,
                         message: err.message
-                    });
-                }
-                else if (err instanceof VexResponsePayloadError) {
-                    return utils.response.send(res, err.status, {
-                        code: err.ret_code,
-                        message: err.message,
-                        result: err.result  
                     });
                 }
                 else {

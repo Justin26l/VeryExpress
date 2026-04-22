@@ -17,6 +17,7 @@ import * as projectSettingsGen from "./generators/projectSettings";
 import * as roleGen from "./generators/role/role.generator";
 import * as controllerGen from "./generators/controller/controllers.generator";
 import * as routeGen from "./generators/routes/routes.generator";
+import * as oasRegistryGen from "./generators/routes/oasRegistry.generator";
 import * as serverGen from "./generators/app/server.generator";
 import * as typeormEntityGen from "./generators/db/typeormEntity.generator";
 import * as interfaceGen from "./generators/interface/generator";
@@ -152,6 +153,13 @@ export async function generate(
         routesArr: routeData,
         routesDir: dir.routeDir,
         compilerOptions: options || utils.generator.defaultCompilerOptions
+    });
+
+    // generate OAS registry from all json schemas
+    await oasRegistryGen.compile({
+        documents: documents.map(doc => ({ schema: doc.schema, config: doc.config })),
+        routeDir: dir.routeDir,
+        compilerOptions: options || utils.generator.defaultCompilerOptions,
     });
 
     // make server/entrypoint
