@@ -20,7 +20,7 @@ export default function controllerTemplate(templateOptions: {
     const useRBAC = !!compilerOptions.useRBAC;
     const cleanId = compilerOptions.app.allowApiCreateUpdate_id
         ? ""
-        : `if ((body as any)._id) delete (body as any)._id;`;
+        : "if ((body as any)._id) delete (body as any)._id;";
     const routePath = documentName.toLowerCase();
 
     // body fields — exclude _id (auto-generated primary key)
@@ -36,7 +36,7 @@ export default function controllerTemplate(templateOptions: {
         if (methods.includes("patch"))                             decoratorNames.push("Patch");
         if (methods.includes("delete"))                            decoratorNames.push("Delete");
         decoratorNames.push("Body", "Path");
-        if (useRBAC) decoratorNames.push("Middlewares");
+        if (useRBAC) decoratorNames.push("Middlewares", "Security");
     }
 
     const tsoaImportLine = decoratorNames.length > 0
@@ -44,7 +44,7 @@ export default function controllerTemplate(templateOptions: {
         : "";
 
     const rbacImportLine = useRBAC && !skipRoute
-        ? `import RoleBaseAccessControl from "../_middlewares/RoleBaseAccessControl.gen";`
+        ? "import RoleBaseAccessControl from \"../_middlewares/RoleBaseAccessControl.gen\";"
         : "";
 
     // ── Class decorators ────────────────────────────────────────────────────────
@@ -53,6 +53,8 @@ export default function controllerTemplate(templateOptions: {
         classDecoratorLines.push(`@Route("${routePath}")`);
         classDecoratorLines.push(`@Tags("${documentName}")`);
         if (useRBAC) classDecoratorLines.push(`@Middlewares(new RoleBaseAccessControl("${documentName}").middleware)`);
+        if (useRBAC) classDecoratorLines.push(`@Security("BearerAuth")`);
+        if (useRBAC) classDecoratorLines.push(`@Security("AuthIndex")`);
     }
     const classDecorators = classDecoratorLines.length > 0 ? classDecoratorLines.join("\n") + "\n" : "";
 
@@ -60,15 +62,6 @@ export default function controllerTemplate(templateOptions: {
     const renderFields = (partial: boolean) =>
         bodyFields.map(f => `    ${f.name}${partial || !f.required ? "?" : ""}: ${f.tsType};`).join("\n");
 
-    const bodyInterfaces = bodyFields.length === 0 ? "" : `
-interface ${documentName}Body {
-${renderFields(false)}
-}
-
-interface ${documentName}PartialBody {
-${renderFields(true)}
-}
-`;
 
     // ── id parameter ────────────────────────────────────────────────────────────
     const idParam = idType === "string" ? "@Path() id: string" : "@Path() id: number";
@@ -81,27 +74,27 @@ ${renderFields(true)}
 
     const getListRoute = buildMethod(
         methods.includes("getList"),
-        `@Post("/search")`,
+        "@Post(\"/search\")",
         `public async getList${documentName}(@Body() body: { _filter?: Record<string, unknown> }): Promise<{ result: unknown[] }>`,
-        `const result = await this.repo.find({ where: body._filter as FindOptionsWhere<${documentName}Entity> });
+        `const result = await this.repo.find(body._filter);
         return { result };`
     );
 
     const getRoute = buildMethod(
         methods.includes("get"),
-        `@Get("{id}")`,
+        "@Get(\"{id}\")",
         `public async get${documentName}(${idParam}): Promise<{ result: ${documentName}Entity }>`,
-        `const result = await this.repo.findOne({ where: { _id: id } as FindOptionsWhere<${documentName}Entity> });
+        `const result = await this.repo.findOne(id);
         if (!result) throw new VexResponseError(404);
         return { result };`
     );
 
     const postRoute = buildMethod(
         methods.includes("post"),
-        `@Post()`,
-        `public async create${documentName}(@Body() body: ${documentName}Body): Promise<{ result: ${documentName}Entity }>`,
+        "@Post()",
+        `public async create${documentName}(@Body() body: ${documentName}Entity): Promise<{ result: ${documentName}Entity }>`,
         `${cleanId}
-        const result = await this.repo.save(this.repo.create(body as DeepPartial<${documentName}Entity>));
+        const result = await this.repo.create(body);
         if (!result) throw new VexResponseError(400);
         this.setStatus(201);
         return { result };`
@@ -109,33 +102,31 @@ ${renderFields(true)}
 
     const putRoute = buildMethod(
         methods.includes("put"),
-        `@Put("{id}")`,
-        `public async replace${documentName}(${idParam}, @Body() body: ${documentName}Body): Promise<{ result: ${documentName}Entity }>`,
+        "@Put(\"{id}\")",
+        `public async replace${documentName}(${idParam}, @Body() body: ${documentName}Entity): Promise<{ result: ${documentName}Entity }>`,
         `${cleanId}
-        const existing = await this.repo.findOne({ where: { _id: id } as FindOptionsWhere<${documentName}Entity> });
-        if (!existing) throw new VexResponseError(404);
-        const result = await this.repo.save(this.repo.merge(existing, body as DeepPartial<${documentName}Entity>));
+        const result = await this.repo.replace(id, body);
+        if (!result) throw new VexResponseError(404);
         return { result };`
     );
 
     const patchRoute = buildMethod(
         methods.includes("patch"),
-        `@Patch("{id}")`,
-        `public async update${documentName}(${idParam}, @Body() body: ${documentName}PartialBody): Promise<{ result: ${documentName}Entity }>`,
+        "@Patch(\"{id}\")",
+        `public async update${documentName}(${idParam}, @Body() body: Partial<${documentName}Entity>): Promise<{ result: ${documentName}Entity }>`,
         `${cleanId}
-        await this.repo.update({ _id: id } as FindOptionsWhere<${documentName}Entity>, body as DeepPartial<${documentName}Entity>);
-        const result = await this.repo.findOne({ where: { _id: id } as FindOptionsWhere<${documentName}Entity> });
+        const result = await this.repo.update(id, body);
         if (!result) throw new VexResponseError(404);
         return { result };`
     );
 
     const deleteRoute = buildMethod(
         methods.includes("delete"),
-        `@Delete("{id}")`,
+        "@Delete(\"{id}\")",
         `public async delete${documentName}(${idParam}): Promise<{ result: ${documentName}Entity }>`,
-        `const existing = await this.repo.findOne({ where: { _id: id } as FindOptionsWhere<${documentName}Entity> });
+        `const existing = await this.repo.findOne(id);
         if (!existing) throw new VexResponseError(404);
-        await this.repo.delete({ _id: id } as FindOptionsWhere<${documentName}Entity>);
+        await this.repo.delete(id);
         this.setStatus(204);
         return { result: existing };`
     );
@@ -143,16 +134,16 @@ ${renderFields(true)}
     const source = `{{headerComment}}
 import * as controllerFactory from "./_ControllerFactory.gen";
 ${tsoaImportLine}
-import { FindOptionsWhere, DeepPartial } from "typeorm";
+import { IVexRepository } from "../_types/IVexRepository.gen";
 
 import utils from "./../../system/_utils";
 import VexResponseError from "../_types/VexResponseError.gen";
 import VexDb from "../_services/VexDb.gen";
 ${rbacImportLine}
 import { ${documentName}Entity } from "${modelPath}";
-${bodyInterfaces}
+
 ${classDecorators}export class ${documentName}Controller extends controllerFactory._ControllerFactory {
-    private get repo() {
+    private get repo(): IVexRepository<${documentName}Entity> {
         return VexDb.getRepository(${documentName}Entity);
     }
 

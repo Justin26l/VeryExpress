@@ -8,7 +8,7 @@ import JWTKeyStore from "./JWTKeyStore.gen";
 import utils from "../../_utils";
 
 import VexResponseError from "../../_types/VexResponseError.gen";
-import { Repository } from "typeorm";
+import { IVexRepository } from "../../_types/IVexRepository.gen";
 
 import VexDb from "../VexDb.gen";
 import { UserEntity } from "../../_models/UserModel.gen";
@@ -24,10 +24,10 @@ interface tokenObj {
 export default class JWTService {
     private keyStore = new JWTKeyStore();
 
-    private get userRepo(): Repository<UserEntity> {
+    private get userRepo(): IVexRepository<UserEntity> {
         return VexDb.getRepository(UserEntity);
     }
-    private get sessionRepo(): Repository<SessionEntity> {
+    private get sessionRepo(): IVexRepository<SessionEntity> {
         return VexDb.getRepository(SessionEntity);
     }
 
@@ -98,13 +98,12 @@ export default class JWTService {
         const sessionCode = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
         if (this.sessionRepo) {
-            const session = this.sessionRepo.create({
+            await this.sessionRepo.create({
                 sessionCode,
                 userId: user._id,
                 provider: "local",
                 expired: Date.now() + 5000,
             });
-            await this.sessionRepo.save(session);
         }
 
         // return appAuthCode to client
@@ -166,7 +165,7 @@ export default class JWTService {
 
     public async generateAccessToken(userId: string, index?: number): Promise<tokenObj> {
 
-        const userDoc = await this.userRepo.findOne({ where: { _id: userId } });
+        const userDoc = await this.userRepo.findOne(userId);
         if (!userDoc) {
             throw new VexResponseError(404, null, "Invalid User Id");
         }

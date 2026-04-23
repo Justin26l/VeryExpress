@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", function() {
         })
         .then(async (res) => {
             console.log("Login response status:", res.status);
-            if(res.status === 301) {
+            if(res.status === 302) {
                 const data = await res.json();
                 if(data.result?.url){
                     window.location.href = data.result?.url;

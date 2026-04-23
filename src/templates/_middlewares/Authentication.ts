@@ -12,7 +12,7 @@ export default class Authentication {
     public middleware = (req: Request, res: Response, next: NextFunction) => {
         try {
             // gate keeper
-            log.info("Authentication.middleware", req.headers["x-auth-index"], req.headers.authorization);
+            // log.info("Authentication.middleware", req.headers["x-auth-index"], req.headers.authorization);
             const token = req.headers.authorization?.split(" ")[1];
             const accessTokenIndex = req.headers["x-auth-index"]?.toString();
             
@@ -26,9 +26,6 @@ export default class Authentication {
 
             // verify token
             const tokenData = this.JWTService.verifyToken(token, accessTokenIndex);
-
-            // set req.user to the decoded token
-            log.info("tokenValid", tokenData);
             req.user = tokenData;
             next();
         }
@@ -40,7 +37,6 @@ export default class Authentication {
                 response.send(res, 400, { message: e?.message});
             }
             else {
-                log.errorNoExit(e);
                 response.send(res, 500, { message: e?.message});
             }
         }

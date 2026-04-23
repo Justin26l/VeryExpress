@@ -1,11 +1,17 @@
 // {{headerComment}}
 import { Request, Response, NextFunction } from "express";
-import { DataSource, EntityTarget, ObjectLiteral, Repository } from "typeorm";
+import { DataSource, EntityTarget, ObjectLiteral } from "typeorm";
+import mongoose from "mongoose";
+import { sqlMigrations } from "../_models/sqlMigration.gen";
+import { IVexRepository } from "../_types/IVexRepository.gen";
+import { TypeOrmRepositoryAdapter } from "./TypeOrmRepositoryAdapter.gen";
+import { MongooseRepositoryAdapter } from "./MongooseRepositoryAdapter.gen";
 import utils from "./../_utils";
 
 export class VexDbConnector {
     private sqlUrl: string;
     private sqlCa: string;
+    private mongoUrl: string;
     private recordAccessLog: boolean = false;
 
     public dataSource?: DataSource;
@@ -13,20 +19,24 @@ export class VexDbConnector {
     constructor(options: {
         sqlUrl?: string;
         sqlCa?: string;
+        mongoUrl?: string;
         recordAccessLog?: boolean;
     }) {
         this.sqlUrl = options.sqlUrl || "";
         this.sqlCa = options.sqlCa || "";
+        this.mongoUrl = options.mongoUrl || "";
         this.recordAccessLog = options.recordAccessLog || false;
         this.middleware = this.middleware.bind(this);
     }
 
     connect(): void {
         if (this.sqlUrl) this.connectSql();
+        if (this.mongoUrl) this.connectMongo();
     }
 
     close(): void {
         if (this.sqlUrl) this.closeSql();
+        if (this.mongoUrl) this.closeMongo();
     }
 
     connectSql(): void {
@@ -62,6 +72,7 @@ export class VexDbConnector {
                 .then(() => {
                     this.dataSource = ds;
                     utils.log.infoSql("TypeORM DataSource initialized");
+                    this.runSqlMigrations(ds);
                 })
                 .catch((err) => {
                     utils.log.errorSql(`Failed to initialize TypeORM, retrying in ${retryTime}s`, err);
@@ -72,6 +83,22 @@ export class VexDbConnector {
         connectWithRetry(10);
     }
 
+    private async runSqlMigrations(ds: DataSource): Promise<void> {
+        if (!sqlMigrations.length) return;
+        const runner = ds.createQueryRunner();
+        await runner.connect();
+        try {
+            for (const sql of sqlMigrations) {
+                await runner.query(sql);
+            }
+            utils.log.infoSql(`SQL migrations applied (${sqlMigrations.length})`);
+        } catch (err) {
+            utils.log.errorSql("SQL migration failed", err);
+        } finally {
+            await runner.release();
+        }
+    }
+
     closeSql(): void {
         if (this.dataSource?.isInitialized) {
             this.dataSource.destroy()
@@ -80,9 +107,32 @@ export class VexDbConnector {
         }
     }
 
-    getRepository<Entity extends ObjectLiteral>(target: EntityTarget<Entity>): Repository<Entity> {
-        if(!this.dataSource) throw new Error("DataSource not initialized");
-        return this.dataSource.getRepository(target);
+    connectMongo(): void {
+        utils.log.infoSql("Connecting to MongoDB (Mongoose)...");
+        const connectWithRetry = (retryTime = 10): void => {
+            mongoose.connect(this.mongoUrl)
+                .then(() => utils.log.infoSql("Mongoose connected"))
+                .catch((err) => {
+                    utils.log.errorSql(`Failed to connect Mongoose, retrying in ${retryTime}s`, err);
+                    setTimeout(() => connectWithRetry(retryTime), retryTime * 1000);
+                });
+        };
+        connectWithRetry(10);
+    }
+
+    closeMongo(): void {
+        mongoose.disconnect()
+            .then(() => utils.log.infoSql("Mongoose disconnected"))
+            .catch((err) => utils.log.errorSql("Error disconnecting Mongoose", err));
+    }
+
+    getRepository<T>(target: EntityTarget<ObjectLiteral> | any): IVexRepository<T> {
+        // Mongoose Model: has .schema and .modelName properties
+        if (target?.schema && target?.modelName) {
+            return new MongooseRepositoryAdapter<any>(target);
+        }
+        if (!this.dataSource) throw new Error("SQL DataSource not initialized");
+        return new TypeOrmRepositoryAdapter<any>(this.dataSource.getRepository(target));
     }
 
     async middleware(req: Request, res: Response, next: NextFunction): Promise<void> {

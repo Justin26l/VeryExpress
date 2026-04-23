@@ -7,6 +7,7 @@ dotenv.config();
 const VexDb = new VexDbConnector({
     sqlUrl: process.env.SQL_URI ?? undefined,
     sqlCa: process.env.SQL_CA ?? undefined,
+    mongoUrl: process.env.MONGO_URI ?? undefined,
     recordAccessLog: false,
 });
 

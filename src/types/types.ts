@@ -8,8 +8,8 @@ export interface compilerOptions {
     generator: {
         commitBeforeGenerate: boolean;
     },
-    // database target type: always 'sql' (TypeORM)
-    dbType?: "sql",
+    // database target type: 'sql' (TypeORM/PostgreSQL) or 'mongo' (Mongoose/MongoDB)
+    dbType?: "sql" | "mongo",
 
     app: {
         enableSwagger: boolean,

@@ -55,62 +55,62 @@ export function formatJsonSchema(jsonSchemaPath: string, compilerOptions: types.
     const problems: string[] = [];
 
     const hasForbiddenFlags = (prop?: types.jsonSchemaPropsItem): boolean => {
-            if (!prop) return false;
-            return Boolean(
-                prop.index ||
+        if (!prop) return false;
+        return Boolean(
+            prop.index ||
                 prop["x-foreignKey"] ||
                 prop["x-vexData"] ||
                 prop["x-vex-data"]
-            );
-        };
+        );
+    };
 
-        const pushIfForbidden = (basePath: string, propName: string, prop?: types.jsonSchemaPropsItem, isArrayItem = false) => {
-            if (hasForbiddenFlags(prop)) {
-                problems.push(isArrayItem ? `${basePath}[].${propName}` : `${basePath}.${propName}`);
-            }
-        };
+    const pushIfForbidden = (basePath: string, propName: string, prop?: types.jsonSchemaPropsItem, isArrayItem = false) => {
+        if (hasForbiddenFlags(prop)) {
+            problems.push(isArrayItem ? `${basePath}[].${propName}` : `${basePath}.${propName}`);
+        }
+    };
 
-        const walk = (schemaItem: types.jsonSchemaPropsItem | types.jsonSchema, ctxPath: string) => {
-            if (!schemaItem) return;
+    const walk = (schemaItem: types.jsonSchemaPropsItem | types.jsonSchema, ctxPath: string) => {
+        if (!schemaItem) return;
 
-            // Handle object nodes with properties
-            if (schemaItem.type === "object" && schemaItem.properties) {
-                for (const k of Object.keys(schemaItem.properties)) {
-                    const p = schemaItem.properties[k];
-                    const pPath = ctxPath ? `${ctxPath}.${k}` : k;
+        // Handle object nodes with properties
+        if (schemaItem.type === "object" && schemaItem.properties) {
+            for (const k of Object.keys(schemaItem.properties)) {
+                const p = schemaItem.properties[k];
+                const pPath = ctxPath ? `${ctxPath}.${k}` : k;
 
-                    // nested object -> inspect its direct properties for forbidden flags
-                    if (p.type === "object") {
-                        if (p.properties) {
-                            for (const nn of Object.keys(p.properties)) {
-                                pushIfForbidden(pPath, nn, p.properties[nn], false);
-                            }
+                // nested object -> inspect its direct properties for forbidden flags
+                if (p.type === "object") {
+                    if (p.properties) {
+                        for (const nn of Object.keys(p.properties)) {
+                            pushIfForbidden(pPath, nn, p.properties[nn], false);
                         }
-                        walk(p, pPath);
                     }
-                    // array of objects -> inspect item properties
-                    else if (p.type === "array" && p.items && p.items.type === "object") {
-                        if (p.items.properties) {
-                            for (const nn of Object.keys(p.items.properties)) {
-                                pushIfForbidden(pPath, nn, p.items.properties[nn], true);
-                            }
+                    walk(p, pPath);
+                }
+                // array of objects -> inspect item properties
+                else if (p.type === "array" && p.items && p.items.type === "object") {
+                    if (p.items.properties) {
+                        for (const nn of Object.keys(p.items.properties)) {
+                            pushIfForbidden(pPath, nn, p.items.properties[nn], true);
                         }
-                        walk(p.items, pPath + "[]");
                     }
-                    // other types -> continue recursion in case deeper structures exist
-                    else {
-                        walk(p, pPath);
-                    }
+                    walk(p.items, pPath + "[]");
+                }
+                // other types -> continue recursion in case deeper structures exist
+                else {
+                    walk(p, pPath);
                 }
             }
+        }
 
-            // array root with object items
-            else if (schemaItem.type === "array" && schemaItem.items) {
-                walk(schemaItem.items, ctxPath + "[]");
-            }
-        };
+        // array root with object items
+        else if (schemaItem.type === "array" && schemaItem.items) {
+            walk(schemaItem.items, ctxPath + "[]");
+        }
+    };
 
-        walk(jsonSchema, "");
+    walk(jsonSchema, "");
 
     if (problems.length > 0) {
         problems.forEach((p) => {

@@ -19,6 +19,8 @@ import * as controllerGen from "./generators/controller/controllers.generator";
 import * as routeGen from "./generators/routes/routes.generator";
 import * as serverGen from "./generators/app/server.generator";
 import * as typeormEntityGen from "./generators/db/typeormEntity.generator";
+import * as mongooseModelGen from "./generators/db/mongooseModel.generator";
+import * as sqlMigrationGen from "./generators/db/sqlMigration.generator";
 import * as interfaceGen from "./generators/interface/generator";
 
 export async function generate(
@@ -123,11 +125,21 @@ export async function generate(
             path.join(dir.typeDir, `${doc.config.documentName}.gen.ts`),
             options || utils.generator.defaultCompilerOptions
         );
-        await typeormEntityGen.compile({
-            jsonSchema: doc.schema,
-            outDir: dir.modelDir,
-            compilerOptions: options || utils.generator.defaultCompilerOptions,
-        });
+
+        if (options.dbType === "mongo") {
+            await mongooseModelGen.compile({
+                jsonSchema: doc.schema,
+                outDir: dir.modelDir,
+                compilerOptions: options || utils.generator.defaultCompilerOptions,
+            });
+        } 
+        else if (options.dbType === "sql") {
+            await typeormEntityGen.compile({
+                jsonSchema: doc.schema,
+                outDir: dir.modelDir,
+                compilerOptions: options || utils.generator.defaultCompilerOptions,
+            });
+        }
 
         // generate controller
         await controllerGen.compile({
@@ -146,7 +158,15 @@ export async function generate(
 
         return;
     }));
-    
+
+    // generate sql migrations
+    if (options.dbType === "sql") {
+        await sqlMigrationGen.compile({
+            schemas: documents.map((d) => d.schema),
+            outDir: dir.modelDir,
+        });
+    }
+
     // make route from routeData
     await routeGen.compile({
         routesDir: dir.routeDir,

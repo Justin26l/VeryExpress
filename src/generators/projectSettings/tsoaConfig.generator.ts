@@ -16,12 +16,18 @@ export function compile(compilerOptions: types.compilerOptions): void {
         spec: {
             outputDirectory: "src/openapi",
             specVersion: 3,
+            basePath: "/api",
             securityDefinitions: {
                 BearerAuth: {
                     type: "http",
                     scheme: "bearer",
                     bearerFormat: "JWT",
                 },
+                AuthIndex: {
+                    type: "apiKey",
+                    in: "header",
+                    name: "X-Auth-Index",
+                }
             },
         },
         routes: {
@@ -29,6 +35,7 @@ export function compile(compilerOptions: types.compilerOptions): void {
             routesFileName: "tsoa_routes.ts",
             basePath: "/api",
             middleware: "express",
+            authenticationModule: "src/system/_middlewares/tsoaAuthentication.gen.ts",
         },
     };
 

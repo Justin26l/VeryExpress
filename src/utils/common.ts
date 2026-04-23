@@ -56,7 +56,7 @@ export function writeFile(title: string, destination: string, newContent: string
     const destinationDir = path.dirname(destination);
     if (!fs.existsSync(destinationDir)) {
         fs.mkdirSync(destinationDir, { recursive: true });
-    };
+    }
     const oldContent = fs.existsSync(destination) ? fs.readFileSync(destination, "utf8") : "";
 
     // remove header comment for comparison

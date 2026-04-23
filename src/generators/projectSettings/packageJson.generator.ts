@@ -28,7 +28,7 @@ export async function compile(
     packageJson.scripts.build = packangeJsonTemplate.scripts.build;
     packageJson.scripts.dev = packangeJsonTemplate.scripts.dev;
     packageJson.scripts.start = packangeJsonTemplate.scripts.start;
-    log.process(`package.json : scripts synced from template`);
+    log.process("package.json : scripts synced from template");
 
 
     // compare loaded packageJson with template, if there are missing packages in loaded packageJson, add them from template
