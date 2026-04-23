@@ -27,7 +27,7 @@ interface LoginBody {
     const registerMethod = localAuth ? `
     @Post("register")
     @SuccessResponse(201, "Created")
-    async register(@Body() body: RegisterBody): Promise<object> {
+    async register(@Body() body: RegisterBody): Promise<void> {
         const { email, password } = body;
         const existing = await this.userRepo.findOne({ where: { email } });
         if (existing) throw new VexResponseError(409, null, "Email already registered.");
@@ -39,14 +39,13 @@ interface LoginBody {
             try { await this.userRepo.delete({ _id: user._id }); } catch { /* ignore cleanup error */ }
             throw e;
         }
-        this.setStatus(201);
-        return { message: "Registration successful." };
+        throw new VexResponse(201, { result: { message: "Registration successful." } });
     }` : "";
 
     const loginMethod = localAuth ? `
     @Post("local")
     @SuccessResponse(301, "Redirect")
-    async localLogin(@Body() body: LoginBody): Promise<object> {
+    async localLogin(@Body() body: LoginBody): Promise<void> {
         const { email, password } = body;
         const user = await this.userRepo.findOne({ where: { email } });
         if (!user) throw new VexResponseError(400, null, "incorrect email or password.");
@@ -56,7 +55,7 @@ interface LoginBody {
         const isMatch = utils.hash.verifyPassword({ ...user, userAuthProfiles: authProfiles } as any, password);
         if (!isMatch) throw new VexResponseError(400, null, "incorrect email or password.");
         const redirectUrl = await this.JWTService.assignTokens(user);
-        return { url: redirectUrl };
+        throw new VexResponse(200, { result: { url: redirectUrl } });
     }` : "";
 
     const oauthProviders: string[] = utilsGenerator.OAuthProviders(compilerOptions);
@@ -73,6 +72,7 @@ import * as controllerFactory from "./_ControllerFactory.gen";
 import JWTService from "../_services/auth/JWTService.gen";
 import VexDb from "../_services/VexDb.gen";
 import { SessionEntity } from "../_models/SessionModel.gen";
+import VexResponse from "../_types/VexResponse.gen";
 import VexResponseError from "../_types/VexResponseError.gen";
 import utils from "../_utils";
 ${localImports}
@@ -92,30 +92,30 @@ ${oauthNote}
 
     @Post("token")
     @SuccessResponse(200, "OK")
-    async exchangeToken(@Query() code: string): Promise<object> {
+    async exchangeToken(@Query() code: string): Promise<void> {
         const sessionDoc = await this.sessionRepo.findOne({ where: { sessionCode: code } });
         if (!sessionDoc) throw new VexResponseError(404, null, "invalid code");
         if (sessionDoc.expired < Date.now()) throw new VexResponseError(401, null, "code expired");
         await this.sessionRepo.delete({ sessionCode: code });
         const accessToken = await this.JWTService.generateAccessToken(sessionDoc.userId);
         const refreshToken = this.JWTService.generateRefreshToken({ _id: sessionDoc.userId });
-        return {
+        throw new VexResponse(200, { result: {
             accessToken: accessToken.token,
             accessTokenIndex: accessToken.clientIndex,
             refreshToken: refreshToken.token,
             refreshTokenIndex: refreshToken.clientIndex,
-        };
+        }});
     }
 
     @Post("refresh")
     @SuccessResponse(200, "OK")
-    async refreshToken(@Body() body: RefreshBody): Promise<object> {
+    async refreshToken(@Body() body: RefreshBody): Promise<void> {
         const payload = this.JWTService.verifyToken(body.refreshToken, body.refreshTokenIndex);
         const accessToken = await this.JWTService.generateAccessToken(payload._id);
-        return {
+        throw new VexResponse(200, { result: {
             accessToken: accessToken.token,
             accessTokenIndex: accessToken.clientIndex,
-        };
+        }});
     }
 ${registerMethod}
 ${loginMethod}
