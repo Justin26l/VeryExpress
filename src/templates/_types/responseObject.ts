@@ -1,4 +1,4 @@
-
+// {{headerComment}}
 export interface responseObject<T>{
     ret_code : number,
     ret_msg : string,

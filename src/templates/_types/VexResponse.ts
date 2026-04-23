@@ -1,3 +1,4 @@
+// {{headerComment}}
 import { ResponseCode } from "./../_utils/response.gen";
 
 export default class VexResponse<T = unknown> extends Error {

@@ -1,3 +1,4 @@
+// {{headerComment}}
 import common from "./common.gen";
 import hash from "./hash.gen";
 import logger from "./logger.gen";

@@ -1,3 +1,4 @@
+// {{headerComment}}
 import { ResponseCode } from "./../_utils/response.gen";
 import utils from "../_utils/index";
 
