@@ -28,7 +28,7 @@ export default function objectionTemplate(options: {
         } else {
             let colArgs: string;
             if (col.isArray) {
-                colArgs = `{ type: "simple-array", nullable: ${col.nullable} }`;
+                colArgs = `{ type: "text", array: true, nullable: ${col.nullable} }`;
             } else if (col.isBigInt) {
                 colArgs = `{ type: "bigint", nullable: ${col.nullable}, transformer: { to: (v: number) => v, from: (v: string) => Number(v) } }`;
             } else if (col.maxLength) {

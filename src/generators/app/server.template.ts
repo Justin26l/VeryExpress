@@ -158,7 +158,7 @@ function loginHandler(providers: string[], compilerOptions: types.compilerOption
         const nonce = crypto.randomBytes(16).toString("base64");
         res.setHeader("Content-Security-Policy", \`script-src 'self' 'nonce-\${nonce}'\`);
         res.send(\`
-            <script nonce="\${nonce}" src="/js/login.js"></script>
+            <script nonce="\${nonce}" src="/js/login.js?d=\${Date.now()}"></script>
             <body>${html}
         </body>\`);
         ` : `
