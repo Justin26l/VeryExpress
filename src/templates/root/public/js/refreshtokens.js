@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
     refreshTokenIndex: localStorage.getItem("refreshTokenIndex"),
   };
 
-  fetch("/auth/refresh", {
+  fetch("/api/auth/refresh", {
     method: "POST",
     body: JSON.stringify(jsonPayload),
     headers: {

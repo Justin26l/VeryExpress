@@ -25,7 +25,8 @@ export function compile(compilerOptions: types.compilerOptions): void {
             },
         },
         routes: {
-            routesDir: "src",
+            routesDir: "src/system/_routes",
+            routesFileName: "tsoa_routes.ts",
             basePath: "/api",
             middleware: "express",
         },

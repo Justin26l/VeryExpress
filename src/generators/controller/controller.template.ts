@@ -83,42 +83,61 @@ ${renderFields(true)}
         methods.includes("getList"),
         `@Post("/search")`,
         `public async getList${documentName}(@Body() body: { _filter?: Record<string, unknown> }): Promise<{ result: unknown[] }>`,
-        `const result = await this.repo.find({ where: body._filter as FindOptionsWhere<${documentName}Entity> });\n        return { result };`
+        `const result = await this.repo.find({ where: body._filter as FindOptionsWhere<${documentName}Entity> });
+        return { result };`
     );
 
     const getRoute = buildMethod(
         methods.includes("get"),
         `@Get("{id}")`,
         `public async get${documentName}(${idParam}): Promise<{ result: ${documentName}Entity }>`,
-        `const result = await this.repo.findOne({ where: { _id: id } as FindOptionsWhere<${documentName}Entity> });\n        if (!result) throw new VexResponseError(404, utils.response.code.err_not_found);\n        return { result };`
+        `const result = await this.repo.findOne({ where: { _id: id } as FindOptionsWhere<${documentName}Entity> });
+        if (!result) throw new VexResponseError(404);
+        return { result };`
     );
 
     const postRoute = buildMethod(
         methods.includes("post"),
         `@Post()`,
         `public async create${documentName}(@Body() body: ${documentName}Body): Promise<{ result: ${documentName}Entity }>`,
-        `${cleanId}\n        const result = await this.repo.save(this.repo.create(body as DeepPartial<${documentName}Entity>));\n        if (!result) throw new VexResponseError(400, utils.response.code.err_create);\n        this.setStatus(201);\n        return { result };`
+        `${cleanId}
+        const result = await this.repo.save(this.repo.create(body as DeepPartial<${documentName}Entity>));
+        if (!result) throw new VexResponseError(400);
+        this.setStatus(201);
+        return { result };`
     );
 
     const putRoute = buildMethod(
         methods.includes("put"),
         `@Put("{id}")`,
         `public async replace${documentName}(${idParam}, @Body() body: ${documentName}Body): Promise<{ result: ${documentName}Entity }>`,
-        `${cleanId}\n        const existing = await this.repo.findOne({ where: { _id: id } as FindOptionsWhere<${documentName}Entity> });\n        if (!existing) throw new VexResponseError(404, utils.response.code.err_update);\n        const result = await this.repo.save(this.repo.merge(existing, body as DeepPartial<${documentName}Entity>));\n        return { result };`
+        `${cleanId}
+        const existing = await this.repo.findOne({ where: { _id: id } as FindOptionsWhere<${documentName}Entity> });
+        if (!existing) throw new VexResponseError(404);
+        const result = await this.repo.save(this.repo.merge(existing, body as DeepPartial<${documentName}Entity>));
+        return { result };`
     );
 
     const patchRoute = buildMethod(
         methods.includes("patch"),
         `@Patch("{id}")`,
         `public async update${documentName}(${idParam}, @Body() body: ${documentName}PartialBody): Promise<{ result: ${documentName}Entity }>`,
-        `${cleanId}\n        await this.repo.update({ _id: id } as FindOptionsWhere<${documentName}Entity>, body as DeepPartial<${documentName}Entity>);\n        const result = await this.repo.findOne({ where: { _id: id } as FindOptionsWhere<${documentName}Entity> });\n        if (!result) throw new VexResponseError(404, utils.response.code.err_update);\n        return { result };`
+        `${cleanId}
+        await this.repo.update({ _id: id } as FindOptionsWhere<${documentName}Entity>, body as DeepPartial<${documentName}Entity>);
+        const result = await this.repo.findOne({ where: { _id: id } as FindOptionsWhere<${documentName}Entity> });
+        if (!result) throw new VexResponseError(404);
+        return { result };`
     );
 
     const deleteRoute = buildMethod(
         methods.includes("delete"),
         `@Delete("{id}")`,
         `public async delete${documentName}(${idParam}): Promise<{ result: ${documentName}Entity }>`,
-        `const existing = await this.repo.findOne({ where: { _id: id } as FindOptionsWhere<${documentName}Entity> });\n        if (!existing) throw new VexResponseError(404, utils.response.code.err_delete);\n        await this.repo.delete({ _id: id } as FindOptionsWhere<${documentName}Entity>);\n        this.setStatus(204);\n        return { result: existing };`
+        `const existing = await this.repo.findOne({ where: { _id: id } as FindOptionsWhere<${documentName}Entity> });
+        if (!existing) throw new VexResponseError(404);
+        await this.repo.delete({ _id: id } as FindOptionsWhere<${documentName}Entity>);
+        this.setStatus(204);
+        return { result: existing };`
     );
 
     const source = `{{headerComment}}

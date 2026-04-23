@@ -17,7 +17,7 @@ const ConfigAuthRouter = "const AuthRoute = new AuthRouter();";
 const UseCookieParser = "app.use(cookieParser());";
 const UseAuthRouter = "app.use(\"/auth\", AuthRoute.getRouter());";
 const UseSwaggerRouter = "app.use(\"/swagger\", SwaggerRoute.getRouter());";
-const UseAuthMiddleware = "app.use(\"/api\", new Authentication().middleware);";
+const UseAuthMiddleware = "app.use(/^\\/api(?!\\/auth)/, new Authentication().middleware);";
 const UseRegisterRoutes = "RegisterRoutes(app);";
 const UseErrorHandler = "app.use(VexSystem.errorHandler);";
 
@@ -36,7 +36,7 @@ import log from "./system/_utils/logger.gen";
 import processTimer from "./system/_utils/processTimer.gen";
 import vexDB from "./system/_services/VexDb.gen";
 
-import { RegisterRoutes } from "./routes";
+import { RegisterRoutes } from "./system/_routes/tsoa_routes";
 {{Import}}
 
 /** 
@@ -150,7 +150,7 @@ function loginHandler(providers: string[], compilerOptions: types.compilerOption
     }
     else{
         providers.forEach((provider) => {
-            html += `                <a href="/auth/${provider}">${provider}</a><br/>\n`;
+            html += `                <a href="/api/auth/${provider}">${provider}</a><br/>\n`;
         });
     }
 

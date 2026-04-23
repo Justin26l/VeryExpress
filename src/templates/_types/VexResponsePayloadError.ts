@@ -3,7 +3,7 @@ import utils from "../_utils/index";
 
 export default class VexResponsePayloadError extends Error {
     public status: number;
-    public ret_code: ResponseCode;
+    public ret_code: ResponseCode | null;
     public ret_msg: any;
     public result: any;
 

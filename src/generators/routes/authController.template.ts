@@ -30,7 +30,7 @@ interface LoginBody {
     async register(@Body() body: RegisterBody): Promise<object> {
         const { email, password } = body;
         const existing = await this.userRepo.findOne({ where: { email } });
-        if (existing) throw new VexResponseError(409, "CONFLICT", "Email already registered.");
+        if (existing) throw new VexResponseError(409, null, "Email already registered.");
         const hashedPassword = utils.hash.hashPassword(password, email);
         const user = await this.userRepo.save(this.userRepo.create({ name: email.split("@")[0], email, active: true }));
         try {
@@ -45,16 +45,16 @@ interface LoginBody {
 
     const loginMethod = localAuth ? `
     @Post("local")
-    @SuccessResponse(200, "OK")
+    @SuccessResponse(301, "Redirect")
     async localLogin(@Body() body: LoginBody): Promise<object> {
         const { email, password } = body;
         const user = await this.userRepo.findOne({ where: { email } });
-        if (!user) throw new VexResponseError(400, "BADREQUEST", "incorrect email or password.");
+        if (!user) throw new VexResponseError(400, null, "incorrect email or password.");
         const authProfiles = await this.uapRepo.find({ where: { userId: user._id } });
         const localProfile = authProfiles.find((p) => p.provider === "local");
-        if (!localProfile) throw new VexResponseError(400, "BADREQUEST", "incorrect email or password.");
+        if (!localProfile) throw new VexResponseError(400, null, "incorrect email or password.");
         const isMatch = utils.hash.verifyPassword({ ...user, userAuthProfiles: authProfiles } as any, password);
-        if (!isMatch) throw new VexResponseError(400, "BADREQUEST", "incorrect email or password.");
+        if (!isMatch) throw new VexResponseError(400, null, "incorrect email or password.");
         const redirectUrl = await this.JWTService.assignTokens(user);
         return { url: redirectUrl };
     }` : "";
@@ -94,8 +94,8 @@ ${oauthNote}
     @SuccessResponse(200, "OK")
     async exchangeToken(@Query() code: string): Promise<object> {
         const sessionDoc = await this.sessionRepo.findOne({ where: { sessionCode: code } });
-        if (!sessionDoc) throw new VexResponseError(404, "NOTFOUND", "invalid code");
-        if (sessionDoc.expired < Date.now()) throw new VexResponseError(401, "UNAUTHORIZED", "code expired");
+        if (!sessionDoc) throw new VexResponseError(404, null, "invalid code");
+        if (sessionDoc.expired < Date.now()) throw new VexResponseError(401, null, "code expired");
         await this.sessionRepo.delete({ sessionCode: code });
         const accessToken = await this.JWTService.generateAccessToken(sessionDoc.userId);
         const refreshToken = this.JWTService.generateRefreshToken({ _id: sessionDoc.userId });

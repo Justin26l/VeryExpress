@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // add event listener to login button
     document.querySelector("#localLoginBtn").addEventListener("click", function() {
         // call api /auth/local
-        fetch("/auth/local", {
+        fetch("/api/auth/local", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -14,7 +14,8 @@ document.addEventListener("DOMContentLoaded", function() {
             })
         })
         .then(async (res) => {
-            if(res.status === 302) {
+            console.log("Login response status:", res.status);
+            if(res.status === 301) {
                 const data = await res.json();
                 if(data.result?.url){
                     window.location.href = data.result?.url;
@@ -35,8 +36,8 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
         document.querySelector("#localRegisterBtn").addEventListener("click", function() {
-        // call api /auth/local
-        fetch("/auth/register", {
+        // call api /auth/register
+        fetch("/api/auth/register", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"

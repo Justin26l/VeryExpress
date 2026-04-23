@@ -53,10 +53,10 @@ export default class JWTService {
         }
         catch (error) {
             if (error instanceof jwt.TokenExpiredError) {
-                throw new VexResponseError(401, utils.response.code.err_payload, "Token expired");
+                throw new VexResponseError(401, null, "Token expired");
             }
             else if (error instanceof jwt.JsonWebTokenError) {
-                throw new VexResponseError(401, utils.response.code.err_payload, "jwt malformed");
+                throw new VexResponseError(401, null, "jwt malformed");
             }
             else {
                 throw error;
@@ -69,7 +69,7 @@ export default class JWTService {
      */
     public async assignTokens(user: User) {
         if(!user._id) {
-            throw new VexResponseError(500, utils.response.code.err_db_data, "User Data Error, User._id missing.");
+            throw new VexResponseError(500, null, "User Data Error, User._id missing.");
         }
 
         // const accessToken = await this.generateAccessToken(user._id);
@@ -168,7 +168,7 @@ export default class JWTService {
 
         const userDoc = await this.userRepo.findOne({ where: { _id: userId } });
         if (!userDoc) {
-            throw new VexResponseError(404, utils.response.code.err_payload, "Invalid User Id");
+            throw new VexResponseError(404, null, "Invalid User Id");
         }
         const userInfo = this.sanitizeUser(userDoc);
 

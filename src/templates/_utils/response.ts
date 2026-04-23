@@ -23,7 +23,7 @@ export function send<T = undefined>(
         return res.status(status).send();
     }
     else {
-        const code: ResponseCode | undefined = body?.code ?? responseStatusCodeMap.get(status) as ResponseCode | undefined;
+        const code: ResponseCode | undefined = body?.code ?? responseStatusCodeMap.get(status) ?? responseCode.SERVER_ERROR;
         const msg: string | undefined = body?.message ?? (code ? responseMessage[code] : undefined);
 
         return res.status(status)
@@ -39,7 +39,7 @@ export function send<T = undefined>(
     }
 }
 
-const responseMessage = {
+const responseMessage : Record<string, string> = {
 
     DB_CONN_ERR: "Database connection error",
     SERVER_ERROR: "Unknown Server Error",
@@ -133,7 +133,7 @@ const responseStatusCodeMap = new Map<number, string>([
     [511, "Network Authentication Required"],
 ]);
 
-export type ResponseCode = keyof typeof responseMessage;
+export type ResponseCode = keyof typeof responseMessage | string;
 
 export default {
     send,
