@@ -10,24 +10,134 @@ import log from "./../utils/logger";
  * @param compilerOptions
  **/
 export function formatJsonSchema(jsonSchemaPath: string, compilerOptions: types.compilerOptions): types.jsonSchema {
-    // read json schema
-    const fileName = jsonSchemaPath.split("/").pop()?.split(".")[0] || "Unknown_File_Name";
-    
+    // read json schema file    
     const jsonSchema: types.jsonSchema = utils.jsonSchema.loadJsonSchema(jsonSchemaPath);
-
-    checkDocumentConfig(jsonSchema, fileName, jsonSchemaPath);
-    checkForeignKeyConfig(jsonSchema, jsonSchemaPath);
 
     // json schema structure check 
     if (typeof jsonSchema.properties !== "object") {
         log.error(`"properties" format is invalid in ${jsonSchemaPath}`);
     }
 
+    checkSchemaBasic(jsonSchema, jsonSchemaPath);
+    checkDocumentConfig(jsonSchema, jsonSchemaPath);
+    checkForeignKeyConfig(jsonSchema, jsonSchemaPath);
+
     // format properties boolean "required" into array of string
     jsonSchema.required = getRequiredArrStr(jsonSchema, jsonSchemaPath);
 
+    if (compilerOptions.dbType === "sql") normalizeSqlTarget(jsonSchema, jsonSchemaPath, compilerOptions);
+
+    utils.common.writeFile("Json Schema Formatting", jsonSchemaPath, JSON.stringify(jsonSchema, null, 4));
+
+    return jsonSchema;
+}
+
+function checkSchemaBasic(jsonSchema: types.jsonSchema, jsonSchemaPath?: string): void {
+    if (jsonSchema.type !== "object" && jsonSchema.type !== "array") {
+        log.error(`Json Schema Formatting: "${jsonSchemaPath}" root type must be "object" or "array".`);
+    }
+}
+
+
+function checkDocumentConfig(jsonSchema: types.jsonSchema, jsonSchemaPath: string): void {
+    const fileName = jsonSchemaPath.split("/").pop()?.split(".")[0] || "Unknown_File_Name";
+
+    // check documentConfig exist
+    if (!jsonSchema["x-documentConfig"]) {
+        log.error(`Json Schema Formatting: "${jsonSchemaPath}" x-documentConfig not found.`);
+    }
+
+    // warns
+    if (!jsonSchema["x-documentConfig"].documentName) {
+        log.warn(`Json Schema Formatting: "${jsonSchemaPath}" x-documentConfig.documentName added.`);
+        jsonSchema["x-documentConfig"].documentName = fileName;
+    }
+
+    if (!jsonSchema["x-documentConfig"].methods) {
+        log.warn(`Json Schema Formatting: "${jsonSchemaPath}" x-documentConfig.methods not found, supported methods added.`);
+        jsonSchema["x-documentConfig"].methods = Object.assign([], types.schemaMethodArr);
+    }
+
+    // check documentConfig format
+    if (jsonSchema["x-documentConfig"].documentName != fileName) {
+        log.error(`Json Schema Formatting: "${jsonSchemaPath}" x-documentConfig.documentName is not consistant with file name.`);
+    }
+}
+
+function checkForeignKeyConfig(schema: types.jsonSchema, jsonSchemaPath: string): boolean {
+    // loop through all properties and check if "x-foreignKey" exist and valid
+
+    const isForeignKeyValid = (fkConfig: types.foreignKeyConfig) => fkConfig && typeof fkConfig === "object"
+        && typeof fkConfig.schemaName === "string"
+        && typeof fkConfig.fieldName === "string"
+        && (fkConfig.relationType === types.DbRelationType.OneToOne || fkConfig.relationType === types.DbRelationType.OneToMany);
+
+    for (const key in schema.properties) {
+        const fkConfig = schema.properties[key]["x-foreignKey"];
+        if (fkConfig && !isForeignKeyValid(fkConfig)) {
+            log.error(`Json Schema Formatting: "${jsonSchemaPath}" x-foreignKey config is invalid on property "${key}".`);
+        }
+    }
+    return true;
+}
+
+/**
+ * format the schema's required fields into array of string
+ * @param schema
+ * @param jsonSchemaPath
+ **/
+function getRequiredArrStr(schema: types.jsonSchemaPropsItem | types.jsonSchema, jsonSchemaPath: string): string[] | undefined {
+    let properties: { [key: string]: types.jsonSchemaPropsItem } | undefined ;
+    let requiredArr: string[] = [];
+    const isArrObj = (props: types.jsonSchemaPropsItem | types.jsonSchema) => Boolean(props.type == "array" && props.items && props.items.type == "object");
+    
+    if (isArrObj(schema)) {
+        properties = schema.items.properties;
+        requiredArr = typeof schema.items.required == "object" ? schema.items.required : [];
+    }
+    else if (schema.type == "object") {
+        properties = schema.properties;
+        requiredArr = typeof schema.required == "object" ? schema.required : [];
+    }
+    else {
+        return undefined;
+    }
+
+    if (properties == undefined) {
+        log.error(`formatJsonSchema > formatRequired : invalid "schema.properties" in ${jsonSchemaPath}`,schema);
+    }
+    else {
+        Object.keys(properties).forEach((propKey: string) => {
+            const prop: types.jsonSchemaPropsItem | undefined = properties?.[propKey];
+            const keyNotInRequiredArr :boolean = !requiredArr.includes(propKey);
+
+            // value
+            if ( prop && prop.type !== "object" && prop.required === true && keyNotInRequiredArr) {
+                requiredArr.push(propKey);
+            }
+            // array
+            else if ( prop && prop.items && isArrObj(prop)) {
+                prop.items.required = getRequiredArrStr(prop.items, jsonSchemaPath);
+            }
+            // object
+            else if ( prop && prop.type == "object"){
+                prop.required = getRequiredArrStr(prop, jsonSchemaPath);
+                
+                if ( prop.required && prop.required.length > 0  && keyNotInRequiredArr){
+                    requiredArr.push(propKey);
+                }
+            }
+        });
+    }
+
+    return requiredArr;
+    
+}
+
+function normalizeSqlTarget(jsonSchema: types.jsonSchema, jsonSchemaPath: string, compilerOptions: types.compilerOptions): void {
+
     // normalize x-format: ObjectId -> PrimaryUUID for SQL/TypeORM target
-    const convertXFormat = (schemaItem: types.jsonSchemaPropsItem | types.jsonSchema | undefined) => {
+    const normalizeConfig = (schemaItem: types.jsonSchemaPropsItem | types.jsonSchema | undefined) => {
         if (!schemaItem) return;
         if (schemaItem.type === "object" && (schemaItem as any).properties) {
             const props = (schemaItem as any).properties as { [key: string]: types.jsonSchemaPropsItem };
@@ -41,15 +151,16 @@ export function formatJsonSchema(jsonSchemaPath: string, compilerOptions: types.
                     log.warn("[JsonSchema]", `SQL target: ${isId ? "converted" : "removed"} x-format ObjectId ${isId ? "-> PrimaryUUID" : ""} for property "${k}" in ${jsonSchemaPath}`);
                 }
                 if (p && (p.type === "object" || (p.type === "array" && p.items))) {
-                    convertXFormat(p);
+                    normalizeConfig(p);
                 }
             }
         }
         else if (schemaItem.type === "array" && (schemaItem as any).items) {
-            convertXFormat((schemaItem as any).items);
+            normalizeConfig((schemaItem as any).items);
         }
     };
-    convertXFormat(jsonSchema);
+
+    if (compilerOptions.dbType === "sql") normalizeConfig(jsonSchema);
 
     // additional validation: warn if nested object/array contain unsupported metadata
     const problems: string[] = [];
@@ -117,101 +228,4 @@ export function formatJsonSchema(jsonSchemaPath: string, compilerOptions: types.
             log.warn(`SQL target: ${jsonSchemaPath} nested object/array contains unsupported index/x-foreignKey/x-vex-data -> ${p}. Consider modelling as separate document/table.`);
         });
     }
-
-    utils.common.writeFile("Json Schema Formatting", jsonSchemaPath, JSON.stringify(jsonSchema, null, 4));
-
-    return jsonSchema;
-}
-
-function checkDocumentConfig(jsonSchema: types.jsonSchema, fileName: string, jsonSchemaPath?: string): void {
-    // check documentConfig exist
-    if (!jsonSchema["x-documentConfig"]) {
-        log.error(`Json Schema Formatting: "${jsonSchemaPath}" x-documentConfig not found.`);
-    }
-
-    if (!jsonSchema["x-documentConfig"].documentName) {
-        log.warn(`Json Schema Formatting: "${jsonSchemaPath}" x-documentConfig.documentName added.`);
-        jsonSchema["x-documentConfig"].documentName = fileName;
-
-    }
-
-    if (!jsonSchema["x-documentConfig"].methods) {
-        log.warn(`Json Schema Formatting: "${jsonSchemaPath}" x-documentConfig.methods not found, supported methods added.`);
-        jsonSchema["x-documentConfig"].methods = Object.assign([], types.schemaMethodArr);
-    }
-
-    // check documentConfig format
-    if (jsonSchema["x-documentConfig"].documentName != fileName) {
-        log.error(`Json Schema Formatting: "${jsonSchemaPath}" x-documentConfig.documentName is not consistant with file name.`);
-    }
-}
-
-function checkForeignKeyConfig(schema: types.jsonSchema, jsonSchemaPath?: string): boolean {
-    // loop through all properties and check if "x-foreignKey" exist and valid
-
-    const isForeignKeyValid = (fkConfig: types.foreignKeyConfig) => fkConfig && typeof fkConfig === "object"
-        && typeof fkConfig.schemaName === "string"
-        && typeof fkConfig.fieldName === "string"
-        && (fkConfig.relationType === types.DbRelationType.OneToOne || fkConfig.relationType === types.DbRelationType.OneToMany);
-
-    for (const key in schema.properties) {
-        const fkConfig = schema.properties[key]["x-foreignKey"];
-        if (fkConfig && !isForeignKeyValid(fkConfig)) {
-            log.error(`Json Schema Formatting: "${jsonSchemaPath}" x-foreignKey config is invalid on property "${key}".`);
-        }
-    }
-    return true;
-}
-
-/**
- * format the schema's required fields into array of string
- * @param schema
- * @param jsonSchemaPath
- **/
-function getRequiredArrStr(schema: types.jsonSchemaPropsItem | types.jsonSchema, jsonSchemaPath?: string): string[] | undefined {
-    let properties: { [key: string]: types.jsonSchemaPropsItem } | undefined ;
-    let requiredArr: string[] = [];
-    const isArrObj = (props: types.jsonSchemaPropsItem | types.jsonSchema) => Boolean(props.type == "array" && props.items && props.items.type == "object");
-    
-    if (isArrObj(schema)) {
-        properties = schema.items.properties;
-        requiredArr = typeof schema.items.required == "object" ? schema.items.required : [];
-    }
-    else if (schema.type == "object") {
-        properties = schema.properties;
-        requiredArr = typeof schema.required == "object" ? schema.required : [];
-    }
-    else {
-        return undefined;
-    }
-
-    if (properties == undefined) {
-        log.error(`formatJsonSchema > formatRequired : invalid "schema.properties" in ${jsonSchemaPath}`,schema);
-    }
-    else {
-        Object.keys(properties).forEach((propKey: string) => {
-            const prop: types.jsonSchemaPropsItem | undefined = properties?.[propKey];
-            const keyNotInRequiredArr :boolean = !requiredArr.includes(propKey);
-
-            // value
-            if ( prop && prop.type !== "object" && prop.required === true && keyNotInRequiredArr) {
-                requiredArr.push(propKey);
-            }
-            // array
-            else if ( prop && prop.items && isArrObj(prop)) {
-                prop.items.required = getRequiredArrStr(prop.items, jsonSchemaPath);
-            }
-            // object
-            else if ( prop && prop.type == "object"){
-                prop.required = getRequiredArrStr(prop, jsonSchemaPath);
-                
-                if ( prop.required && prop.required.length > 0  && keyNotInRequiredArr){
-                    requiredArr.push(propKey);
-                }
-            }
-        });
-    }
-
-    return requiredArr;
-    
 }
