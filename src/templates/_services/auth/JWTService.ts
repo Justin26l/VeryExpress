@@ -134,7 +134,7 @@ export default class JWTService {
             email: user.email,
             name: user.name,
             locale: user.locale,
-            roles: [],
+            roles: user.roles,
             profileErrors: user.profileErrors,
             active: user.active
         };

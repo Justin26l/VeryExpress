@@ -32,43 +32,31 @@ export default class RoleBaseAccessControl {
     }
 
     public middleware = (req: Request, res: Response, next: NextFunction) => {
-        try { 
-            log.info("RBAC.middleware", req.method, req.path, req.user);
-            if ( !req.user ) {
-                throw 401;
-            }
-
-            const user :any = req.user;
-            const actionKey = req.method !== "POST" ? req.method : \`\${req.method} \${req.path}\`;
-            {{roleSwitch}}
+        // log.info("RBAC.middleware", req.method, req.path, req.user);
+        if ( !req.user ) {
+            throw new VexResponseError(401);
         }
-        catch (e: any) {
-            log.errorNoExit(e);
-            if (typeof e === "number") {
-                utils.response.send(res, e);
-            }
-            else {
-                utils.response.send(res, 500, { message: e.errorMessages });
-            }
-        }
-    }
+        const user :any = req.user;
+        const actionKey = req.method !== "POST" ? req.method : \`\${req.method} \${req.path}\`;
+        {{roleSwitch}}
+};
 }`;
 
-    let roleSwitchCode = "";
+    let roleSwitch = "";
     let counter = 0;
     options.roles.forEach(role => {
-        roleSwitchCode += `
+        roleSwitch += `
             ${ counter == 0 ? "" : "else " }if ( user.roles.includes("${role}") && new roles.${role}().checkAccess(this.collection, this.actions[actionKey]) ) {
                 next();
             }`;
         counter++;
     });
 
-    roleSwitchCode += `else{
-                throw 403;
+    roleSwitch += `else {
+                throw new VexResponseError(403);
             }`;
             
-    template = template.replace(/{{roleSwitch}}/g, roleSwitchCode);
+    template = template.replace(/{{roleSwitch}}/g, roleSwitch);
 
     return template;
 }

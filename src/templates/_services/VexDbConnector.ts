@@ -89,9 +89,10 @@ export class VexDbConnector {
         await runner.connect();
         try {
             for (const sql of sqlMigrations) {
+                utils.log.infoSql(`Applying migration: ${sql}`);
                 await runner.query(sql);
             }
-            utils.log.infoSql(`SQL migrations applied (${sqlMigrations.length})`);
+            utils.log.infoSql(`${sqlMigrations.length} migrations applied`);
         } catch (err) {
             utils.log.errorSql("SQL migration failed", err);
         } finally {
