@@ -23,9 +23,10 @@ export default class VexSystem {
         }
         else {
             utils.log.error("Unhandled error:", err);
-            return utils.response.send(res, err?.status ?? 500, {
-                code: err?.ret_code ?? utils.response.code.SERVER_ERROR,
-                message: err?.message ?? "Internal Server Error",
+            const e: any = err;
+            return utils.response.send(res, e?.status ?? 500, {
+                code: e?.ret_code ?? utils.response.code.SERVER_ERROR,
+                message: e?.message ?? "Internal Server Error",
             });
         }
     }

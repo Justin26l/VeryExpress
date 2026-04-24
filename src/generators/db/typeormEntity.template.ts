@@ -56,8 +56,8 @@ export default function objectionTemplate(options: {
 
     // cross-entity imports (deduplicated)
     const entityImports = [
-        ...manyToOne.map(r => `import type { ${r.targetEntity} } from "${r.importPath}";`),
-        ...oneToMany.map(r => `import type { ${r.targetEntity} } from "${r.importPath}";`),
+        ...manyToOne.map(r => `import { ${r.targetEntity} } from "${r.importPath}";`),
+        ...oneToMany.map(r => `import { ${r.targetEntity} } from "${r.importPath}";`),
     ].filter((v, i, a) => a.indexOf(v) === i);
 
     const columnDecorators = options.columns.map(col => {

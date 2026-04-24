@@ -4,6 +4,11 @@
         "documentName": "Session",
         "methods": []
     },
+    "required": [
+        "provider",
+        "userId",
+        "expired"
+    ],
     "properties": {
         "_id": {
             "type": "string",
@@ -15,8 +20,7 @@
             "index": true
         },
         "provider": {
-            "type": "string",
-            "required": true
+            "type": "string"
         },
         "userId": {
             "type": "string",
@@ -24,18 +28,11 @@
                 "schemaName": "User",
                 "fieldName": "_id",
                 "relationType": "one-to-one"
-            },
-            "required": true
+            }
         },
         "expired": {
             "type": "number",
-            "description": "expired time in unix timestamp format (ms)",
-            "required": true
+            "description": "expired time in unix timestamp format (ms)"
         }
-    },
-    "required": [
-        "provider",
-        "userId",
-        "expired"
-    ]
+    }
 }
