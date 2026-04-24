@@ -1,9 +1,10 @@
 {
     "main": "index.js",
     "scripts": {
-        "build": "tsoa spec-and-routes && tsc -p . && node scripts/build.js",
+        "build": "npm run openapi && tsc -p . && node scripts/build.js",
         "start": "node dist/server.js",
-        "dev": "tsoa spec-and-routes && nodemon --watch src --ext ts --exec ts-node src/server.ts",
+        "dev": "npm run openapi && nodemon --watch src --ext ts --exec ts-node src/server.ts",
+        "openapi": "tsoa spec-and-routes",
         "docker-build": "docker build -t very-express .",
         "docker-start": "docker run -p 3000:3000 very-express"
     },

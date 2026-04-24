@@ -138,6 +138,7 @@ export async function generate(
                 jsonSchema: doc.schema,
                 outDir: dir.modelDir,
                 compilerOptions: options || utils.generator.defaultCompilerOptions,
+                allSchemas: documents.map(d => d.schema),
             });
         }
 

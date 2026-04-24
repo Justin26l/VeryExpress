@@ -15,7 +15,7 @@ function collectSqlIndexes(schemas: types.jsonSchema[]): SqlIndex[] {
         const props = schema.properties || {};
         for (const [key, val] of Object.entries(props)) {
             const p = val as types.jsonSchemaPropsItem;
-            if (p.type === "array") {
+            if (p.index === true && (p.type === "array" || p.type === "object")) {
                 indexes.push({ tableName, columnName: key });
             }
         }
