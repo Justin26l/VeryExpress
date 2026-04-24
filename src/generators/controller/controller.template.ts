@@ -9,6 +9,7 @@ export type TsoaFieldDef = {
 
 export default function controllerTemplate(templateOptions: {
     modelPath: string;
+    typePath: string;
     documentName: string;
     methods: string[];
     fields: TsoaFieldDef[];
@@ -16,7 +17,7 @@ export default function controllerTemplate(templateOptions: {
     skipRoute: boolean;
     compilerOptions: types.compilerOptions;
 }): string {
-    const { documentName, fields, methods, idType, compilerOptions, skipRoute, modelPath } = templateOptions;
+    const { documentName, fields, methods, idType, compilerOptions, skipRoute, modelPath, typePath } = templateOptions;
     const useRBAC = !!compilerOptions.useRBAC;
     const useAuth = !!compilerOptions.auth;
     const cleanId = compilerOptions.app.allowApiCreateUpdate_id
@@ -31,11 +32,11 @@ export default function controllerTemplate(templateOptions: {
     const decoratorNames: string[] = [];
     if (!skipRoute) {
         decoratorNames.push("Route", "Tags");
-        if (methods.includes("get"))                               decoratorNames.push("Get");
+        if (methods.includes("get"))                                decoratorNames.push("Get");
         if (methods.includes("post") || methods.includes("getList")) decoratorNames.push("Post");
-        if (methods.includes("put"))                               decoratorNames.push("Put");
-        if (methods.includes("patch"))                             decoratorNames.push("Patch");
-        if (methods.includes("delete"))                            decoratorNames.push("Delete");
+        if (methods.includes("put"))                                decoratorNames.push("Put");
+        if (methods.includes("patch"))                              decoratorNames.push("Patch");
+        if (methods.includes("delete"))                             decoratorNames.push("Delete");
         decoratorNames.push("Body", "Path");
         if (useRBAC) decoratorNames.push("Middlewares", "Security");
     }
@@ -63,15 +64,14 @@ export default function controllerTemplate(templateOptions: {
     const renderFields = (partial: boolean) =>
         bodyFields.map(f => `    ${f.name}${partial || !f.required ? "?" : ""}: ${f.tsType};`).join("\n");
 
-
     // ── id parameter ────────────────────────────────────────────────────────────
     const idParam = idType === "string" ? "@Path() id: string" : "@Path() id: number";
 
     // ── Route method builder ────────────────────────────────────────────────────
     function buildMethod(
-        enabled: boolean, 
-        decorator: string, 
-        signature: string, 
+        enabled: boolean,
+        decorator: string,
+        signature: string,
         body: string
     ): string {
         if (!enabled || skipRoute) return `// ${decorator.replace(/^@/, "")} disabled`;
@@ -89,7 +89,7 @@ export default function controllerTemplate(templateOptions: {
     const getRoute = buildMethod(
         methods.includes("get"),
         "@Get(\"{id}\")",
-        `public async get${documentName}(${idParam}): Promise<{ result: ${documentName}Entity }>`,
+        `public async get${documentName}(${idParam}): Promise<{ result: ${documentName} }>`,
         `const result = await this.repo.findOne(id);
         if (!result) throw new VexResponseError(404);
         throw new VexResponse(200, { result });`
@@ -98,7 +98,7 @@ export default function controllerTemplate(templateOptions: {
     const postRoute = buildMethod(
         methods.includes("post"),
         "@Post()",
-        `public async create${documentName}(@Body() body: ${documentName}Entity): Promise<{ result: ${documentName}Entity }>`,
+        `public async create${documentName}(@Body() body: ${documentName}): Promise<{ result: ${documentName} }>`,
         `${cleanId}
         const result = await this.repo.create(body);
         if (!result) throw new VexResponseError(400);
@@ -109,7 +109,7 @@ export default function controllerTemplate(templateOptions: {
     const putRoute = buildMethod(
         methods.includes("put"),
         "@Put(\"{id}\")",
-        `public async replace${documentName}(${idParam}, @Body() body: ${documentName}Entity): Promise<{ result: ${documentName}Entity }>`,
+        `public async replace${documentName}(${idParam}, @Body() body: ${documentName}): Promise<{ result: ${documentName} }>`,
         `${cleanId}
         const result = await this.repo.replace(id, body);
         if (!result) throw new VexResponseError(404);
@@ -119,7 +119,7 @@ export default function controllerTemplate(templateOptions: {
     const patchRoute = buildMethod(
         methods.includes("patch"),
         "@Patch(\"{id}\")",
-        `public async update${documentName}(${idParam}, @Body() body: Partial<${documentName}Entity>): Promise<{ result: ${documentName}Entity }>`,
+        `public async update${documentName}(${idParam}, @Body() body: Partial<${documentName}>): Promise<{ result: ${documentName} }>`,
         `${cleanId}
         const result = await this.repo.update(id, body);
         if (!result) throw new VexResponseError(404);
@@ -129,7 +129,7 @@ export default function controllerTemplate(templateOptions: {
     const deleteRoute = buildMethod(
         methods.includes("delete"),
         "@Delete(\"{id}\")",
-        `public async delete${documentName}(${idParam}): Promise<{ result: ${documentName}Entity }>`,
+        `public async delete${documentName}(${idParam}): Promise<{ result: ${documentName} }>`,
         `const existing = await this.repo.findOne(id);
         if (!existing) throw new VexResponseError(404);
         await this.repo.delete(id);
@@ -148,9 +148,10 @@ import VexDb from "../_services/VexDb.gen";
 ${optionalImports}
 
 import { ${documentName}Entity } from "${modelPath}";
+import { ${documentName} } from "${typePath}";
 
 ${classDecorators}export class ${documentName}Controller extends controllerFactory._ControllerFactory {
-    private get repo(): IVexRepository<${documentName}Entity> {
+    private get repo(): IVexRepository<${documentName}> {
         return VexDb.getRepository(${documentName}Entity);
     }
 

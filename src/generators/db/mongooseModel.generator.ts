@@ -1,56 +1,39 @@
 import utils from "../../utils";
 import log from "../../utils/logger";
+import fs from "fs";
 import * as types from "../../types/types";
-import mongooseModelTemplate from "./mongooseModel.template";
+import path from "path";
+import j2m from "json2mongoose";
 
-function jsonTypeToMongoose(prop: types.jsonSchemaPropsItem): string {
-    switch (prop.type) {
-    case "integer":
-    case "number":  return "Number";
-    case "boolean": return "Boolean";
-    case "array": {
-        const itemType = (prop.items as types.jsonSchemaPropsItem | undefined)?.type;
-        switch (itemType) {
-        case "integer":
-        case "number":  return "[Number]";
-        case "boolean": return "[Boolean]";
-        default:        return "[String]";
-        }
-    }
-    case "object":  return "Map";
-    default:        return "String";
-    }
-}
+const { modelsGen } = j2m;
 
 export async function compile(options: {
     jsonSchema: types.jsonSchema,
+    schemaPath: string,
     outDir: string,
+    typeDir: string,
     compilerOptions: types.compilerOptions,
 }): Promise<void> {
-    const schema = options.jsonSchema;
-    const documentName = schema["x-documentConfig"].documentName;
-    const requiredFields: string[] = Array.isArray(schema.required) ? schema.required : [];
-
+    const documentName = options.jsonSchema["x-documentConfig"].documentName;
     log.process(`Mongoose Model : ${documentName}`);
 
-    const props = schema.properties || {};
-    const fields = Object.keys(props)
-        .filter(key => key !== "_id")
-        .map(key => {
-            const p = props[key] as types.jsonSchemaPropsItem;
-            return {
-                name: key,
-                mongooseType: jsonTypeToMongoose(p),
-                required: requiredFields.includes(key),
-                maxLength: p.maxLength,
-            };
-        });
-
+    const typeRelPath = path.relative(options.outDir, options.typeDir).replace(/\\/g, "/");
     const outPath = `${options.outDir}/${documentName}Model.gen.ts`;
-    utils.common.writeFile("Mongoose Model",
+
+    modelsGen.compileFromFile(
+        options.schemaPath,
+        `${typeRelPath}/${documentName}.gen`,
         outPath,
-        mongooseModelTemplate({ documentName, fields })
+        { use_id: true },
     );
+
+    // rename export to match controller expectations (${doc}Entity)
+    const content: string = fs.readFileSync(outPath, "utf8");
+    const patched = content
+        .replace(/export const \w+Model\b/g, `export const ${documentName}Entity`)
+        .replace(/mongoose\.model<\w+Document>\("\w+"/g, `mongoose.model<${documentName}Document>("${documentName}"`);
+    utils.common.writeFile("Mongoose Model (patch)", outPath, patched);
 }
 
 export default { compile };
+

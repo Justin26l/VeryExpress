@@ -20,6 +20,7 @@ export async function compile(options: {
     const schemaConfig = schema["x-documentConfig"];
     const controllerToModelBasePath: string = utils.common.relativePath(options.compilerOptions.sysDir, options.modelDir);
     const controllerToModelPath = `../${controllerToModelBasePath}/${schemaConfig.documentName}Model.gen`;
+    const controllerToTypePath = `../_types/${schemaConfig.documentName}.gen`;
     const outPath = `${options.controllerOutDir}/${schemaConfig.documentName}Controller.gen.ts`;
 
     log.process(`Controller : ${schemaConfig.documentName}`);
@@ -45,6 +46,7 @@ export async function compile(options: {
 
     utils.common.writeFile("Controller", outPath, controllerTemplate({
         modelPath: controllerToModelPath,
+        typePath: controllerToTypePath,
         documentName: schemaConfig.documentName,
         methods: schemaConfig.methods,
         fields,

@@ -129,7 +129,9 @@ export async function generate(
         if (options.dbType === "mongo") {
             await mongooseModelGen.compile({
                 jsonSchema: doc.schema,
+                schemaPath: doc.path,
                 outDir: dir.modelDir,
+                typeDir: dir.typeDir,
                 compilerOptions: options || utils.generator.defaultCompilerOptions,
             });
         } 
