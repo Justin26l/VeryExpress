@@ -12,7 +12,7 @@
     "properties": {
         "_id": {
             "type": "string",
-            "x-format": "ObjectId",
+            "x-format": "PrimaryUUID",
             "index": true
         },
         "sessionCode": {
@@ -24,7 +24,6 @@
         },
         "userId": {
             "type": "string",
-            "x-format": "ObjectId",
             "x-foreignKey": {
                 "schemaName": "User",
                 "fieldName": "_id",

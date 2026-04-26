@@ -1,7 +1,7 @@
 // {{headerComment}}
 import { Request, Response, NextFunction } from "express";
 import { DataSource, EntityTarget, ObjectLiteral } from "typeorm";
-import mongoose from "mongoose";
+import mongoose, { Document } from "mongoose";
 import { sqlMigrations } from "../_models/sqlMigration.gen";
 import { IVexRepository } from "../_types/IVexRepository.gen";
 import { TypeOrmRepositoryAdapter } from "./TypeOrmRepositoryAdapter.gen";
@@ -127,13 +127,15 @@ export class VexDbConnector {
             .catch((err) => utils.log.errorSql("Error disconnecting Mongoose", err));
     }
 
+    getRepository<T extends Document>(target: { schema: unknown; modelName: string }): IVexRepository<T>;
+    getRepository<T extends ObjectLiteral>(target: EntityTarget<T>): IVexRepository<T>;
     getRepository<T>(target: EntityTarget<ObjectLiteral> | any): IVexRepository<T> {
         // Mongoose Model: has .schema and .modelName properties
         if (target?.schema && target?.modelName) {
-            return new MongooseRepositoryAdapter<any>(target);
+            return new MongooseRepositoryAdapter<T & Document>(target);
         }
         if (!this.dataSource) throw new Error("SQL DataSource not initialized");
-        return new TypeOrmRepositoryAdapter<any>(this.dataSource.getRepository(target));
+        return new TypeOrmRepositoryAdapter<T & ObjectLiteral>(this.dataSource.getRepository(target));
     }
 
     async middleware(req: Request, res: Response, next: NextFunction): Promise<void> {

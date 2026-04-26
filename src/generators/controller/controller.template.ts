@@ -81,8 +81,8 @@ export default function controllerTemplate(templateOptions: {
     const getListRoute = buildMethod(
         methods.includes("getList"),
         "@Post(\"/search\")",
-        `public async getList${documentName}(@Body() body: { _filter?: Record<string, unknown> }): Promise<{ result: unknown[] }>`,
-        `const result = await this.repo.find(body._filter);
+        `public async getList${documentName}(@Body() body: { filter?: Filter, join?: Join, select?: Select }): Promise<{ result: unknown[] }>`,
+        `const result = await this.repo.find(body.filter, body.join, body.select);
         throw new VexResponse(200, { result });`
     );
 
@@ -90,7 +90,7 @@ export default function controllerTemplate(templateOptions: {
         methods.includes("get"),
         "@Get(\"{id}\")",
         `public async get${documentName}(${idParam}): Promise<{ result: ${documentName} }>`,
-        `const result = await this.repo.findOne(id);
+        `const result = await this.repo.findOne({ _id: id });
         if (!result) throw new VexResponseError(404);
         throw new VexResponse(200, { result });`
     );
@@ -130,7 +130,7 @@ export default function controllerTemplate(templateOptions: {
         methods.includes("delete"),
         "@Delete(\"{id}\")",
         `public async delete${documentName}(${idParam}): Promise<{ result: ${documentName} }>`,
-        `const existing = await this.repo.findOne(id);
+        `const existing = await this.repo.findOne({ _id: id });
         if (!existing) throw new VexResponseError(404);
         await this.repo.delete(id);
         this.setStatus(204);
@@ -141,6 +141,7 @@ export default function controllerTemplate(templateOptions: {
 import { ${decoratorNames.join(", ")} } from "tsoa";
 import * as controllerFactory from "./_ControllerFactory.gen";
 import { IVexRepository } from "../_types/IVexRepository.gen";
+import { Select, Filter, Join } from "../_types/VexRequest.gen";
 import VexResponse from "../_types/VexResponse.gen";
 import VexResponseError from "../_types/VexResponseError.gen";
 import VexDb from "../_services/VexDb.gen";

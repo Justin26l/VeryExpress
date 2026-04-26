@@ -284,16 +284,16 @@ function getListRequestBodySchema(): openapiType.componentsSchemaValue {
     return {
         type: "object",
         properties: {
-            _filter: {
+            filter: {
                 type: "object",
             },
-            _select: {
+            select: {
                 type: "array",
                 items: {
                     type: "string",
                 },
             },
-            _join: {
+            join: {
                 type: "array",
                 items: {
                     type: "string",
@@ -301,16 +301,16 @@ function getListRequestBodySchema(): openapiType.componentsSchemaValue {
             }
         },
         example: {
-            _filter: {
+            filter: {
                 fieldName: { 
                     $regex: "str", 
                     $options: "i"
                 }
             },
-            _select: [
+            select: [
                 "FieldName"
             ],
-            _join: [
+            join: [
                 "CollectionName"
             ]
         },

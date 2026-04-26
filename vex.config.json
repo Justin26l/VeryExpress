@@ -34,5 +34,5 @@
         "commitBeforeGenerate": false,
         "disableVersionLabel": false
     },
-    "dbType": "mongo"
+    "dbType": "sql"
 }

@@ -165,7 +165,7 @@ export default class JWTService {
 
     public async generateAccessToken(userId: string, index?: number): Promise<tokenObj> {
 
-        const userDoc = await this.userRepo.findOne(userId);
+        const userDoc = await this.userRepo.findOne({ _id: userId });
         if (!userDoc) {
             throw new VexResponseError(404, null, "Invalid User Id");
         }

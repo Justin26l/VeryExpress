@@ -52,7 +52,7 @@ function buildOneToManyRelations(documentName: string, allSchemas: types.jsonSch
             if (p["x-foreignKey"]?.schemaName === documentName) {
                 const fk = p["x-foreignKey"]!;
                 relations.push({
-                    propertyName: `${toCamelCase(otherDocName)}List`,
+                    propertyName: `${toCamelCase(otherDocName)}`,
                     targetEntity: `${otherDocName}Entity`,
                     importPath: `./${otherDocName}Model.gen`,
                     inversePropertyName: toCamelCase(documentName),

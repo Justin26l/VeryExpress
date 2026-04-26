@@ -5,7 +5,7 @@ import * as types from "~/types/types";
 
 export async function compile(jsonSchema: types.jsonSchema, outputPath: string, compilerOptions: types.compilerOptions): Promise<void> {
     const title = String(outputPath.split("/").pop()?.split(".")[0]);
-    log.process(`Type : ${title} > ${outputPath}`); 
+    log.process(`Type : ${title} > ${outputPath}`);
     const content = await jsonToTypescript
         .compile(
             jsonSchema as jsonToTypescript.JSONSchema, 
