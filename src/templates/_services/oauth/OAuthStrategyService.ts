@@ -36,7 +36,7 @@ export default class OAuthStrategyService {
                     { oauthId: authProfile.oauthId, provider: authProfile.provider },
                 );
                 if (matchedProfile?.userId) {
-                    existingUser = await this.userRepo.findOne(matchedProfile.userId);
+                    existingUser = await this.userRepo.findOne({ _id: matchedProfile.userId });
                 }
             }
             if (!existingUser && authUser.email) {
