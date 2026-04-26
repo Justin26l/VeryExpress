@@ -1,6 +1,6 @@
 // {{headerComment}}
 
-import { Select, Filter, Join } from "./VexRequest";
+import { Select, Filter, Join } from "./VexRequest.gen";
 
 /**
  * DB-agnostic repository interface.

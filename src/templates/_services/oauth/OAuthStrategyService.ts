@@ -83,7 +83,7 @@ export default class OAuthStrategyService {
         utils.log.info("OAuthVerify > processExistingUser");
         
         if (!incomingProfile) {
-            utils.log.errorNoExit("OAuthVerify > Invalid OAuth Callback \"authProfile\"");
+            utils.log.error("OAuthVerify > Invalid OAuth Callback \"authProfile\"");
             throw new Error("Invalid OAuth Callback \"authProfile\"");
         }
 

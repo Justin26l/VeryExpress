@@ -1,6 +1,7 @@
 // {{headerComment}}
 import { Model, Document, FilterQuery } from "mongoose";
 import { IVexRepository } from "../_types/IVexRepository.gen";
+import { Select, Filter, Join } from "../_types/VexRequest.gen";
 
 export class MongooseRepositoryAdapter<T extends Document> implements IVexRepository<T> {
     constructor(private model: Model<T>) {}
@@ -9,15 +10,18 @@ export class MongooseRepositoryAdapter<T extends Document> implements IVexReposi
         return this.model;
     }
 
-    find(filter?: Record<string, unknown>): Promise<T[]> {
+    find(filter: Filter, join?: Join, select?: Select): Promise<T[]> {
+        // TODO: handle join and select
         return this.model.find((filter || {}) as FilterQuery<T>).exec();
     }
 
-    findOne(id: string | number): Promise<T | null> {
-        return this.model.findById(id).exec();
+    findOne(filter: Filter, join?: Join, select?: Select): Promise<T | null> {
+        // TODO: handle join and select
+        return this.model.findOne(filter as FilterQuery<T>).exec();
     }
 
-    findOneWhere(filter: Record<string, unknown>): Promise<T | null> {
+    findOneWhere(filter: Filter, join?: Join, select?: Select): Promise<T | null> {
+        // TODO: handle join and select
         return this.model.findOne(filter as FilterQuery<T>).exec();
     }
 

@@ -81,7 +81,7 @@ export default function controllerTemplate(templateOptions: {
     const getListRoute = buildMethod(
         methods.includes("getList"),
         "@Post(\"/search\")",
-        `public async getList${documentName}(@Body() body: { filter?: Filter, join?: Join, select?: Select }): Promise<{ result: unknown[] }>`,
+        `public async getList${documentName}(@Body() body: { filter: Filter, join?: Join, select?: Select }): Promise<{ result: unknown[] }>`,
         `const result = await this.repo.find(body.filter, body.join, body.select);
         throw new VexResponse(200, { result });`
     );
