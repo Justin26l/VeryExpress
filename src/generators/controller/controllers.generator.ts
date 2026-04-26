@@ -29,13 +29,19 @@ export async function compile(options: {
     const idXFormat = options.jsonSchema.properties["_id"]?.["x-format"];
     const idType: "string" | "number" = (idXFormat === "PrimaryUUID" || idXFormat === "ObjectId") ? "string" : "number";
 
-    // Build TsoaFieldDef[] from schema properties
+    // Build TsoaFieldDef[] from schema properties (exclude x-hidden fields from body)
     const fields: TsoaFieldDef[] = [];
+    const hiddenFields: string[] = [];
     if (schema.type === "object") {
-        for (const [key, prop] of Object.entries(schema.properties ?? {})) {
+        for (const key of Object.keys(schema.properties ?? {})) {
+            const p = schema.properties[key] as types.jsonSchemaPropsItem;
+            if (p["x-hidden"]) {
+                hiddenFields.push(key);
+                continue;
+            }
             fields.push({
                 name: key,
-                tsType: mapToTsType(prop as types.jsonSchemaPropsItem),
+                tsType: mapToTsType(p),
                 required: schema.required?.includes(key) ?? false,
             });
         }
@@ -50,6 +56,7 @@ export async function compile(options: {
         documentName: schemaConfig.documentName,
         methods: schemaConfig.methods,
         fields,
+        hiddenFields,
         idType,
         skipRoute,
         compilerOptions: options.compilerOptions,

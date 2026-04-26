@@ -13,11 +13,12 @@ export default function controllerTemplate(templateOptions: {
     documentName: string;
     methods: string[];
     fields: TsoaFieldDef[];
+    hiddenFields: string[];
     idType: "string" | "number";
     skipRoute: boolean;
     compilerOptions: types.compilerOptions;
 }): string {
-    const { documentName, fields, methods, idType, compilerOptions, skipRoute, modelPath, typePath } = templateOptions;
+    const { documentName, fields, hiddenFields, methods, idType, compilerOptions, skipRoute, modelPath, typePath } = templateOptions;
     const useRBAC = !!compilerOptions.useRBAC;
     const useAuth = !!compilerOptions.auth;
     const cleanId = compilerOptions.app.allowApiCreateUpdate_id
@@ -83,7 +84,7 @@ export default function controllerTemplate(templateOptions: {
         "@Post(\"/search\")",
         `public async getList${documentName}(@Body() body: { filter?: Filter, join?: Join, select?: Select }): Promise<{ result: unknown[] }>`,
         `const result = await this.repo.find(body.filter, body.join, body.select);
-        throw new VexResponse(200, { result });`
+        throw new VexResponse(200, { result: result.map(r => this.stripHidden(r)) });`
     );
 
     const getRoute = buildMethod(
@@ -92,7 +93,7 @@ export default function controllerTemplate(templateOptions: {
         `public async get${documentName}(${idParam}): Promise<{ result: ${documentName} }>`,
         `const result = await this.repo.findOne({ _id: id });
         if (!result) throw new VexResponseError(404);
-        throw new VexResponse(200, { result });`
+        throw new VexResponse(200, { result: this.stripHidden(result) });`
     );
 
     const postRoute = buildMethod(
@@ -103,7 +104,7 @@ export default function controllerTemplate(templateOptions: {
         const result = await this.repo.create(body);
         if (!result) throw new VexResponseError(400);
         this.setStatus(201);
-        throw new VexResponse(201, { result });`
+        throw new VexResponse(201, { result: this.stripHidden(result) });`
     );
 
     const putRoute = buildMethod(
@@ -113,7 +114,7 @@ export default function controllerTemplate(templateOptions: {
         `${cleanId}
         const result = await this.repo.replace(id, body);
         if (!result) throw new VexResponseError(404);
-        throw new VexResponse(200, { result });`
+        throw new VexResponse(200, { result: this.stripHidden(result) });`
     );
 
     const patchRoute = buildMethod(
@@ -123,7 +124,7 @@ export default function controllerTemplate(templateOptions: {
         `${cleanId}
         const result = await this.repo.update(id, body);
         if (!result) throw new VexResponseError(404);
-        throw new VexResponse(200, { result });`
+        throw new VexResponse(200, { result: this.stripHidden(result) });`
     );
 
     const deleteRoute = buildMethod(
@@ -136,6 +137,16 @@ export default function controllerTemplate(templateOptions: {
         this.setStatus(204);
         throw new VexResponse(204);`
     );
+
+    // stripHidden — only emit if there are hidden fields
+    const hiddenFieldsLiteral = hiddenFields.map(f => `"${f}"`).join(", ");
+    const stripHiddenMethod = hiddenFields.length > 0
+        ? `private stripHidden<T extends object>(doc: T): T {
+        const plain: Record<string, unknown> = typeof (doc as any).toObject === "function" ? (doc as any).toObject() : { ...(doc as object) };
+        [${hiddenFieldsLiteral}].forEach(k => delete plain[k]);
+        return plain as T;
+    }`
+        : "private stripHidden<T extends object>(doc: T): T { return doc; }";
 
     const source = `{{headerComment}}
 import { ${decoratorNames.join(", ")} } from "tsoa";
@@ -155,6 +166,8 @@ ${classDecorators}export class ${documentName}Controller extends controllerFacto
     private get repo(): IVexRepository<${documentName}> {
         return VexDb.getRepository(${documentName}Entity);
     }
+
+    ${stripHiddenMethod}
 
     ${getListRoute}
 

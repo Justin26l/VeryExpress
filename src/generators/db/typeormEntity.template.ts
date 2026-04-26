@@ -12,6 +12,7 @@ interface ColumnDef {
     isBigInt?: boolean;
     isObject?: boolean;
     hasIndex?: boolean;
+    hidden?: boolean;
 }
 
 export interface ManyToOneRelation {

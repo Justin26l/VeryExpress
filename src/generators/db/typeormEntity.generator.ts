@@ -98,12 +98,13 @@ export async function compile(options: {
             isBigInt: p.type === "number",
             isObject: p.type === "object",
             hasIndex: p.index === true,
+            hidden: p["x-hidden"] === true,
         };
     });
 
     // ensure _id primary column exists
     if (!columns.find(c => c.isPrimary)) {
-        columns.unshift({ name: "_id", tsType: "string", isPrimary: true, isUUID: true, isGenerated: true, nullable: false, maxLength: undefined, isArray: false, isBigInt: false, isObject: false, hasIndex: false });
+        columns.unshift({ name: "_id", tsType: "string", isPrimary: true, isUUID: true, isGenerated: true, nullable: false, maxLength: undefined, isArray: false, isBigInt: false, isObject: false, hasIndex: false, hidden: false });
     }
 
     const manyToOneRelations = buildManyToOneRelations(props as Record<string, types.jsonSchemaPropsItem>);
