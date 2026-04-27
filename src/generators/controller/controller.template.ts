@@ -37,7 +37,7 @@ export default function controllerTemplate(templateOptions: {
         if (methods.includes("put"))                                decoratorNames.push("Put");
         if (methods.includes("patch"))                              decoratorNames.push("Patch");
         if (methods.includes("delete"))                             decoratorNames.push("Delete");
-        decoratorNames.push("Body", "Path");
+        decoratorNames.push("Body", "Path", "SuccessResponse");
         if (useRBAC) decoratorNames.push("Middlewares", "Security");
     }
 
@@ -76,7 +76,7 @@ export default function controllerTemplate(templateOptions: {
 
     const getListRoute = buildMethod(
         methods.includes("getList"),
-        "@Post(\"/search\")",
+        "@SuccessResponse(200, \"Success\")\n    @Post(\"/search\")",
         `public async getList${documentName}(@Body() body: { filter: Filter, join?: Join, select?: Select }): Promise<{ result: unknown[] }>`,
         `const result = await this.repo.find(body.filter, body.join, body.select);
         throw new VexResponse(200, { result });`
@@ -84,7 +84,7 @@ export default function controllerTemplate(templateOptions: {
 
     const getRoute = buildMethod(
         methods.includes("get"),
-        "@Get(\"{id}\")",
+        "@SuccessResponse(200, \"Success\")\n    @Get(\"{id}\")",
         `public async get${documentName}(${idParam}): Promise<{ result: ${documentName} }>`,
         `const result = await this.repo.findOne({ _id: id });
         if (!result) throw new VexResponseError(404);
@@ -93,7 +93,7 @@ export default function controllerTemplate(templateOptions: {
 
     const postRoute = buildMethod(
         methods.includes("post"),
-        "@Post()",
+        "@SuccessResponse(201, \"Created\")\n    @Post()",
         `public async create${documentName}(@Body() body: ${documentName}): Promise<{ result: ${documentName} }>`,
         `${cleanId}
         const result = await this.repo.create(body);
@@ -104,7 +104,7 @@ export default function controllerTemplate(templateOptions: {
 
     const putRoute = buildMethod(
         methods.includes("put"),
-        "@Put(\"{id}\")",
+        "@SuccessResponse(200, \"Success\")\n    @Put(\"{id}\")",
         `public async replace${documentName}(${idParam}, @Body() body: ${documentName}): Promise<{ result: ${documentName} }>`,
         `${cleanId}
         const result = await this.repo.replace(id, body);
@@ -114,7 +114,7 @@ export default function controllerTemplate(templateOptions: {
 
     const patchRoute = buildMethod(
         methods.includes("patch"),
-        "@Patch(\"{id}\")",
+        "@SuccessResponse(200, \"Success\")\n    @Patch(\"{id}\")",
         `public async update${documentName}(${idParam}, @Body() body: Partial<${documentName}>): Promise<{ result: ${documentName} }>`,
         `${cleanId}
         const result = await this.repo.update(id, body);
@@ -124,12 +124,11 @@ export default function controllerTemplate(templateOptions: {
 
     const deleteRoute = buildMethod(
         methods.includes("delete"),
-        "@Delete(\"{id}\")",
-        `public async delete${documentName}(${idParam}): Promise<{ result: ${documentName} }>`,
+        "@SuccessResponse(204, \"No Content\")\n    @Delete(\"{id}\")",
+        `public async delete${documentName}(${idParam}): Promise<void>`,
         `const existing = await this.repo.findOne({ _id: id });
         if (!existing) throw new VexResponseError(404);
         await this.repo.delete(id);
-        this.setStatus(204);
         throw new VexResponse(204);`
     );
 
