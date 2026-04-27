@@ -91,8 +91,8 @@ export async function compile(options: {
             name: key,
             tsType: 
                 isEnum ? p.enum?.map(v => `"${v}"`).join(" | ") : 
-                isUuidPrimary ? "string" : 
-                jsonTypeToTs(p),
+                    isUuidPrimary ? "string" : 
+                        jsonTypeToTs(p),
             isPrimary,
             isUUID: isUuidPrimary,
             isGenerated: isPrimary,
