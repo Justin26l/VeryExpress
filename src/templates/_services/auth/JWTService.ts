@@ -5,7 +5,6 @@ import path from "path";
 // import express, { CookieOptions } from "express";
 
 import JWTKeyStore from "./JWTKeyStore.gen";
-import utils from "../../_utils";
 
 import VexResponseError from "../../_types/VexResponseError.gen";
 import { IVexRepository } from "../../_types/IVexRepository.gen";

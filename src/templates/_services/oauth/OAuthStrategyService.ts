@@ -7,7 +7,6 @@ import { IVexRepository } from "./../../_types/IVexRepository.gen";
 import JWTService from "./../auth/JWTService.gen";
 import OAuthProfileMap, { IProfile } from "./OAuthProfileMap.gen";
 import VexDb from "./../VexDb.gen";
-import VexResponseError from "../../_types/VexResponseError.gen";
 import utils from "../../_utils";
 
 export default class OAuthStrategyService {

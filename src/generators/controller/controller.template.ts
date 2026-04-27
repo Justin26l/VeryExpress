@@ -60,10 +60,6 @@ export default function controllerTemplate(templateOptions: {
     }
     const classDecorators = classDecoratorLines.length > 0 ? classDecoratorLines.join("\n") + "\n" : "";
 
-    // ── Request body interfaces ─────────────────────────────────────────────────
-    const renderFields = (partial: boolean) =>
-        bodyFields.map(f => `    ${f.name}${partial || !f.required ? "?" : ""}: ${f.tsType};`).join("\n");
-
     // ── id parameter ────────────────────────────────────────────────────────────
     const idParam = idType === "string" ? "@Path() id: string" : "@Path() id: number";
 

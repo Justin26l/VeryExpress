@@ -9,7 +9,7 @@ import * as types from "./../../types/types";
 
 export async function compile(
     packageOutPath: string,
-    compilerOptions: types.compilerOptions
+    // compilerOptions: types.compilerOptions
 ): Promise<void> {
     // read package.json and add script section
     log.process(`Project Settings : ${packageOutPath}`);
