@@ -25,7 +25,7 @@ export async function compile(
     const packageJson = JSON.parse(packjson);
 
     // Always overwrite scripts — tsoa spec-and-routes must run before tsc/nodemon
-    const templateScripts = Object.keys(packageJsonTemplate.scripts)
+    const templateScripts = Object.keys(packageJsonTemplate.scripts);
     templateScripts.forEach((name) => {
         // @ts-expect-error ts sometime just a bitch yelling "oh you cant do this~ its unsafe~"
         packageJson.scripts[name] = packageJsonTemplate.scripts[name];

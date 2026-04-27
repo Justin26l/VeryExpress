@@ -80,7 +80,7 @@ export default function objectionTemplate(options: {
                 colArgs = `{ nullable: ${col.nullable} }`;
             }
             if (col.hasIndex && !col.isArray && !col.isObject) {
-                decorators.push(`    @Index()`);
+                decorators.push("    @Index()");
             }
             decorators.push(`    @Column(${colArgs})`);
             decorators.push(`    ${col.name}${col.nullable ? "?" : "!"}: ${col.tsType};`);
