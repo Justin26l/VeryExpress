@@ -108,31 +108,36 @@ export class VexDbConnector {
         }
     }
 
+    // TODO: complete mongoose support, handle join and select
     connectMongo(): void {
-        utils.log.infoSql("Connecting to MongoDB (Mongoose)...");
+        console.warn("VeryExpress unified db adapter (MongooseRepositoryAdapter) for Mongodb are under development, use with caution. Contribute to \"https://github.com/Justin26l/VeryExpress\"");
+        utils.log.infoMongo("Connecting to MongoDB (Driver: Mongoose)...");
         const connectWithRetry = (retryTime = 10): void => {
             mongoose.connect(this.mongoUrl)
-                .then(() => utils.log.infoSql("Mongoose connected"))
+                .then(() => utils.log.infoMongo("Mongoose connected"))
                 .catch((err) => {
-                    utils.log.errorSql(`Failed to connect Mongoose, retrying in ${retryTime}s`, err);
+                    utils.log.errorMongo(`Failed to connect Mongoose, retrying in ${retryTime}s`, err);
                     setTimeout(() => connectWithRetry(retryTime), retryTime * 1000);
                 });
         };
         connectWithRetry(10);
     }
 
+    // TODO: complete mongoose support, handle join and select
     closeMongo(): void {
+        console.warn("VeryExpress unified db adapter (MongooseRepositoryAdapter) for Mongodb are under development, use with caution. Contribute to \"https://github.com/Justin26l/VeryExpress\"");
         mongoose.disconnect()
-            .then(() => utils.log.infoSql("Mongoose disconnected"))
-            .catch((err) => utils.log.errorSql("Error disconnecting Mongoose", err));
+            .then(() => utils.log.infoMongo("Mongoose disconnected"))
+            .catch((err) => utils.log.errorMongo("Error disconnecting Mongoose", err));
     }
 
-    getRepository<T extends Document>(target: { schema: unknown; modelName: string }): IVexRepository<T>;
+    // getRepository<T extends Document>(target: { schema: unknown; modelName: string }): IVexRepository<T>;
     getRepository<T extends ObjectLiteral>(target: EntityTarget<T>): IVexRepository<T>;
     getRepository<T>(target: EntityTarget<ObjectLiteral> | any): IVexRepository<T> {
-        // Mongoose Model: has .schema and .modelName properties
+        // TODO: complete mongoose support, handle join and select
         if (target?.schema && target?.modelName) {
-            return new MongooseRepositoryAdapter<T & Document>(target);
+            console.warn("VeryExpress unified db adapter (MongooseRepositoryAdapter) for Mongodb are under development, use with caution. Contribute to \"https://github.com/Justin26l/VeryExpress\"");
+            // return new MongooseRepositoryAdapter<T & Document>(target);
         }
         if (!this.dataSource) throw new Error("SQL DataSource not initialized");
         return new TypeOrmRepositoryAdapter<T & ObjectLiteral>(this.dataSource.getRepository(target));
