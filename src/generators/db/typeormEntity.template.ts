@@ -11,6 +11,8 @@ interface ColumnDef {
     isArray?: boolean;
     isBigInt?: boolean;
     isObject?: boolean;
+    isEnum?: boolean;
+    enumValues?: string[];
     hasIndex?: boolean;
 }
 
@@ -68,7 +70,11 @@ export default function objectionTemplate(options: {
             decorators.push(`    ${col.name}!: ${col.tsType};`);
         } else {
             let colArgs: string;
-            if (col.isArray) {
+            if (col.isEnum && col.enumValues) {
+                // PostgreSQL native ENUM type — SQL target only
+                const enumLiteral = col.enumValues.map(v => `"${v}"`).join(", ");
+                colArgs = `{ type: "enum", enum: [${enumLiteral}], nullable: ${col.nullable} }`;
+            } else if (col.isArray) {
                 colArgs = `{ type: "text", array: true, nullable: ${col.nullable} }`;
             } else if (col.isObject) {
                 colArgs = `{ type: "jsonb", nullable: ${col.nullable} }`;

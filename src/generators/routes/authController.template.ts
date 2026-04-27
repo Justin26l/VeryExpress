@@ -47,12 +47,11 @@ interface LoginBody {
     @SuccessResponse(302, "Redirect")
     async localLogin(@Body() body: LoginBody): Promise<void> {
         const { email, password } = body;
-        const user = await this.userRepo.findOneWhere({ email });
+        
+        const user = await this.userRepo.findOneWhere({ email }${compilerOptions.useRBAC ? ', ["userRole", "userAuthProfiles"]' : ', ["userAuthProfiles"]'});
         if (!user) throw new VexResponseError(400, null, "incorrect email or password.");
-        const authProfiles = await this.uapRepo.find({ userId: user._id });
-        const localProfile = authProfiles.find((p) => p.provider === "local");
-        if (!localProfile) throw new VexResponseError(400, null, "incorrect email or password.");
-        const isMatch = utils.hash.verifyPassword({ ...user, userAuthProfiles: authProfiles } as any, password);
+        
+        const isMatch = utils.hash.verifyPassword(user, password);
         if (!isMatch) throw new VexResponseError(400, null, "incorrect email or password.");
         const redirectUrl = await this.JWTService.assignTokens(user);
         throw new VexResponse(302, { result: { url: redirectUrl } });

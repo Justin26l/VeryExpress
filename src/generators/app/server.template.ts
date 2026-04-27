@@ -15,11 +15,11 @@ const ConfigAuthRouter = "const AuthRoute = new AuthRouter();";
 
 // use
 const UseCookieParser = "app.use(cookieParser());";
-const UseAuthRouter = "app.use(\"/auth\", AuthRoute.getRouter());";
-const UseSwaggerRouter = "app.use(\"/swagger\", SwaggerRoute.getRouter());";
-const UseAuthMiddleware = "app.use(/^\\/api(?!\\/auth)/, new Authentication().middleware);";
-const UseRegisterRoutes = "RegisterRoutes(app);";
 const UseResponseHandler = "app.use(VexSystem.responseHandler);";
+const UseAuthMiddleware = "app.use(/^\\/api(?!\\/auth)/, new Authentication().middleware);";
+const UseAuthRouter = "app.use(\"/api/auth\", AuthRoute.getRouter());";
+const UseRegisterRoutes = "RegisterRoutes(app);";
+const UseSwaggerRouter = "app.use(\"/swagger\", SwaggerRoute.getRouter());";
 
 export default function serverTemplate(options: {
     compilerOptions: types.compilerOptions,

@@ -85,10 +85,14 @@ export async function compile(options: {
         const p = props[key] as types.jsonSchemaPropsItem;
         const isUuidPrimary = key === "_id" && p["x-format"] === "PrimaryUUID";
         const isPrimary = isUuidPrimary || p["x-format"] === "PrimaryIncrements" || p["x-format"] === "Primary";
+        const isEnum = p["x-format"] === "enum" && p.enum;
         const nullable = !requiredFields.includes(key) && !isPrimary;
         return {
             name: key,
-            tsType: isUuidPrimary ? "string" : jsonTypeToTs(p),
+            tsType: 
+                isEnum ? p.enum?.map(v => `"${v}"`).join(" | ") : 
+                isUuidPrimary ? "string" : 
+                jsonTypeToTs(p),
             isPrimary,
             isUUID: isUuidPrimary,
             isGenerated: isPrimary,
@@ -97,13 +101,15 @@ export async function compile(options: {
             isArray: p.type === "array",
             isBigInt: p.type === "number",
             isObject: p.type === "object",
+            isEnum,
+            enumValues: isEnum ? (p.enum) : undefined,
             hasIndex: p.index === true,
         };
     });
 
     // ensure _id primary column exists
     if (!columns.find(c => c.isPrimary)) {
-        columns.unshift({ name: "_id", tsType: "string", isPrimary: true, isUUID: true, isGenerated: true, nullable: false, maxLength: undefined, isArray: false, isBigInt: false, isObject: false, hasIndex: false });
+        columns.unshift({ name: "_id", tsType: "string", isPrimary: true, isUUID: true, isGenerated: true, nullable: false, maxLength: undefined, isArray: false, isBigInt: false, isObject: false, isEnum: false, enumValues: undefined, hasIndex: false });
     }
 
     const manyToOneRelations = buildManyToOneRelations(props as Record<string, types.jsonSchemaPropsItem>);

@@ -29,13 +29,13 @@ export function verifyPassword(
     plainPassword: string,
 ): boolean {
     if(!user.email || !user.userAuthProfiles) {
-        console.log(`User "${user._id}" email or userAuthProfiles missing for local auth's password verification.`);
+        // log.error(`User "${user._id}" email or userAuthProfiles missing for local auth's password verification.`);
         return false;
     }
 
     const hashedPassword = user.userAuthProfiles.find((profile:any) => profile.provider === "local")?.password;
     if(!hashedPassword) {
-        console.log(`User "${user._id}" Local auth profile or password missing.`);
+        // log.error(`User "${user._id}" Local auth profile or password missing.`);
         return false;
     }
 

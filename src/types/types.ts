@@ -14,7 +14,6 @@ export interface compilerOptions {
     app: {
         enableSwagger: boolean,
         useUserSchema: boolean,
-        useObjectID: boolean,
         allowApiCreateUpdate_id: boolean,
         useStatefulRedisAuth: boolean,
     },
@@ -22,7 +21,6 @@ export interface compilerOptions {
     useRBAC?: {
         roles: string[]
         default: string,
-        schemaIncluded: string[]
     },
 
     auth:{
@@ -83,7 +81,7 @@ export interface jsonSchemaPropsItem {
         [key: string]: jsonSchemaPropsItem;
     };
     items?: jsonSchemaPropsItem;
-    enum?: any[];
+    enum?: string[];
     required?: boolean | string[];
     index?: boolean;
     example?: any;

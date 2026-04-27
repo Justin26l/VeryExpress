@@ -4,7 +4,6 @@ import * as roleBase from "../../templates/_roles/_RoleFactory";
 
 import utils from "../../utils";
 import log from "../../utils/logger";
-import { roleSetupFile } from "../../preprocess/roleSetupFile";
 
 import * as RBACmiddlewareGen from "../middlewares/RBACmiddleware.generator";
 
@@ -21,12 +20,6 @@ export async function compile(options: {
     compilerOptions: types.compilerOptions,
 }): Promise<void> {
     if(!options.compilerOptions.useRBAC && options.compilerOptions.useRBAC!.roles.length <= 0 ) return;
-
-    roleSetupFile({
-        collectionList: options.collectionList,
-        roleSetupDir: options.roleSourceDir,
-        compilerOptions: options.compilerOptions
-    });
 
     const indexFileData: { name: string, from: string }[] = [];
 

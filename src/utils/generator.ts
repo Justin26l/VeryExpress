@@ -49,13 +49,11 @@ export const defaultCompilerOptions: types.compilerOptions = {
         enableSwagger: true,
         useUserSchema: true,
         useStatefulRedisAuth: false,
-        useObjectID: true,
         allowApiCreateUpdate_id: false,
     },
     useRBAC: {
         roles: ["user"],
         default: "user",
-        schemaIncluded: ["user"],
     },
     auth: {
         localAuth: true,
