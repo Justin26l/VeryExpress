@@ -6,8 +6,7 @@ import path from "path";
 import utils from "./utils";
 import log from "./utils/logger";
 import { applyFkMetadata } from "./preprocess/jsonSchemaForeignKeys";
-import { formatJsonSchema } from "./preprocess/jsonschemaFormat";
-import { roleSchemaFormat } from "./preprocess/roleSetupFile";
+import { formatJsonSchema, formatJsonSchemaRoleDefinition } from "./preprocess/jsonschemaFormat";
 
 import * as types from "./types/types";
 import * as userSchemaGen from "./generators/projectSettings/userSchema.generator";
@@ -54,7 +53,7 @@ export async function generate(
         controllerPath: string,
     }[] = [];
 
-    fs.rmSync(options.sysDir, { recursive: true, force: true });
+    // fs.rmSync(options.sysDir, { recursive: true, force: true });
 
     // create all directories if not exist
     if (!fs.existsSync(options.rootDir)) { fs.mkdirSync(options.rootDir); }
@@ -77,13 +76,12 @@ export async function generate(
     utils.common.copyDir(path.join(__dirname, "templates", "root"), options.rootDir, options, false);
     utils.common.copyDir(path.join(__dirname, "templates", "jsonSchema"), options.jsonSchemaDir, options, true);
 
-    // format role schema
-    roleSchemaFormat({ compilerOptions: options || utils.generator.defaultCompilerOptions });
-
     // update userSchema
     await userSchemaGen.compile({ compilerOptions: options || utils.generator.defaultCompilerOptions });
     
     // prepair schema files
+    formatJsonSchemaRoleDefinition({ compilerOptions: options || utils.generator.defaultCompilerOptions });
+    
     const files: string[] = fs.readdirSync(options.jsonSchemaDir);
     files.forEach((schemaFileName: string) => {
         const schemaPath = `${options.jsonSchemaDir}/${schemaFileName}`;
@@ -109,9 +107,11 @@ export async function generate(
     });
     applyFkMetadata(documents);
 
+    // ===== Start Generations ===== //
+
     // generate role & permissions
     await roleGen.compile({
-        collectionList: documents.map((doc) => doc.config.documentName),
+        schemas: documents.map((doc) => doc.schema),
         roleSourceDir: dir.roleSrcDir,
         roleOutDir: dir.roleDir, 
         middlewareDir: dir.middlewareDir,
@@ -169,16 +169,16 @@ export async function generate(
         });
     }
 
-    // make route from routeData
+    // generate route from routeData
     await routeGen.compile({
         routesDir: dir.routeDir,
         compilerOptions: options || utils.generator.defaultCompilerOptions
     });
 
-    // make server/entrypoint
+    // generate server/entrypoint
     await serverGen.compile(options);
 
-    // make project files
+    // generate project files
     await projectSettingsGen.compile(options);
 
     // await configGen.compile(options);

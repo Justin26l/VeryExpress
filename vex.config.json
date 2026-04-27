@@ -25,10 +25,7 @@
             "member",
             "admin"
         ],
-        "default": "visitor",
-        "schemaIncluded": [
-            "User"
-        ]
+        "default": "visitor"
     },
     "generator": {
         "commitBeforeGenerate": false,

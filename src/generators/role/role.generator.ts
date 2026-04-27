@@ -6,6 +6,7 @@ import utils from "../../utils";
 import log from "../../utils/logger";
 
 import * as RBACmiddlewareGen from "../middlewares/RBACmiddleware.generator";
+import { generateRolesSettings } from "../../preprocess/roleDefinitions";
 
 /**
  * compile role base access control (RBAC) middleware
@@ -13,7 +14,7 @@ import * as RBACmiddlewareGen from "../middlewares/RBACmiddleware.generator";
  * @returns 
  */
 export async function compile(options: {
-    collectionList: string[],
+    schemas: types.jsonSchema[],
     roleSourceDir: string,
     roleOutDir: string,
     middlewareDir: string,
@@ -22,6 +23,12 @@ export async function compile(options: {
     if(!options.compilerOptions.useRBAC && options.compilerOptions.useRBAC!.roles.length <= 0 ) return;
 
     const indexFileData: { name: string, from: string }[] = [];
+
+    generateRolesSettings({
+        schemas: options.schemas,
+        rolesDir: options.roleSourceDir,
+        compilerOptions: options.compilerOptions
+    });
 
     // 1. generate role handler class
     options.compilerOptions.useRBAC?.roles.forEach((role) => {

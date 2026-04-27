@@ -1,5 +1,7 @@
-import * as types from "./../types/types";
+import fs from "fs";
+import path from "path";
 
+import * as types from "./../types/types";
 import utils from "./../utils";
 import log from "./../utils/logger";
 
@@ -37,7 +39,6 @@ function checkSchemaBasic(jsonSchema: types.jsonSchema, jsonSchemaPath?: string)
         log.error(`Json Schema Formatting: "${jsonSchemaPath}" root type must be "object" or "array".`);
     }
 }
-
 
 function checkDocumentConfig(jsonSchema: types.jsonSchema, jsonSchemaPath: string): void {
     const fileName = jsonSchemaPath.split("/").pop()?.split(".")[0] || "Unknown_File_Name";
@@ -80,6 +81,48 @@ function checkForeignKeyConfig(schema: types.jsonSchema, jsonSchemaPath: string)
     }
     return true;
 }
+
+
+/**
+ * SQL (PostgreSQL) target only.
+ * Syncs role enum values from compilerOptions into UserRole.json's role field (x-vexData:"role").
+ * Sets x-format:"PgEnum" so the TypeORM generator emits a native Postgres ENUM column.
+ *
+ * TODO (mongo): find schema with x-vexData:"role" prop across all schemas,
+ *   set items.enum to compilerOptions.useRBAC.roles for Mongoose string enum validation.
+ */
+export function formatJsonSchemaRoleDefinition(options: {
+    compilerOptions: types.compilerOptions
+}): void {
+    if (!options.compilerOptions.useRBAC) return;
+    
+    // TODO: mongodb support, check userschema with x-vexData:"role", set enum to compilerOptions.useRBAC.roles for mongoose schema validation. --- IGNORE ---
+    if (options.compilerOptions.dbType !== "sql") return;
+
+    const roles = options.compilerOptions.useRBAC.roles;
+    const userRolePath = path.posix.join(options.compilerOptions.jsonSchemaDir, "UserRole.json");
+
+    if (!fs.existsSync(userRolePath)) {
+        log.warn(`Json Schema Formatting: UserRole.json not found at ${userRolePath}, skipping role enum sync.`);
+        return;
+    }
+
+    const schema = utils.common.loadJson<types.jsonSchema>(userRolePath);
+
+    for (const key in schema.properties) {
+        const prop = schema.properties[key];
+        if (prop["x-vexData"] === "role" && prop.enum !== roles) {
+            prop.type = "string";
+            prop.enum = roles;
+            prop["x-format"] = "enum";
+            log.process(`Json Schema Formatting: update role definitions UserRole.${key} enum -> [${roles.join(", ")}]`);
+            break;
+        }
+    }
+
+    utils.common.writeFile("Role Schema Formatting", userRolePath, JSON.stringify(schema, null, 4));
+}
+
 
 /**
  * format the schema's required fields into array of string

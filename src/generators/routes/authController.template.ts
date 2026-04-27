@@ -8,44 +8,36 @@ export default function authControllerTemplate(compilerOptions: types.compilerOp
         ? "import { UserEntity } from \"../_models/UserModel.gen\";\nimport { UserAuthProfilesEntity } from \"../_models/UserAuthProfilesModel.gen\";"
         : "";
 
-    const localBodyInterfaces = localAuth ? `
-interface RegisterBody {
-    email: string;
-    password: string;
-}
-
-interface LoginBody {
-    email: string;
-    password: string;
-}
-` : "";
-
     const localRepos = localAuth ? `
     private get userRepo(): IVexRepository<UserEntity> { return VexDb.getRepository(UserEntity); }
-    private get uapRepo(): IVexRepository<UserAuthProfilesEntity> { return VexDb.getRepository(UserAuthProfilesEntity); }` : "";
+    private get userAuthProfilesRepo(): IVexRepository<UserAuthProfilesEntity> { return VexDb.getRepository(UserAuthProfilesEntity); }
+    private get userRoleRepo(): IVexRepository<UserRoleEntity> { return VexDb.getRepository(UserRoleEntity); }` : "";
 
     const registerMethod = localAuth ? `
     @Post("register")
     @SuccessResponse(201, "Created")
-    async register(@Body() body: RegisterBody): Promise<void> {
+    async register(@Body() body: {email: string; password: string;}): Promise<void> {
         const { email, password } = body;
         const existing = await this.userRepo.findOneWhere({ email });
         if (existing) throw new VexResponseError(409, null, "Email already registered.");
         const hashedPassword = utils.hash.hashPassword(password, email);
         const user = await this.userRepo.create({ name: email.split("@")[0], email, active: true });
+        if (!user) throw new VexResponseError(500, null, "User creation failed.");
         try {
-            await this.uapRepo.create({ userId: user._id, provider: "local", password: hashedPassword });
+            await this.userAuthProfilesRepo.create({ userId: user._id, provider: "local", password: hashedPassword });
+            ${compilerOptions.useRBAC ? 'await this.userRoleRepo.create({ userId: user._id, role:' + compilerOptions.useRBAC.default + ' });' : ''}
+            throw new VexResponse(201, { result: { message: "Registration successful." } });
         } catch (e) {
-            try { await this.userRepo.delete(user._id); } catch { /* ignore cleanup error */ }
+            await this.userRepo.delete(user._id);
+            ${compilerOptions.useRBAC ? 'await this.userRoleRepo.deleteWhere({ userId: user._id });' : ''}
             throw e;
         }
-        throw new VexResponse(201, { result: { message: "Registration successful." } });
     }` : "";
 
     const loginMethod = localAuth ? `
     @Post("local")
     @SuccessResponse(302, "Redirect")
-    async localLogin(@Body() body: LoginBody): Promise<void> {
+    async localLogin(@Body() body: {email: string; password: string;}): Promise<void> {
         const { email, password } = body;
         
         const user = await this.userRepo.findOneWhere({ email }${compilerOptions.useRBAC ? ', ["userRole", "userAuthProfiles"]' : ', ["userAuthProfiles"]'});
@@ -76,11 +68,6 @@ import VexResponseError from "../_types/VexResponseError.gen";
 import utils from "../_utils";
 ${localImports}
 
-interface RefreshBody {
-    refreshToken: string;
-    refreshTokenIndex: string;
-}
-${localBodyInterfaces}
 @Route("auth")
 @Tags("Auth")
 export class AuthController extends controllerFactory._ControllerFactory {
@@ -108,7 +95,7 @@ ${oauthNote}
 
     @Post("refresh")
     @SuccessResponse(200, "OK")
-    async refreshToken(@Body() body: RefreshBody): Promise<void> {
+    async refreshToken(@Body() body: {refreshToken: string; refreshTokenIndex: string;}): Promise<void> {
         const payload = this.JWTService.verifyToken(body.refreshToken, body.refreshTokenIndex);
         const accessToken = await this.JWTService.generateAccessToken(payload._id);
         throw new VexResponse(200, { result: {
