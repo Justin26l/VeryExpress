@@ -46,7 +46,8 @@ export interface roleJson {
 
 export enum DbRelationType {
     OneToOne = "one-to-one",
-    OneToMany = "one-to-many"
+    OneToMany = "one-to-many",
+    ManyToOne = "many-to-one",
 }
 
 export interface jsonSchema {

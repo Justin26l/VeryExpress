@@ -71,7 +71,11 @@ function checkForeignKeyConfig(schema: types.jsonSchema, jsonSchemaPath: string)
     const isForeignKeyValid = (fkConfig: types.foreignKeyConfig) => fkConfig && typeof fkConfig === "object"
         && typeof fkConfig.schemaName === "string"
         && typeof fkConfig.fieldName === "string"
-        && (fkConfig.relationType === types.DbRelationType.OneToOne || fkConfig.relationType === types.DbRelationType.OneToMany);
+        && (
+            fkConfig.relationType === types.DbRelationType.OneToOne || 
+            fkConfig.relationType === types.DbRelationType.OneToMany || 
+            fkConfig.relationType === types.DbRelationType.ManyToOne
+        );
 
     for (const key in schema.properties) {
         const fkConfig = schema.properties[key]["x-foreignKey"];
