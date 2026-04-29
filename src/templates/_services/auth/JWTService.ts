@@ -10,9 +10,8 @@ import VexResponseError from "../../_types/VexResponseError.gen";
 import { IVexRepository } from "../../_types/IVexRepository.gen";
 
 import VexDb from "../VexDb.gen";
-import { UserEntity } from "../../_models/UserModel.gen";
-import { SessionEntity } from "../../_models/SessionModel.gen";
-import { User } from "../../_types/User.gen";
+import { UserEntity, User } from "../../_models/UserModel.gen";
+import { SessionEntity, Session } from "../../_models/SessionModel.gen";
 
 interface tokenObj {
     token: string,
@@ -23,11 +22,11 @@ interface tokenObj {
 export default class JWTService {
     private keyStore = new JWTKeyStore();
 
-    private get userRepo(): IVexRepository<UserEntity> {
-        return VexDb.getRepository(UserEntity);
+    private get userRepo(): IVexRepository<User> {
+        return VexDb.getRepository<User>(UserEntity);
     }
-    private get sessionRepo(): IVexRepository<SessionEntity> {
-        return VexDb.getRepository(SessionEntity);
+    private get sessionRepo(): IVexRepository<Session> {
+        return VexDb.getRepository<Session>(SessionEntity);
     }
 
     constructor() {}

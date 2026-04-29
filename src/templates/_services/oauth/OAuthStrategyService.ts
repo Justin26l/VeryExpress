@@ -1,6 +1,6 @@
 // {{headerComment}}
-import { UserEntity } from "./../../_models/UserModel.gen";
-import { UserAuthProfilesEntity } from "./../../_models/UserAuthProfilesModel.gen";
+import { UserEntity, User } from "./../../_models/UserModel.gen";
+import { UserAuthProfilesEntity, UserAuthProfiles } from "./../../_models/UserAuthProfilesModel.gen";
 import { User } from "./../../_types/User.gen";
 import { UserAuthProfiles } from "./../../_types/UserAuthProfiles.gen";
 import { IVexRepository } from "./../../_types/IVexRepository.gen";
@@ -11,12 +11,12 @@ import utils from "../../_utils";
 
 export default class OAuthStrategyService {
 
-    private get userRepo(): IVexRepository<UserEntity> {
-        return VexDb.getRepository(UserEntity);
+    private get userRepo(): IVexRepository<User> {
+        return VexDb.getRepository<User>(UserEntity);
     }
 
-    private get uapRepo(): IVexRepository<UserAuthProfilesEntity> {
-        return VexDb.getRepository(UserAuthProfilesEntity);
+    private get uapRepo(): IVexRepository<UserAuthProfiles> {
+        return VexDb.getRepository<UserAuthProfiles>(UserAuthProfilesEntity);
     }
 
     constructor() {}

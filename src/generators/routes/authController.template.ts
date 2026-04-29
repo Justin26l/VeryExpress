@@ -5,11 +5,11 @@ export default function authControllerTemplate(compilerOptions: types.compilerOp
     const localAuth = compilerOptions.auth.localAuth;
 
     const localImports = localAuth
-        ? "import { UserEntity } from \"../_models/UserModel.gen\";\nimport { UserAuthProfilesEntity } from \"../_models/UserAuthProfilesModel.gen\";"
+        ? "import { UserEntity, User } from \"../_models/UserModel.gen\";\nimport { UserAuthProfilesEntity } from \"../_models/UserAuthProfilesModel.gen\";"
         : "";
 
     const localRepos = localAuth ? `
-    private get userRepo(): IVexRepository<UserEntity> { return VexDb.getRepository(UserEntity); }
+    private get userRepo(): IVexRepository<User> { return VexDb.getRepository(UserEntity); }
     private get userAuthProfilesRepo(): IVexRepository<UserAuthProfilesEntity> { return VexDb.getRepository(UserAuthProfilesEntity); }
     private get userRoleRepo(): IVexRepository<UserRoleEntity> { return VexDb.getRepository(UserRoleEntity); }` : "";
 
