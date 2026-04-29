@@ -4,14 +4,17 @@ import * as utilsGenerator from "../../utils/generator";
 export default function authControllerTemplate(compilerOptions: types.compilerOptions): string {
     const localAuth = compilerOptions.auth.localAuth;
 
-    const localImports = localAuth
-        ? "import { UserEntity, User } from \"../_models/UserModel.gen\";\nimport { UserAuthProfilesEntity } from \"../_models/UserAuthProfilesModel.gen\";"
+    const localAuthImports = localAuth
+        ? "import { UserEntity, User } from \"../_models/UserModel.gen\";\nimport { UserAuthProfilesEntity, UserAuthProfiles } from \"../_models/UserAuthProfilesModel.gen\";"
         : "";
-
-    const localRepos = localAuth ? `
+    const RbacImports = compilerOptions.useRBAC
+        ? "import { UserRoleEntity, UserRole } from \"../_models/UserRoleModel.gen\";"
+        : "";
+    
+    const localAuthRepos = localAuth ? `
     private get userRepo(): IVexRepository<User> { return VexDb.getRepository(UserEntity); }
-    private get userAuthProfilesRepo(): IVexRepository<UserAuthProfilesEntity> { return VexDb.getRepository(UserAuthProfilesEntity); }
-    private get userRoleRepo(): IVexRepository<UserRoleEntity> { return VexDb.getRepository(UserRoleEntity); }` : "";
+    private get userAuthProfilesRepo(): IVexRepository<UserAuthProfiles> { return VexDb.getRepository(UserAuthProfilesEntity); }
+    private get userRoleRepo(): IVexRepository<UserRole> { return VexDb.getRepository(UserRoleEntity); }` : "";
 
     const registerMethod = localAuth ? `
     @Post("register")
@@ -20,18 +23,27 @@ export default function authControllerTemplate(compilerOptions: types.compilerOp
         const { email, password } = body;
         const existing = await this.userRepo.findOneWhere({ email });
         if (existing) throw new VexResponseError(409, null, "Email already registered.");
+        
         const hashedPassword = utils.hash.hashPassword(password, email);
-        const user = await this.userRepo.create({ name: email.split("@")[0], email, active: true });
-        if (!user) throw new VexResponseError(500, null, "User creation failed.");
-        try {
-            await this.userAuthProfilesRepo.create({ userId: user._id, provider: "local", password: hashedPassword });
-            ${compilerOptions.useRBAC ? 'await this.userRoleRepo.create({ userId: user._id, role:' + compilerOptions.useRBAC.default + ' });' : ''}
-            throw new VexResponse(201, { result: { message: "Registration successful." } });
-        } catch (e) {
-            await this.userRepo.delete(user._id);
-            ${compilerOptions.useRBAC ? 'await this.userRoleRepo.deleteWhere({ userId: user._id });' : ''}
-            throw e;
-        }
+        
+        const user = await this.userRepo.create({ name: email.split("@")[0], email, active: true })
+            .catch( e => { throw new VexResponseError(500, null, "User creation failed."); });
+        ${compilerOptions.useRBAC ? `
+        const authProfile = await this.userAuthProfilesRepo.create({ userId: user._id, provider: "local", password: hashedPassword })
+            .catch( async e => { 
+                await this.userRepo.delete(user._id);
+                await this.userAuthProfilesRepo.deleteWhere({ userId: user._id });
+                throw new VexResponseError(500, null, "User Auth profile creation failed."); 
+            });` : ''}
+        ${compilerOptions.useRBAC ? `
+        const role = await this.userRoleRepo.create({ userId: user._id, role: "${compilerOptions.useRBAC.default}" })
+            .catch( async e => { 
+                await this.userRepo.delete(user._id);
+                await this.userAuthProfilesRepo.deleteWhere({ userId: user._id });
+                throw new VexResponseError(500, null, "User role assignment failed."); 
+            });` : ''}
+
+        throw new VexResponse(201, { result: { message: "Registration successful." } });
     }` : "";
 
     const loginMethod = localAuth ? `
@@ -62,18 +74,19 @@ import { IVexRepository } from "../_types/IVexRepository.gen";
 import * as controllerFactory from "./_ControllerFactory.gen";
 import JWTService from "../_services/auth/JWTService.gen";
 import VexDb from "../_services/VexDb.gen";
-import { SessionEntity } from "../_models/SessionModel.gen";
+import { SessionEntity, Session } from "../_models/SessionModel.gen";
 import VexResponse from "../_types/VexResponse.gen";
 import VexResponseError from "../_types/VexResponseError.gen";
 import utils from "../_utils";
-${localImports}
+${localAuthImports}
+${RbacImports}
 
 @Route("auth")
 @Tags("Auth")
 export class AuthController extends controllerFactory._ControllerFactory {
     private JWTService = new JWTService();
-    private get sessionRepo(): IVexRepository<SessionEntity> { return VexDb.getRepository(SessionEntity); }
-${localRepos}
+    private get sessionRepo(): IVexRepository<Session> { return VexDb.getRepository(SessionEntity); }
+${localAuthRepos}
 ${oauthNote}
 
     @Post("token")

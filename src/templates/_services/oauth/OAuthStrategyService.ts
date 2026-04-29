@@ -1,8 +1,6 @@
 // {{headerComment}}
 import { UserEntity, User } from "./../../_models/UserModel.gen";
 import { UserAuthProfilesEntity, UserAuthProfiles } from "./../../_models/UserAuthProfilesModel.gen";
-import { User } from "./../../_types/User.gen";
-import { UserAuthProfiles } from "./../../_types/UserAuthProfiles.gen";
 import { IVexRepository } from "./../../_types/IVexRepository.gen";
 import JWTService from "./../auth/JWTService.gen";
 import OAuthProfileMap, { IProfile } from "./OAuthProfileMap.gen";
@@ -24,12 +22,12 @@ export default class OAuthStrategyService {
     public async verify(accessToken: string, refreshToken: string, profile: IProfile, done: (error: any, user?: any) => void): Promise<void> {
         try {
 
-            let user: UserEntity;
+            let user: User;
             const authUser = new OAuthProfileMap().map(profile);
             const authProfile = authUser.userAuthProfiles?.[0];
 
             // find user by oauthId + provider, or fall back to email
-            let existingUser: UserEntity | null = null;
+            let existingUser: User | null = null;
             if (authProfile?.oauthId && authProfile?.provider) {
                 const matchedProfile = await this.uapRepo.findOneWhere(
                     { oauthId: authProfile.oauthId, provider: authProfile.provider },
@@ -63,22 +61,22 @@ export default class OAuthStrategyService {
         }
     }
 
-    private async createNewUser(authProfile: User): Promise<UserEntity> {
+    private async createNewUser(authProfile: User): Promise<User> {
         utils.log.info("OAuthVerify > createNewUser");
-        const user = await this.userRepo.create(authProfile as Partial<UserEntity>);
+        const user = await this.userRepo.create(authProfile);
 
         // create auth profile row linked to the new user
         if (authProfile.userAuthProfiles?.[0]) {
             await this.uapRepo.create({
                 ...authProfile.userAuthProfiles[0],
                 userId: user._id,
-            } as Partial<UserAuthProfilesEntity>);
+            } as Partial<UserAuthProfiles>);
         }
 
         return user;
     }
 
-    private async processExistingUser(incomingProfile: UserAuthProfiles | undefined, existingUser: UserEntity): Promise<UserEntity> {
+    private async processExistingUser(incomingProfile: UserAuthProfiles | undefined, existingUser: User): Promise<User> {
         utils.log.info("OAuthVerify > processExistingUser");
         
         if (!incomingProfile) {
@@ -97,7 +95,7 @@ export default class OAuthStrategyService {
             await this.uapRepo.create({
                 ...incomingProfile,
                 userId: existingUser._id,
-            } as Partial<UserAuthProfilesEntity>);
+            } as Partial<UserAuthProfiles>);
         }
         else if (existing.username !== incomingProfile.username) {
             // B.3. update username if changed

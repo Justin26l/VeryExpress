@@ -25,7 +25,7 @@
             "member",
             "admin"
         ],
-        "default": "visitor"
+        "default": "admin"
     },
     "generator": {
         "commitBeforeGenerate": false,

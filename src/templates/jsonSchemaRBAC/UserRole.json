@@ -1,0 +1,42 @@
+{
+    "type": "object",
+    "x-documentConfig": {
+        "documentName": "UserRole",
+        "methods": [
+            "get",
+            "getList",
+            "post",
+            "delete"
+        ]
+    },
+    "properties": {
+        "_id": {
+            "type": "string",
+            "x-format": "PrimaryUUID"
+        },
+        "userId": {
+            "type": "string",
+            "index": true,
+            "x-foreignKey": {
+                "schemaName": "User",
+                "fieldName": "_id",
+                "relationType": "one-to-many"
+            }
+        },
+        "role": {
+            "type": "string",
+            "x-vexData": "role",
+            "index": true,
+            "enum": [
+                "visitor",
+                "member",
+                "admin"
+            ],
+            "x-format": "enum"
+        }
+    },
+    "required": [
+        "userId",
+        "role"
+    ]
+}

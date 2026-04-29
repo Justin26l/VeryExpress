@@ -2,6 +2,7 @@
 import { Model, Document } from "mongoose";
 import { IVexRepository } from "../_types/IVexRepository.gen";
 import { Select, Filter, Join } from "../_types/VexRequest.gen";
+import utils from "../_utils";
 
 export class MongooseRepositoryAdapter<T extends Document> implements IVexRepository<T> {
     constructor(private model: Model<T>) {}
@@ -30,15 +31,27 @@ export class MongooseRepositoryAdapter<T extends Document> implements IVexReposi
         return doc.save();
     }
 
-    replace(id: string | number, data: Partial<T>): Promise<T | null> {
+    replace(id: string | undefined, data: Partial<T>): Promise<T | null> {
+        if(!id) {
+            utils.log.error("MongooseRepositoryAdapter.replace called without id — refuse replace document");
+            return Promise.resolve(null);
+        }
         return this.model.findByIdAndUpdate(id, data, { new: true, overwrite: true }).exec();
     }
 
-    update(id: string | number, data: Partial<T>): Promise<T | null> {
+    update(id: string | undefined, data: Partial<T>): Promise<T | null> {
+        if(!id) {
+            utils.log.error("MongooseRepositoryAdapter.update called without id — refuse update document");
+            return Promise.resolve(null);
+        }
         return this.model.findByIdAndUpdate(id, { $set: data }, { new: true }).exec();
     }
 
-    async delete(id: string | number): Promise<void> {
+    async delete(id: string | undefined): Promise<void> {
+        if(!id) {
+            utils.log.error("MongooseRepositoryAdapter.delete called without id — refuse delete document");
+            return;
+        }
         await this.model.findByIdAndDelete(id).exec();
     }
 
