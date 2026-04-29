@@ -33,6 +33,7 @@ function buildManyToOneRelations(props: Record<string, types.jsonSchemaPropsItem
             const fk = props[key]["x-foreignKey"]!;
             return {
                 propertyName: toCamelCase(fk.schemaName),
+                targetType: fk.schemaName,
                 targetEntity: `${fk.schemaName}Entity`,
                 importPath: `./${fk.schemaName}Model.gen`,
                 joinColumnName: key,
@@ -53,6 +54,7 @@ function buildOneToManyRelations(documentName: string, allSchemas: types.jsonSch
                 const fk = p["x-foreignKey"]!;
                 relations.push({
                     propertyName: `${toCamelCase(otherDocName)}`,
+                    targetType: fk.schemaName,
                     targetEntity: `${otherDocName}Entity`,
                     importPath: `./${otherDocName}Model.gen`,
                     inversePropertyName: toCamelCase(documentName),

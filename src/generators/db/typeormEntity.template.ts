@@ -19,6 +19,7 @@ interface ColumnDef {
 export interface ManyToOneRelation {
     propertyName: string;
     targetEntity: string;
+    targetType: string;
     importPath: string;
     joinColumnName: string;
     relationType: DbRelationType;
@@ -27,6 +28,7 @@ export interface ManyToOneRelation {
 export interface OneToManyRelation {
     propertyName: string;
     targetEntity: string;
+    targetType: string;
     importPath: string;
     inversePropertyName: string;
     relationType: DbRelationType;
@@ -58,8 +60,8 @@ export default function objectionTemplate(options: {
 
     // cross-entity imports (deduplicated)
     const entityImports = [
-        ...manyToOne.map(r => `import { ${r.targetEntity} } from "${r.importPath}";`),
-        ...oneToMany.map(r => `import { ${r.targetEntity} } from "${r.importPath}";`),
+        ...manyToOne.map(r => `import { ${r.targetEntity}, ${r.targetType} } from "${r.importPath}";`),
+        ...oneToMany.map(r => `import { ${r.targetEntity}, ${r.targetType} } from "${r.importPath}";`),
     ].filter((v, i, a) => a.indexOf(v) === i);
 
     const columnDecorators = options.columns.map(col => {
@@ -99,7 +101,7 @@ export default function objectionTemplate(options: {
         return [
             `    ${decorator}(() => ${r.targetEntity})`,
             `    @JoinColumn({ name: "${r.joinColumnName}" })`,
-            `    ${r.propertyName}?: Relation<${r.targetEntity}>;`,
+            `    ${r.propertyName}?: Relation<${r.targetType}>;`,
         ].join("\n");
     }).join("\n\n");
 
@@ -110,7 +112,7 @@ export default function objectionTemplate(options: {
             : `() => ${r.targetEntity}, ${r.propertyName.replace("List", "")} => ${r.propertyName.replace("List", "")}.${r.inversePropertyName}`;
         return [
             `    ${decorator}(${inverse})`,
-            `    ${r.propertyName}?: Relation<${r.targetEntity}${r.relationType === DbRelationType.OneToMany ? "[]" : ""}>;`,
+            `    ${r.propertyName}?: Relation<${r.targetType}${r.relationType === DbRelationType.OneToMany ? "[]" : ""}>;`,
         ].join("\n");
     }).join("\n\n");
 
@@ -120,10 +122,10 @@ export default function objectionTemplate(options: {
 import { ${typeormImports.join(", ")} } from "typeorm";
 import { ${doc} } from "./../_types/${doc}.gen";
 ${entityImports.length ? entityImports.join("\n") + "\n" : ""}
-export interface ${doc}Document extends ${doc} {}
+export ${doc}
 
 @Entity("${table}")
-export class ${doc}Entity implements Partial<${doc}Document> {
+export class ${doc}Entity implements Partial<${doc}> {
 ${columnDecorators}${relationBlock ? "\n\n" + relationBlock : ""}
 }
 `;
