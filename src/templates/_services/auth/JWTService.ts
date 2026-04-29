@@ -70,29 +70,6 @@ export default class JWTService {
             throw new VexResponseError(500, null, "User Data Error, User._id missing.");
         }
 
-        // const accessToken = await this.generateAccessToken(user._id);
-        // const refreshToken = await this.generateRefreshToken({ _id: user._id });
-
-        // const accessTokenOptions: CookieOptions = {
-        //     maxAge: ms(process.env.ACCESS_TOKEN_EXPIRE_TIME as ms.StringValue),
-        //     httpOnly: true,
-        //     secure: true,
-        //     sameSite: "strict",
-        // };
-
-        // res.cookie("authorization", accessToken.token, accessTokenOptions);
-        // res.cookie("x-auth-index", accessToken.clientIndex, accessTokenOptions);
-        
-        // res.cookie("vex-refresh-token", {
-        //     refreshToken: refreshToken.token,
-        //     refreshTokenIndex: refreshToken.clientIndex,
-        // }, {
-        //     maxAge: ms(process.env.REFRESH_TOKEN_EXPIRE_TIME as ms.StringValue),
-        //     httpOnly: true,
-        //     secure: true,
-        //     sameSite: "strict",
-        // });
-
         const sessionCode = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
         if (this.sessionRepo) {
@@ -132,7 +109,7 @@ export default class JWTService {
             email: user.email,
             name: user.name,
             locale: user.locale,
-            roles: user.roles,
+            roles: user.userRole?.map((r: any) => r.role) || [],
             profileErrors: user.profileErrors,
             active: user.active
         };
@@ -161,13 +138,9 @@ export default class JWTService {
         };
     }
 
-    public async generateAccessToken(userId: string, index?: number): Promise<tokenObj> {
+    public async generateAccessToken(user: User, index?: number): Promise<tokenObj> {
 
-        const userDoc = await this.userRepo.findOne({ _id: userId });
-        if (!userDoc) {
-            throw new VexResponseError(404, null, "Invalid User Id");
-        }
-        const userInfo = this.sanitizeUser(userDoc);
+        const userInfo = this.sanitizeUser(user);
 
         return this.generateToken(userInfo, index, process.env.ACCESS_TOKEN_EXPIRE_TIME);
     }
