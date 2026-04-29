@@ -125,8 +125,6 @@ ${entityImports.length ? entityImports.join("\n") + "\n" : ""}
 
 export { ${doc} } from "./../_types/${doc}.gen";
 
-export ${doc}
-
 @Entity("${table}")
 export class ${doc}Entity implements Partial<${doc}> {
 ${columnDecorators}${relationBlock ? "\n\n" + relationBlock : ""}
