@@ -122,6 +122,9 @@ export default function objectionTemplate(options: {
 import { ${typeormImports.join(", ")} } from "typeorm";
 import { ${doc} } from "./../_types/${doc}.gen";
 ${entityImports.length ? entityImports.join("\n") + "\n" : ""}
+
+export { ${doc} } from "./../_types/${doc}.gen";
+
 export ${doc}
 
 @Entity("${table}")
