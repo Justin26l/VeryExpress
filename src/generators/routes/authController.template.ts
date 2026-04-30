@@ -98,7 +98,7 @@ ${localAuth ? `
                 throw new VexResponseError(500, null, "User Auth profile creation failed."); 
             });` : ''}
         ${compilerOptions.useRBAC ? `
-        await this.userRoleRepo.create({ userId: user._id, role: "${compilerOptions.useRBAC.default}" })
+        await this.userRoleRepo.create({ userId: user._id, role: RoleEnum.${compilerOptions.useRBAC.default} })
             .catch( async e => { 
                 await this.userRepo.delete(user._id);
                 await this.userAuthProfilesRepo.deleteWhere({ userId: user._id });

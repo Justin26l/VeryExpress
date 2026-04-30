@@ -86,7 +86,7 @@ export async function compile(options: {
     const props = schema.properties || {};
     const columns: typeormModel.ColumnDef[] = Object.keys(props).map(key => {
         const p = props[key] as types.jsonSchemaPropsItem;
-        const isPrimary = p["x-format"] === "Primary";
+        const isPrimary = p["x-format"] === "Primary" || p["x-format"] === "PrimaryUUID";
         const isEnum = p.enum !== undefined && Array.isArray(p.enum) && p.enum.every(v => typeof v === "string");
         const nullable = !requiredFields.includes(key) && !isPrimary;
 
@@ -94,9 +94,10 @@ export async function compile(options: {
             name: key,
             tsType: 
                 isEnum ? utils.common.pascalCase(key)+'Enum' : 
-                isPrimary ? "string" : 
-                jsonTypeToTs(p),
+                    isPrimary ? "string" : 
+                        jsonTypeToTs(p),
             isPrimary,
+            isUUID: isPrimary || p["x-format"] === "UUID",
             isGenerated: isPrimary,
             nullable,
             maxLength: p.maxLength,
