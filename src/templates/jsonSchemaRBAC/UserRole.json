@@ -12,7 +12,7 @@
     "properties": {
         "_id": {
             "type": "string",
-            "x-format": "PrimaryUUID"
+            "x-format": "Primary"
         },
         "userId": {
             "type": "string",
@@ -20,7 +20,7 @@
             "x-foreignKey": {
                 "schemaName": "User",
                 "fieldName": "_id",
-                "relationType": "one-to-many"
+                "relationType": "many-to-one"
             }
         },
         "role": {

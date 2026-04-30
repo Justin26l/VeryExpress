@@ -1,81 +1,66 @@
 import { DbRelationType } from "../../types/types";
-
-interface ColumnDef {
-    name: string;
-    tsType: string;
-    isPrimary: boolean;
-    isUUID?: boolean;
-    isGenerated: boolean;
-    nullable: boolean;
-    maxLength?: number;
-    isArray?: boolean;
-    isBigInt?: boolean;
-    isObject?: boolean;
-    isEnum?: boolean;
-    enumValues?: string[];
-    hasIndex?: boolean;
-}
-
-export interface ManyToOneRelation {
-    propertyName: string;
-    targetEntity: string;
-    targetType: string;
-    importPath: string;
-    joinColumnName: string;
-    relationType: DbRelationType;
-}
-
-export interface OneToManyRelation {
-    propertyName: string;
-    targetEntity: string;
-    targetType: string;
-    importPath: string;
-    inversePropertyName: string;
-    relationType: DbRelationType;
-}
+import * as typeormModel from "../../types/typeormModel";
+import utils from "../../utils";
 
 export default function objectionTemplate(options: {
     documentName: string,
-    columns: ColumnDef[],
     tableName: string,
-    manyToOneRelations?: ManyToOneRelation[],
-    oneToManyRelations?: OneToManyRelation[],
+    uniqueIndexes?: string[][],
+    columns: typeormModel.ColumnDef[],
+    manyToOneRelations?: typeormModel.ManyToOneRelation[],
+    oneToManyRelations?: typeormModel.OneToManyRelation[],
+    oneToOneRelations?: typeormModel.ManyToOneRelation[],
     compilerOptions?: unknown,
 }) {
     const doc = options.documentName;
     const table = options.tableName;
     const manyToOne = options.manyToOneRelations ?? [];
     const oneToMany = options.oneToManyRelations ?? [];
-    const hasRelations = manyToOne.length > 0 || oneToMany.length > 0;
-    const hasOneToOne = [...manyToOne, ...oneToMany].some(r => r.relationType === DbRelationType.OneToOne);
+    const oneToOne = options.oneToOneRelations ?? [];
+    const hasRelations = manyToOne.length > 0 || oneToMany.length > 0 || oneToOne.length > 0;
 
     // build dynamic typeorm import
     const typeormImports = ["Entity", "Column", "PrimaryGeneratedColumn"];
-    const hasIndexDecorator = options.columns.some(c => c.hasIndex && !c.isArray && !c.isObject);
+    const hasUniqueIndexes = options.uniqueIndexes && options.uniqueIndexes.length > 0;
+    const hasIndexDecorator = options.columns.some(c => c.isIndex && !c.isArray && !c.isObject);
+    
+    if (hasUniqueIndexes) typeormImports.push("Unique");
     if (hasIndexDecorator) typeormImports.push("Index");
     if (hasRelations) typeormImports.push("Relation", "JoinColumn");
-    if (manyToOne.some(r => r.relationType === DbRelationType.OneToMany)) typeormImports.push("ManyToOne");
-    if (oneToMany.some(r => r.relationType === DbRelationType.OneToMany)) typeormImports.push("OneToMany");
-    if (hasOneToOne) typeormImports.push("OneToOne");
+    if (manyToOne.length > 0) typeormImports.push("ManyToOne");
+    if (oneToMany.length > 0) typeormImports.push("OneToMany");
+    if (oneToOne.length > 0) typeormImports.push("OneToOne");
+
 
     // cross-entity imports (deduplicated)
     const entityImports = [
         ...manyToOne.map(r => `import { ${r.targetEntity}, ${r.targetType} } from "${r.importPath}";`),
         ...oneToMany.map(r => `import { ${r.targetEntity}, ${r.targetType} } from "${r.importPath}";`),
+        ...oneToOne.map(r => `import { ${r.targetEntity}, ${r.targetType} } from "${r.importPath}";`),
     ].filter((v, i, a) => a.indexOf(v) === i);
+
+    const uniqueIndexes = options.uniqueIndexes?.map((cols, idx) => {
+        const indexName = `unique_${cols.join("_")}`;
+        const colList = cols.map(c => `'${c}'`).join(", ");
+        return `@Unique('${indexName}', [${colList}])`;
+    }) ?? [];
+
+    // enum types are defined in the _types file and re-exported; collect import names
+    const enumImports = options.columns
+        .filter(col => col.isEnum)
+        .map(col => col.tsType);
 
     const columnDecorators = options.columns.map(col => {
         const decorators: string[] = [];
         if (col.isPrimary) {
             const pkArg = col.isUUID ? "uuid" : "increment";
-            decorators.push(`    @PrimaryGeneratedColumn("${pkArg}")`);
+            decorators.push(`    @PrimaryGeneratedColumn("${pkArg}")`)
             decorators.push(`    ${col.name}!: ${col.tsType};`);
         } else {
             let colArgs: string;
             if (col.isEnum && col.enumValues) {
-                // PostgreSQL native ENUM type — SQL target only
-                const enumLiteral = col.enumValues.map(v => `"${v}"`).join(", ");
-                colArgs = `{ type: "enum", enum: [${enumLiteral}], nullable: ${col.nullable} }`;
+                // PostgreSQL native ENUM type — use enum object for type safety
+                colArgs = `{ type: "enum", enum: ${col.tsType}, nullable: ${col.nullable} }`;
             } else if (col.isArray) {
                 colArgs = `{ type: "text", array: true, nullable: ${col.nullable} }`;
             } else if (col.isObject) {
@@ -87,7 +72,7 @@ export default function objectionTemplate(options: {
             } else {
                 colArgs = `{ nullable: ${col.nullable} }`;
             }
-            if (col.hasIndex && !col.isArray && !col.isObject) {
+            if (col.isIndex && !col.isArray && !col.isObject) {
                 decorators.push("    @Index()");
             }
             decorators.push(`    @Column(${colArgs})`);
@@ -96,36 +81,44 @@ export default function objectionTemplate(options: {
         return decorators.join("\n");
     }).join("\n\n");
 
+    const oneToOneDecorators = oneToOne.map(r => {
+        const decorator = r.inversePropertyName
+            ? `    @OneToOne(() => ${r.targetEntity}, ${utils.common.camelCase(r.targetEntity)} => ${utils.common.camelCase(r.targetEntity)}.${r.inversePropertyName})`
+            : `    @OneToOne(() => ${r.targetEntity})`;
+        const lines = [decorator];
+        if (r.joinColumnName) lines.push(`    @JoinColumn({ name: "${r.joinColumnName}" })`);
+        lines.push(`    ${r.propertyName}?: Relation<${r.targetType}>;`);
+        return lines.join("\n");
+    }).join("\n\n");
+
     const manyToOneDecorators = manyToOne.map(r => {
-        const decorator = r.relationType === DbRelationType.OneToOne ? "@OneToOne" : "@ManyToOne";
         return [
-            `    ${decorator}(() => ${r.targetEntity})`,
+            `    @ManyToOne(() => ${r.targetEntity})`,
             `    @JoinColumn({ name: "${r.joinColumnName}" })`,
             `    ${r.propertyName}?: Relation<${r.targetType}>;`,
         ].join("\n");
     }).join("\n\n");
 
     const oneToManyDecorators = oneToMany.map(r => {
-        const decorator = r.relationType === DbRelationType.OneToOne ? "@OneToOne" : "@OneToMany";
-        const inverse = r.relationType === DbRelationType.OneToOne
-            ? `() => ${r.targetEntity}`
-            : `() => ${r.targetEntity}, ${r.propertyName.replace("List", "")} => ${r.propertyName.replace("List", "")}.${r.inversePropertyName}`;
         return [
-            `    ${decorator}(${inverse})`,
-            `    ${r.propertyName}?: Relation<${r.targetType}${r.relationType === DbRelationType.OneToMany ? "[]" : ""}>;`,
+            `    @OneToMany(() => ${r.targetEntity}, ${utils.common.camelCase(r.targetEntity)} => ${utils.common.camelCase(r.targetEntity)}.${r.inversePropertyName})`,
+            `    ${r.propertyName}?: Relation<${r.targetType}[]>;`,
         ].join("\n");
     }).join("\n\n");
 
-    const relationBlock = [manyToOneDecorators, oneToManyDecorators].filter(Boolean).join("\n\n");
+    const relationBlock = [oneToOneDecorators, manyToOneDecorators, oneToManyDecorators].filter(Boolean).join("\n\n");
+
+    const typeImports = [doc, ...enumImports].join(", ");
 
     return `{{headerComment}}
 import { ${typeormImports.join(", ")} } from "typeorm";
-import { ${doc} } from "./../_types/${doc}.gen";
+import { ${typeImports} } from "./../_types/${doc}.gen";
 ${entityImports.length ? entityImports.join("\n") + "\n" : ""}
 
 export { ${doc} } from "./../_types/${doc}.gen";
 
 @Entity("${table}")
+${uniqueIndexes.join("\n")}
 export class ${doc}Entity implements Partial<${doc}> {
 ${columnDecorators}${relationBlock ? "\n\n" + relationBlock : ""}
 }

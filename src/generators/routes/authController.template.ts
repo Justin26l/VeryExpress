@@ -8,7 +8,7 @@ export default function authControllerTemplate(compilerOptions: types.compilerOp
         ? "import { UserEntity, User } from \"../_models/UserModel.gen\";\nimport { UserAuthProfilesEntity, UserAuthProfiles } from \"../_models/UserAuthProfilesModel.gen\";"
         : "";
     const RbacImports = compilerOptions.useRBAC
-        ? "import { UserRoleEntity, UserRole } from \"../_models/UserRoleModel.gen\";"
+        ? "import { UserRoleEntity, UserRole } from \"../_models/UserRoleModel.gen\";\nimport { RoleEnum } from \"../_types/UserRole.gen\";"
         : "";
     
     const localAuthRepos = localAuth ? `
@@ -36,7 +36,7 @@ export default function authControllerTemplate(compilerOptions: types.compilerOp
                 throw new VexResponseError(500, null, "User Auth profile creation failed."); 
             });` : ''}
         ${compilerOptions.useRBAC ? `
-        const role = await this.userRoleRepo.create({ userId: user._id, role: "${compilerOptions.useRBAC.default}" })
+        const role = await this.userRoleRepo.create({ userId: user._id, role: RoleEnum.${compilerOptions.useRBAC.default} })
             .catch( async e => { 
                 await this.userRepo.delete(user._id);
                 await this.userAuthProfilesRepo.deleteWhere({ userId: user._id });

@@ -13,13 +13,13 @@ export default function controllerTemplate(templateOptions: {
     documentName: string;
     methods: string[];
     fields: TsoaFieldDef[];
-    idType: "string" | "number";
+    idType: string;
     skipRoute: boolean;
     compilerOptions: types.compilerOptions;
 }): string {
     const { documentName, fields, methods, idType, compilerOptions, skipRoute, modelPath, typePath } = templateOptions;
     const useRBAC = !!compilerOptions.useRBAC;
-    const useAuth = !!compilerOptions.auth;
+    const useAuth = compilerOptions.auth.localAuth || utils.generator.OAuthProviders(compilerOptions).length > 0;
     const cleanId = compilerOptions.app.allowApiCreateUpdate_id
         ? ""
         : "if ((body as any)._id) delete (body as any)._id;";

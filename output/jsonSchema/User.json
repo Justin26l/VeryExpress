@@ -7,12 +7,17 @@
             "post",
             "patch"
         ],
-        "documentName": "User"
+        "documentName": "User",
+        "uniqueIndex": [
+            [
+                "email"
+            ]
+        ]
     },
     "properties": {
         "_id": {
             "type": "string",
-            "x-format": "PrimaryUUID",
+            "x-format": "Primary",
             "index": true
         },
         "email": {

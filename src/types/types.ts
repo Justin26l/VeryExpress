@@ -85,6 +85,7 @@ export interface jsonSchemaPropsItem {
     enum?: string[];
     required?: boolean | string[];
     index?: boolean;
+    unique?: string[];
     example?: any;
     minLength?: number;
     maxLength?: number;
@@ -106,6 +107,7 @@ export interface documentConfig {
     documentName: string;
     keyPrefix?: string;
     methods: schemaMethod[];
+    uniqueIndex?: string[][];
 }
 
 /**

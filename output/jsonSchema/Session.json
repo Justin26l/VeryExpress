@@ -2,7 +2,12 @@
     "type": "object",
     "x-documentConfig": {
         "documentName": "Session",
-        "methods": []
+        "methods": [],
+        "uniqueIndex": [
+            [
+                "sessionCode"
+            ]
+        ]
     },
     "required": [
         "provider",
@@ -12,7 +17,7 @@
     "properties": {
         "_id": {
             "type": "string",
-            "x-format": "PrimaryUUID",
+            "x-format": "Primary",
             "index": true
         },
         "sessionCode": {
@@ -24,6 +29,7 @@
         },
         "userId": {
             "type": "string",
+            "x-format": "UUID",
             "x-foreignKey": {
                 "schemaName": "User",
                 "fieldName": "_id",

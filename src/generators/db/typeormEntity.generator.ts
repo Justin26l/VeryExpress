@@ -1,7 +1,8 @@
-import typeormEntityTemplate, { ManyToOneRelation, OneToManyRelation } from "./typeormEntity.template";
 import utils from "../../utils";
 import log from "../../utils/logger";
+import typeormEntityTemplate from "./typeormEntity.template";
 import * as types from "../../types/types";
+import * as typeormModel from "../../types/typeormModel";
 
 function jsonTypeToTs(prop: types.jsonSchemaPropsItem): string {
     switch (prop.type) {
@@ -22,17 +23,13 @@ function jsonTypeToTs(prop: types.jsonSchemaPropsItem): string {
     }
 }
 
-function toCamelCase(str: string): string {
-    return str.charAt(0).toLowerCase() + str.slice(1);
-}
-
-function buildManyToOneRelations(props: Record<string, types.jsonSchemaPropsItem>): ManyToOneRelation[] {
+function buildLocalRelations(props: Record<string, types.jsonSchemaPropsItem>): typeormModel.ManyToOneRelation[] {
     return (Object.keys(props) as string[])
         .filter(key => !!props[key]["x-foreignKey"])
         .map(key => {
             const fk = props[key]["x-foreignKey"]!;
             return {
-                propertyName: toCamelCase(fk.schemaName),
+                propertyName: utils.common.camelCase(fk.schemaName),
                 targetType: fk.schemaName,
                 targetEntity: `${fk.schemaName}Entity`,
                 importPath: `./${fk.schemaName}Model.gen`,
@@ -42,8 +39,8 @@ function buildManyToOneRelations(props: Record<string, types.jsonSchemaPropsItem
         });
 }
 
-function buildOneToManyRelations(documentName: string, allSchemas: types.jsonSchema[]): OneToManyRelation[] {
-    const relations: OneToManyRelation[] = [];
+function buildForeignRelations(documentName: string, allSchemas: types.jsonSchema[]): typeormModel.OneToManyRelation[] {
+    const relations: typeormModel.OneToManyRelation[] = [];
     for (const schema of allSchemas) {
         const otherDocName = schema["x-documentConfig"].documentName;
         if (otherDocName === documentName) continue;
@@ -52,13 +49,16 @@ function buildOneToManyRelations(documentName: string, allSchemas: types.jsonSch
             const p = otherProps[key] as types.jsonSchemaPropsItem;
             if (p["x-foreignKey"]?.schemaName === documentName) {
                 const fk = p["x-foreignKey"]!;
+                const inverseRelationType = fk.relationType === types.DbRelationType.ManyToOne
+                    ? types.DbRelationType.OneToMany
+                    : types.DbRelationType.OneToOne;
                 relations.push({
-                    propertyName: `${toCamelCase(otherDocName)}`,
+                    propertyName: `${utils.common.camelCase(otherDocName)}`,
                     targetType: otherDocName,
                     targetEntity: `${otherDocName}Entity`,
                     importPath: `./${otherDocName}Model.gen`,
-                    inversePropertyName: toCamelCase(documentName),
-                    relationType: fk.relationType,
+                    inversePropertyName: utils.common.camelCase(fk.schemaName),
+                    relationType: inverseRelationType,
                 });
             }
         }
@@ -73,30 +73,30 @@ export async function compile(options: {
     jsonSchema: types.jsonSchema,
     outDir: string,
     compilerOptions: types.compilerOptions,
-    allSchemas?: types.jsonSchema[],
+    allSchemas: types.jsonSchema[],
 }): Promise<void> {
     const schema = options.jsonSchema as types.jsonSchema;
     const documentName = schema["x-documentConfig"].documentName;
     const tableName = documentName.toLowerCase();
+    const uniqueIndexes = schema["x-documentConfig"].uniqueIndex || [];
     const requiredFields: string[] = Array.isArray(schema.required) ? schema.required : [];
 
     log.process(`TypeORM Entity : ${documentName}`);
 
     const props = schema.properties || {};
-    const columns = Object.keys(props).map(key => {
+    const columns: typeormModel.ColumnDef[] = Object.keys(props).map(key => {
         const p = props[key] as types.jsonSchemaPropsItem;
-        const isUuidPrimary = key === "_id" && p["x-format"] === "PrimaryUUID";
-        const isPrimary = isUuidPrimary || p["x-format"] === "PrimaryIncrements" || p["x-format"] === "Primary";
-        const isEnum = p["x-format"] === "enum" && p.enum;
+        const isPrimary = p["x-format"] === "Primary";
+        const isEnum = p.enum !== undefined && Array.isArray(p.enum) && p.enum.every(v => typeof v === "string");
         const nullable = !requiredFields.includes(key) && !isPrimary;
+
         return {
             name: key,
             tsType: 
-                isEnum ? p.enum?.map(v => `"${v}"`).join(" | ") : 
-                    isUuidPrimary ? "string" : 
-                        jsonTypeToTs(p),
+                isEnum ? utils.common.pascalCase(key)+'Enum' : 
+                isPrimary ? "string" : 
+                jsonTypeToTs(p),
             isPrimary,
-            isUUID: isUuidPrimary,
             isGenerated: isPrimary,
             nullable,
             maxLength: p.maxLength,
@@ -105,19 +105,32 @@ export async function compile(options: {
             isObject: p.type === "object",
             isEnum,
             enumValues: isEnum ? (p.enum) : undefined,
-            hasIndex: p.index === true,
+            isIndex: p.index === true
         };
     });
 
     // ensure _id primary column exists
     if (!columns.find(c => c.isPrimary)) {
-        columns.unshift({ name: "_id", tsType: "string", isPrimary: true, isUUID: true, isGenerated: true, nullable: false, maxLength: undefined, isArray: false, isBigInt: false, isObject: false, isEnum: false, enumValues: undefined, hasIndex: false });
+        columns.unshift({ name: "_id", tsType: "string", isPrimary: true, isUUID: true, isGenerated: true, nullable: false, maxLength: undefined, isArray: false, isBigInt: false, isObject: false, isEnum: false, enumValues: undefined, isIndex: false });
     }
 
-    const manyToOneRelations = buildManyToOneRelations(props as Record<string, types.jsonSchemaPropsItem>);
-    const oneToManyRelations = options.allSchemas
-        ? buildOneToManyRelations(documentName, options.allSchemas)
-        : [];
+    const localRelations = buildLocalRelations(props);
+    const foreignRelations = buildForeignRelations(documentName, options.allSchemas)
+    const manyToOneRelations = localRelations.filter(r => r.relationType === "many-to-one");
+    const oneToManyRelations = foreignRelations.filter(r => r.relationType === "one-to-many");
+    const oneToOneRelations = [
+        ...localRelations.filter(r => r.relationType === 'one-to-one'),
+        ...foreignRelations
+            .filter(r => r.relationType === 'one-to-one')
+            .map(r => ({
+                propertyName: r.propertyName,
+                targetEntity: r.targetEntity,
+                targetType: r.targetType,
+                importPath: r.importPath,
+                inversePropertyName: r.inversePropertyName,
+                relationType: r.relationType,
+            } satisfies typeormModel.ManyToOneRelation)) // reuse same structure for one-to-one since TypeORM uses same decorator on both sides,
+    ];
 
     const outPath = `${options.outDir}/${documentName}Model.gen.ts`;
     utils.common.writeFile("TypeORM Entity",
@@ -125,7 +138,9 @@ export async function compile(options: {
         typeormEntityTemplate({
             documentName,
             tableName,
+            uniqueIndexes,
             columns,
+            oneToOneRelations,
             manyToOneRelations,
             oneToManyRelations,
             compilerOptions: options.compilerOptions,

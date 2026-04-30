@@ -66,20 +66,33 @@ function checkDocumentConfig(jsonSchema: types.jsonSchema, jsonSchemaPath: strin
 }
 
 function checkForeignKeyConfig(schema: types.jsonSchema, jsonSchemaPath: string): boolean {
-    // loop through all properties and check if "x-foreignKey" exist and valid
+    // Only owning-side relation types are valid in schema.
+    // "one-to-many" is auto-derived by the generator from the other side's "many-to-one" definition.
+    const validOwningTypes = [types.DbRelationType.OneToOne, types.DbRelationType.ManyToOne];
 
     const isForeignKeyValid = (fkConfig: types.foreignKeyConfig) => fkConfig && typeof fkConfig === "object"
         && typeof fkConfig.schemaName === "string"
         && typeof fkConfig.fieldName === "string"
-        && (
-            fkConfig.relationType === types.DbRelationType.OneToOne || 
-            fkConfig.relationType === types.DbRelationType.OneToMany || 
-            fkConfig.relationType === types.DbRelationType.ManyToOne
-        );
+        && validOwningTypes.includes(fkConfig.relationType);
 
     for (const key in schema.properties) {
         const fkConfig = schema.properties[key]["x-foreignKey"];
-        if (fkConfig && !isForeignKeyValid(fkConfig)) {
+        if (!fkConfig) continue;
+
+        if (fkConfig.relationType as string === 'many-to-many') {
+            log.error(
+                `Json Schema Formatting: "${jsonSchemaPath}" property "${key}" has foreignKey with relationType "many-to-many" is invalid. ` +
+                `make a join table instead.`
+            );
+        }
+
+        if (fkConfig.relationType === types.DbRelationType.OneToMany) {
+            log.error(
+                `Json Schema Formatting: "${jsonSchemaPath}" property "${key}" has foreignKey with relationType "one-to-many" is not allowed. ` +
+                `Define "many-to-one" on the owning side instead; the inverse "one-to-many" is auto-generated.`
+            );
+        }
+        else if (!isForeignKeyValid(fkConfig)) {
             log.error(`Json Schema Formatting: "${jsonSchemaPath}" x-foreignKey config is invalid on property "${key}".`);
         }
     }
@@ -183,7 +196,7 @@ function getRequiredArrStr(schema: types.jsonSchemaPropsItem | types.jsonSchema,
 
 function normalizeSqlTarget(jsonSchema: types.jsonSchema, jsonSchemaPath: string, compilerOptions: types.compilerOptions): void {
 
-    // normalize x-format: ObjectId -> PrimaryUUID for SQL/TypeORM target
+    // normalize x-format: ObjectId -> Primary for SQL/TypeORM target
     const normalizeConfig = (schemaItem: types.jsonSchemaPropsItem | types.jsonSchema | undefined) => {
         if (!schemaItem) return;
         if (schemaItem.type === "object" && (schemaItem as any).properties) {
@@ -193,9 +206,9 @@ function normalizeSqlTarget(jsonSchema: types.jsonSchema, jsonSchemaPath: string
                 if (!p) continue;
                 if (p["x-format"] === "ObjectId") {
                     const isId = k === "_id";
-                    p["x-format"] = isId ? "PrimaryUUID" : undefined;
+                    p["x-format"] = isId ? "Primary" : undefined;
                     p.type = "string";
-                    log.warn("[JsonSchema]", `SQL target: ${isId ? "converted" : "removed"} x-format ObjectId ${isId ? "-> PrimaryUUID" : ""} for property "${k}" in ${jsonSchemaPath}`);
+                    log.warn("[JsonSchema]", `SQL target: ${isId ? "converted" : "removed"} x-format ObjectId ${isId ? "-> Primary" : ""} for property "${k}" in ${jsonSchemaPath}`);
                 }
                 if (p && (p.type === "object" || (p.type === "array" && p.items))) {
                     normalizeConfig(p);

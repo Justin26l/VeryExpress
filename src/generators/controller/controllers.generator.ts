@@ -26,8 +26,9 @@ export async function compile(options: {
     log.process(`Controller : ${schemaConfig.documentName}`);
 
     // Determine id type
-    const idXFormat = options.jsonSchema.properties["_id"]?.["x-format"];
-    const idType: "string" | "number" = (idXFormat === "PrimaryUUID" || idXFormat === "ObjectId") ? "string" : "number";
+    const idProps = options.jsonSchema.properties["_id"]
+    const idXFormat = idProps?.["x-format"] || "";
+    const idType = ["Primary", "ObjectId"].includes(idXFormat) ? "string" : idProps?.type;
 
     // Build TsoaFieldDef[] from schema properties
     const fields: TsoaFieldDef[] = [];
@@ -58,7 +59,7 @@ export async function compile(options: {
 
 function mapToTsType(prop: types.jsonSchemaPropsItem): string {
     const fmt = prop["x-format"];
-    if (fmt === "ObjectId" || fmt === "PrimaryUUID" || fmt === "PrimaryIncrements") return "string";
+    if (fmt === "ObjectId" || fmt === "Primary") return "string";
     switch (prop.type) {
     case "string":  return "string";
     case "integer":

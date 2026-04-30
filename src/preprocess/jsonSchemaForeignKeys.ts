@@ -34,7 +34,9 @@ function updateRelations(jsonSchemaMap: { [key: string]: types.jsonSchema }, jso
             jsonSchemaMap[fkConfig.schemaName].interface?.fkProps.push({
                 propName: propsName,
                 interfaceName: interfaceName,
-                relationType: fkConfig.relationType
+                relationType: fkConfig.relationType === types.DbRelationType.ManyToOne
+                    ? types.DbRelationType.OneToMany
+                    : types.DbRelationType.OneToOne,
             });
         }
     });

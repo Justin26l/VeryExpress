@@ -37,7 +37,8 @@ export async function compile(
                 unknownAny: true,
             }
         )
-        .then(interfaceString => applyFkToInterface(interfaceString, jsonSchema));
+        .then(interfaceString => applyFkToInterface(interfaceString, jsonSchema))
+        .then(interfaceString => appendEnumDeclarations(interfaceString, jsonSchema));
 
     utils.common.writeFile(title, outputPath, "// {{headerComment}}\n" + content);
     return;
@@ -52,7 +53,34 @@ function applyFkToInterface(interfaceString: string, jsonSchema: types.jsonSchem
         updatedInterface = appendInterfaceProperty(updatedInterface, propertyLine);
         updatedInterface = prependImports(updatedInterface, fkProp.interfaceName);
     });
-    
+
+    return updatedInterface;
+}
+
+/**
+ * Append enum declarations for fields with enum values, replacing union string types with the enum type.
+ */
+function appendEnumDeclarations(interfaceString: string, jsonSchema: types.jsonSchema): string {
+    let updatedInterface = interfaceString;
+
+    for (const key of Object.keys(jsonSchema.properties ?? {})) {
+        const prop = jsonSchema.properties[key];
+        if (!prop.enum || !Array.isArray(prop.enum)) continue;
+
+        const enumName = utils.common.pascalCase(key) + "Enum";
+        const enumBody = prop.enum.map((v: string) => `    ${v} = "${v}"`).join(",\n");
+        const enumDeclaration = `export enum ${enumName} {\n${enumBody}\n}`;
+
+        // replace the generated union type with the enum type in the interface
+        const unionType = prop.enum.map((v: string) => `"${v}"`).join(" | ");
+        updatedInterface = updatedInterface.replace(new RegExp(`(\\s+${key}\\??: )${unionType.replace(/[|"]/g, "\\$&")};`), `$1${enumName};`);
+
+        // append enum declaration after the interface block
+        if (!updatedInterface.includes(`export enum ${enumName}`)) {
+            updatedInterface = updatedInterface.replace(/\s+$/, "") + "\n\n" + enumDeclaration + "\n";
+        }
+    }
+
     return updatedInterface;
 }
 

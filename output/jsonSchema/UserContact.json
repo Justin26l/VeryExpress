@@ -14,18 +14,18 @@
     "properties": {
         "_id": {
             "type": "string",
-            "x-format": "PrimaryUUID",
+            "x-format": "Primary",
             "index": true
         },
         "userId": {
-            "type": "integer",
+            "type": "string",
+            "x-format": "UUID",
             "x-foreignKey": {
                 "schemaName": "User",
                 "fieldName": "_id",
                 "relationType": "one-to-one"
             },
-            "required": true,
-            "index": true
+            "required": true
         },
         "phoneNo": {
             "type": "string",
