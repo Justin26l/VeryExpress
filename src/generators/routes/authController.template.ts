@@ -16,55 +16,7 @@ export default function authControllerTemplate(compilerOptions: types.compilerOp
     private get userAuthProfilesRepo(): IVexRepository<UserAuthProfiles> { return VexDb.getRepository(UserAuthProfilesEntity); }
     private get userRoleRepo(): IVexRepository<UserRole> { return VexDb.getRepository(UserRoleEntity); }` : "";
 
-<<<<<<< HEAD
-    const registerMethod = localAuth ? `
-    @Post("register")
-    @SuccessResponse(201, "Created")
-    async register(@Body() body: {email: string; password: string;}): Promise<void> {
-        const { email, password } = body;
-        const existing = await this.userRepo.findOneWhere({ email });
-        if (existing) throw new VexResponseError(409, null, "Email already registered.");
-        
-        const hashedPassword = utils.hash.hashPassword(password, email);
-        
-        const user = await this.userRepo.create({ name: email.split("@")[0], email, active: true })
-            .catch( e => { throw new VexResponseError(500, null, "User creation failed."); });
-        ${compilerOptions.useRBAC ? `
-        const authProfile = await this.userAuthProfilesRepo.create({ userId: user._id, provider: "local", password: hashedPassword })
-            .catch( async e => { 
-                await this.userRepo.delete(user._id);
-                await this.userAuthProfilesRepo.deleteWhere({ userId: user._id });
-                throw new VexResponseError(500, null, "User Auth profile creation failed."); 
-            });` : ''}
-        ${compilerOptions.useRBAC ? `
-        const role = await this.userRoleRepo.create({ userId: user._id, role: RoleEnum.${compilerOptions.useRBAC.default} })
-            .catch( async e => { 
-                await this.userRepo.delete(user._id);
-                await this.userAuthProfilesRepo.deleteWhere({ userId: user._id });
-                throw new VexResponseError(500, null, "User role assignment failed."); 
-            });` : ''}
-
-        throw new VexResponse(201, { result: { message: "Registration successful." } });
-    }` : "";
-
-    const loginMethod = localAuth ? `
-    @Post("local")
-    @SuccessResponse(302, "Redirect")
-    async localLogin(@Body() body: {email: string; password: string;}): Promise<void> {
-        const { email, password } = body;
-        
-        const user = await this.userRepo.findOneWhere({ email }${compilerOptions.useRBAC ? ', ["userRole", "userAuthProfiles"]' : ', ["userAuthProfiles"]'});
-        if (!user) throw new VexResponseError(400, null, "incorrect email or password.");
-        
-        const isMatch = utils.hash.verifyPassword(user, password);
-        if (!isMatch) throw new VexResponseError(400, null, "incorrect email or password.");
-        const redirectUrl = await this.JWTService.assignTokens(user);
-        throw new VexResponse(302, { result: { url: redirectUrl } });
-    }` : "";
-
-=======
     // OAuth
->>>>>>> 2151a5ae25035dd82be79825b7d34e886d91a306
     const oauthProviders: string[] = utilsGenerator.OAuthProviders(compilerOptions);
     const OAuthNote = oauthProviders.length > 0 ? "    // OAuth flows (Google, GitHub, etc.) are handled by AuthRouter — see /auth/<provider>": ""
 
