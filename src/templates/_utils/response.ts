@@ -134,7 +134,7 @@ const responseStatusCodeMap = new Map<number, string>([
     [511, "Network Authentication Required"],
 ]);
 
-export type ResponseCode = keyof typeof responseMessage | string;
+export type ResponseCode = string;
 
 export default {
     send,

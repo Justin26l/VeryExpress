@@ -75,16 +75,16 @@ export default function controllerTemplate(templateOptions: {
 
     const getListRoute = buildMethod(
         methods.includes("getList"),
-        [`@SuccessResponse(200, "Success", typeof VexResponse<${documentName}[]>)`, "@Post(\"/search\")"],
-        `public async getList${documentName}(@Body() body: { filter: Filter, join?: Join, select?: Select }): Promise<typeof VexResponse<${documentName}[]>>`,
+        [`@SuccessResponse(200, "Success")`, "@Post(\"/search\")"],
+        `public async getList${documentName}(@Body() body: { filter: Filter, join?: string[], select?: string[] }): Promise<VexResponse<${documentName}[]>>`,
         `const result = await this.repo.find(body.filter, body.join, body.select);
         throw new VexResponse(200, { result });`
     );
 
     const getRoute = buildMethod(
         methods.includes("get"),
-        [`@SuccessResponse(200, "Success", typeof VexResponse<${documentName}>)`, "@Get(\"{id}\")"],
-        `public async get${documentName}(${idParam}, @Query() join?: Join, @Query() select?: Select): Promise<typeof VexResponse<${documentName}>>`,
+        [`@SuccessResponse(200, "Success")`, "@Get(\"{id}\")"],
+        `public async get${documentName}(${idParam}, @Query() join?: string[], @Query() select?: string[]): Promise<VexResponse<${documentName}>>`,
         `const result = await this.repo.findOne({ _id: id }, join, select);
         if (!result) throw new VexResponseError(404);
         throw new VexResponse(200, { result });`
@@ -92,8 +92,8 @@ export default function controllerTemplate(templateOptions: {
 
     const postRoute = buildMethod(
         methods.includes("post"),
-        [`@SuccessResponse(201, "Created", typeof VexResponse<${documentName}>)`, "@Post()"],
-        `public async create${documentName}(@Body() body: ${documentName}): Promise<typeof VexResponse<${documentName}>>`,
+        [`@SuccessResponse(201, "Created")`, "@Post()"],
+        `public async create${documentName}(@Body() body: ${documentName}): Promise<VexResponse<${documentName}>>`,
         `${cleanId}
         const result = await this.repo.create(body);
         if (!result) throw new VexResponseError(400);
@@ -103,8 +103,8 @@ export default function controllerTemplate(templateOptions: {
 
     const putRoute = buildMethod(
         methods.includes("put"),
-        [`@SuccessResponse(200, "Success", typeof VexResponse<${documentName}>)`, "@Put(\"{id}\")"],
-        `public async replace${documentName}(${idParam}, @Body() body: ${documentName}): Promise<typeof VexResponse<${documentName}>>`,
+        [`@SuccessResponse(200, "Success")`, "@Put(\"{id}\")"],
+        `public async replace${documentName}(${idParam}, @Body() body: ${documentName}): Promise<VexResponse<${documentName}>>`,
         `${cleanId}
         const result = await this.repo.replace(id, body);
         if (!result) throw new VexResponseError(404);
@@ -113,8 +113,8 @@ export default function controllerTemplate(templateOptions: {
 
     const patchRoute = buildMethod(
         methods.includes("patch"),
-        [`@SuccessResponse(200, "Success", typeof VexResponse<${documentName}>)`, "@Patch(\"{id}\")"],
-        `public async update${documentName}(${idParam}, @Body() body: Partial<${documentName}>): Promise<typeof VexResponse<${documentName}>>`,
+        [`@SuccessResponse(200, "Success")`, "@Patch(\"{id}\")"],
+        `public async update${documentName}(${idParam}, @Body() body: Partial<${documentName}>): Promise<VexResponse<${documentName}>>`,
         `${cleanId}
         const result = await this.repo.update(id, body);
         if (!result) throw new VexResponseError(404);
@@ -124,7 +124,7 @@ export default function controllerTemplate(templateOptions: {
     const deleteRoute = buildMethod(
         methods.includes("delete"),
         ["@SuccessResponse(204, \"No Content\")", "@Delete(\"{id}\")"],
-        `public async delete${documentName}(${idParam}): Promise<void>`,
+        `public async delete${documentName}(${idParam}): Promise<VexResponse<void>>`,
         `const existing = await this.repo.findOne({ _id: id });
         if (!existing) throw new VexResponseError(404);
         await this.repo.delete(id);

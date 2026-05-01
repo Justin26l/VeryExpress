@@ -56,6 +56,6 @@ export class MongooseRepositoryAdapter<T extends Document> implements IVexReposi
     }
 
     async deleteWhere(filter: Record<string, unknown>): Promise<void> {
-        await this.model.deleteOne(filter as FilterQuery<T>).exec();
+        await this.model.deleteOne(filter as any).exec();
     }
 }
