@@ -31,14 +31,13 @@ export default function controllerTemplate(templateOptions: {
     // ── tsoa decorator imports ──────────────────────────────────────────────────
     const decoratorNames: string[] = [];
     if (!skipRoute) {
-        decoratorNames.push("Route", "Tags");
+        decoratorNames.push("Route", "Tags", "Body", "Path", "Query", "SuccessResponse");
+        if (useRBAC) decoratorNames.push("Middlewares", "Security");
         if (methods.includes("get"))                                decoratorNames.push("Get");
         if (methods.includes("post") || methods.includes("getList")) decoratorNames.push("Post");
         if (methods.includes("put"))                                decoratorNames.push("Put");
         if (methods.includes("patch"))                              decoratorNames.push("Patch");
         if (methods.includes("delete"))                             decoratorNames.push("Delete");
-        decoratorNames.push("Body", "Path", "SuccessResponse");
-        if (useRBAC) decoratorNames.push("Middlewares", "Security");
     }
 
     const optionalImports = [
@@ -76,25 +75,25 @@ export default function controllerTemplate(templateOptions: {
 
     const getListRoute = buildMethod(
         methods.includes("getList"),
-        ["@SuccessResponse(200, \"Success\")", "@Post(\"/search\")"],
-        `public async getList${documentName}(@Body() body: { filter: Filter, join?: Join, select?: Select }): Promise<{ result: unknown[] }>`,
+        [`@SuccessResponse(200, "Success", typeof VexResponse<${documentName}[]>)`, "@Post(\"/search\")"],
+        `public async getList${documentName}(@Body() body: { filter: Filter, join?: Join, select?: Select }): Promise<typeof VexResponse<${documentName}[]>>`,
         `const result = await this.repo.find(body.filter, body.join, body.select);
         throw new VexResponse(200, { result });`
     );
 
     const getRoute = buildMethod(
         methods.includes("get"),
-        ["@SuccessResponse(200, \"Success\")", "@Get(\"{id}\")"],
-        `public async get${documentName}(${idParam}): Promise<{ result: ${documentName} }>`,
-        `const result = await this.repo.findOne({ _id: id });
+        [`@SuccessResponse(200, "Success", typeof VexResponse<${documentName}>)`, "@Get(\"{id}\")"],
+        `public async get${documentName}(${idParam}, @Query() join?: Join, @Query() select?: Select): Promise<typeof VexResponse<${documentName}>>`,
+        `const result = await this.repo.findOne({ _id: id }, join, select);
         if (!result) throw new VexResponseError(404);
         throw new VexResponse(200, { result });`
     );
 
     const postRoute = buildMethod(
         methods.includes("post"),
-        ["@SuccessResponse(201, \"Created\")", "@Post()"],
-        `public async create${documentName}(@Body() body: ${documentName}): Promise<{ result: ${documentName} }>`,
+        [`@SuccessResponse(201, "Created", typeof VexResponse<${documentName}>)`, "@Post()"],
+        `public async create${documentName}(@Body() body: ${documentName}): Promise<typeof VexResponse<${documentName}>>`,
         `${cleanId}
         const result = await this.repo.create(body);
         if (!result) throw new VexResponseError(400);
@@ -104,8 +103,8 @@ export default function controllerTemplate(templateOptions: {
 
     const putRoute = buildMethod(
         methods.includes("put"),
-        ["@SuccessResponse(200, \"Success\")", "@Put(\"{id}\")"],
-        `public async replace${documentName}(${idParam}, @Body() body: ${documentName}): Promise<{ result: ${documentName} }>`,
+        [`@SuccessResponse(200, "Success", typeof VexResponse<${documentName}>)`, "@Put(\"{id}\")"],
+        `public async replace${documentName}(${idParam}, @Body() body: ${documentName}): Promise<typeof VexResponse<${documentName}>>`,
         `${cleanId}
         const result = await this.repo.replace(id, body);
         if (!result) throw new VexResponseError(404);
@@ -114,8 +113,8 @@ export default function controllerTemplate(templateOptions: {
 
     const patchRoute = buildMethod(
         methods.includes("patch"),
-        ["@SuccessResponse(200, \"Success\")", "@Patch(\"{id}\")"],
-        `public async update${documentName}(${idParam}, @Body() body: Partial<${documentName}>): Promise<{ result: ${documentName} }>`,
+        [`@SuccessResponse(200, "Success", typeof VexResponse<${documentName}>)`, "@Patch(\"{id}\")"],
+        `public async update${documentName}(${idParam}, @Body() body: Partial<${documentName}>): Promise<typeof VexResponse<${documentName}>>`,
         `${cleanId}
         const result = await this.repo.update(id, body);
         if (!result) throw new VexResponseError(404);
