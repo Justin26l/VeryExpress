@@ -23,7 +23,6 @@ jsonSchema/*.json  →  preprocess  →  generators  →  templates  →  output
 npm run dev          # compile (esbuild → dist/index.js) + run CLI
 npm run build        # lint + compile (production)
 npm run lint         # eslint --fix
-npm run v <type>     # bump version (major | minor | patch)
 ```
 
 - Build bundles everything into a single `dist/index.js` via esbuild (platform: node, target: es2016).
