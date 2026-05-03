@@ -14,7 +14,8 @@
         "build": "npm run lint && npm run compile",
         "lint": "eslint ./src --ext .ts --fix",
         "compile": "node ./scripts/build.js && node ./scripts/copyTsTemplates.js",
-        "preversion": "npm run lint && npm run compile"
+        "preversion": "npm run lint && npm run compile",
+        "postversion": "git tag v$(node -p \"require('./package.json').version\") && git push --tags && git push"
     },
     "keywords": [
         "jsonSchema",
