@@ -1,5 +1,5 @@
 // {{headerComment}}
-import { UserEntity, User } from "./../../_models/UserModel.gen";
+import { UserEntity, User, UserWithRelations } from "./../../_models/UserModel.gen";
 import { UserAuthProfilesEntity, UserAuthProfiles } from "./../../_models/UserAuthProfilesModel.gen";
 import { IVexRepository } from "./../../_types/IVexRepository.gen";
 import JWTService from "./../auth/JWTService.gen";
@@ -9,8 +9,8 @@ import utils from "../../_utils";
 
 export default class OAuthStrategyService {
 
-    private get userRepo(): IVexRepository<User> {
-        return VexDb.getRepository<User>(UserEntity);
+    private get userRepo(): IVexRepository<UserWithRelations> {
+        return VexDb.getRepository<UserWithRelations>(UserEntity);
     }
 
     private get uapRepo(): IVexRepository<UserAuthProfiles> {
@@ -22,12 +22,12 @@ export default class OAuthStrategyService {
     public async verify(accessToken: string, refreshToken: string, profile: IProfile, done: (error: any, user?: any) => void): Promise<void> {
         try {
 
-            let user: User;
+            let user: UserWithRelations;
             const authUser = new OAuthProfileMap().map(profile);
             const authProfile = authUser.userAuthProfiles?.[0];
 
             // find user by oauthId + provider, or fall back to email
-            let existingUser: User | null = null;
+            let existingUser: UserWithRelations | null = null;
             if (authProfile?.oauthId && authProfile?.provider) {
                 const matchedProfile = await this.uapRepo.findOneWhere(
                     { oauthId: authProfile.oauthId, provider: authProfile.provider },
@@ -61,7 +61,7 @@ export default class OAuthStrategyService {
         }
     }
 
-    private async createNewUser(authProfile: User): Promise<User> {
+    private async createNewUser(authProfile: UserWithRelations): Promise<UserWithRelations> {
         utils.log.info("OAuthVerify > createNewUser");
         const user = await this.userRepo.create(authProfile);
 

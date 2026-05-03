@@ -17,6 +17,15 @@
             "x-format": "Primary",
             "index": true
         },
+        "userId": {
+            "type": "string",
+            "x-format": "UUID",
+            "x-foreignKey": {
+                "schemaName": "User",
+                "fieldName": "_id",
+                "relationType": "many-to-one"
+            }
+        },
         "name": {
             "type": "string",
             "required": true

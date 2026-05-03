@@ -45,14 +45,31 @@ export async function compile(
 }
 
 function applyFkToInterface(interfaceString: string, jsonSchema: types.jsonSchema): string {
+    const fkProps = jsonSchema.interface?.fkProps;
+    if (!fkProps || fkProps.length === 0) return interfaceString;
+
+    const titleMatch = interfaceString.match(/export interface (\w+)/);
+    if (!titleMatch) return interfaceString;
+    const title = titleMatch[1];
+
     let updatedInterface = interfaceString;
 
-    jsonSchema.interface?.fkProps.forEach((fkProp) => {
-        const typeString = fkProp.relationType === types.DbRelationType.OneToMany ? `${fkProp.interfaceName}[]` : fkProp.interfaceName;
-        const propertyLine = `    ${fkProp.propName}?: ${typeString};`;
-        updatedInterface = appendInterfaceProperty(updatedInterface, propertyLine);
+    fkProps.forEach((fkProp) => {
         updatedInterface = prependImports(updatedInterface, fkProp.interfaceName);
     });
+
+    const relationsProps = fkProps
+        .map((fkProp) => {
+            const typeString = fkProp.relationType === types.DbRelationType.OneToMany ? `${fkProp.interfaceName}[]` : fkProp.interfaceName;
+            return `    ${fkProp.propName}?: ${typeString};`;
+        })
+        .join("\n");
+
+    const relationsBlock =
+        `\nexport interface ${title}Relations {\n${relationsProps}\n}\n\n` +
+        `export type ${title}WithRelations = ${title} & ${title}Relations;\n`;
+
+    updatedInterface = updatedInterface.replace(/\s+$/, "") + "\n" + relationsBlock;
 
     return updatedInterface;
 }
@@ -100,24 +117,4 @@ function prependImports(interfaceString: string, importName: string): string {
         return interfaceString;
     }
     return interfaceString.slice(0, exportIndex) + importLine + "\n" + interfaceString.slice(exportIndex);
-}
-
-/**
- * Append property line to the interface string if not exist
- * @param interfaceString 
- * @param propertyLine 
- * @returns 
- */
-function appendInterfaceProperty(interfaceString: string, propertyLine: string): string {
-    if (interfaceString.indexOf(propertyLine) >= 0) {
-        return interfaceString;
-    }
-
-    const closingIndex = interfaceString.lastIndexOf("}");
-
-    if (closingIndex < 0) {
-        return interfaceString;
-    }
-
-    return interfaceString.slice(0, closingIndex) + propertyLine + "\n" + interfaceString.slice(closingIndex);
 }

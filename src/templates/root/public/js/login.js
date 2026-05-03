@@ -2,7 +2,7 @@
 document.addEventListener("DOMContentLoaded", function () {
     // add event listener to login button
     document.querySelector("#localLoginBtn").addEventListener("click", function () {
-        // call api /auth/local
+        // call /api/auth/local
         fetch("/api/auth/local", {
             method: "POST",
             headers: {
@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     document.querySelector("#localRegisterBtn").addEventListener("click", function () {
-        // call api /auth/register
+        // call /api/auth/register
         fetch("/api/auth/register", {
             method: "POST",
             headers: {

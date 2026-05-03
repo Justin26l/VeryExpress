@@ -76,8 +76,8 @@ export default function controllerTemplate(templateOptions: {
     const getListRoute = buildMethod(
         methods.includes("getList"),
         [`@SuccessResponse(200, "Success")`, "@Post(\"/search\")"],
-        `public async getList${documentName}(@Body() body: { filter: Filter, join?: string[], select?: string[] }): Promise<VexResponse<${documentName}[]>>`,
-        `const result = await this.repo.find(body.filter, body.join, body.select);
+        `public async getList${documentName}(@Body() body: { filter: Filter${documentName}, join?: string[], select?: string[] }): Promise<VexResponse<${documentName}[]>>`,
+        `const result = await this.repo.find(body.filter as Filter<${documentName}>, body.join, body.select);
         throw new VexResponse(200, { result });`
     );
 
@@ -135,7 +135,7 @@ export default function controllerTemplate(templateOptions: {
 import { ${decoratorNames.join(", ")} } from "tsoa";
 import * as controllerFactory from "./_ControllerFactory.gen";
 import { IVexRepository } from "../_types/IVexRepository.gen";
-import { Select, Filter, Join } from "../_types/VexRequest.gen";
+import { Select, Filter, Join, FieldFilter } from "../_types/VexRequest.gen";
 import VexResponse from "../_types/VexResponse.gen";
 import VexResponseError from "../_types/VexResponseError.gen";
 import VexDb from "../_services/VexDb.gen";
@@ -144,6 +144,10 @@ ${optionalImports}
 
 import { ${documentName}Entity } from "${modelPath}";
 import { ${documentName} } from "${typePath}";
+
+// extra type defined due to tsoa cannot capture runtime generic types,
+// this will make OAS have complete input parameters & correct validation
+export type Filter${documentName} = { [K in keyof ${documentName}]?: FieldFilter<${documentName}[K]> } & Filter<${documentName}>;
 
 ${classDecorators}export class ${documentName}Controller extends controllerFactory._ControllerFactory {
     private get repo(): IVexRepository<${documentName}> {

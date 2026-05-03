@@ -41,18 +41,15 @@ export class VexDbConnector {
 
     connectSql(): void {
         utils.log.infoSql("Connecting to SQL DB (TypeORM)...");
-
-        const caRaw = this.sqlCa || undefined;
-        let ca: string | undefined;
-        if (caRaw) {
-            ca = caRaw.startsWith("-----BEGIN") ? caRaw : Buffer.from(caRaw, "base64").toString("utf8");
-        }
-        const insecure = (process.env.SQL_INSECURE_TLS || "").toLowerCase() === "true";
-        const ssl = insecure
-            ? { rejectUnauthorized: false }
-            : (ca ? { rejectUnauthorized: true, ca } : undefined);
-
         const sqlUrl = new URL(this.sqlUrl);
+
+        const ca = !this.sqlCa ? undefined : this.sqlCa.startsWith("-----BEGIN") ? this.sqlCa : Buffer.from(this.sqlCa, "base64").toString("utf8");
+        const insecure = (process.env.SQL_INSECURE_TLS || "").toLowerCase() === "true";
+        const ssl = { 
+            rejectUnauthorized: insecure ? false : true,
+            ca,
+        };
+
         const ds = new DataSource({
             type: "postgres",
             host: sqlUrl.hostname,

@@ -115,7 +115,7 @@ import { ${typeormImports.join(", ")} } from "typeorm";
 import { ${typeImports} } from "./../_types/${doc}.gen";
 ${entityImports.length ? entityImports.join("\n") + "\n" : ""}
 
-export { ${doc} } from "./../_types/${doc}.gen";
+export * from "./../_types/${doc}.gen";
 
 @Entity("${table}")
 ${uniqueIndexes.join("\n")}

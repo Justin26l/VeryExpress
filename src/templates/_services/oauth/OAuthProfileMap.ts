@@ -1,6 +1,6 @@
 // {{headerComment}}
 import { Profile } from "passport";
-import { User } from "./../../_types/User.gen";
+import { User, UserWithRelations } from "./../../_types/User.gen";
 
 export interface IProfile extends Profile {
     [key: string]: any;
@@ -9,7 +9,7 @@ export interface IProfile extends Profile {
 export default class OAuthProfileMap {
 
     public map(oauthProfile: Profile) {
-        let authProfile: User;
+        let authProfile: UserWithRelations;
         switch (oauthProfile.provider) {
         case "github":
             authProfile = this.GithubProfileMapping(oauthProfile);
@@ -24,8 +24,8 @@ export default class OAuthProfileMap {
         return authProfile;
     }
 
-    private GithubProfileMapping(oauthProfile: IProfile): User {
-        const user: User = {
+    private GithubProfileMapping(oauthProfile: IProfile): UserWithRelations {
+        const user: UserWithRelations = {
             active: true,
             userAuthProfiles: [{
                 provider: oauthProfile.provider,
@@ -40,8 +40,8 @@ export default class OAuthProfileMap {
 
         return user;
     }
-    private GoogleProfileMapping(oauthProfile: IProfile): User {
-        const user: User = {
+    private GoogleProfileMapping(oauthProfile: IProfile): UserWithRelations {
+        const user: UserWithRelations = {
             active: true,
             userAuthProfiles: [{
                 provider: oauthProfile.provider,

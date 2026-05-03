@@ -7,12 +7,12 @@ import { Select, Filter, Join } from "./VexRequest.gen";
  * Controllers and services talk only to this — the adapter layer (TypeORM/Mongoose) absorbs DB specifics.
  */
 export interface IVexRepository<T> {
-    find(filter: Filter, join?: Join, select?: Select): Promise<T[]>;
-    findOne(filter: Filter, join?: Join, select?: Select): Promise<T | null>;
-    findOneWhere(filter: Filter, join?: Join, select?: Select): Promise<T | null>;
+    find(filter: Filter<T>, join?: Join, select?: Select): Promise<T[]>;
+    findOne(filter: Filter<T>, join?: Join, select?: Select): Promise<T | null>;
+    findOneWhere(filter: Filter<T>, join?: Join, select?: Select): Promise<T | null>;
     create(data: Partial<T>): Promise<T>;
     replace(id: string | undefined, data: Partial<T>): Promise<T | null>;
     update(id: string | undefined, data: Partial<T>): Promise<T | null>;
     delete(id: string | undefined): Promise<void>;
-    deleteWhere(filter: Filter): Promise<void>;
+    deleteWhere(filter: Filter<T>): Promise<void>;
 }

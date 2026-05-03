@@ -15,7 +15,7 @@
         "localAuth": true,
         "useHttpOnlyCookieToken": true,
         "oauthProviders": {
-            "google": true,
+            "google": false,
             "github": false
         }
     },

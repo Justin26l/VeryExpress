@@ -1,7 +1,7 @@
 // {{headerComment}}
 import crypto from "crypto";
 // import log from "~/utils/logger";
-import { User } from "../_types/User.gen";
+import { UserWithRelations } from "../_types/User.gen";
 
 /**
  * Hashes a password with a salt (e.g., user email).
@@ -25,7 +25,7 @@ export function hashPassword(
  * @returns True if the password matches, false otherwise.
  */
 export function verifyPassword(
-    user: User,
+    user: UserWithRelations,
     plainPassword: string,
 ): boolean {
     if(!user.email || !user.userAuthProfiles) {

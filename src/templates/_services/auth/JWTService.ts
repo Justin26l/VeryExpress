@@ -10,7 +10,7 @@ import VexResponseError from "../../_types/VexResponseError.gen";
 import { IVexRepository } from "../../_types/IVexRepository.gen";
 
 import VexDb from "../VexDb.gen";
-import { UserEntity, User } from "../../_models/UserModel.gen";
+import { UserEntity, UserWithRelations } from "../../_models/UserModel.gen";
 import { SessionEntity, Session } from "../../_models/SessionModel.gen";
 
 interface tokenObj {
@@ -22,8 +22,8 @@ interface tokenObj {
 export default class JWTService {
     private keyStore = new JWTKeyStore();
 
-    private get userRepo(): IVexRepository<User> {
-        return VexDb.getRepository<User>(UserEntity);
+    private get userRepo(): IVexRepository<UserWithRelations> {
+        return VexDb.getRepository<UserWithRelations>(UserEntity);
     }
     private get sessionRepo(): IVexRepository<Session> {
         return VexDb.getRepository<Session>(SessionEntity);
@@ -65,21 +65,21 @@ export default class JWTService {
     /**
      * Process of login user, assign tokens and create session.
      */
-    public async assignTokens(user: User) {
+    public async assignTokens(user: UserWithRelations, provider: string): Promise<string> {
         if(!user._id) {
             throw new VexResponseError(500, null, "User Data Error, User._id missing.");
         }
 
         const sessionCode = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
-        if (this.sessionRepo) {
-            await this.sessionRepo.create({
-                sessionCode,
-                userId: user._id,
-                provider: "local",
-                expired: Date.now() + 5000,
-            });
-        }
+        // insert new unique session for user
+        await this.sessionRepo.deleteWhere({ userId: user._id });
+        await this.sessionRepo.create({
+            sessionCode,
+            userId: user._id,
+            provider: provider,
+            expired: Date.now() + 5000,
+        });
 
         // return appAuthCode to client
         const redirectPath = `${path.posix.join("/", process.env.LOGIN_SUCCESS_REDIRECT_PATH || "/logincallback")}?code=${sessionCode}`;
@@ -87,7 +87,7 @@ export default class JWTService {
         return redirectPath;
     }
 
-    public returnToken(userProfile: User) {
+    public returnToken(userProfile: UserWithRelations) {
         const sanitizedProfile = this.sanitizeUser(userProfile);
         const accessToken = this.generateToken(sanitizedProfile, undefined, process.env.ACCESS_TOKEN_EXPIRE_TIME);
         const refreshToken = this.generateToken({ _id: userProfile._id }, 0, process.env.REFRESH_TOKEN_EXPIRE_TIME);
@@ -103,7 +103,7 @@ export default class JWTService {
 
     /** utils */
 
-    public sanitizeUser(user: User) {
+    public sanitizeUser(user: UserWithRelations) {
         return {
             _id: user._id,
             email: user.email,
@@ -138,7 +138,7 @@ export default class JWTService {
         };
     }
 
-    public async generateAccessToken(user: User, index?: number): Promise<tokenObj> {
+    public async generateAccessToken(user: UserWithRelations, index?: number): Promise<tokenObj> {
 
         const userInfo = this.sanitizeUser(user);
 

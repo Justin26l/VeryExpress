@@ -46,9 +46,13 @@ ${OAuthNote}
     async exchangeToken(@Query() code: string): Promise<void> {
         
         const session = await this.sessionRepo.findOneWhere({ sessionCode: code });
-        if (!session) throw new VexResponseError(404, null, "invalid code");
-        if (session.expired < Date.now()) throw new VexResponseError(401, null, "code expired");
-        await this.sessionRepo.deleteWhere({ sessionCode: code });
+        if (!session) {
+            throw new VexResponseError(404, null, "invalid code");
+        }
+        if (session.expired < Date.now()) {
+            await this.sessionRepo.deleteWhere({ sessionCode: code });
+            throw new VexResponseError(401, null, "code expired");
+        }
         
         const user = await this.userRepo.findOne({ _id: session.userId }${compilerOptions.useRBAC ? ', ["userRole"]' : ''});
         if (!user) throw new VexResponseError(404, null, "Invalid User Id");
@@ -120,7 +124,7 @@ ${localAuth ? `
         const isMatch = utils.hash.verifyPassword(user, password);
         if (!isMatch) throw new VexResponseError(400, null, "incorrect email or password.");
 
-        const redirectUrl = await this.JWTService.assignTokens(user);
+        const redirectUrl = await this.JWTService.assignTokens(user, "local");
         throw new VexResponse(302, { result: { url: redirectUrl } });
     }` : ""}
 }
