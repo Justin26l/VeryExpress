@@ -24,18 +24,18 @@ Example:
 ### HTTP GET :
 | Param | Type | Mandatory | Description |
 | ----- | ---- | --------- | ----------- |
-| _join | QueryString `array<String>` | false | join collection using **Current Resource's Field Name**. target joined collection decleare by `x-forignKey` |
-| _select | QueryString `array<String>` | false | work with `_join`, select fields to join for target collection. empty = select all.  |
+| join | QueryString `array<String>` | false | join collection using **Current Resource's Field Name**. target joined collection decleare by `x-forignKey` |
+| select | QueryString `array<String>` | false | work with `join`, select fields to join for target collection. empty = select all.  |
 
 ## Example 
-`/user?_join=["contact"]&_select=["contactName","contactNumber"]`
+`/user?join=["contact"]&select=["contactName","contactNumber"]`
   
 
 **Output:** 
 ```JSON
 {
     "username": "justin",
-    "contactId": {
+    "contact": {
         "contactName": "justin's mobile",
         "contactNumber": 1122333445566
     }

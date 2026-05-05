@@ -59,7 +59,7 @@ Every generator exports an async `compile(options)` that:
 Custom `x-*` properties drive generation — see [docs/vexJsonSchema.md](../docs/vexJsonSchema.md):
 
 - `x-documentConfig` — REST methods, document name
-- `x-foreignKey` / `x-foreignValue` — relationships ([docs/ForeignKey.md](../docs/ForeignKey.md))
+- `x-foreignKey` — relationships ([docs/ForeignKey.md](../docs/ForeignKey.md))
 - `x-vexData: "role"` — marks role field for RBAC
 - `x-format: "ObjectId"` — MongoDB ObjectId handling
 
@@ -70,7 +70,7 @@ Custom `x-*` properties drive generation — see [docs/vexJsonSchema.md](../docs
 ## Key docs (link, don't duplicate)
 
 - [docs/vexJsonSchema.md](../docs/vexJsonSchema.md) — full schema definition guide
-- [docs/ForeignKey.md](../docs/ForeignKey.md) — foreign-key joins and `_join`/`_select` params
+- [docs/ForeignKey.md](../docs/ForeignKey.md) — foreign-key joins and `join`/`select` params
 - [docs/appGenerated/auth.md](../docs/appGenerated/auth.md) — JWT rolling keys, OAuth2 setup
 - [docs/developmentNote.md](../docs/developmentNote.md) — dev conventions, `FUNC{{ }}` syntax
 - [docs/roadMap/](../docs/roadMap/) — released features and upcoming plans

@@ -1,3 +1,13 @@
+export interface VexFileMeta {
+    lastWriteVersion: string;
+    allowOverwrite: boolean;
+}
+
+export interface VexMeta {
+    lastGeneratedVersion?: string;
+    files: { [relPath: string]: VexFileMeta };
+}
+
 export interface compilerOptions {
     jsonSchemaDir: string,
     openapiDir: string,
@@ -95,7 +105,6 @@ export interface jsonSchemaPropsItem {
     "x-format"?: string;
     "x-hidden"?: boolean;
     "x-foreignKey"?: foreignKeyConfig;
-    "x-foreignValue"?: string[];
     [key: string]: string | boolean | number | string[] | jsonSchemaPropsItem | foreignKeyConfig | { [key: string]: jsonSchemaPropsItem;} | any[] | undefined;
 }
 

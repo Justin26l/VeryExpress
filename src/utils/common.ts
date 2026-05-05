@@ -9,6 +9,75 @@ import pkg from "package.json";
 export const writtedFiles: string[] = [];
 export let _compilerOptions: types.compilerOptions = generator.defaultCompilerOptions;
 
+let _vexMeta: types.VexMeta = { files: {} };
+
+function vexMetaPath(): string {
+    return path.posix.join(_compilerOptions?.rootDir || ".", ".vex", "meta.json");
+}
+
+function flatToNested(flat: { [relPath: string]: types.VexFileMeta }): Record<string, any> {
+    const root: Record<string, any> = {};
+    for (const [relPath, meta] of Object.entries(flat)) {
+        const parts = relPath.split("/");
+        let node = root;
+        for (let i = 0; i < parts.length - 1; i++) {
+            node[parts[i]] = node[parts[i]] || {};
+            node = node[parts[i]];
+        }
+        node[parts[parts.length - 1]] = meta;
+    }
+    return root;
+}
+
+function nestedToFlat(nested: Record<string, any>, prefix = ""): { [relPath: string]: types.VexFileMeta } {
+    const flat: { [relPath: string]: types.VexFileMeta } = {};
+    for (const [key, value] of Object.entries(nested)) {
+        const relPath = prefix ? `${prefix}/${key}` : key;
+        if (value && typeof value === "object" && !("lastWriteVersion" in value)) {
+            Object.assign(flat, nestedToFlat(value, relPath));
+        }
+        else {
+            flat[relPath] = value as VexFileMeta;
+        }
+    }
+    return flat;
+}
+
+function flushVexMeta(): void {
+    try {
+        const metaPath = vexMetaPath();
+        const metaDir = path.posix.dirname(metaPath);
+        if (!fs.existsSync(metaDir)) fs.mkdirSync(metaDir, { recursive: true });
+        const output = {
+            lastGeneratedVersion: _vexMeta.lastGeneratedVersion,
+            files: flatToNested(_vexMeta.files),
+        };
+        fs.writeFileSync(metaPath, JSON.stringify(output, null, 2), "utf8");
+    }
+    catch (err: any) {
+        log.warn(`flushVexMeta error: ${err.message}`);
+    }
+}
+
+function loadVexMeta(): void {
+    const metaPath = vexMetaPath();
+    try {
+        if (fs.existsSync(metaPath)) {
+            const raw = JSON.parse(fs.readFileSync(metaPath, "utf8") || "{}");
+            _vexMeta = {
+                lastGeneratedVersion: raw.lastGeneratedVersion,
+                files: nestedToFlat(raw.files || {}),
+            };
+        }
+        else {
+            _vexMeta = { files: {} };
+        }
+    }
+    catch {
+        _vexMeta = { files: {} };
+    }
+}
+
 const headerComment: string = generator.getDefaultHeaderComment(pkg.version);
 
 function normalize (s: string) : string{
@@ -71,10 +140,73 @@ export function writeFile(title: string, destination: string, newContent: string
         return false;
     }
     else {
+        const opts = _compilerOptions as types.compilerOptions;
+        const relPath = opts && opts.rootDir ? path.relative(opts.rootDir, destination).replace(/\\/g, "/") : destination;
+
+        // allowOverwrite: read from .vex/meta.json, default true
+        const metaAllow = _vexMeta.files[relPath]?.allowOverwrite;
+        const allowOverwrite = metaAllow !== undefined ? metaAllow : true;
+
+        if (!allowOverwrite && fs.existsSync(destination)) {
+            log.info(`${title} : "${destination}" Skip (allowOverwrite=false)`);
+            return false;
+        }
+
         log.writing(`${title} : "${destination}"`);
         newContent = newContent.replace(/\/\/ {{headerComment}}|{{headerComment}}/g, headerComment || "// generated files by very-express");
         fs.writeFileSync(destination, newContent);
+
+        // write per-file meta immediately so user can adjust allowOverwrite between runs
+        _vexMeta.files[relPath] = {
+            lastWriteVersion: pkg.version,
+            allowOverwrite,
+        };
+        flushVexMeta();
+
         return true;
+    }
+}
+
+function majorMinor(version: string): string {
+    if (!version) return "0.0";
+    const parts = version.split(".");
+    const major = parseInt(parts[0] || "0", 10) || 0;
+    const minor = parseInt(parts[1] || "0", 10) || 0;
+    return `${major}.${minor}`;
+}
+
+export function saveVexMeta(): void {
+    if (!_compilerOptions?.rootDir) return;
+    _vexMeta.lastGeneratedVersion = pkg.version;
+    flushVexMeta();
+}
+
+export function handleVersioningCleanup(): void {
+    const opts = _compilerOptions as types.compilerOptions;
+    const metaPath = path.posix.join(opts.rootDir, ".vex", "meta.json");
+    const serverPath = path.posix.join(opts.rootDir, "server.ts");
+    try {
+        if (!fs.existsSync(metaPath)) {
+            // nothing to compare
+            return;
+        }
+        const meta = JSON.parse(fs.readFileSync(metaPath, "utf8") || "{}");
+        const last = meta.lastGeneratedVersion as string | undefined;
+        const curr = pkg.version as string;
+        if (last && majorMinor(last) !== majorMinor(curr)) {
+            // major.minor changed -> remove sysDir to force clean regen
+            try {
+                log.warn(`Version major/minor changed (${last} -> ${curr}), removing "${opts.sysDir}"`);
+                fs.rmSync(opts.sysDir, { recursive: true, force: true });
+                fs.rmSync(serverPath, { force: true });
+            }
+            catch (err: any) {
+                log.warn(`Failed to clear generated files: ${err.message}`);
+            }
+        }
+    }
+    catch (err: any) {
+        log.warn(`handleVersioningCleanup error: ${err.message}`);
     }
 }
 
@@ -112,6 +244,7 @@ export function copyDir(source: string, destination: string, compilerOptions: ty
 // add setter/getter to update module-scoped _compilerOptions safely
 export function setCompilerOptions(opts: types.compilerOptions) {
     _compilerOptions = opts;
+    loadVexMeta();
 }
 
 export function getCompilerOptions(): types.compilerOptions {
@@ -126,5 +259,7 @@ export default {
     loadJson,
     writeFile,
     setCompilerOptions,
-    getCompilerOptions
+    getCompilerOptions,
+    handleVersioningCleanup,
+    saveVexMeta
 };

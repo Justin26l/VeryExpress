@@ -35,6 +35,9 @@ export async function generate(
         writtedDir: [],
     };
 
+    // provide compilerOptions to utils.common for meta handling
+    utils.common.setCompilerOptions(options);
+
     const dir = {
         roleSrcDir: path.posix.join(options.srcDir, "roles"),
         roleDir: path.posix.join(options.sysDir, "_roles"),
@@ -53,7 +56,8 @@ export async function generate(
         controllerPath: string,
     }[] = [];
 
-    // fs.rmSync(options.sysDir, { recursive: true, force: true });
+    // handle versioning cleanup: if major.minor changed since last generate, remove sysDir
+    utils.common.handleVersioningCleanup();
 
     // create all directories if not exist
     if (!fs.existsSync(options.rootDir)) { fs.mkdirSync(options.rootDir); }
@@ -181,6 +185,9 @@ export async function generate(
 
     // generate project files
     await projectSettingsGen.compile(options);
+
+    // record last generated version once after full generation
+    utils.common.saveVexMeta();
 
     // await configGen.compile(options);
 
