@@ -3,7 +3,7 @@ import { Request, Response, NextFunction } from "express";
 import { DataSource, EntityTarget, ObjectLiteral } from "typeorm";
 import mongoose, { Document } from "mongoose";
 import { sqlMigrations } from "../_models/sqlMigration.gen";
-import { IVexRepository } from "../_types/IVexRepository.gen";
+import { VexRepository } from "../_types/vex";
 import { TypeOrmRepositoryAdapter } from "./TypeOrmRepositoryAdapter.gen";
 import { MongooseRepositoryAdapter } from "./MongooseRepositoryAdapter.gen";
 import utils from "./../_utils";
@@ -128,9 +128,9 @@ export class VexDbConnector {
             .catch((err) => utils.log.errorMongo("Error disconnecting Mongoose", err));
     }
 
-    // getRepository<T extends Document>(target: { schema: unknown; modelName: string }): IVexRepository<T>;
-    getRepository<T extends ObjectLiteral>(target: EntityTarget<T>): IVexRepository<T>;
-    getRepository<T>(target: EntityTarget<ObjectLiteral> | any): IVexRepository<T> {
+    // getRepository<T extends Document>(target: { schema: unknown; modelName: string }): VexRepository<T>;
+    getRepository<T extends ObjectLiteral>(target: EntityTarget<T>): VexRepository<T>;
+    getRepository<T>(target: EntityTarget<ObjectLiteral> | any): VexRepository<T> {
         // TODO: complete mongoose support, handle join and select
         if (target?.schema && target?.modelName) {
             console.warn("VeryExpress unified db adapter (MongooseRepositoryAdapter) for Mongodb are under development, use with caution. Contribute to \"https://github.com/Justin26l/VeryExpress\"");

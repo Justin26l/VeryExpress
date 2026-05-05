@@ -6,8 +6,7 @@ import path from "path";
 
 import JWTKeyStore from "./JWTKeyStore.gen";
 
-import VexResponseError from "../../_types/VexResponseError.gen";
-import { IVexRepository } from "../../_types/IVexRepository.gen";
+import { VexRepository, VexResErr } from "../../_types/vex";
 
 import VexDb from "../VexDb.gen";
 import { UserEntity, UserWithRelations } from "../../_models/UserModel.gen";
@@ -22,10 +21,10 @@ interface tokenObj {
 export default class JWTService {
     private keyStore = new JWTKeyStore();
 
-    private get userRepo(): IVexRepository<UserWithRelations> {
+    private get userRepo(): VexRepository<UserWithRelations> {
         return VexDb.getRepository<UserWithRelations>(UserEntity);
     }
-    private get sessionRepo(): IVexRepository<Session> {
+    private get sessionRepo(): VexRepository<Session> {
         return VexDb.getRepository<Session>(SessionEntity);
     }
 
@@ -51,10 +50,10 @@ export default class JWTService {
         }
         catch (error) {
             if (error instanceof jwt.TokenExpiredError) {
-                throw new VexResponseError(401, null, "Token expired");
+                throw new VexResErr(401, null, "Token expired");
             }
             else if (error instanceof jwt.JsonWebTokenError) {
-                throw new VexResponseError(401, null, "jwt malformed");
+                throw new VexResErr(401, null, "jwt malformed");
             }
             else {
                 throw error;
@@ -67,7 +66,7 @@ export default class JWTService {
      */
     public async assignTokens(user: UserWithRelations, provider: string): Promise<string> {
         if(!user._id) {
-            throw new VexResponseError(500, null, "User Data Error, User._id missing.");
+            throw new VexResErr(500, null, "User Data Error, User._id missing.");
         }
 
         const sessionCode = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);

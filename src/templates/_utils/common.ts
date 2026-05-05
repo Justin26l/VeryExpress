@@ -2,7 +2,7 @@
 import jsYaml from "js-yaml";
 import fs from "fs";
 import { Request } from "express";
-import VexResponseError from "../_types/VexResponseError.gen";
+import { VexResErr } from "../_types/vex";
 import response from "./response.gen";
 
 export function loadYaml(yamlFilePath: string) {
@@ -34,7 +34,7 @@ export function parseFieldsSelect(req: Request) : string[] | undefined {
         _selectRaw = req.body._select;
     }
 
-    const ErrorDataType = new VexResponseError(400, response.code.err_validation, "Invalid field \"_select\", only json array of string accepted");
+    const ErrorDataType = new VexResErr(400, response.code.err_validation, "Invalid field \"_select\", only json array of string accepted");
     if (!Array.isArray(_selectRaw)) {
         throw ErrorDataType;
     }
@@ -67,7 +67,7 @@ export function parseCollectionJoin(req: Request, availablePopulateOptions?: {[k
         _joinRaw = req.body._join;
     }
 
-    const ErrorDataType = new VexResponseError(400, response.code.err_validation, "Invalid field \"_join\", only json array of string accepted");
+    const ErrorDataType = new VexResErr(400, response.code.err_validation, "Invalid field \"_join\", only json array of string accepted");
     if (!Array.isArray(_joinRaw)) {
         throw ErrorDataType;
     }
@@ -119,7 +119,7 @@ export function parseRelations(req: Request, allowedRelations?: string[]): strin
         _joinRaw = req.body._join;
     }
 
-    const err = new VexResponseError(400, response.code.err_validation, "Invalid field \"_join\", only json array of relation names accepted");
+    const err = new VexResErr(400, response.code.err_validation, "Invalid field \"_join\", only json array of relation names accepted");
     if (!Array.isArray(_joinRaw)) throw err;
     for (const item of _joinRaw) {
         if (typeof item !== "string") throw err;

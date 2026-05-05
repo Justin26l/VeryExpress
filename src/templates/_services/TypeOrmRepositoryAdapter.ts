@@ -1,10 +1,9 @@
 // {{headerComment}}
 import { Repository, ObjectLiteral, FindOptionsWhere, DeepPartial, In, Not, Like, MoreThan, LessThan, MoreThanOrEqual, LessThanOrEqual, Raw } from "typeorm";
-import { IVexRepository } from "../_types/IVexRepository.gen";
-import { Select, Filter, Join, FieldFilter } from "../_types/VexRequest.gen";
+import { VexRepository, Select, Filter, Join, FieldOperators } from "../_types/vex";
 import utils from "../_utils";
 
-export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements IVexRepository<T> {
+export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRepository<T> {
     constructor(private repo: Repository<T>) {}
 
     private mapOperators(filter: Filter<T>): Record<string, unknown> {
@@ -24,43 +23,41 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements IVexRe
             }
             else if (val && typeof val === "object" && !Array.isArray(val)) {
                 // Common mongo-like operators supported in JSON payloads
-                val as FieldFilter<T[Extract<keyof T, string>]>;
+                const oval = val as FieldOperators;
 
-                if (val?.$in && Array.isArray(val.$in) && val.$in.every((v: unknown) => typeof v === "string")) {
-                    out[key] = In(val.$in);
+                if (oval?.$in && Array.isArray(oval.$in) && oval.$in.every((v: unknown) => typeof v === "string")) {
+                    out[key] = In(oval.$in);
                     continue;
                 }
-                if (val?.$nin && Array.isArray(val.$nin) && val.$nin.every((v: unknown) => typeof v === "string")) {
-                    out[key] = Not(In(val.$nin));
+                if (oval?.$nin && Array.isArray(oval.$nin) && oval.$nin.every((v: unknown) => typeof v === "string")) {
+                    out[key] = Not(In(oval.$nin));
 
                     continue;
                 }
-                if (val?.$gt) {
-                    out[key] = MoreThan(val.$gt);
+                if (oval?.$gt) {
+                    out[key] = MoreThan(oval.$gt);
                     continue;
                 }
-                if (val?.$gte) {
-                    out[key] = MoreThanOrEqual(val.$gte);
+                if (oval?.$gte) {
+                    out[key] = MoreThanOrEqual(oval.$gte);
                     continue;
                 }
-                if (val?.$lt) {
-                    out[key] = LessThan(val.$lt);
+                if (oval?.$lt) {
+                    out[key] = LessThan(oval.$lt);
                     continue;
                 }
-                if (val?.$lte) {
-                    out[key] = LessThanOrEqual(val.$lte);
+                if (oval?.$lte) {
+                    out[key] = LessThanOrEqual(oval.$lte);
                     continue;
                 }
-                if (val?.$like) {
-                    out[key] = Like(val.$like as string);
+                if (oval?.$like) {
+                    out[key] = Like(oval.$like as string);
                     continue;
                 }
                 // if (val?.$raw) {
                 //     out[key] = Raw(val.$raw as string);
                 //     continue;
                 // }
-                // Recurse for nested objects
-                out[key] = this.mapOperators(val);
             } else {
                 out[key] = val;
             }

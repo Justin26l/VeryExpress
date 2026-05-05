@@ -1,7 +1,7 @@
 // {{headerComment}}
 import { UserEntity, User, UserWithRelations } from "./../../_models/UserModel.gen";
 import { UserAuthProfilesEntity, UserAuthProfiles } from "./../../_models/UserAuthProfilesModel.gen";
-import { IVexRepository } from "./../../_types/IVexRepository.gen";
+import { VexRepository } from "./../../_types/vex";
 import JWTService from "./../auth/JWTService.gen";
 import OAuthProfileMap, { IProfile } from "./OAuthProfileMap.gen";
 import VexDb from "./../VexDb.gen";
@@ -9,11 +9,11 @@ import utils from "../../_utils";
 
 export default class OAuthStrategyService {
 
-    private get userRepo(): IVexRepository<UserWithRelations> {
+    private get userRepo(): VexRepository<UserWithRelations> {
         return VexDb.getRepository<UserWithRelations>(UserEntity);
     }
 
-    private get uapRepo(): IVexRepository<UserAuthProfiles> {
+    private get uapRepo(): VexRepository<UserAuthProfiles> {
         return VexDb.getRepository<UserAuthProfiles>(UserAuthProfilesEntity);
     }
 

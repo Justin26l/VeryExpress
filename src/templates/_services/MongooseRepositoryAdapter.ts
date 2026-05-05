@@ -1,10 +1,9 @@
 // {{headerComment}}
 import { Model, Document } from "mongoose";
-import { IVexRepository } from "../_types/IVexRepository.gen";
-import { Select, Filter, Join } from "../_types/VexRequest.gen";
+import { VexRepository, Select, Filter, Join } from "../_types/vex";
 import utils from "../_utils";
 
-export class MongooseRepositoryAdapter<T extends Document> implements IVexRepository<T> {
+export class MongooseRepositoryAdapter<T extends Document> implements VexRepository<T> {
     constructor(private model: Model<T>) {}
 
     public get native(): Model<T> {

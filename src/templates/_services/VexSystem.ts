@@ -1,8 +1,8 @@
 // {{headerComment}}
 import { Request, Response, NextFunction } from "express";
 import utils from "./../_utils";
-import VexResponse from "../_types/VexResponse.gen";
-import VexResponseError from "../_types/VexResponseError.gen";
+import { VexResErr, VexResOk } from "../_types/vex";
+
 
 export default class VexSystem {
 
@@ -11,11 +11,11 @@ export default class VexSystem {
      * Register AFTER all routes: app.use(VexSystem.responseHandler)
      */
     static responseHandler(err: unknown, _req: Request, res: Response, _next: NextFunction): Response {
-        if (err instanceof VexResponse) {
+        if (err instanceof VexResOk) {
             return utils.response.send(res, err.status, err.body);
         }
-        else if (err instanceof VexResponseError) {
-            const vexErr = err as VexResponseError;
+        else if (err instanceof VexResErr) {
+            const vexErr = err as VexResErr;
             return utils.response.send(res, vexErr.status, {
                 code: vexErr.ret_code,
                 message: vexErr.message,

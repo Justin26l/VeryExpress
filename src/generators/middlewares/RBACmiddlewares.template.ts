@@ -9,8 +9,7 @@ export default function RBACmiddlewareTemplate(options: {
     let template: string = options.template || `{{headerComment}}
 import { Request, Response, NextFunction } from "express";
 import * as roles from "../_roles";
-import VexResponse from "../_types/VexResponse.gen";
-import VexResponseError from "../_types/VexResponseError.gen";
+import { VexResErr } from "../_types/vex";
 import log from "../_utils/logger.gen";
 
 export { roles };
@@ -35,7 +34,7 @@ export default class RoleBaseAccessControl {
     public middleware = (req: Request, res: Response, next: NextFunction) => {
         // log.info("RBAC.middleware", req.method, req.path, req.user);
         if ( !req.user ) {
-            throw new VexResponseError(401);
+            throw new VexResErr(401);
         }
         const user :any = req.user;
         const actionKey = req.method !== "POST" ? req.method : req.path.endsWith("/search") ? "POST /search" : "POST /";
@@ -54,7 +53,7 @@ export default class RoleBaseAccessControl {
     });
 
     roleSwitch += `else {
-                throw new VexResponseError(403);
+                throw new VexResErr(403);
             }`;
             
     template = template.replace(/{{roleSwitch}}/g, roleSwitch);

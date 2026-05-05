@@ -78,7 +78,7 @@ export default function controllerTemplate(templateOptions: {
         [`@SuccessResponse(200, "Success")`, "@Post(\"/search\")"],
         `public async getList${documentName}(@Body() body: { filter: Filter${documentName}, join?: string[], select?: string[] }): Promise<VexResponse<${documentName}[]>>`,
         `const result = await this.repo.find(body.filter as Filter<${documentName}>, body.join, body.select);
-        throw new VexResponse(200, { result });`
+        throw new VexResOk(200, { result });`
     );
 
     const getRoute = buildMethod(
@@ -86,8 +86,8 @@ export default function controllerTemplate(templateOptions: {
         [`@SuccessResponse(200, "Success")`, "@Get(\"{id}\")"],
         `public async get${documentName}(${idParam}, @Query() join?: string[], @Query() select?: string[]): Promise<VexResponse<${documentName}>>`,
         `const result = await this.repo.findOne({ _id: id }, join, select);
-        if (!result) throw new VexResponseError(404);
-        throw new VexResponse(200, { result });`
+        if (!result) throw new VexResErr(404);
+        throw new VexResOk(200, { result });`
     );
 
     const postRoute = buildMethod(
@@ -96,9 +96,9 @@ export default function controllerTemplate(templateOptions: {
         `public async create${documentName}(@Body() body: ${documentName}): Promise<VexResponse<${documentName}>>`,
         `${cleanId}
         const result = await this.repo.create(body);
-        if (!result) throw new VexResponseError(400);
+        if (!result) throw new VexResErr(400);
         this.setStatus(201);
-        throw new VexResponse(201, { result });`
+        throw new VexResOk(201, { result });`
     );
 
     const putRoute = buildMethod(
@@ -107,8 +107,8 @@ export default function controllerTemplate(templateOptions: {
         `public async replace${documentName}(${idParam}, @Body() body: ${documentName}): Promise<VexResponse<${documentName}>>`,
         `${cleanId}
         const result = await this.repo.replace(id, body);
-        if (!result) throw new VexResponseError(404);
-        throw new VexResponse(200, { result });`
+        if (!result) throw new VexResErr(404);
+        throw new VexResOk(200, { result });`
     );
 
     const patchRoute = buildMethod(
@@ -117,8 +117,8 @@ export default function controllerTemplate(templateOptions: {
         `public async update${documentName}(${idParam}, @Body() body: Partial<${documentName}>): Promise<VexResponse<${documentName}>>`,
         `${cleanId}
         const result = await this.repo.update(id, body);
-        if (!result) throw new VexResponseError(404);
-        throw new VexResponse(200, { result });`
+        if (!result) throw new VexResErr(404);
+        throw new VexResOk(200, { result });`
     );
 
     const deleteRoute = buildMethod(
@@ -126,18 +126,15 @@ export default function controllerTemplate(templateOptions: {
         ["@SuccessResponse(204, \"No Content\")", "@Delete(\"{id}\")"],
         `public async delete${documentName}(${idParam}): Promise<VexResponse<void>>`,
         `const existing = await this.repo.findOne({ _id: id });
-        if (!existing) throw new VexResponseError(404);
+        if (!existing) throw new VexResErr(404);
         await this.repo.delete(id);
-        throw new VexResponse(204);`
+        throw new VexResOk(204);`
     );
 
     const source = `{{headerComment}}
 import { ${decoratorNames.join(", ")} } from "tsoa";
 import * as controllerFactory from "./_ControllerFactory.gen";
-import { IVexRepository } from "../_types/IVexRepository.gen";
-import { Select, Filter, Join, FieldFilter } from "../_types/VexRequest.gen";
-import VexResponse from "../_types/VexResponse.gen";
-import VexResponseError from "../_types/VexResponseError.gen";
+import { VexRepository, VexResponse, VexResErr, VexResOk, Select, Filter, Join, FieldFilter } from "../_types/vex";
 import VexDb from "../_services/VexDb.gen";
 
 ${optionalImports}
@@ -150,7 +147,7 @@ import { ${documentName} } from "${typePath}";
 export type Filter${documentName} = { [K in keyof ${documentName}]?: FieldFilter<${documentName}[K]> } & Filter<${documentName}>;
 
 ${classDecorators}export class ${documentName}Controller extends controllerFactory._ControllerFactory {
-    private get repo(): IVexRepository<${documentName}> {
+    private get repo(): VexRepository<${documentName}> {
         return VexDb.getRepository(${documentName}Entity);
     }
 
