@@ -6,7 +6,8 @@
 import { ResponseCode } from "./../../_utils/response.gen";
 
 export interface VexResponse<T = unknown>{
-    code?: ResponseCode;
-    message?: string | null;
+    ret_code?: ResponseCode;
+    ret_msg?: string | null;
+    elapse?: number;
     result?: T;
 }

@@ -76,7 +76,7 @@ export default function controllerTemplate(templateOptions: {
     const getListRoute = buildMethod(
         methods.includes("getList"),
         [`@SuccessResponse(200, "Success")`, "@Post(\"/search\")"],
-        `public async getList${documentName}(@Body() body: { filter: Filter${documentName}, join?: string[], select?: string[] }): Promise<VexResponse<${documentName}[]>>`,
+        `public async getList${documentName}(@Body() body: { filter: Filter${documentName}, join?: string[], select?: string[] }): Promise<VexResponse<${documentName}WithRelations[]>>`,
         `const result = await this.repo.find(body.filter as Filter<${documentName}>, body.join, body.select);
         throw new VexResOk(200, { result });`
     );
@@ -84,7 +84,7 @@ export default function controllerTemplate(templateOptions: {
     const getRoute = buildMethod(
         methods.includes("get"),
         [`@SuccessResponse(200, "Success")`, "@Get(\"{id}\")"],
-        `public async get${documentName}(${idParam}, @Query() join?: string[], @Query() select?: string[]): Promise<VexResponse<${documentName}>>`,
+        `public async get${documentName}(${idParam}, @Query() join?: string[], @Query() select?: string[]): Promise<VexResponse<${documentName}WithRelations>>`,
         `const result = await this.repo.findOne({ _id: id }, join, select);
         if (!result) throw new VexResErr(404);
         throw new VexResOk(200, { result });`
