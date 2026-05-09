@@ -42,7 +42,7 @@ export default class ApiRouter{
     }
     if (utilsGenerator.isAuthEnabled(options.compilerOptions)) {
         importRoutes.push("import Authentication from \"../_middlewares/Authentication.gen\";");
-        useRoutes.push("this.router.use(new Authentication().middleware);");
+        useRoutes.push("this.router.use(Authentication.middleware);");
     }
 
     options.routes.forEach((obj) => {

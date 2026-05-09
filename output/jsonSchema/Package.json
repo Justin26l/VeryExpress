@@ -9,7 +9,10 @@
             "patch",
             "delete"
         ],
-        "documentName": "Package"
+        "documentName": "Package",
+        "apiJoinWhitelist": [
+            "user"
+        ]
     },
     "properties": {
         "_id": {

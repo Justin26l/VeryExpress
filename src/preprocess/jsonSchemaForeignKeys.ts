@@ -2,6 +2,7 @@ import utils from "~/utils";
 import * as types from "../types/types";
 
 export function applyFkMetadata(documents: Array<{
+    path: string;
     config: types.documentConfig;
     schema: types.jsonSchema;
 }>): void {
@@ -15,6 +16,56 @@ export function applyFkMetadata(documents: Array<{
     documents.forEach((doc) => {
         schemaMap = updateRelations(schemaMap, doc.schema, {} as types.compilerOptions);
     });
+
+    // Auto-populate apiJoinWhitelist with all relation names if not explicitly set, then write back to file
+    documents.forEach((doc) => {
+        if (doc.config.apiJoinWhitelist == undefined) {
+            console.log('>>> apply apiJoinWhitelist : ' + doc.config.documentName, doc.config);
+            const whitelist = collectAllRelationNames(doc.schema);
+            doc.config.apiJoinWhitelist = whitelist;
+            doc.schema["x-documentConfig"].apiJoinWhitelist = whitelist;
+            writeApiJoinWhitelistToFile(doc.path, doc.schema, whitelist);
+        }
+    });
+}
+
+/**
+ * Write computed apiJoinWhitelist back into the JSON schema file on disk.
+ * Preserves all other fields; only patches x-documentConfig.apiJoinWhitelist.
+ */
+function writeApiJoinWhitelistToFile(schemaPath: string, schema: types.jsonSchema, whitelist: string[]): void {
+    try {
+        schema["x-documentConfig"].apiJoinWhitelist = whitelist;
+        utils.common.writeFile("Json Schema apiJoinWhitelist", schemaPath, JSON.stringify(schema, null, 4));
+    }
+    catch (err) {
+        // non-fatal: runtime memory is already set; log but continue
+        console.warn(`[warn] Failed to write apiJoinWhitelist to ${schemaPath}:`, err);
+    }
+}
+
+/**
+ * Collect all direct relation property names for a schema.
+ * - Local FK fields: camelCase(fk.schemaName)
+ * - Reverse FK relations: camelCase(propName) from interface.fkProps
+ */
+function collectAllRelationNames(schema: types.jsonSchema): string[] {
+    const names = new Set<string>();
+
+    // local FK properties on this schema
+    for (const prop of Object.values(schema.properties ?? {})) {
+        const fk = (prop as types.jsonSchemaPropsItem)["x-foreignKey"];
+        if (fk) {
+            names.add(utils.common.camelCase(fk.schemaName));
+        }
+    }
+
+    // reverse FK relations populated by applyFkMetadata
+    for (const fkProp of schema.interface?.fkProps ?? []) {
+        names.add(utils.common.camelCase(fkProp.propName));
+    }
+
+    return Array.from(names);
 }
 
 function updateRelations(jsonSchemaMap: { [key: string]: types.jsonSchema }, jsonSchema: types.jsonSchema, compilerOptions: types.compilerOptions): { [key: string]: types.jsonSchema } {

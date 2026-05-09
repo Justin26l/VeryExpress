@@ -45,8 +45,7 @@ export async function compile(
 }
 
 function applyFkToInterface(interfaceString: string, jsonSchema: types.jsonSchema): string {
-    const fkProps = jsonSchema.interface?.fkProps;
-    if (!fkProps || fkProps.length === 0) return interfaceString;
+    const fkProps = jsonSchema.interface?.fkProps || [];
 
     const titleMatch = interfaceString.match(/export interface (\w+)/);
     if (!titleMatch) return interfaceString;

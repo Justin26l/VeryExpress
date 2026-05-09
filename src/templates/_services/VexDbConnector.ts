@@ -143,7 +143,8 @@ export class VexDbConnector {
     async middleware(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             if (this.sqlUrl && (!this.dataSource || !this.dataSource.isInitialized)) {
-                throw new VexResErr(503, undefined, "Database connection error");
+                utils.response.send(res, 503, { code: utils.response.code.DB_CONN_ERR });
+                return;
             }
 
             if (this.recordAccessLog && this.dataSource?.isInitialized) {
@@ -164,7 +165,8 @@ export class VexDbConnector {
             next();
         }
         catch (err: unknown) {
-            throw new VexResErr(500, undefined, `DB Middleware error: ${(err as Error).message}`);
+            utils.response.send(res, 500, { code: utils.response.code.DB_CONN_ERR });
+            return;
         }
     }
 }

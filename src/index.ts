@@ -104,6 +104,7 @@ export async function generate(
                 config: jsonSchema["x-documentConfig"],
                 schema: jsonSchema,
             });
+            console.log(`>>> Loaded: ${jsonSchema["x-documentConfig"].documentName}`, jsonSchema["x-documentConfig"]);
             documentPaths[jsonSchema["x-documentConfig"].documentName] = schemaPath;
         }
         catch (err: any) {
@@ -153,7 +154,8 @@ export async function generate(
             jsonSchema: doc.schema,
             controllerOutDir: dir.controllerDir,
             modelDir: dir.modelDir,
-            compilerOptions: options || utils.generator.defaultCompilerOptions
+            compilerOptions: options || utils.generator.defaultCompilerOptions,
+            allSchemas: documents.map(d => d.schema),
         });
 
         // prepare route data

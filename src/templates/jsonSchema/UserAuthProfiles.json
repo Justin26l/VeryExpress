@@ -2,6 +2,7 @@
   "type": "object",
   "x-documentConfig": {
     "methods": [],
+    "apiJoinWhitelist": [],
     "documentName": "UserAuthProfiles"
   },
   "properties": {

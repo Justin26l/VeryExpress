@@ -14,7 +14,8 @@ export async function compile(options: {
     jsonSchema: types.jsonSchema,
     controllerOutDir: string,
     modelDir: string,
-    compilerOptions: types.compilerOptions
+    compilerOptions: types.compilerOptions,
+    allSchemas?: types.jsonSchema[],
 }): Promise<void> {
     const schema = options.jsonSchema as types.jsonSchema;
     const schemaConfig = schema["x-documentConfig"];
@@ -23,6 +24,9 @@ export async function compile(options: {
     const controllerToTypePath = `../_types/${schemaConfig.documentName}.gen`;
     const outPath = `${options.controllerOutDir}/${schemaConfig.documentName}Controller.gen.ts`;
 
+    const skipRoute = ["Session", "UserAuthProfiles", "UserRole"].includes(schemaConfig.documentName);
+    if (skipRoute) return;
+
     log.process(`Controller : ${schemaConfig.documentName}`);
 
     // Determine id type
@@ -30,6 +34,7 @@ export async function compile(options: {
     const idXFormat = idProps?.["x-format"] || "";
     const idType = ["Primary", "ObjectId"].includes(idXFormat) ? "string" : idProps?.type;
 
+    // Session is an internal document — skip tsoa @Route decorator
     // Build TsoaFieldDef[] from schema properties
     const fields: TsoaFieldDef[] = [];
     if (schema.type === "object") {
@@ -42,8 +47,9 @@ export async function compile(options: {
         }
     }
 
-    // Session is an internal document — skip tsoa @Route decorator
-    const skipRoute = schemaConfig.documentName === "Session";
+    // Compute allowed join paths from apiJoinWhitelist (recursive, cross-schema)
+    // apiJoinWhitelist is always populated by preprocess/jsonSchemaForeignKeys after applyFkMetadata
+    const allowedJoinPaths = schemaConfig.apiJoinWhitelist ?? [];
 
     utils.common.writeFile("Controller", outPath, controllerTemplate({
         modelPath: controllerToModelPath,
@@ -52,8 +58,8 @@ export async function compile(options: {
         methods: schemaConfig.methods,
         fields,
         idType,
-        skipRoute,
         compilerOptions: options.compilerOptions,
+        allowedJoinPaths,
     }));
 }
 

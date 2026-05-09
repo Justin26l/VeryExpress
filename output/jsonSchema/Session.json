@@ -3,6 +3,7 @@
     "x-documentConfig": {
         "documentName": "Session",
         "methods": [],
+        "apiJoinWhitelist": [],
         "uniqueIndex": [
             [
                 "sessionCode"

@@ -14,11 +14,13 @@ export default function controllerTemplate(templateOptions: {
     methods: string[];
     fields: TsoaFieldDef[];
     idType: string;
-    skipRoute: boolean;
+    allowedJoinPaths?: string[];
+    noJoins?: boolean;
     compilerOptions: types.compilerOptions;
 }): string {
-    const { documentName, fields, methods, idType, compilerOptions, skipRoute, modelPath, typePath } = templateOptions;
+    const { documentName, fields, methods, idType, compilerOptions, modelPath, typePath, allowedJoinPaths } = templateOptions;
     const useRBAC = !!compilerOptions.useRBAC;
+    const useJoinWhitelist = allowedJoinPaths !== undefined;
     const useAuth = compilerOptions.auth.localAuth || utils.generator.OAuthProviders(compilerOptions).length > 0;
     const cleanId = compilerOptions.app.allowApiCreateUpdate_id
         ? ""
@@ -26,36 +28,34 @@ export default function controllerTemplate(templateOptions: {
     const routePath = documentName.toLowerCase();
 
     // body fields — exclude _id (auto-generated primary key)
-    const bodyFields = fields.filter(f => f.name !== "_id");
+    // const bodyFields = fields.filter(f => f.name !== "_id");
 
     // ── tsoa decorator imports ──────────────────────────────────────────────────
     const decoratorNames: string[] = [];
-    if (!skipRoute) {
-        decoratorNames.push("Route", "Tags", "Body", "Path", "Query", "SuccessResponse");
-        if (useRBAC) decoratorNames.push("Middlewares", "Security");
-        if (methods.includes("get"))                                decoratorNames.push("Get");
-        if (methods.includes("post") || methods.includes("getList")) decoratorNames.push("Post");
-        if (methods.includes("put"))                                decoratorNames.push("Put");
-        if (methods.includes("patch"))                              decoratorNames.push("Patch");
-        if (methods.includes("delete"))                             decoratorNames.push("Delete");
-    }
+    decoratorNames.push("Route", "Tags", "Body", "Path", "Query", "SuccessResponse");
+    if (useRBAC || useJoinWhitelist) decoratorNames.push("Middlewares");
+    if (useRBAC) decoratorNames.push("Security");
+    if (methods.includes("get"))                                decoratorNames.push("Get");
+    if (methods.includes("post") || methods.includes("getList")) decoratorNames.push("Post");
+    if (methods.includes("put"))                                decoratorNames.push("Put");
+    if (methods.includes("patch"))                              decoratorNames.push("Patch");
+    if (methods.includes("delete"))                             decoratorNames.push("Delete");
 
     const optionalImports = [
-        useRBAC && !skipRoute ? "import RoleBaseAccessControl from \"../_middlewares/RoleBaseAccessControl.gen\";" : "",
-        useAuth && !skipRoute ? "import Authentication from \"../_middlewares/Authentication.gen\";" : ""
+        useRBAC ? "import RoleBaseAccessControl from \"../_middlewares/RoleBaseAccessControl.gen\";" : "",
+        useAuth ? "import Authentication from \"../_middlewares/Authentication.gen\";" : "",
+        useJoinWhitelist ? "import JoinWhitelistMiddleware from \"../_middlewares/JoinWhitelistMiddleware.gen\";" : "",
     ].filter(Boolean).join("\n");
 
     // ── Class decorators ────────────────────────────────────────────────────────
     const classDecoratorLines: string[] = [];
-    if (!skipRoute) {
-        classDecoratorLines.push(`@Route("${routePath}")`);
-        classDecoratorLines.push(`@Tags("${documentName}")`);
-        if (useRBAC) classDecoratorLines.push(`@Middlewares(new RoleBaseAccessControl("${documentName}").middleware)`);
-        if (useAuth) {
-            classDecoratorLines.push("@Middlewares(new Authentication().middleware)");
-            classDecoratorLines.push("@Security(\"BearerAuth\")");
-            classDecoratorLines.push("@Security(\"AuthIndex\")");
-        }
+    classDecoratorLines.push(`@Route("${routePath}")`);
+    classDecoratorLines.push(`@Tags("${documentName}")`);
+    if (useRBAC) classDecoratorLines.push(`@Middlewares(RoleBaseAccessControl.middleware("${documentName}"))`);
+    if (useAuth) {
+        classDecoratorLines.push("@Middlewares(Authentication.middleware)");
+        classDecoratorLines.push("@Security(\"BearerAuth\")");
+        classDecoratorLines.push("@Security(\"AuthIndex\")");
     }
     const classDecorators = classDecoratorLines.length > 0 ? classDecoratorLines.join("\n") + "\n" : "";
 
@@ -69,13 +69,22 @@ export default function controllerTemplate(templateOptions: {
         signature: string,
         body: string
     ): string {
-        if (!enabled || skipRoute) return `// ${decorators[decorators.length - 1].replace(/^@/, "")} disabled`;
+        if (!enabled) return `// ${decorators[0].replace(/^@/, "")} disabled`;
         return `${decorators.join("\n    ")}\n    ${signature} {\n        ${body}\n    }`;
     }
 
+    // Join whitelist decorator — only applied to routes that accept join params
+    const joinWhitelistDecorator = useJoinWhitelist
+        ? `@Middlewares(JoinWhitelistMiddleware.middleware([${allowedJoinPaths!.map(p => `"${p}"`).join(", ")}]))`
+        : null;
+
     const getListRoute = buildMethod(
         methods.includes("getList"),
-        ["@Post(\"/search\")", `@SuccessResponse(200, "Success")`],
+        [
+            "@Post(\"/search\")",
+            `@SuccessResponse(200, "Success")`,
+            ...(joinWhitelistDecorator ? [joinWhitelistDecorator] : []),
+        ],
         `public async getList${documentName}(@Body() body: { filter: Filter${documentName}, join?: string[], select?: string[] }): Promise<VexResponse<${documentName}WithRelations[]>>`,
         `const result = await this.repo.find(body.filter as Filter<${documentName}>, body.join, body.select);
         throw new VexResOk(200, { result });`
@@ -83,7 +92,11 @@ export default function controllerTemplate(templateOptions: {
 
     const getRoute = buildMethod(
         methods.includes("get"),
-        ["@Get(\"{id}\")", `@SuccessResponse(200, "Success")`],
+        [
+            "@Get(\"{id}\")",
+            `@SuccessResponse(200, "Success")`,
+            ...(joinWhitelistDecorator ? [joinWhitelistDecorator] : []),
+        ],
         `public async get${documentName}(${idParam}, @Query() join?: string[], @Query() select?: string[]): Promise<VexResponse<${documentName}WithRelations>>`,
         `const result = await this.repo.findOne({ _id: id }, join, select);
         if (!result) throw new VexResErr(404);

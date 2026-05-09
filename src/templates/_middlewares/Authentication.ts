@@ -6,7 +6,7 @@ import log from "../_utils/logger.gen";
 import response from "../_utils/response.gen";
 import { VexResErr, VexResOk } from "../_types/vex";
 
-export default class Authentication {
+class Authentication {
 
     private JWTService = new JWTService();
 
@@ -43,3 +43,5 @@ export default class Authentication {
         }
     };
 }
+
+export default new Authentication();

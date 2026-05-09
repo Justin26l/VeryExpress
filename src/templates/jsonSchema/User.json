@@ -1,11 +1,12 @@
 {
   "type": "object",
   "x-documentConfig": {
+    "documentName": "User",
     "methods": [
       "get",
       "patch"
     ],
-    "documentName": "User",
+    "apiJoinWhitelist": [],
     "uniqueIndex": [
       [
         "email"

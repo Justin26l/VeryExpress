@@ -9,7 +9,10 @@
             "patch",
             "delete"
         ],
-        "documentName": "UserContact"
+        "documentName": "UserContact",
+        "apiJoinWhitelist": [
+            "user"
+        ]
     },
     "properties": {
         "_id": {

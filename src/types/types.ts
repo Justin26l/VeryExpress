@@ -117,6 +117,7 @@ export interface documentConfig {
     keyPrefix?: string;
     methods: schemaMethod[];
     uniqueIndex?: string[][];
+    apiJoinWhitelist?: string[];
 }
 
 /**
