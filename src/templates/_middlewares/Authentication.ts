@@ -4,6 +4,7 @@ import { JsonWebTokenError } from "jsonwebtoken";
 import JWTService from "../_services/auth/JWTService.gen";
 import log from "../_utils/logger.gen";
 import response from "../_utils/response.gen";
+import { VexResErr, VexResOk } from "../_types/vex";
 
 export default class Authentication {
 
@@ -31,13 +32,13 @@ export default class Authentication {
         }
         catch (e: any) {
             if (typeof e === "number") {
-                response.send(res, e);
+                throw new VexResErr(e, undefined);
             }
             else if (e instanceof JsonWebTokenError) {
-                response.send(res, 400, { message: e?.message});
+                throw new VexResErr(400, undefined, e?.message);
             }
             else {
-                response.send(res, 500, { message: e?.message});
+                throw new VexResErr(500, undefined, e?.message);
             }
         }
     };

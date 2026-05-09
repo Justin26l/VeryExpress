@@ -3,7 +3,7 @@ import { Request, Response, NextFunction } from "express";
 import { DataSource, EntityTarget, ObjectLiteral } from "typeorm";
 import mongoose, { Document } from "mongoose";
 import { sqlMigrations } from "../_models/sqlMigration.gen";
-import { VexRepository } from "../_types/vex";
+import { VexRepository, VexResErr } from "../_types/vex";
 import { TypeOrmRepositoryAdapter } from "./TypeOrmRepositoryAdapter.gen";
 import { MongooseRepositoryAdapter } from "./MongooseRepositoryAdapter.gen";
 import utils from "./../_utils";
@@ -143,8 +143,7 @@ export class VexDbConnector {
     async middleware(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             if (this.sqlUrl && (!this.dataSource || !this.dataSource.isInitialized)) {
-                utils.response.send(res, 503, { code: utils.response.code.DB_CONN_ERR });
-                return;
+                throw new VexResErr(503, undefined, "Database connection error");
             }
 
             if (this.recordAccessLog && this.dataSource?.isInitialized) {
@@ -165,7 +164,7 @@ export class VexDbConnector {
             next();
         }
         catch (err: unknown) {
-            utils.response.send(res, 503, { code: utils.response.code.DB_Action_ERR, message: (err as Error).message });
+            throw new VexResErr(500, undefined, `DB Middleware error: ${(err as Error).message}`);
         }
     }
 }

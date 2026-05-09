@@ -75,7 +75,7 @@ export default function controllerTemplate(templateOptions: {
 
     const getListRoute = buildMethod(
         methods.includes("getList"),
-        [`@SuccessResponse(200, "Success")`, "@Post(\"/search\")"],
+        ["@Post(\"/search\")", `@SuccessResponse(200, "Success")`],
         `public async getList${documentName}(@Body() body: { filter: Filter${documentName}, join?: string[], select?: string[] }): Promise<VexResponse<${documentName}WithRelations[]>>`,
         `const result = await this.repo.find(body.filter as Filter<${documentName}>, body.join, body.select);
         throw new VexResOk(200, { result });`
@@ -83,7 +83,7 @@ export default function controllerTemplate(templateOptions: {
 
     const getRoute = buildMethod(
         methods.includes("get"),
-        [`@SuccessResponse(200, "Success")`, "@Get(\"{id}\")"],
+        ["@Get(\"{id}\")", `@SuccessResponse(200, "Success")`],
         `public async get${documentName}(${idParam}, @Query() join?: string[], @Query() select?: string[]): Promise<VexResponse<${documentName}WithRelations>>`,
         `const result = await this.repo.findOne({ _id: id }, join, select);
         if (!result) throw new VexResErr(404);
@@ -92,7 +92,7 @@ export default function controllerTemplate(templateOptions: {
 
     const postRoute = buildMethod(
         methods.includes("post"),
-        [`@SuccessResponse(201, "Created")`, "@Post()"],
+        ["@Post()", `@SuccessResponse(201, "Created")`],
         `public async create${documentName}(@Body() body: ${documentName}): Promise<VexResponse<${documentName}>>`,
         `${cleanId}
         const result = await this.repo.create(body);
@@ -103,7 +103,7 @@ export default function controllerTemplate(templateOptions: {
 
     const putRoute = buildMethod(
         methods.includes("put"),
-        [`@SuccessResponse(200, "Success")`, "@Put(\"{id}\")"],
+        ["@Put(\"{id}\")", `@SuccessResponse(200, "Success")`],
         `public async replace${documentName}(${idParam}, @Body() body: ${documentName}): Promise<VexResponse<${documentName}>>`,
         `${cleanId}
         const result = await this.repo.replace(id, body);
@@ -113,7 +113,7 @@ export default function controllerTemplate(templateOptions: {
 
     const patchRoute = buildMethod(
         methods.includes("patch"),
-        [`@SuccessResponse(200, "Success")`, "@Patch(\"{id}\")"],
+        ["@Patch(\"{id}\")", `@SuccessResponse(200, "Success")`],
         `public async update${documentName}(${idParam}, @Body() body: Partial<${documentName}>): Promise<VexResponse<${documentName}>>`,
         `${cleanId}
         const result = await this.repo.update(id, body);
@@ -123,7 +123,7 @@ export default function controllerTemplate(templateOptions: {
 
     const deleteRoute = buildMethod(
         methods.includes("delete"),
-        ["@SuccessResponse(204, \"No Content\")", "@Delete(\"{id}\")"],
+        ["@Delete(\"{id}\")", `@SuccessResponse(204, "No Content")`],
         `public async delete${documentName}(${idParam}): Promise<VexResponse<void>>`,
         `const existing = await this.repo.findOne({ _id: id });
         if (!existing) throw new VexResErr(404);
@@ -140,7 +140,7 @@ import VexDb from "../_services/VexDb.gen";
 ${optionalImports}
 
 import { ${documentName}Entity } from "${modelPath}";
-import { ${documentName} } from "${typePath}";
+import { ${documentName}, ${documentName}WithRelations } from "${typePath}";
 
 // extra type defined due to tsoa cannot capture runtime generic types,
 // this will make OAS have complete input parameters & correct validation

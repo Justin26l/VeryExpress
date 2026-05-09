@@ -1,5 +1,5 @@
 // {{headerComment}}
-import { Repository, ObjectLiteral, FindOptionsWhere, DeepPartial, In, Not, Like, MoreThan, LessThan, MoreThanOrEqual, LessThanOrEqual, Raw } from "typeorm";
+import { Repository, ObjectLiteral, FindOptionsWhere, DeepPartial, In, Not, Like, MoreThan, LessThan, MoreThanOrEqual, LessThanOrEqual, Raw, FindManyOptions } from "typeorm";
 import { VexRepository, Select, Filter, Join, FieldOperators } from "../_types/vex";
 import utils from "../_utils";
 
@@ -69,12 +69,14 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
         return this.repo;
     }
 
-    find(filter: Filter<T>, join?: Join, select?: Select): Promise<T[]> {
+    find(filter: Filter<T>, join?: Join, select?: Select, options?: FindManyOptions<T>): Promise<T[]> {
         const where = this.mapOperators(filter) as FindOptionsWhere<T>;
         return this.repo.find({ 
             select,
             where,
-            relations: join 
+            relations: join,
+            take: options?.take || 500,
+            ...options
         });
     }
 
