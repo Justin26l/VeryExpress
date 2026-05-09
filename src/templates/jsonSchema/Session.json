@@ -4,6 +4,7 @@
         "documentName": "Session",
         "methods": [],
         "apiJoinWhitelist": [],
+        "apiSkipRoute": true,
         "uniqueIndex": [
             [
                 "sessionCode"

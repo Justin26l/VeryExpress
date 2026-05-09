@@ -14,13 +14,12 @@ export default function controllerTemplate(templateOptions: {
     methods: string[];
     fields: TsoaFieldDef[];
     idType: string;
-    allowedJoinPaths?: string[];
-    noJoins?: boolean;
+    noApiRelations?: boolean;
+    useJoinWhitelist?: boolean;
     compilerOptions: types.compilerOptions;
 }): string {
-    const { documentName, fields, methods, idType, compilerOptions, modelPath, typePath, allowedJoinPaths } = templateOptions;
+    const { documentName, fields, methods, idType, noApiRelations, useJoinWhitelist, compilerOptions, modelPath, typePath } = templateOptions;
     const useRBAC = !!compilerOptions.useRBAC;
-    const useJoinWhitelist = allowedJoinPaths !== undefined;
     const useAuth = compilerOptions.auth.localAuth || utils.generator.OAuthProviders(compilerOptions).length > 0;
     const cleanId = compilerOptions.app.allowApiCreateUpdate_id
         ? ""
@@ -50,8 +49,8 @@ export default function controllerTemplate(templateOptions: {
     // ── Class decorators ────────────────────────────────────────────────────────
     const classDecoratorLines: string[] = [];
     classDecoratorLines.push(`@Route("${routePath}")`);
-    classDecoratorLines.push(`@Tags("${documentName}")`);
-    if (useRBAC) classDecoratorLines.push(`@Middlewares(RoleBaseAccessControl.middleware("${documentName}"))`);
+    classDecoratorLines.push(`@Tags(schemanName)`);
+    if (useRBAC) classDecoratorLines.push(`@Middlewares(RoleBaseAccessControl.middleware(schemanName))`);
     if (useAuth) {
         classDecoratorLines.push("@Middlewares(Authentication.middleware)");
         classDecoratorLines.push("@Security(\"BearerAuth\")");
@@ -75,7 +74,7 @@ export default function controllerTemplate(templateOptions: {
 
     // Join whitelist decorator — only applied to routes that accept join params
     const joinWhitelistDecorator = useJoinWhitelist
-        ? `@Middlewares(JoinWhitelistMiddleware.middleware([${allowedJoinPaths!.map(p => `"${p}"`).join(", ")}]))`
+        ? `@Middlewares(JoinWhitelistMiddleware.middleware(schemanName))`
         : null;
 
     const getListRoute = buildMethod(
@@ -85,7 +84,7 @@ export default function controllerTemplate(templateOptions: {
             `@SuccessResponse(200, "Success")`,
             ...(joinWhitelistDecorator ? [joinWhitelistDecorator] : []),
         ],
-        `public async getList${documentName}(@Body() body: { filter: Filter${documentName}, join?: string[], select?: string[] }): Promise<VexResponse<${documentName}WithRelations[]>>`,
+        `public async getList${documentName}(@Body() body: { filter: Filter${documentName}, join?: string[], select?: string[] }): Promise<VexResponse<${documentName}${noApiRelations ? '' : 'WithRelations'}[]>>`,
         `const result = await this.repo.find(body.filter as Filter<${documentName}>, body.join, body.select);
         throw new VexResOk(200, { result });`
     );
@@ -97,7 +96,7 @@ export default function controllerTemplate(templateOptions: {
             `@SuccessResponse(200, "Success")`,
             ...(joinWhitelistDecorator ? [joinWhitelistDecorator] : []),
         ],
-        `public async get${documentName}(${idParam}, @Query() join?: string[], @Query() select?: string[]): Promise<VexResponse<${documentName}WithRelations>>`,
+        `public async get${documentName}(${idParam}, @Query() join?: string[], @Query() select?: string[]): Promise<VexResponse<${documentName}${noApiRelations ? '' : 'WithRelations'}>>`,
         `const result = await this.repo.findOne({ _id: id }, join, select);
         if (!result) throw new VexResErr(404);
         throw new VexResOk(200, { result });`
@@ -158,6 +157,8 @@ import { ${documentName}, ${documentName}WithRelations } from "${typePath}";
 // extra type defined due to tsoa cannot capture runtime generic types,
 // this will make OAS have complete input parameters & correct validation
 export type Filter${documentName} = { [K in keyof ${documentName}]?: FieldFilter<${documentName}[K]> } & Filter<${documentName}>;
+
+const schemanName = "${documentName}";
 
 ${classDecorators}export class ${documentName}Controller extends controllerFactory._ControllerFactory {
     private get repo(): VexRepository<${documentName}> {

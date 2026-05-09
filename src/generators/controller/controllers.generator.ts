@@ -24,8 +24,7 @@ export async function compile(options: {
     const controllerToTypePath = `../_types/${schemaConfig.documentName}.gen`;
     const outPath = `${options.controllerOutDir}/${schemaConfig.documentName}Controller.gen.ts`;
 
-    const skipRoute = ["Session", "UserAuthProfiles", "UserRole"].includes(schemaConfig.documentName);
-    if (skipRoute) return;
+    if (schemaConfig.apiSkipRoute) return;
 
     log.process(`Controller : ${schemaConfig.documentName}`);
 
@@ -47,10 +46,6 @@ export async function compile(options: {
         }
     }
 
-    // Compute allowed join paths from apiJoinWhitelist (recursive, cross-schema)
-    // apiJoinWhitelist is always populated by preprocess/jsonSchemaForeignKeys after applyFkMetadata
-    const allowedJoinPaths = schemaConfig.apiJoinWhitelist ?? [];
-
     utils.common.writeFile("Controller", outPath, controllerTemplate({
         modelPath: controllerToModelPath,
         typePath: controllerToTypePath,
@@ -58,8 +53,9 @@ export async function compile(options: {
         methods: schemaConfig.methods,
         fields,
         idType,
+        useJoinWhitelist: schema["x-documentConfig"].apiJoinWhitelist !== undefined,
+        noApiRelations: Boolean(schema["x-documentConfig"].noApiRelations),
         compilerOptions: options.compilerOptions,
-        allowedJoinPaths,
     }));
 }
 

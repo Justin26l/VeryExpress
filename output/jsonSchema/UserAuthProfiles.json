@@ -3,6 +3,7 @@
     "x-documentConfig": {
         "methods": [],
         "apiJoinWhitelist": [],
+        "apiSkipRoute": true,
         "documentName": "UserAuthProfiles"
     },
     "properties": {

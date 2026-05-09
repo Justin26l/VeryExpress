@@ -118,6 +118,8 @@ export interface documentConfig {
     methods: schemaMethod[];
     uniqueIndex?: string[][];
     apiJoinWhitelist?: string[];
+    noApiRelations?: boolean;
+    apiSkipRoute?: boolean;
 }
 
 /**

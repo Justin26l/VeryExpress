@@ -20,7 +20,6 @@ export function applyFkMetadata(documents: Array<{
     // Auto-populate apiJoinWhitelist with all relation names if not explicitly set, then write back to file
     documents.forEach((doc) => {
         if (doc.config.apiJoinWhitelist == undefined) {
-            console.log('>>> apply apiJoinWhitelist : ' + doc.config.documentName, doc.config);
             const whitelist = collectAllRelationNames(doc.schema);
             doc.config.apiJoinWhitelist = whitelist;
             doc.schema["x-documentConfig"].apiJoinWhitelist = whitelist;

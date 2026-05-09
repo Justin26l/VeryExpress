@@ -7,6 +7,8 @@
             "patch"
         ],
         "apiJoinWhitelist": [],
+        "apiSkipRoute": false,
+        "noApiRelations": true,
         "uniqueIndex": [
             [
                 "email"
