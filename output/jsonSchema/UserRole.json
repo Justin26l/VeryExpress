@@ -2,9 +2,10 @@
     "type": "object",
     "x-documentConfig": {
         "documentName": "UserRole",
-        "methods": [],
-        "noRestApi": true,
-        "apiJoinWhitelist": []
+        "restApi": {
+            "methods": [],
+            "apiJoinWhitelist": []
+        }
     },
     "properties": {
         "_id": {
@@ -35,6 +36,5 @@
     "required": [
         "userId",
         "role"
-    ],
-    "parentSchemas": {}
+    ]
 }

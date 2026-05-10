@@ -2,20 +2,17 @@
     "type": "object",
     "x-documentConfig": {
         "documentName": "Session",
-        "methods": [],
-        "apiJoinWhitelist": [],
-        "apiSkipRoute": true,
+        "restApi": {
+            "methods": [],
+            "apiJoinWhitelist": []
+        },
         "uniqueIndex": [
             [
                 "sessionCode"
             ]
         ]
     },
-    "required": [
-        "provider",
-        "userId",
-        "expired"
-    ],
+    "required": ["provider", "userId", "expired"],
     "properties": {
         "_id": {
             "type": "string",
@@ -29,7 +26,7 @@
         "provider": {
             "type": "string"
         },
-        "userId": {
+        "userId":{
             "type": "string",
             "x-format": "UUID",
             "x-foreignKey": {

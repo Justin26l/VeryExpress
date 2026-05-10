@@ -54,7 +54,14 @@ function checkDocumentConfig(jsonSchema: types.jsonSchema, jsonSchemaPath: strin
         jsonSchema["x-documentConfig"].documentName = fileName;
     }
 
-    if (!jsonSchema["x-documentConfig"].restApi.methods) {
+    if (!jsonSchema["x-documentConfig"].restApi) {
+        log.warn(`Json Schema Formatting: "${jsonSchemaPath}" x-documentConfig.restApi not found, supported restApi.methods added.`);
+        jsonSchema["x-documentConfig"].restApi = {
+            methods: Object.assign([], types.schemaMethodArr),
+        };
+    }
+
+    if (!jsonSchema["x-documentConfig"].restApi?.methods) {
         log.warn(`Json Schema Formatting: "${jsonSchemaPath}" x-documentConfig.restApi.methods not found, supported restApi.methods added.`);
         jsonSchema["x-documentConfig"].restApi.methods = Object.assign([], types.schemaMethodArr);
     }

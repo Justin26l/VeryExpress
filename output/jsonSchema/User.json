@@ -2,13 +2,14 @@
     "type": "object",
     "x-documentConfig": {
         "documentName": "User",
-        "methods": [
-            "get",
-            "patch"
-        ],
-        "apiJoinWhitelist": [],
-        "apiSkipRoute": false,
-        "noApiRelations": true,
+        "restApi": {
+            "methods": [
+                "get",
+                "patch"
+            ],
+            "noRelations": true,
+            "apiJoinWhitelist": []
+        },
         "uniqueIndex": [
             [
                 "email"

@@ -118,8 +118,8 @@ export interface documentConfig {
     uniqueIndex?: string[][];
     restApi: {
         methods: schemaMethod[];
-        noRelations?: boolean;
         joinWhitelist?: string[];
+        noRelations?: boolean;
     };
 }
 
