@@ -4,7 +4,7 @@
         "documentName": "Session",
         "restApi": {
             "methods": [],
-            "apiJoinWhitelist": []
+            "joinWhitelist": []
         },
         "uniqueIndex": [
             [
@@ -12,7 +12,11 @@
             ]
         ]
     },
-    "required": ["provider", "userId", "expired"],
+    "required": [
+        "provider",
+        "userId",
+        "expired"
+    ],
     "properties": {
         "_id": {
             "type": "string",
@@ -26,7 +30,7 @@
         "provider": {
             "type": "string"
         },
-        "userId":{
+        "userId": {
             "type": "string",
             "x-format": "UUID",
             "x-foreignKey": {

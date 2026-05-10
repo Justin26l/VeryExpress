@@ -4,7 +4,7 @@
         "documentName": "UserRole",
         "restApi": {
             "methods": [],
-            "apiJoinWhitelist": []
+            "joinWhitelist": []
         }
     },
     "properties": {

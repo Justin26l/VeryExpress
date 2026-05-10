@@ -131,10 +131,10 @@ export interface removeKeyObj {
 }
 
 /** method key allowed in json schema, httpMethod with extra "getList" */
-export type schemaMethod = "get" | "getList" | "post" | "put" | "patch" | "delete" | "options" | "head" | "trace" ;
+export type schemaMethod = "get" | "getList" | "post" | "put" | "patch" | "delete" ;
 
-export const schemaMethodArr : schemaMethod[] = [ "get", "getList", "post", "put", "patch", "delete", "options", "head", "trace" ];
+export const schemaMethodArr : schemaMethod[] = [ "get", "getList", "post", "put", "patch", "delete"];
 
 /** schemaMethod without "getList" */
-export type httpMethod = "get" | "post" | "put" | "patch" | "delete" | "options" | "head" | "trace" ;
-export const httpMethodArr : httpMethod[] = [ "get", "post", "put", "patch", "delete", "options", "head", "trace"];
+export type httpMethod = "get" | "post" | "put" | "patch" | "delete" ;
+export const httpMethodArr : httpMethod[] = [ "get", "post", "put", "patch", "delete"];

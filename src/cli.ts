@@ -4,6 +4,7 @@ import childProcess from "child_process";
 import minimist from "minimist";
 
 import { generate } from "./index";
+import { runMigrations } from "./migration";
 
 import utils from "./utils";
 import log from "./utils/logger";
@@ -131,6 +132,9 @@ async function main() {
             log.error("Schema Dir Not Found:", config.jsonSchemaDir);
             process.exit(1);
         }
+
+        // run migrations before anything else
+        runMigrations(config.rootDir, config.jsonSchemaDir);
 
         // commit before generate
         if (config.generator.commitBeforeGenerate === true) {

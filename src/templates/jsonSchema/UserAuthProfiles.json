@@ -3,7 +3,7 @@
   "x-documentConfig": {
     "restApi": {
         "methods": [],
-        "apiJoinWhitelist": []
+        "joinWhitelist": []
     },
     "documentName": "UserAuthProfiles"
   },

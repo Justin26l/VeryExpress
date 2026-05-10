@@ -43,10 +43,10 @@ export default joinWhitelistRegistry;
 
 /**
  * Build a map of { relationName → relatedDocumentName } for a schema,
- * filtered by apiJoinWhitelist if present.
+ * filtered by restApi.joinWhitelist if present.
  */
 export function buildRelationMap(schema: types.jsonSchema): Record<string, string> {
-    const whitelist = schema["x-documentConfig"].apiJoinWhitelist;
+    const whitelist = schema["x-documentConfig"].restApi.joinWhitelist;
     const whitelistSet = whitelist ? new Set(whitelist) : null;
 
     const map: Record<string, string> = {};

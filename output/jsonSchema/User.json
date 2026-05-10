@@ -8,7 +8,7 @@
                 "patch"
             ],
             "noRelations": true,
-            "apiJoinWhitelist": []
+            "joinWhitelist": []
         },
         "uniqueIndex": [
             [

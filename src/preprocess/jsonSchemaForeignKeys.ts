@@ -17,29 +17,29 @@ export function applyFkMetadata(documents: Array<{
         schemaMap = updateRelations(schemaMap, doc.schema, {} as types.compilerOptions);
     });
 
-    // Auto-populate apiJoinWhitelist with all relation names if not explicitly set, then write back to file
+    // Auto-populate restApi.joinWhitelist with all relation names if not explicitly set, then write back to file
     documents.forEach((doc) => {
-        if (doc.config.apiJoinWhitelist == undefined) {
+        if (doc.config.restApi.joinWhitelist == undefined) {
             const whitelist = collectAllRelationNames(doc.schema);
-            doc.config.apiJoinWhitelist = whitelist;
-            doc.schema["x-documentConfig"].apiJoinWhitelist = whitelist;
+            doc.config.restApi.joinWhitelist = whitelist;
+            doc.schema["x-documentConfig"].restApi.joinWhitelist = whitelist;
             writeApiJoinWhitelistToFile(doc.path, doc.schema, whitelist);
         }
     });
 }
 
 /**
- * Write computed apiJoinWhitelist back into the JSON schema file on disk.
- * Preserves all other fields; only patches x-documentConfig.apiJoinWhitelist.
+ * Write computed restApi.joinWhitelist back into the JSON schema file on disk.
+ * Preserves all other fields; only patches x-documentConfig.restApi.joinWhitelist.
  */
 function writeApiJoinWhitelistToFile(schemaPath: string, schema: types.jsonSchema, whitelist: string[]): void {
     try {
-        schema["x-documentConfig"].apiJoinWhitelist = whitelist;
-        utils.common.writeFile("Json Schema apiJoinWhitelist", schemaPath, JSON.stringify(schema, null, 4));
+        schema["x-documentConfig"].restApi.joinWhitelist = whitelist;
+        utils.common.writeFile("Json Schema restApi.joinWhitelist", schemaPath, JSON.stringify(schema, null, 4));
     }
     catch (err) {
         // non-fatal: runtime memory is already set; log but continue
-        console.warn(`[warn] Failed to write apiJoinWhitelist to ${schemaPath}:`, err);
+        console.warn(`[warn] Failed to write restApi.joinWhitelist to ${schemaPath}:`, err);
     }
 }
 
@@ -77,7 +77,7 @@ function updateRelations(jsonSchemaMap: { [key: string]: types.jsonSchema }, jso
             const interfaceName = utils.common.pascalCase(jsonSchema["x-documentConfig"].documentName);
             const propsName = utils.common.camelCase(jsonSchema["x-documentConfig"].documentName);
             
-            if (!jsonSchemaMap[fkConfig.schemaName].interface) {
+            if (!jsonSchemaMap[fkConfig.schemaName]?.interface) {
                 jsonSchemaMap[fkConfig.schemaName].interface = { fkProps: [] };
             }
             
