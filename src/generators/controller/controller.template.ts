@@ -14,11 +14,11 @@ export default function controllerTemplate(templateOptions: {
     methods: string[];
     fields: TsoaFieldDef[];
     idType: string;
-    noApiRelations?: boolean;
+    noRestApiRelations?: boolean;
     useJoinWhitelist?: boolean;
     compilerOptions: types.compilerOptions;
 }): string {
-    const { documentName, fields, methods, idType, noApiRelations, useJoinWhitelist, compilerOptions, modelPath, typePath } = templateOptions;
+    const { documentName, fields, methods, idType, noRestApiRelations, useJoinWhitelist, compilerOptions, modelPath, typePath } = templateOptions;
     const useRBAC = !!compilerOptions.useRBAC;
     const useAuth = compilerOptions.auth.localAuth || utils.generator.OAuthProviders(compilerOptions).length > 0;
     const cleanId = compilerOptions.app.allowApiCreateUpdate_id
@@ -84,7 +84,7 @@ export default function controllerTemplate(templateOptions: {
             `@SuccessResponse(200, "Success")`,
             ...(joinWhitelistDecorator ? [joinWhitelistDecorator] : []),
         ],
-        `public async getList${documentName}(@Body() body: { filter: Filter${documentName}, join?: string[], select?: string[] }): Promise<VexResponse<${documentName}${noApiRelations ? '' : 'WithRelations'}[]>>`,
+        `public async getList${documentName}(@Body() body: { filter: Filter${documentName}, join?: string[], select?: string[] }): Promise<VexResponse<${documentName}${noRestApiRelations ? '' : 'WithRelations'}[]>>`,
         `const result = await this.repo.find(body.filter as Filter<${documentName}>, body.join, body.select);
         throw new VexResOk(200, { result });`
     );
@@ -96,7 +96,7 @@ export default function controllerTemplate(templateOptions: {
             `@SuccessResponse(200, "Success")`,
             ...(joinWhitelistDecorator ? [joinWhitelistDecorator] : []),
         ],
-        `public async get${documentName}(${idParam}, @Query() join?: string[], @Query() select?: string[]): Promise<VexResponse<${documentName}${noApiRelations ? '' : 'WithRelations'}>>`,
+        `public async get${documentName}(${idParam}, @Query() join?: string[], @Query() select?: string[]): Promise<VexResponse<${documentName}${noRestApiRelations ? '' : 'WithRelations'}>>`,
         `const result = await this.repo.findOne({ _id: id }, join, select);
         if (!result) throw new VexResErr(404);
         throw new VexResOk(200, { result });`
