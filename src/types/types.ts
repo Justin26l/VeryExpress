@@ -115,11 +115,12 @@ export interface populateOptions {
 export interface documentConfig {
     documentName: string;
     keyPrefix?: string;
-    methods: schemaMethod[];
     uniqueIndex?: string[][];
-    apiJoinWhitelist?: string[];
-    noRestApiRelations?: boolean;
-    noRestApi?: boolean;
+    restApi: {
+        methods: schemaMethod[];
+        noRelations?: boolean;
+        joinWhitelist?: string[];
+    };
 }
 
 /**

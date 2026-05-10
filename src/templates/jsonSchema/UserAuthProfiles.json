@@ -1,9 +1,10 @@
 {
   "type": "object",
   "x-documentConfig": {
-    "methods": [],
-    "apiJoinWhitelist": [],
-    "noRestApi": true,
+    "restApi": {
+        "methods": [],
+        "apiJoinWhitelist": []
+    },
     "documentName": "UserAuthProfiles"
   },
   "properties": {

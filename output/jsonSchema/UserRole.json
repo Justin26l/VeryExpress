@@ -2,15 +2,9 @@
     "type": "object",
     "x-documentConfig": {
         "documentName": "UserRole",
-        "methods": [
-            "get",
-            "getList",
-            "post",
-            "delete"
-        ],
-        "apiJoinWhitelist": [
-            "user"
-        ]
+        "methods": [],
+        "noRestApi": true,
+        "apiJoinWhitelist": []
     },
     "properties": {
         "_id": {

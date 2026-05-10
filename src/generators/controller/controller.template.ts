@@ -11,14 +11,14 @@ export default function controllerTemplate(templateOptions: {
     modelPath: string;
     typePath: string;
     documentName: string;
-    methods: string[];
     fields: TsoaFieldDef[];
     idType: string;
-    noRestApiRelations?: boolean;
-    useJoinWhitelist?: boolean;
+    restApiMethods: string[];
+    restApiNoRelations?: boolean;
+    restApiJoinWhitelist?: boolean;
     compilerOptions: types.compilerOptions;
 }): string {
-    const { documentName, fields, methods, idType, noRestApiRelations, useJoinWhitelist, compilerOptions, modelPath, typePath } = templateOptions;
+    const { documentName, fields, idType, restApiMethods, restApiNoRelations, restApiJoinWhitelist, compilerOptions, modelPath, typePath } = templateOptions;
     const useRBAC = !!compilerOptions.useRBAC;
     const useAuth = compilerOptions.auth.localAuth || utils.generator.OAuthProviders(compilerOptions).length > 0;
     const cleanId = compilerOptions.app.allowApiCreateUpdate_id
@@ -32,18 +32,18 @@ export default function controllerTemplate(templateOptions: {
     // ── tsoa decorator imports ──────────────────────────────────────────────────
     const decoratorNames: string[] = [];
     decoratorNames.push("Route", "Tags", "Body", "Path", "Query", "SuccessResponse");
-    if (useRBAC || useJoinWhitelist) decoratorNames.push("Middlewares");
+    if (useRBAC || restApiJoinWhitelist) decoratorNames.push("Middlewares");
     if (useRBAC) decoratorNames.push("Security");
-    if (methods.includes("get"))                                decoratorNames.push("Get");
-    if (methods.includes("post") || methods.includes("getList")) decoratorNames.push("Post");
-    if (methods.includes("put"))                                decoratorNames.push("Put");
-    if (methods.includes("patch"))                              decoratorNames.push("Patch");
-    if (methods.includes("delete"))                             decoratorNames.push("Delete");
+    if (restApiMethods.includes("get"))                                decoratorNames.push("Get");
+    if (restApiMethods.includes("post") || restApiMethods.includes("getList")) decoratorNames.push("Post");
+    if (restApiMethods.includes("put"))                                decoratorNames.push("Put");
+    if (restApiMethods.includes("patch"))                              decoratorNames.push("Patch");
+    if (restApiMethods.includes("delete"))                             decoratorNames.push("Delete");
 
     const optionalImports = [
         useRBAC ? "import RoleBaseAccessControl from \"../_middlewares/RoleBaseAccessControl.gen\";" : "",
         useAuth ? "import Authentication from \"../_middlewares/Authentication.gen\";" : "",
-        useJoinWhitelist ? "import JoinWhitelistMiddleware from \"../_middlewares/JoinWhitelistMiddleware.gen\";" : "",
+        restApiJoinWhitelist ? "import JoinWhitelistMiddleware from \"../_middlewares/JoinWhitelistMiddleware.gen\";" : "",
     ].filter(Boolean).join("\n");
 
     // ── Class decorators ────────────────────────────────────────────────────────
@@ -73,37 +73,37 @@ export default function controllerTemplate(templateOptions: {
     }
 
     // Join whitelist decorator — only applied to routes that accept join params
-    const joinWhitelistDecorator = useJoinWhitelist
+    const joinWhitelistDecorator = restApiJoinWhitelist
         ? `@Middlewares(JoinWhitelistMiddleware.middleware(schemanName))`
         : null;
 
     const getListRoute = buildMethod(
-        methods.includes("getList"),
+        restApiMethods.includes("getList"),
         [
             "@Post(\"/search\")",
             `@SuccessResponse(200, "Success")`,
             ...(joinWhitelistDecorator ? [joinWhitelistDecorator] : []),
         ],
-        `public async getList${documentName}(@Body() body: { filter: Filter${documentName}, join?: string[], select?: string[] }): Promise<VexResponse<${documentName}${noRestApiRelations ? '' : 'WithRelations'}[]>>`,
+        `public async getList${documentName}(@Body() body: { filter: Filter${documentName}, join?: string[], select?: string[] }): Promise<VexResponse<${documentName}${restApiNoRelations ? '' : 'WithRelations'}[]>>`,
         `const result = await this.repo.find(body.filter as Filter<${documentName}>, body.join, body.select);
         throw new VexResOk(200, { result });`
     );
 
     const getRoute = buildMethod(
-        methods.includes("get"),
+        restApiMethods.includes("get"),
         [
             "@Get(\"{id}\")",
             `@SuccessResponse(200, "Success")`,
             ...(joinWhitelistDecorator ? [joinWhitelistDecorator] : []),
         ],
-        `public async get${documentName}(${idParam}, @Query() join?: string[], @Query() select?: string[]): Promise<VexResponse<${documentName}${noRestApiRelations ? '' : 'WithRelations'}>>`,
+        `public async get${documentName}(${idParam}, @Query() join?: string[], @Query() select?: string[]): Promise<VexResponse<${documentName}${restApiNoRelations ? '' : 'WithRelations'}>>`,
         `const result = await this.repo.findOne({ _id: id }, join, select);
         if (!result) throw new VexResErr(404);
         throw new VexResOk(200, { result });`
     );
 
     const postRoute = buildMethod(
-        methods.includes("post"),
+        restApiMethods.includes("post"),
         ["@Post()", `@SuccessResponse(201, "Created")`],
         `public async create${documentName}(@Body() body: ${documentName}): Promise<VexResponse<${documentName}>>`,
         `${cleanId}
@@ -114,7 +114,7 @@ export default function controllerTemplate(templateOptions: {
     );
 
     const putRoute = buildMethod(
-        methods.includes("put"),
+        restApiMethods.includes("put"),
         ["@Put(\"{id}\")", `@SuccessResponse(200, "Success")`],
         `public async replace${documentName}(${idParam}, @Body() body: ${documentName}): Promise<VexResponse<${documentName}>>`,
         `${cleanId}
@@ -124,7 +124,7 @@ export default function controllerTemplate(templateOptions: {
     );
 
     const patchRoute = buildMethod(
-        methods.includes("patch"),
+        restApiMethods.includes("patch"),
         ["@Patch(\"{id}\")", `@SuccessResponse(200, "Success")`],
         `public async update${documentName}(${idParam}, @Body() body: Partial<${documentName}>): Promise<VexResponse<${documentName}>>`,
         `${cleanId}
@@ -134,7 +134,7 @@ export default function controllerTemplate(templateOptions: {
     );
 
     const deleteRoute = buildMethod(
-        methods.includes("delete"),
+        restApiMethods.includes("delete"),
         ["@Delete(\"{id}\")", `@SuccessResponse(204, "No Content")`],
         `public async delete${documentName}(${idParam}): Promise<VexResponse<void>>`,
         `const existing = await this.repo.findOne({ _id: id });
