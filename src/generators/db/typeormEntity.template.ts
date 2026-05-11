@@ -69,7 +69,7 @@ export default function objectionTemplate(options: {
                 type: col.dbType,
                 nullable: col.nullable,
                 enum: col.enumValues,
-                length: col.length,
+                length: ["char", "varchar", "text"].includes(col.dbType) ? col.length : undefined,
             };
             decorators.push(`    @Column(${serializeArgs(colArgs)})`);
             decorators.push(`    ${col.name}${col.nullable ? "?" : "!"}: ${col.tsType};`);

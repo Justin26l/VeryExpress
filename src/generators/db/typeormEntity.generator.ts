@@ -37,7 +37,8 @@ const xFormatDbTypeMap: Record<string, string> = {
 };
 
 const typeDbTypeMap: Record<string, string> = {
-    string:  "varchar",
+    varchar:  "varchar",
+    string:  "text",
     number:  "bigint",
     integer: "bigint",
     float: "float",
@@ -140,7 +141,7 @@ export async function compile(options: {
 
     // ensure _id primary column exists
     if (!columns.find(c => c.isPrimary)) {
-        columns.unshift({ name: "_id", tsType: "string", dbType: "UUID", isPrimary: true, isGenerated: true, nullable: false, length: undefined, isIndex: false, isNested: false });
+        columns.unshift({ name: "_id", tsType: "string", dbType: "uuid", isPrimary: true, isGenerated: true, nullable: false, length: undefined, isIndex: false, isNested: false });
     }
 
     const localRelations = buildLocalRelations(props);
