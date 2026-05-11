@@ -4,11 +4,16 @@ import typeormEntityTemplate from "./typeormEntity.template";
 import * as types from "../../types/types";
 import * as typeormModel from "../../types/typeormModel";
 
+function isEnum(props: types.jsonSchemaPropsItem): boolean {
+    return props.enum !== undefined && Array.isArray(props.enum) && props.enum.every(v => typeof v === "string");
+}
+
 function jsonTypeToTs(prop: types.jsonSchemaPropsItem): string {
     switch (prop.type) {
     case "integer":
     case "number":  return "number";
     case "boolean": return "boolean";
+    case "object":  return "Record<string, unknown>";
     case "array": {
         const itemType = (prop.items as types.jsonSchemaPropsItem | undefined)?.type;
         switch (itemType) {
@@ -18,9 +23,36 @@ function jsonTypeToTs(prop: types.jsonSchemaPropsItem): string {
         default:        return "string[]";
         }
     }
-    case "object":  return "Record<string, unknown>";
     default:        return "string";
     }
+}
+
+const xFormatDbTypeMap: Record<string, string> = {
+    Primary:       "uuid",
+    PrimaryUUID:   "uuid",
+    UUID:          "uuid",
+    ObjectId:      "varchar",
+    UnixTimestamp: "bigint",
+    enum:          "enum",
+};
+
+const typeDbTypeMap: Record<string, string> = {
+    string:  "varchar",
+    number:  "bigint",
+    integer: "bigint",
+    float: "float",
+    boolean: "boolean",
+    array:   "text",
+    object:  "jsonb",
+};
+
+function jsonTypeToDbType(prop: types.jsonSchemaPropsItem): string {
+    const isenum = isEnum(prop);
+
+    return isenum ? "enum" :
+        (prop["x-format"] && xFormatDbTypeMap[prop["x-format"]])
+        ?? typeDbTypeMap[prop.type]
+        ?? "varchar";
 }
 
 function buildLocalRelations(props: Record<string, types.jsonSchemaPropsItem>): typeormModel.ManyToOneRelation[] {
@@ -84,35 +116,31 @@ export async function compile(options: {
     log.process(`TypeORM Entity : ${documentName}`);
 
     const props = schema.properties || {};
-    const columns: typeormModel.ColumnDef[] = Object.keys(props).map(key => {
-        const p = props[key] as types.jsonSchemaPropsItem;
-        const isPrimary = p["x-format"] === "Primary" || p["x-format"] === "PrimaryUUID";
-        const isEnum = p.enum !== undefined && Array.isArray(p.enum) && p.enum.every(v => typeof v === "string");
+    const columns: typeormModel.ColumnDef[] = Object.keys(props).map((key) : typeormModel.ColumnDef => {
+        const prop = props[key] as types.jsonSchemaPropsItem;
+        const isPrimary = prop["x-format"] === "Primary" || prop["x-format"] === "PrimaryUUID";
+        const isenum = isEnum(prop);
         const nullable = !requiredFields.includes(key) && !isPrimary;
+
+        const dbType = jsonTypeToDbType(prop);
 
         return {
             name: key,
-            tsType: 
-                isEnum ? utils.common.pascalCase(key)+'Enum' : 
-                    isPrimary ? "string" : 
-                        jsonTypeToTs(p),
+            tsType: isPrimary ? "string" : isenum ? utils.common.pascalCase(key)+'Enum' : jsonTypeToTs(prop),
+            dbType,
             isPrimary,
-            isUUID: isPrimary || p["x-format"] === "UUID",
-            isGenerated: isPrimary,
+            isGenerated: isPrimary || Boolean(prop["x-format"] && ["UUID","UnixTimestamp"].includes(prop["x-format"])),
+            isIndex: prop.index === true,
+            isNested: ["array", "object"].includes(prop.type),
             nullable,
-            maxLength: p.maxLength,
-            isArray: p.type === "array",
-            isBigInt: p.type === "number",
-            isObject: p.type === "object",
-            isEnum,
-            enumValues: isEnum ? (p.enum) : undefined,
-            isIndex: p.index === true
+            enumValues: isenum ? (prop.enum) : undefined,
+            length: prop.maxLength,
         };
     });
 
     // ensure _id primary column exists
     if (!columns.find(c => c.isPrimary)) {
-        columns.unshift({ name: "_id", tsType: "string", isPrimary: true, isUUID: true, isGenerated: true, nullable: false, maxLength: undefined, isArray: false, isBigInt: false, isObject: false, isEnum: false, enumValues: undefined, isIndex: false });
+        columns.unshift({ name: "_id", tsType: "string", dbType: "UUID", isPrimary: true, isGenerated: true, nullable: false, length: undefined, isIndex: false, isNested: false });
     }
 
     const localRelations = buildLocalRelations(props);
