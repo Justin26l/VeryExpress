@@ -27,33 +27,99 @@ function jsonTypeToTs(prop: types.jsonSchemaPropsItem): string {
     }
 }
 
-const xFormatDbTypeMap: Record<string, string> = {
+// ─── DB type resolution ───────────────────────────────────────────────────────
+
+/** x-format values that map directly to a PostgreSQL column type */
+const X_FORMAT_DB_TYPE: Record<string, string> = {
     Primary:       "uuid",
     PrimaryUUID:   "uuid",
     UUID:          "uuid",
-    ObjectId:      "varchar",
-    UnixTimestamp: "bigint",
-    enum:          "enum",
+    ObjectId:      "varchar",   // MongoDB ObjectId stored as varchar(24)
+    UnixTimestamp: "bigint",    // epoch ms — needs bigint transformer
 };
 
-const typeDbTypeMap: Record<string, string> = {
-    varchar:  "varchar",
-    string:  "text",
-    number:  "bigint",
-    integer: "bigint",
-    float: "float",
-    boolean: "boolean",
-    array:   "text",
-    object:  "jsonb",
+/** JSON Schema `format` hints that map to PostgreSQL column types */
+const JSON_FORMAT_DB_TYPE: Record<string, string> = {
+    "date":      "date",
+    "date-time": "timestamp",
+    "time":      "time",
+    "email":     "varchar",    // varchar(254) per RFC 5321
+    "uri":       "text",
+    "uuid":      "uuid",
 };
 
-function jsonTypeToDbType(prop: types.jsonSchemaPropsItem): string {
-    const isenum = isEnum(prop);
+function resolveStringDbType(prop: types.jsonSchemaPropsItem): string {
+    if (prop.format && JSON_FORMAT_DB_TYPE[prop.format]) return JSON_FORMAT_DB_TYPE[prop.format];
+    return prop.maxLength ? "varchar" : "text";
+}
 
-    return isenum ? "enum" :
-        (prop["x-format"] && xFormatDbTypeMap[prop["x-format"]])
-        ?? typeDbTypeMap[prop.type]
-        ?? "varchar";
+function resolveDbType(prop: types.jsonSchemaPropsItem): string {
+    if (isEnum(prop)) return "enum";
+    const xFormat = prop["x-format"];
+    if (xFormat && X_FORMAT_DB_TYPE[xFormat]) return X_FORMAT_DB_TYPE[xFormat];
+    switch (prop.type) {
+    case "string":  return resolveStringDbType(prop);
+    case "integer": return "int";
+    case "number":
+    case "float":   return prop.precision ? "decimal" : "double precision";
+    case "boolean": return "boolean";
+    case "array":   return "text";      // isArray flag will set array:true on the column
+    case "object":  return "jsonb";
+    default:        return "varchar";
+    }
+}
+
+/** varchar/char only — returns undefined for all other types */
+function resolveColumnLength(prop: types.jsonSchemaPropsItem, dbType: string): number | undefined {
+    if (!["varchar", "char"].includes(dbType)) return undefined;
+    if (prop.maxLength)                         return prop.maxLength;
+    if (prop.format === "email")                return 254;    // RFC 5321
+    if (prop["x-format"] === "ObjectId")        return 24;     // MongoDB ObjectId hex length
+    return undefined;
+}
+
+// ─── Per-column builder ───────────────────────────────────────────────────────
+
+const NUMERIC_DB_TYPES = new Set(["int", "double precision", "decimal", "bigint"]);
+
+function isNumericDbType(dbType: string): boolean {
+    return NUMERIC_DB_TYPES.has(dbType);
+}
+
+function mapPropToColumnDef(
+    key: string,
+    prop: types.jsonSchemaPropsItem,
+    requiredFields: string[],
+    singleFieldUniques: Set<string>,
+): typeormModel.ColumnDef {
+    const isPrimary = prop["x-format"] === "Primary" || prop["x-format"] === "PrimaryUUID";
+    const isenum    = isEnum(prop);
+    const nullable  = !requiredFields.includes(key) && !isPrimary;
+    const dbType    = resolveDbType(prop);
+
+    const isNumeric = isNumericDbType(dbType);
+
+    return {
+        name:    key,
+        tsType:  isPrimary ? "string" : isenum ? utils.common.pascalCase(key) + "Enum" : jsonTypeToTs(prop),
+        dbType,
+        isPrimary,
+        isGenerated: isPrimary || Boolean(prop["x-format"] && ["UUID", "UnixTimestamp"].includes(prop["x-format"] as string)),
+        isIndex:  prop.index === true,
+        isUnique: singleFieldUniques.has(key),
+        isNested: prop.type === "object" || prop.type === "array",
+        isArray:  prop.type === "array",
+        needsBigintTransformer: dbType === "bigint",
+        unsigned: isNumeric && prop.minimum !== undefined && prop.minimum >= 0 ? true : undefined,
+        nullable,
+        comment:        prop.description,
+        length:         resolveColumnLength(prop, dbType),
+        precision:      prop.precision,
+        scale:          prop.scale,
+        enumValues:     isenum ? prop.enum : undefined,
+        enumName:       isenum ? utils.common.pascalCase(key) + "Enum" : undefined,
+        defaultValue:   prop.default,
+    };
 }
 
 function buildLocalRelations(props: Record<string, types.jsonSchemaPropsItem>): typeormModel.ManyToOneRelation[] {
@@ -117,35 +183,18 @@ export async function compile(options: {
     log.process(`TypeORM Entity : ${documentName}`);
 
     const props = schema.properties || {};
-    const columns: typeormModel.ColumnDef[] = Object.keys(props).map((key) : typeormModel.ColumnDef => {
-        const prop = props[key] as types.jsonSchemaPropsItem;
-        const isPrimary = prop["x-format"] === "Primary" || prop["x-format"] === "PrimaryUUID";
-        const isenum = isEnum(prop);
-        const nullable = !requiredFields.includes(key) && !isPrimary;
-
-        const dbType = jsonTypeToDbType(prop);
-
-        return {
-            name: key,
-            tsType: isPrimary ? "string" : isenum ? utils.common.pascalCase(key)+'Enum' : jsonTypeToTs(prop),
-            dbType,
-            isPrimary,
-            isGenerated: isPrimary || Boolean(prop["x-format"] && ["UUID","UnixTimestamp"].includes(prop["x-format"])),
-            isIndex: prop.index === true,
-            isNested: ["array", "object"].includes(prop.type),
-            nullable,
-            enumValues: isenum ? (prop.enum) : undefined,
-            length: prop.maxLength,
-        };
-    });
+    const singleFieldUniques = new Set(
+        uniqueIndexes.filter(idx => idx.length === 1).map(idx => idx[0])
+    );
+    const columns: typeormModel.ColumnDef[] = Object.keys(props).map(key => mapPropToColumnDef(key, props[key], requiredFields, singleFieldUniques));
 
     // ensure _id primary column exists
     if (!columns.find(c => c.isPrimary)) {
-        columns.unshift({ name: "_id", tsType: "string", dbType: "uuid", isPrimary: true, isGenerated: true, nullable: false, length: undefined, isIndex: false, isNested: false });
-    }
+        columns.unshift({ name: "_id", tsType: "string", dbType: "uuid", isPrimary: true, isGenerated: true, nullable: false, isIndex: false, isNested: false, isArray: false });
+    }   
 
     const localRelations = buildLocalRelations(props);
-    const foreignRelations = buildForeignRelations(documentName, options.allSchemas)
+    const foreignRelations = buildForeignRelations(documentName, options.allSchemas);
     const manyToOneRelations = localRelations.filter(r => r.relationType === "many-to-one");
     const oneToManyRelations = foreignRelations.filter(r => r.relationType === "one-to-many");
     const oneToOneRelations = [
@@ -159,7 +208,7 @@ export async function compile(options: {
                 importPath: r.importPath,
                 inversePropertyName: r.inversePropertyName,
                 relationType: r.relationType,
-            } satisfies typeormModel.ManyToOneRelation)) // reuse same structure for one-to-one since TypeORM uses same decorator on both sides,
+            } satisfies typeormModel.ManyToOneRelation))
     ];
 
     const outPath = `${options.outDir}/${documentName}Model.gen.ts`;

@@ -7,10 +7,27 @@ export interface ColumnDef {
     isPrimary: boolean;
     isGenerated: boolean;
     isIndex?: boolean;
+    isUnique?: boolean;
+    /** object or array column — @Index() is skipped */
+    isNested?: boolean;
+    /** PostgreSQL native array column → @Column({ array: true }) */
+    isArray?: boolean;
+    /** bigint columns: PG driver returns string, transformer coerces to number */
+    needsBigintTransformer?: boolean;
+    /** minimum >= 0 numeric field → unsigned: true (MySQL only, no-op on PG) */
+    unsigned?: boolean;
     nullable: boolean;
     length?: number;
+    /** decimal type: total significant digits */
+    precision?: number;
+    /** decimal type: digits after decimal point */
+    scale?: number;
     enumValues?: string[];
-    isNested?: boolean;
+    /** auto-generated ENUM type name — prevents TypeORM cross-entity naming conflicts */
+    enumName?: string;
+    comment?: string;
+    /** default column value emitted as @Column({ default }) */
+    defaultValue?: unknown;
 }
 
 

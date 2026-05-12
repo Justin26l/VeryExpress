@@ -60,6 +60,14 @@ export enum DbRelationType {
     ManyToOne = "many-to-one",
 }
 
+export enum xFormatType {
+    Primary = "Primary",
+    PrimaryUUID = "PrimaryUUID",
+    UUID = "UUID",
+    ObjectId = "ObjectId",
+    UnixTimestamp = "UnixTimestamp",
+}
+
 export interface jsonSchema {
     type: string;
     "x-documentConfig": documentConfig;
@@ -102,9 +110,11 @@ export interface jsonSchemaPropsItem {
     minimum?: number;
     maximum?: number;
     "x-vexData"?: string;
-    "x-format"?: string;
-    "x-hidden"?: boolean;
+    "x-format"?: xFormatType | string;
     "x-foreignKey"?: foreignKeyConfig;
+    /** For decimal columns: total significant digits (maps to TypeORM precision & scale) */
+    precision?: number;
+    scale?: number;
     [key: string]: string | boolean | number | string[] | jsonSchemaPropsItem | foreignKeyConfig | { [key: string]: jsonSchemaPropsItem;} | any[] | undefined;
 }
 

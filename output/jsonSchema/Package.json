@@ -41,16 +41,18 @@
         },
         "price": {
             "type": "number",
+            "precision": 10,
+            "scale": 2,
             "required": true
         },
         "startDate": {
             "type": "string",
-            "format": "date",
+            "x-format": "UnixTimestamp",
             "required": true
         },
         "endDate": {
             "type": "string",
-            "format": "date",
+            "x-format": "UnixTimestamp",
             "required": true
         },
         "isActive": {
