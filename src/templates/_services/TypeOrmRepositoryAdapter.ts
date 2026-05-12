@@ -1,5 +1,5 @@
 // {{headerComment}}
-import { Repository, ObjectLiteral, FindOptionsWhere, DeepPartial, In, Not, Like, MoreThan, LessThan, MoreThanOrEqual, LessThanOrEqual, Raw, FindManyOptions } from "typeorm";
+import { Repository, ObjectLiteral, FindOptionsWhere, DeepPartial, In, Not, Like, MoreThan, LessThan, MoreThanOrEqual, LessThanOrEqual, FindManyOptions } from "typeorm";
 import { VexRepository, Select, Filter, Join, FieldOperators } from "../_types/vex";
 import utils from "../_utils";
 

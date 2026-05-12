@@ -1,11 +1,12 @@
 // {{headerComment}}
 import { Request, Response, NextFunction } from "express";
 import { DataSource, EntityTarget, ObjectLiteral } from "typeorm";
-import mongoose, { Document } from "mongoose";
+import mongoose from "mongoose";
+// import { Document } from "mongoose";
 import { sqlMigrations } from "../_models/sqlMigration.gen";
-import { VexRepository, VexResErr } from "../_types/vex";
+import { VexRepository } from "../_types/vex";
 import { TypeOrmRepositoryAdapter } from "./TypeOrmRepositoryAdapter.gen";
-import { MongooseRepositoryAdapter } from "./MongooseRepositoryAdapter.gen";
+// import { MongooseRepositoryAdapter } from "./MongooseRepositoryAdapter.gen";
 import utils from "./../_utils";
 
 export class VexDbConnector {

@@ -1,4 +1,3 @@
-import { DbRelationType } from "../../types/types";
 import * as typeormModel from "../../types/typeormModel";
 import utils from "../../utils";
 

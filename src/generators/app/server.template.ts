@@ -5,7 +5,6 @@ import * as types from "../../types/types";
 const importCookieParser = "import cookieParser from \"cookie-parser\";";
 const importSwaggerRouter = "import SwaggerRouter from \"./system/_routes/SwaggerRouter.gen\";";
 const importAuthRouter = "import AuthRouter from \"./system/_routes/AuthRouter.gen\";";
-const importAuthentication = "import Authentication from \"./system/_middlewares/Authentication.gen\";";
 const importVexSystem = "import VexSystem from \"./system/_services/VexSystem.gen\";";
 const importLoginUI = "import LoginUI from \"./system/_routes/LoginUI.gen\";";
 

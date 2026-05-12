@@ -18,7 +18,7 @@ export default function controllerTemplate(templateOptions: {
     restApiJoinWhitelist?: boolean;
     compilerOptions: types.compilerOptions;
 }): string {
-    const { documentName, fields, idType, restApiMethods, restApiNoRelations, restApiJoinWhitelist, compilerOptions, modelPath, typePath } = templateOptions;
+    const { documentName, idType, restApiMethods, restApiNoRelations, restApiJoinWhitelist, compilerOptions, modelPath, typePath } = templateOptions;
     const useRBAC = !!compilerOptions.useRBAC;
     const useAuth = compilerOptions.auth.localAuth || utils.generator.OAuthProviders(compilerOptions).length > 0;
     const cleanId = compilerOptions.app.allowApiCreateUpdate_id

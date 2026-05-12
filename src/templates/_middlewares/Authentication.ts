@@ -3,8 +3,7 @@ import { Request, Response, NextFunction } from "express";
 import { JsonWebTokenError } from "jsonwebtoken";
 import JWTService from "../_services/auth/JWTService.gen";
 import log from "../_utils/logger.gen";
-import response from "../_utils/response.gen";
-import { VexResErr, VexResOk } from "../_types/vex";
+import { VexResErr } from "../_types/vex";
 
 class Authentication {
 

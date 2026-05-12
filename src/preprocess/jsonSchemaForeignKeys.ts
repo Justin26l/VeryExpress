@@ -14,7 +14,7 @@ export function applyFkMetadata(documents: Array<{
     });
 
     documents.forEach((doc) => {
-        schemaMap = updateRelations(schemaMap, doc.schema, {} as types.compilerOptions);
+        schemaMap = updateRelations(schemaMap, doc.schema);
     });
 
     // Auto-populate restApi.joinWhitelist with all relation names if not explicitly set, then write back to file
@@ -67,7 +67,7 @@ function collectAllRelationNames(schema: types.jsonSchema): string[] {
     return Array.from(names);
 }
 
-function updateRelations(jsonSchemaMap: { [key: string]: types.jsonSchema }, jsonSchema: types.jsonSchema, compilerOptions: types.compilerOptions): { [key: string]: types.jsonSchema } {
+function updateRelations(jsonSchemaMap: { [key: string]: types.jsonSchema }, jsonSchema: types.jsonSchema): { [key: string]: types.jsonSchema } {
 
     Object.keys(jsonSchema.properties).forEach((key) => {
         const props = jsonSchema.properties[key];

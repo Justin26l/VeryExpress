@@ -1,5 +1,4 @@
 import fs from "fs";
-import path from "path";
 import * as types from "../types/types";
 import utils from "../utils";
 import log from "../utils/logger";

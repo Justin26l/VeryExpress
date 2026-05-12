@@ -1,6 +1,6 @@
 // {{headerComment}}
 import { Profile } from "passport";
-import { User, UserWithRelations } from "./../../_types/User.gen";
+import { UserWithRelations } from "./../../_types/User.gen";
 
 export interface IProfile extends Profile {
     [key: string]: any;

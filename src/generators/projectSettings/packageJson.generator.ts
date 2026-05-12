@@ -5,8 +5,6 @@ import packageJsonTemplate from "./../../templates/_projectSettings/package.json
 import utils from "./../../utils";
 import log from "./../../utils/logger";
 
-import * as types from "./../../types/types";
-
 export async function compile(
     packageOutPath: string,
     // compilerOptions: types.compilerOptions
