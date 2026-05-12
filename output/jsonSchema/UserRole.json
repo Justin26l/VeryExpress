@@ -1,0 +1,40 @@
+{
+    "type": "object",
+    "x-documentConfig": {
+        "documentName": "UserRole",
+        "restApi": {
+            "methods": [],
+            "joinWhitelist": []
+        }
+    },
+    "properties": {
+        "_id": {
+            "type": "string",
+            "x-format": "Primary"
+        },
+        "userId": {
+            "type": "string",
+            "index": true,
+            "x-foreignKey": {
+                "schemaName": "User",
+                "fieldName": "_id",
+                "relationType": "many-to-one"
+            }
+        },
+        "role": {
+            "type": "string",
+            "x-vexData": "role",
+            "index": true,
+            "enum": [
+                "visitor",
+                "member",
+                "admin"
+            ],
+            "x-format": "enum"
+        }
+    },
+    "required": [
+        "userId",
+        "role"
+    ]
+}

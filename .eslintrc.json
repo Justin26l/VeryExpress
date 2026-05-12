@@ -16,22 +16,20 @@
         "@typescript-eslint"
     ],
     "rules": {
+        "no-extra-semi": "off",
         "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/no-unused-vars": "warn",
         "indent": [
-            "error",
+            "warn",
             4
         ],
         "linebreak-style": [
-            "error",
+            "warn",
             "unix"
         ],
         "quotes": [
-            "error",
+            "off",
             "double"
-        ],
-        "semi": [
-            "error",
-            "always"
         ]
     }
 }

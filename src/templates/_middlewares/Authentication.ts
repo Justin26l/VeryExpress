@@ -3,16 +3,16 @@ import { Request, Response, NextFunction } from "express";
 import { JsonWebTokenError } from "jsonwebtoken";
 import JWTService from "../_services/auth/JWTService.gen";
 import log from "../_utils/logger.gen";
-import response from "../_utils/response.gen";
+import { VexResErr } from "../_types/vex";
 
-export default class Authentication {
+class Authentication {
 
     private JWTService = new JWTService();
 
     public middleware = (req: Request, res: Response, next: NextFunction) => {
         try {
             // gate keeper
-            log.info("Authentication.middleware", req.headers["x-auth-index"], req.headers.authorization);
+            // log.info("Authentication.middleware", req.headers["x-auth-index"], req.headers.authorization);
             const token = req.headers.authorization?.split(" ")[1];
             const accessTokenIndex = req.headers["x-auth-index"]?.toString();
             
@@ -26,23 +26,21 @@ export default class Authentication {
 
             // verify token
             const tokenData = this.JWTService.verifyToken(token, accessTokenIndex);
-
-            // set req.user to the decoded token
-            log.info("tokenValid", tokenData);
             req.user = tokenData;
             next();
         }
         catch (e: any) {
             if (typeof e === "number") {
-                response.send(res, e);
+                throw new VexResErr(e, undefined);
             }
             else if (e instanceof JsonWebTokenError) {
-                response.send(res, 400, { message: e?.message});
+                throw new VexResErr(400, undefined, e?.message);
             }
             else {
-                log.errorNoExit(e);
-                response.send(res, 500, { message: e?.message});
+                throw new VexResErr(500, undefined, e?.message);
             }
         }
     };
 }
+
+export default new Authentication();

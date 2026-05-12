@@ -5,5 +5,5 @@ import serverTemplate from "./app/server.template";
 export default {
     controllerTemplate,
     routesTemplate,
-    serverTemplate,
+    serverTemplate,    
 };

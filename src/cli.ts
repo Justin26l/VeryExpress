@@ -4,6 +4,7 @@ import childProcess from "child_process";
 import minimist from "minimist";
 
 import { generate } from "./index";
+import { runMigrations } from "./migration";
 
 import utils from "./utils";
 import log from "./utils/logger";
@@ -43,15 +44,13 @@ async function main() {
     config.app = config.app || {},
     config.app.enableSwagger = config.app.enableSwagger || true,
     config.app.useUserSchema = config.app.useUserSchema || true,
-    config.app.useObjectID = config.app.useObjectID || true,
     config.app.allowApiCreateUpdate_id = config.app.allowApiCreateUpdate_id || false,
     // config.app.useStatefulRedisAuth = config.app.useStatefulRedisAuth || false;
 
     // RBAC
-    config.useRBAC = config.useRBAC || { roles: [], default: "", schemaIncluded: [] };
+    config.useRBAC = config.useRBAC || { roles: [], default: "" };
     config.useRBAC.roles = config.useRBAC.roles || ["user"];
     config.useRBAC.default = config.useRBAC.default || "user";
-    config.useRBAC.schemaIncluded = config.useRBAC.schemaIncluded || ["user"]; // TODO : remove this field, it is to find which file have "x-vexData=role", but we can just check "x-vexData" field directly. 
 
     // oauth
     config.auth = config.auth || {};
@@ -63,12 +62,6 @@ async function main() {
     // config.auth.oauthProviders.microsoft = config.auth.oauthProviders.microsoft || false;
     // config.auth.oauthProviders.facebook = config.auth.oauthProviders.facebook || false;
     // config.auth.oauthProviders.azure = config.auth.oauthProviders.microsoft || false;
-
-
-    // warnings
-    if (config.app.useObjectID && config.app.allowApiCreateUpdate_id) {
-        log.warn("Not recommended to use \"useObjectID\" with \"allowApiCreateUpdate_id\",\nthis may cause logic issues");
-    }
 
     // errors
     if(config.auth.localAuth && !config.app.useUserSchema){
@@ -139,6 +132,9 @@ async function main() {
             log.error("Schema Dir Not Found:", config.jsonSchemaDir);
             process.exit(1);
         }
+
+        // run migrations before anything else
+        runMigrations(config.rootDir, config.jsonSchemaDir);
 
         // commit before generate
         if (config.generator.commitBeforeGenerate === true) {

@@ -25,13 +25,11 @@
             "member",
             "admin"
         ],
-        "default": "visitor",
-        "schemaIncluded": [
-            "User"
-        ]
+        "default": "admin"
     },
     "generator": {
         "commitBeforeGenerate": false,
         "disableVersionLabel": false
-    }
+    },
+    "dbType": "sql"
 }

@@ -1,6 +1,7 @@
 // {{headerComment}}
 import crypto from "crypto";
-import { User } from "../_types/User.gen";
+// import log from "~/utils/logger";
+import { UserWithRelations } from "../_types/User.gen";
 
 /**
  * Hashes a password with a salt (e.g., user email).
@@ -19,22 +20,22 @@ export function hashPassword(
 
 /**
  * Verifies if a plain password (with salt) matches a given hashed password.
- * @param user The user object containing email and authProfiles.
+ * @param user The user object containing email and userAuthProfiles.
  * @param plainPassword The plain text password to verify.
  * @returns True if the password matches, false otherwise.
  */
 export function verifyPassword(
-    user: User,
+    user: UserWithRelations,
     plainPassword: string,
 ): boolean {
-    if(!user.email || !user.authProfiles) {
-        console.error("User email or authProfiles missing for local auth's password verification.");
+    if(!user.email || !user.userAuthProfiles) {
+        // log.error(`User "${user._id}" email or userAuthProfiles missing for local auth's password verification.`);
         return false;
     }
 
-    const hashedPassword = user.authProfiles.find((profile:any) => profile.provider === "local")?.password;
+    const hashedPassword = user.userAuthProfiles.find((profile:any) => profile.provider === "local")?.password;
     if(!hashedPassword) {
-        console.error("Local auth profile or password missing for user.");
+        // log.error(`User "${user._id}" Local auth profile or password missing.`);
         return false;
     }
 

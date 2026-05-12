@@ -1,0 +1,46 @@
+{
+    "type": "object",
+    "x-documentConfig": {
+        "restApi": {
+            "methods": [],
+            "joinWhitelist": []
+        },
+        "documentName": "UserAuthProfiles"
+    },
+    "properties": {
+        "_id": {
+            "type": "string",
+            "x-format": "Primary",
+            "index": true
+        },
+        "userId": {
+            "type": "string",
+            "x-format": "UUID",
+            "index": true,
+            "x-foreignKey": {
+                "schemaName": "User",
+                "fieldName": "_id",
+                "relationType": "many-to-one"
+            }
+        },
+        "provider": {
+            "type": "string",
+            "index": true
+        },
+        "oauthId": {
+            "type": "string",
+            "index": true
+        },
+        "email": {
+            "type": "string"
+        },
+        "username": {
+            "type": "string"
+        },
+        "password": {
+            "type": "string",
+            "x-hidden": true
+        }
+    },
+    "required": []
+}

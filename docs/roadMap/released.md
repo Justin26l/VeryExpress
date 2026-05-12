@@ -21,29 +21,11 @@
 
 ## Features 
 
-- [ ] Schema Definition
-    - [x] App level foreign-key. `x-foreign-key` under properties  
-        ```JSON
-        {
-            "username": {
-                "type" : "string",
-            },
-            "contactId": {
-                "type" : "string",
-                "x-foreignKey" : "contact", // target collection's name
-                "x-foreignValue" : [ // fields to join
-                    "contactName",
-                    "contactNumber",
-                    "isActive"
-                ]
-            }
-        }
-        ```
 - [x] REST API, to request data with foreign-key collection:  
-    add field name as array into querystring "_join"
-    example `/user?_join=["contact"]_select=["contactNo"]&`
-    - [ ] DB field encryption. `x-encrypt`
+    add field name as array into querystring "join"
+    example `/user?join=["contact"]&select=["contactNo"]`
 
 - [x] Role Base Access Control
     - [x] API access control
-    - different controller data validation rule by role **(ON HOLD)**
+    
+- [x] [tsoa](https://tsoa-community.github.io/docs/) make it nextjs like and support opanapi with custom endpoint (non generated).

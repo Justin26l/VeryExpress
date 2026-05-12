@@ -1,13 +1,12 @@
 import fs from "fs";
 import path from "path";
 
-import json2mongoose from "json2mongoose";
 // import * as openapiGen from "./generators/app/openapi.generator";
 
 import utils from "./utils";
 import log from "./utils/logger";
-import { formatJsonSchema } from "./preprocess/jsonschemaFormat";
-import { roleSchemaFormat } from "./preprocess/roleSetupFile";
+import { applyFkMetadata } from "./preprocess/jsonSchemaForeignKeys";
+import { formatJsonSchema, formatJsonSchemaRoleDefinition } from "./preprocess/jsonschemaFormat";
 
 import * as types from "./types/types";
 import * as userSchemaGen from "./generators/projectSettings/userSchema.generator";
@@ -18,6 +17,11 @@ import * as roleGen from "./generators/role/role.generator";
 import * as controllerGen from "./generators/controller/controllers.generator";
 import * as routeGen from "./generators/routes/routes.generator";
 import * as serverGen from "./generators/app/server.generator";
+import * as typeormEntityGen from "./generators/db/typeormEntity.generator";
+import * as mongooseModelGen from "./generators/db/mongooseModel.generator";
+import * as sqlMigrationGen from "./generators/db/sqlMigration.generator";
+import * as interfaceGen from "./generators/interface/generator";
+import * as joinWhitelistRegistryGen from "./generators/middlewares/joinWhitelistRegistry.generator";
 
 export async function generate(
     options: types.compilerOptions
@@ -31,6 +35,9 @@ export async function generate(
     options._ = {
         writtedDir: [],
     };
+
+    // provide compilerOptions to utils.common for meta handling
+    utils.common.setCompilerOptions(options);
 
     const dir = {
         roleSrcDir: path.posix.join(options.srcDir, "roles"),
@@ -50,6 +57,9 @@ export async function generate(
         controllerPath: string,
     }[] = [];
 
+    // handle versioning cleanup: if major.minor changed since last generate, remove sysDir
+    utils.common.handleVersioningCleanup();
+
     // create all directories if not exist
     if (!fs.existsSync(options.rootDir)) { fs.mkdirSync(options.rootDir); }
     if (!fs.existsSync(options.srcDir)) { fs.mkdirSync(options.srcDir); }
@@ -61,23 +71,23 @@ export async function generate(
     });
 
     // copy static files
-    utils.common.copyDir(`${__dirname}/templates/_controllers`, dir.controllerDir, options, true);
-    utils.common.copyDir(`${__dirname}/templates/_middlewares`, dir.middlewareDir, options, true);
-    utils.common.copyDir(`${__dirname}/templates/_roles`, dir.roleDir, options, true);
-    utils.common.copyDir(`${__dirname}/templates/_routes`, dir.routeDir, options, true);
-    utils.common.copyDir(`${__dirname}/templates/_services`, dir.serviceDir, options, true);
-    utils.common.copyDir(`${__dirname}/templates/_types`, dir.typeDir, options, true);
-    utils.common.copyDir(`${__dirname}/templates/_utils`, dir.utilsDir, options, true);
-    utils.common.copyDir(`${__dirname}/templates/root`, options.rootDir, options, false);
-    utils.common.copyDir(`${__dirname}/templates/jsonSchema`, options.jsonSchemaDir, options, true);
-
-    // format role schema
-    roleSchemaFormat({ compilerOptions: options || utils.generator.defaultCompilerOptions });
+    utils.common.copyDir(path.join(__dirname, "templates", "_controllers"), dir.controllerDir, options, true);
+    utils.common.copyDir(path.join(__dirname, "templates", "_middlewares"), dir.middlewareDir, options, true);
+    utils.common.copyDir(path.join(__dirname, "templates", "_roles"), dir.roleDir, options, true);
+    utils.common.copyDir(path.join(__dirname, "templates", "_routes"), dir.routeDir, options, true);
+    utils.common.copyDir(path.join(__dirname, "templates", "_services"), dir.serviceDir, options, true);
+    utils.common.copyDir(path.join(__dirname, "templates", "_types"), dir.typeDir, options, true);
+    utils.common.copyDir(path.join(__dirname, "templates", "_utils"), dir.utilsDir, options, true);
+    utils.common.copyDir(path.join(__dirname, "templates", "root"), options.rootDir, options, false);
+    utils.common.copyDir(path.join(__dirname, "templates", "jsonSchema"), options.jsonSchemaDir, options, true);
+    if (options.useRBAC) utils.common.copyDir(path.join(__dirname, "templates", "jsonSchemaRBAC"), options.jsonSchemaDir, options, true);
 
     // update userSchema
     await userSchemaGen.compile({ compilerOptions: options || utils.generator.defaultCompilerOptions });
     
     // prepair schema files
+    formatJsonSchemaRoleDefinition({ compilerOptions: options || utils.generator.defaultCompilerOptions });
+    
     const files: string[] = fs.readdirSync(options.jsonSchemaDir);
     files.forEach((schemaFileName: string) => {
         const schemaPath = `${options.jsonSchemaDir}/${schemaFileName}`;
@@ -101,54 +111,51 @@ export async function generate(
             log.error(`Processing File : ${schemaPath}\n`, err);
         }
     });
+    applyFkMetadata(documents);
 
-    // generate roles
-    if ( options.useRBAC && options.useRBAC.roles.length > 0 ){
-        await roleGen.compile({
-            collectionList: documents.map((doc) => doc.config.documentName),
-            roleSourceDir: dir.roleSrcDir,
-            roleOutDir: dir.roleDir, 
-            middlewareDir: dir.middlewareDir,
-            compilerOptions: options || utils.generator.defaultCompilerOptions
-        });
-    }
+    // ===== Start Generations ===== //
 
-    // generate openapi from jsonSchema
-    // await openapiGen.compile(
-    //     openapiFile, 
-    //     options
-    // );
-    // utils.common.copyDir(`${options.openapiDir}`, path.posix.join(options.srcDir, "openapi"), options, true);
+    // generate role & permissions
+    await roleGen.compile({
+        schemas: documents.map((doc) => doc.schema),
+        roleSourceDir: dir.roleSrcDir,
+        roleOutDir: dir.roleDir, 
+        middlewareDir: dir.middlewareDir,
+        compilerOptions: options || utils.generator.defaultCompilerOptions
+    });
 
-    // generate dynamic files
+    // generate models & types
     await Promise.all(documents.map( async (doc: { path: string, config: types.documentConfig, schema: types.jsonSchema }) => {
-        
-        // make model
-        json2mongoose.modelsGen.compileFromFile(
-            doc.path,
-            `${utils.common.relativePath(dir.modelDir, dir.typeDir)}/${doc.config.documentName}.gen`,
-            `${dir.modelDir}/${doc.config.documentName}Model.gen.ts`,
+        await interfaceGen.compile(
+            doc.schema as any,
+            path.join(dir.typeDir, `${doc.config.documentName}.gen.ts`),
         );
 
-        // make interface
-        await json2mongoose.typesGen.compileFromFile(
-            doc.path,
-            `${dir.typeDir}/${doc.config.documentName}.gen.ts`,
-        );
-
-        // replace interface <import xxx from "./xxx";> to <import xxx from "./xxx.gen";>
-        const interfaceContent = fs.readFileSync(`${dir.typeDir}/${doc.config.documentName}.gen.ts`, "utf8");
-        const remappedContent = interfaceContent.replace(/import (.*) from ".\/(.*)";/g, (match,a,b)=>{
-            return `import ${a} from "./${b}.gen";`;
-        });
-        utils.common.writeFile("Type-Remap",`${dir.typeDir}/${doc.config.documentName}.gen.ts`, remappedContent);
+        if (options.dbType === "mongo") {
+            await mongooseModelGen.compile({
+                jsonSchema: doc.schema,
+                schemaPath: doc.path,
+                outDir: dir.modelDir,
+                typeDir: dir.typeDir,
+                compilerOptions: options || utils.generator.defaultCompilerOptions,
+            });
+        } 
+        else if (options.dbType === "sql") {
+            await typeormEntityGen.compile({
+                jsonSchema: doc.schema,
+                outDir: dir.modelDir,
+                compilerOptions: options || utils.generator.defaultCompilerOptions,
+                allSchemas: documents.map(d => d.schema),
+            });
+        }
 
         // generate controller
         await controllerGen.compile({
             jsonSchema: doc.schema,
             controllerOutDir: dir.controllerDir,
             modelDir: dir.modelDir,
-            compilerOptions: options || utils.generator.defaultCompilerOptions
+            compilerOptions: options || utils.generator.defaultCompilerOptions,
+            allSchemas: documents.map(d => d.schema),
         });
 
         // prepare route data
@@ -160,20 +167,36 @@ export async function generate(
 
         return;
     }));
-    
 
-    // make route from routeData
+    // generate join whitelist registry (centralized static map, used by JoinWhitelistMiddleware)
+    await joinWhitelistRegistryGen.compile({
+        allSchemas: documents.map(d => d.schema),
+        middlewareDir: dir.middlewareDir,
+    });
+
+    // generate sql migrations
+    if (options.dbType === "sql") {
+        await sqlMigrationGen.compile({
+            schemas: documents.map((d) => d.schema),
+            outDir: dir.modelDir,
+        });
+    }
+
+    // generate route from routeData
     await routeGen.compile({
-        routesArr: routeData,
         routesDir: dir.routeDir,
         compilerOptions: options || utils.generator.defaultCompilerOptions
     });
 
-    // make server
+    // generate server/entrypoint
     await serverGen.compile(options);
 
-    // make project files
+    // generate project files
     await projectSettingsGen.compile(options);
+
+    // record last generated version once after full generation
+    utils.common.saveVexMeta();
+
     // await configGen.compile(options);
 
     return ;

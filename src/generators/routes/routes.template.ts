@@ -12,7 +12,7 @@ export default function routesTemplate(options: {
 }): string {
 
     let template: string = options.template || `{{headerComment}}
-import { Router } from 'express';
+import { Router } from "express";
 
 {{importRoutes}}
 
@@ -34,20 +34,20 @@ export default class ApiRouter{
     const useRoutes = [];
 
     const rbacMiddleware = (path: string) => {
-        return options.compilerOptions.useRBAC ? `new RoleBaseAccessControl('${path}').middleware, ` : "";
+        return options.compilerOptions.useRBAC ? `new RoleBaseAccessControl("${path}").middleware,` : "";
     };
 
     if (options.compilerOptions.useRBAC) {
-        importRoutes.push("import RoleBaseAccessControl from '../_middlewares/RoleBaseAccessControl.gen';");
+        importRoutes.push("import RoleBaseAccessControl from \"../_middlewares/RoleBaseAccessControl.gen\";");
     }
     if (utilsGenerator.isAuthEnabled(options.compilerOptions)) {
-        importRoutes.push("import Authentication from '../_middlewares/Authentication.gen';");
-        useRoutes.push("this.router.use(new Authentication().middleware);");
+        importRoutes.push("import Authentication from \"../_middlewares/Authentication.gen\";");
+        useRoutes.push("this.router.use(Authentication.middleware);");
     }
 
     options.routes.forEach((obj) => {
-        importRoutes.push(`import ${obj.documentName}Controller from '${obj.controllerPath}';`);
-        useRoutes.push(`this.router.use('${obj.route}', ${rbacMiddleware(obj.documentName)} ${obj.documentName}Controller);`);
+        importRoutes.push(`import ${obj.documentName}Controller from "${obj.controllerPath}";`);
+        useRoutes.push(`this.router.use("${obj.route}", ${rbacMiddleware(obj.documentName)} ${obj.documentName}Controller.router);`);
     });
 
     template = template.replace(/{{importRoutes}}/g, importRoutes.join("\n"));
