@@ -12,11 +12,7 @@
             ]
         ]
     },
-    "required": [
-        "provider",
-        "userId",
-        "expired"
-    ],
+    "required": ["provider", "userId", "expired"],
     "properties": {
         "_id": {
             "type": "string",
@@ -28,9 +24,10 @@
             "index": true
         },
         "provider": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 30
         },
-        "userId": {
+        "userId":{
             "type": "string",
             "x-format": "UUID",
             "x-foreignKey": {

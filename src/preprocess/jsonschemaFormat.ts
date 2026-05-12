@@ -23,6 +23,7 @@ export function formatJsonSchema(jsonSchemaPath: string, compilerOptions: types.
     checkSchemaBasic(jsonSchema, jsonSchemaPath);
     checkDocumentConfig(jsonSchema, jsonSchemaPath);
     checkForeignKeyConfig(jsonSchema, jsonSchemaPath);
+    checkXFormatType(jsonSchema, jsonSchemaPath);
 
     // format properties boolean "required" into array of string
     jsonSchema.required = getRequiredArrStr(jsonSchema, jsonSchemaPath);
@@ -104,6 +105,44 @@ function checkForeignKeyConfig(schema: types.jsonSchema, jsonSchemaPath: string)
         }
     }
     return true;
+}
+
+/** Valid JSON Schema types for each x-format value */
+const X_FORMAT_VALID_TYPES: Record<string, string[]> = {
+    [types.xFormatType.Primary]:       ["string"],
+    [types.xFormatType.PrimaryUUID]:   ["string"],
+    [types.xFormatType.UUID]:          ["string"],
+    [types.xFormatType.ObjectId]:      ["string"],
+    [types.xFormatType.UnixTimestamp]: ["integer"],
+};
+
+function checkXFormatType(schema: types.jsonSchema, jsonSchemaPath: string): void {
+    const checkProps = (props: { [key: string]: types.jsonSchemaPropsItem }, contextPath: string) => {
+        for (const key of Object.keys(props)) {
+            const prop = props[key];
+            const xFormat = prop["x-format"];
+
+            if (xFormat && X_FORMAT_VALID_TYPES[xFormat]) {
+                const valid = X_FORMAT_VALID_TYPES[xFormat];
+                if (!valid.includes(prop.type)) {
+                    log.error(
+                        `Json Schema Formatting: "${jsonSchemaPath}" property "${contextPath}${key}" ` +
+                        `has x-format "${xFormat}" but type is "${prop.type}" — expected: ${valid.join(" | ")}.`
+                    );
+                }
+            }
+
+            // recurse into nested objects / array items
+            if (prop.type === "object" && prop.properties) {
+                checkProps(prop.properties, `${contextPath}${key}.`);
+            }
+            else if (prop.type === "array" && prop.items?.type === "object" && prop.items.properties) {
+                checkProps(prop.items.properties, `${contextPath}${key}[].`);
+            }
+        }
+    };
+
+    if (schema.properties) checkProps(schema.properties, "");
 }
 
 

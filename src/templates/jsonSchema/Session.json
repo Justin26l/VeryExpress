@@ -24,7 +24,8 @@
             "index": true
         },
         "provider": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 30
         },
         "userId":{
             "type": "string",
