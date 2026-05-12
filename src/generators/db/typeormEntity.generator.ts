@@ -74,7 +74,7 @@ function resolveColumnLength(prop: types.jsonSchemaPropsItem, dbType: string): n
     if (!["varchar", "char"].includes(dbType)) return undefined;
     if (prop.maxLength)                         return prop.maxLength;
     if (prop.format === "email")                return 254;    // RFC 5321
-    if (prop["x-format"] === "ObjectId")        return 24;     // MongoDB ObjectId hex length
+    if (prop["x-format"] === types.xFormatType.ObjectId)        return 24;     // MongoDB ObjectId hex length
     return undefined;
 }
 
@@ -92,7 +92,7 @@ function mapPropToColumnDef(
     requiredFields: string[],
     singleFieldUniques: Set<string>,
 ): typeormModel.ColumnDef {
-    const isPrimary = prop["x-format"] === "Primary" || prop["x-format"] === "PrimaryUUID";
+    const isPrimary = prop["x-format"] === types.xFormatType.Primary || prop["x-format"] === types.xFormatType.PrimaryUUID;
     const isenum    = isEnum(prop);
     const nullable  = !requiredFields.includes(key) && !isPrimary;
     const dbType    = resolveDbType(prop);
@@ -104,7 +104,7 @@ function mapPropToColumnDef(
         tsType:  isPrimary ? "string" : isenum ? utils.common.pascalCase(key) + "Enum" : jsonTypeToTs(prop),
         dbType,
         isPrimary,
-        isGenerated: isPrimary || Boolean(prop["x-format"] && ["UUID", "UnixTimestamp"].includes(prop["x-format"] as string)),
+        isGenerated: isPrimary || Boolean(prop["x-format"] && [types.xFormatType.UUID, types.xFormatType.UnixTimestamp].includes(prop["x-format"] as types.xFormatType)),
         isIndex:  prop.index === true,
         isUnique: singleFieldUniques.has(key),
         isNested: prop.type === "object" || prop.type === "array",

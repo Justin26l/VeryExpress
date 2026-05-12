@@ -31,7 +31,7 @@ export async function compile(options: {
     // Determine id type
     const idProps = options.jsonSchema.properties["_id"]
     const idXFormat = idProps?.["x-format"] || "";
-    const idType = ["Primary", "ObjectId"].includes(idXFormat) ? "string" : idProps?.type;
+    const idType = [types.xFormatType.Primary, types.xFormatType.ObjectId].includes(idXFormat as types.xFormatType) ? "string" : idProps?.type;
 
     // Session is an internal document — skip tsoa @Route decorator
     // Build TsoaFieldDef[] from schema properties
@@ -61,7 +61,7 @@ export async function compile(options: {
 
 function mapToTsType(prop: types.jsonSchemaPropsItem): string {
     const fmt = prop["x-format"];
-    if (fmt === "ObjectId" || fmt === "Primary") return "string";
+    if (fmt === types.xFormatType.ObjectId || fmt === types.xFormatType.Primary) return "string";
     switch (prop.type) {
     case "string":  return "string";
     case "integer":

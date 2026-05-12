@@ -135,10 +135,9 @@ export function formatJsonSchemaRoleDefinition(options: {
 
     for (const key in schema.properties) {
         const prop = schema.properties[key];
-        if (prop["x-vexData"] === "role" && prop.enum !== roles) {
+        if (prop["x-vexData"] === types.xVexDataType.Role && prop.enum !== roles) {
             prop.type = "string";
             prop.enum = roles;
-            prop["x-format"] = "enum";
             log.process(`Json Schema Formatting: update role definitions UserRole.${key} enum -> [${roles.join(", ")}]`);
             break;
         }
@@ -211,9 +210,9 @@ function normalizeSqlTarget(jsonSchema: types.jsonSchema, jsonSchemaPath: string
             for (const k of Object.keys(props)) {
                 const p = props[k];
                 if (!p) continue;
-                if (p["x-format"] === "ObjectId") {
+                if (p["x-format"] === types.xFormatType.ObjectId) {
                     const isId = k === "_id";
-                    p["x-format"] = isId ? "Primary" : undefined;
+                    p["x-format"] = isId ? types.xFormatType.Primary : undefined;
                     p.type = "string";
                     log.warn("[JsonSchema]", `SQL target: ${isId ? "converted" : "removed"} x-format ObjectId ${isId ? "-> Primary" : ""} for property "${k}" in ${jsonSchemaPath}`);
                 }
