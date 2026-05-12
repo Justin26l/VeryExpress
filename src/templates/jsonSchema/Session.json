@@ -37,7 +37,7 @@
             }
         },
         "expired": {
-            "type": "number",
+            "type": "integer",
             "x-format": "UnixTimestamp",
             "description": "expired time in unix timestamp format (ms)"
         }

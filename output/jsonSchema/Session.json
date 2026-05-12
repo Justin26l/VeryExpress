@@ -12,7 +12,11 @@
             ]
         ]
     },
-    "required": ["provider", "userId", "expired"],
+    "required": [
+        "provider",
+        "userId",
+        "expired"
+    ],
     "properties": {
         "_id": {
             "type": "string",
@@ -27,7 +31,7 @@
             "type": "string",
             "maxLength": 30
         },
-        "userId":{
+        "userId": {
             "type": "string",
             "x-format": "UUID",
             "x-foreignKey": {
@@ -37,7 +41,7 @@
             }
         },
         "expired": {
-            "type": "number",
+            "type": "integer",
             "x-format": "UnixTimestamp",
             "description": "expired time in unix timestamp format (ms)"
         }
