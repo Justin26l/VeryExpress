@@ -2,6 +2,13 @@ import { DbRelationType } from "../../types/types";
 import * as typeormModel from "../../types/typeormModel";
 import utils from "../../utils";
 
+function serializeArgs(obj: Record<string, unknown>): string {
+    const entries = Object.entries(obj)
+        .filter(([, v]) => v !== undefined && v !== null)
+        .map(([k, v]) => `${k}: ${JSON.stringify(v)}`);
+    return `{${entries.join(", ")}}`;
+}
+
 export default function objectionTemplate(options: {
     documentName: string,
     tableName: string,
@@ -22,7 +29,7 @@ export default function objectionTemplate(options: {
     // build dynamic typeorm import
     const typeormImports = ["Entity", "Column", "PrimaryGeneratedColumn"];
     const hasUniqueIndexes = options.uniqueIndexes && options.uniqueIndexes.length > 0;
-    const hasIndexDecorator = options.columns.some(c => c.isIndex && !c.isArray && !c.isObject);
+    const hasIndexDecorator = options.columns.some(c => c.isIndex && !c.isNested);
     
     if (hasUniqueIndexes) typeormImports.push("Unique");
     if (hasIndexDecorator) typeormImports.push("Index");
@@ -47,35 +54,24 @@ export default function objectionTemplate(options: {
 
     // enum types are defined in the _types file and re-exported; collect import names
     const enumImports = options.columns
-        .filter(col => col.isEnum)
+        .filter(col => col.enumValues)
         .map(col => col.tsType);
 
     const columnDecorators = options.columns.map(col => {
         const decorators: string[] = [];
         if (col.isPrimary) {
-            const pkArg = col.isUUID ? "uuid" : "increment";
-            decorators.push(`    @PrimaryGeneratedColumn("${pkArg}")`)
+            decorators.push(`    @PrimaryGeneratedColumn("${col.dbType=='uuid' ? "uuid" : "increment"}")`);
             decorators.push(`    ${col.name}!: ${col.tsType};`);
-        } else {
-            let colArgs: string;
-            if (col.isEnum && col.enumValues) {
-                // PostgreSQL native ENUM type — use enum object for type safety
-                colArgs = `{ type: "enum", enum: ${col.tsType}, nullable: ${col.nullable} }`;
-            } else if (col.isArray) {
-                colArgs = `{ type: "text", array: true, nullable: ${col.nullable} }`;
-            } else if (col.isObject) {
-                colArgs = `{ type: "jsonb", nullable: ${col.nullable} }`;
-            } else if (col.isBigInt) {
-                colArgs = `{ type: "bigint", nullable: ${col.nullable}, transformer: { to: (v: number) => v, from: (v: string) => Number(v) } }`;
-            } else if (col.maxLength) {
-                colArgs = `{ length: ${col.maxLength}, nullable: ${col.nullable} }`;
-            } else {
-                colArgs = `{ nullable: ${col.nullable} }`;
-            }
-            if (col.isIndex && !col.isArray && !col.isObject) {
-                decorators.push("    @Index()");
-            }
-            decorators.push(`    @Column(${colArgs})`);
+        } 
+        else {
+            if (col.isIndex && !col.isNested) decorators.push("    @Index()");
+            const colArgs: Record<string, unknown> = {
+                type: col.dbType,
+                nullable: col.nullable,
+                enum: col.enumValues,
+                length: ["char", "varchar", "text"].includes(col.dbType) ? col.length : undefined,
+            };
+            decorators.push(`    @Column(${serializeArgs(colArgs)})`);
             decorators.push(`    ${col.name}${col.nullable ? "?" : "!"}: ${col.tsType};`);
         }
         return decorators.join("\n");

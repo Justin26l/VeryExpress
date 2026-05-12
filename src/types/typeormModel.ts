@@ -3,17 +3,14 @@ import { DbRelationType } from "./types";
 export interface ColumnDef {
     name: string;
     tsType: string;
+    dbType: string;
     isPrimary: boolean;
-    isUUID?: boolean;
     isGenerated: boolean;
-    nullable: boolean;
-    maxLength?: number;
-    isArray?: boolean;
-    isBigInt?: boolean;
-    isObject?: boolean;
-    isEnum?: boolean;
-    enumValues?: string[];
     isIndex?: boolean;
+    nullable: boolean;
+    length?: number;
+    enumValues?: string[];
+    isNested?: boolean;
 }
 
 

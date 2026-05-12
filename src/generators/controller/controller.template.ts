@@ -49,8 +49,8 @@ export default function controllerTemplate(templateOptions: {
     // ── Class decorators ────────────────────────────────────────────────────────
     const classDecoratorLines: string[] = [];
     classDecoratorLines.push(`@Route("${routePath}")`);
-    classDecoratorLines.push(`@Tags(schemanName)`);
-    if (useRBAC) classDecoratorLines.push(`@Middlewares(RoleBaseAccessControl.middleware(schemanName))`);
+    classDecoratorLines.push(`@Tags("${documentName}")`);
+    if (useRBAC) classDecoratorLines.push(`@Middlewares(RoleBaseAccessControl.middleware("${documentName}"))`);
     if (useAuth) {
         classDecoratorLines.push("@Middlewares(Authentication.middleware)");
         classDecoratorLines.push("@Security(\"BearerAuth\")");
@@ -74,7 +74,7 @@ export default function controllerTemplate(templateOptions: {
 
     // Join whitelist decorator — only applied to routes that accept join params
     const joinWhitelistDecorator = restApiJoinWhitelist
-        ? `@Middlewares(JoinWhitelistMiddleware.middleware(schemanName))`
+        ? `@Middlewares(JoinWhitelistMiddleware.middleware("${documentName}"))`
         : null;
 
     const getListRoute = buildMethod(
@@ -157,8 +157,6 @@ import { ${documentName}, ${documentName}WithRelations } from "${typePath}";
 // extra type defined due to tsoa cannot capture runtime generic types,
 // this will make OAS have complete input parameters & correct validation
 export type Filter${documentName} = { [K in keyof ${documentName}]?: FieldFilter<${documentName}[K]> } & Filter<${documentName}>;
-
-const schemanName = "${documentName}";
 
 ${classDecorators}export class ${documentName}Controller extends controllerFactory._ControllerFactory {
     private get repo(): VexRepository<${documentName}> {

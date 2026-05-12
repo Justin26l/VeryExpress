@@ -41,6 +41,7 @@
         },
         "expired": {
             "type": "number",
+            "x-format": "UnixTimestamp",
             "description": "expired time in unix timestamp format (ms)"
         }
     }

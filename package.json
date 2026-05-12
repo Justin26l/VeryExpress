@@ -1,6 +1,6 @@
 {
     "name": "very-express",
-    "version": "0.6.15",
+    "version": "0.6.18",
     "description": "based on json schema and openapi, generate Express RestApi server with mongoDb ",
     "author": "Justin26l",
     "license": "MIT",
@@ -15,7 +15,7 @@
         "lint": "eslint ./src --ext .ts --fix",
         "compile": "node ./scripts/build.js && node ./scripts/copyTsTemplates.js",
         "preversion": "npm run lint && npm run compile",
-        "postversion": "git tag v$(node -p \"require('./package.json').version\") && git push --tags && git push"
+        "postversion": "npm run compile && git push --tags && git push"
     },
     "keywords": [
         "jsonSchema",
