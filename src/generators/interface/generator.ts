@@ -45,8 +45,26 @@ export async function compile(
 }
 
 function applyFkToInterface(interfaceString: string, jsonSchema: types.jsonSchema): string {
-    const fkProps = (jsonSchema.interface?.fkProps || [])
+    // Reverse FK relations (other schemas pointing to this one)
+    const reverseFkProps = (jsonSchema.interface?.fkProps || [])
         .filter((fkProp, index, self) => index === self.findIndex((p) => p.propName === fkProp.propName));
+
+    // Direct FK relations (this schema's own x-foreignKey properties / pointing to other schemas)
+    const directFkProps: { propName: string; interfaceName: string; relationType: types.DbRelationType }[] = [];
+    for (const prop of Object.values(jsonSchema.properties ?? {})) {
+        const fk = (prop as types.jsonSchemaPropsItem)["x-foreignKey"];
+        if (fk) {
+            const propName = utils.common.camelCase(fk.schemaName);
+            const interfaceName = utils.common.pascalCase(fk.schemaName);
+            if (!directFkProps.some((p) => p.propName === propName)) {
+                directFkProps.push({ propName, interfaceName, relationType: fk.relationType as types.DbRelationType });
+            }
+        }
+    }
+
+    const joinWhitelist = jsonSchema["x-documentConfig"]?.restApi?.joinWhitelist as string[] | undefined;
+    const allFkProps = [...reverseFkProps, ...directFkProps];
+    const fkProps = !joinWhitelist ? allFkProps : allFkProps.filter((fkProp) => joinWhitelist.includes(fkProp.propName));
 
     const titleMatch = interfaceString.match(/export interface (\w+)/);
     if (!titleMatch) return interfaceString;
