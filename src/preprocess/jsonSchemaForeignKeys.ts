@@ -23,7 +23,7 @@ export function applyFkMetadata(documents: Array<{
             const whitelist = collectAllRelationNames(doc.schema);
             doc.config.restApi.joinWhitelist = whitelist;
             doc.schema["x-documentConfig"].restApi.joinWhitelist = whitelist;
-            writeApiJoinWhitelistToFile(doc.path, doc.schema, whitelist);
+            writeApiJoinWhitelistToFile(doc.path, whitelist);
         }
     });
 }
@@ -32,8 +32,9 @@ export function applyFkMetadata(documents: Array<{
  * Write computed restApi.joinWhitelist back into the JSON schema file on disk.
  * Preserves all other fields; only patches x-documentConfig.restApi.joinWhitelist.
  */
-function writeApiJoinWhitelistToFile(schemaPath: string, schema: types.jsonSchema, whitelist: string[]): void {
+function writeApiJoinWhitelistToFile(schemaPath: string, whitelist: string[]): void {
     try {
+        const schema = utils.jsonSchema.loadJsonSchema(schemaPath);
         schema["x-documentConfig"].restApi.joinWhitelist = whitelist;
         utils.common.writeFile("Json Schema restApi.joinWhitelist", schemaPath, JSON.stringify(schema, null, 4));
     }
