@@ -11,9 +11,7 @@
                 "patch",
                 "delete"
             ],
-            "joinWhitelist": [
-                "user"
-            ]
+            "joinWhitelist": []
         }
     },
     "properties": {

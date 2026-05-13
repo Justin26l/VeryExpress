@@ -84,7 +84,7 @@ export default function controllerTemplate(templateOptions: {
             `@SuccessResponse(200, "Success")`,
             ...(joinWhitelistDecorator ? [joinWhitelistDecorator] : []),
         ],
-        `public async getList${documentName}(@Body() body: { filter: Filter${documentName}, join?: string[], select?: string[] }): Promise<VexResponse<${documentName}${restApiNoRelations ? '' : 'WithRelations'}[]>>`,
+        `public async getList${documentName}(@Body() body: { filter: Filter${documentName}, join?: string[], select?: string[] }): Promise<VexResponse<${documentName}${restApiNoRelations ? '' : 'WithApiRelations'}[]>>`,
         `const result = await this.repo.find(body.filter as Filter<${documentName}>, body.join, body.select);
         throw new VexResOk(200, { result });`
     );
@@ -96,7 +96,7 @@ export default function controllerTemplate(templateOptions: {
             `@SuccessResponse(200, "Success")`,
             ...(joinWhitelistDecorator ? [joinWhitelistDecorator] : []),
         ],
-        `public async get${documentName}(${idParam}, @Query() join?: string[], @Query() select?: string[]): Promise<VexResponse<${documentName}${restApiNoRelations ? '' : 'WithRelations'}>>`,
+        `public async get${documentName}(${idParam}, @Query() join?: string[], @Query() select?: string[]): Promise<VexResponse<${documentName}${restApiNoRelations ? '' : 'WithApiRelations'}>>`,
         `const result = await this.repo.findOne({ _id: id }, join, select);
         if (!result) throw new VexResErr(404);
         throw new VexResOk(200, { result });`
@@ -152,7 +152,7 @@ import VexDb from "../_services/VexDb.gen";
 ${optionalImports}
 
 import { ${documentName}Entity } from "${modelPath}";
-import { ${documentName}, ${documentName}WithRelations } from "${typePath}";
+import { ${documentName}, ${documentName}WithApiRelations } from "${typePath}";
 
 // extra type defined due to tsoa cannot capture runtime generic types,
 // this will make OAS have complete input parameters & correct validation

@@ -64,7 +64,7 @@ function applyFkToInterface(interfaceString: string, jsonSchema: types.jsonSchem
 
     const joinWhitelist = jsonSchema["x-documentConfig"]?.restApi?.joinWhitelist as string[] | undefined;
     const allFkProps = [...reverseFkProps, ...directFkProps];
-    const fkProps = !joinWhitelist ? allFkProps : allFkProps.filter((fkProp) => joinWhitelist.includes(fkProp.propName));
+    const apiFkProps = !joinWhitelist ? allFkProps : allFkProps.filter((fkProp) => joinWhitelist.includes(fkProp.propName));
 
     const titleMatch = interfaceString.match(/export interface (\w+)/);
     if (!titleMatch) return interfaceString;
@@ -72,20 +72,25 @@ function applyFkToInterface(interfaceString: string, jsonSchema: types.jsonSchem
 
     let updatedInterface = interfaceString;
 
-    fkProps.forEach((fkProp) => {
+    allFkProps.forEach((fkProp) => {
         updatedInterface = prependImports(updatedInterface, fkProp.interfaceName);
     });
 
-    const relationsProps = fkProps
-        .map((fkProp) => {
-            const typeString = fkProp.relationType === types.DbRelationType.OneToMany ? `${fkProp.interfaceName}[]` : fkProp.interfaceName;
-            return `    ${fkProp.propName}?: ${typeString};`;
-        })
-        .join("\n");
+    const buildRelationsProps = (props: typeof allFkProps): string =>
+        props
+            .map((fkProp) => {
+                const typeString = fkProp.relationType === types.DbRelationType.OneToMany ? `${fkProp.interfaceName}[]` : fkProp.interfaceName;
+                return `    ${fkProp.propName}?: ${typeString};`;
+            })
+            .join("\n");
 
     const relationsBlock =
-        `\nexport interface ${title}Relations {\n${relationsProps}\n}\n\n` +
-        `export type ${title}WithRelations = ${title} & ${title}Relations;\n`;
+        `\n/** Full DB relations — internal use only, no whitelist restriction */\n` +
+        `export interface ${title}Relations {\n${buildRelationsProps(allFkProps)}\n}\n\n` +
+        `export type ${title}WithRelations = ${title} & ${title}Relations;\n\n` +
+        `/** API relations — restricted by restApi.joinWhitelist */\n` +
+        `export interface ${title}ApiRelations {\n${buildRelationsProps(apiFkProps)}\n}\n\n` +
+        `export type ${title}WithApiRelations = ${title} & ${title}ApiRelations;\n`;
 
     updatedInterface = updatedInterface.replace(/\s+$/, "") + "\n" + relationsBlock;
 
