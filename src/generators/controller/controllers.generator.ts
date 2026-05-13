@@ -56,6 +56,7 @@ export async function compile(options: {
         restApiJoinWhitelist: schemaConfig.restApi.joinWhitelist !== undefined,
         restApiNoRelations: Boolean(schemaConfig.restApi.noRelations),
         compilerOptions: options.compilerOptions,
+        dataIsolation: schemaConfig.dataIsolation,
     }));
 }
 

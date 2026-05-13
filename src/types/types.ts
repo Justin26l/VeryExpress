@@ -126,6 +126,10 @@ export interface populateOptions {
     [key: string]: string,
 }
 
+export interface DataIsolationConfig {
+    field: string;
+}
+
 export interface documentConfig {
     documentName: string;
     keyPrefix?: string;
@@ -135,6 +139,7 @@ export interface documentConfig {
         joinWhitelist?: string[];
         noRelations?: boolean;
     };
+    dataIsolation?: DataIsolationConfig;
 }
 
 /**

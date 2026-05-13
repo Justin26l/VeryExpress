@@ -1,10 +1,33 @@
 // {{headerComment}}
 import { Repository, ObjectLiteral, FindOptionsWhere, DeepPartial, In, Not, Like, MoreThan, LessThan, MoreThanOrEqual, LessThanOrEqual, FindManyOptions } from "typeorm";
 import { VexRepository, Select, Filter, Join, FieldOperators } from "../_types/vex";
+import DataIsolationContext from "../_middlewares/DataIsolationContext.gen";
+import { entityIsolation } from "../_middlewares/DataIsolationRegistry.gen";
 import utils from "../_utils";
 
 export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRepository<T> {
     constructor(private repo: Repository<T>) {}
+
+    /** Build ownership filter from current request context, or null. */
+    private getOwnershipFilter(): Record<string, unknown> | null {
+        const store = DataIsolationContext.getStore();
+        if (!store?.userId) return null;
+
+        const entityName = this.repo.metadata.target instanceof Function
+            ? this.repo.metadata.target.name
+            : "";
+        const config = entityIsolation[entityName];
+        if (!config) return null;
+
+        return { [config.field]: store.userId };
+    }
+
+    /** Merge caller filter with ownership filter. Ownership always wins. */
+    private mergeFilter(callerFilter: Filter<T>): Record<string, unknown> {
+        const mapped = this.mapOperators(callerFilter) as Record<string, unknown>;
+        const ownership = this.getOwnershipFilter();
+        return ownership ? { ...mapped, ...ownership } : mapped;
+    }
 
     private mapOperators(filter: Filter<T>): Record<string, unknown> {
         if (!filter || typeof filter !== "object") return {};
@@ -70,8 +93,8 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
     }
 
     find(filter: Filter<T>, join?: Join, select?: Select, options?: FindManyOptions<T>): Promise<T[]> {
-        const where = this.mapOperators(filter) as FindOptionsWhere<T>;
-        return this.repo.find({ 
+        const where = this.mergeFilter(filter) as FindOptionsWhere<T>;
+        return this.repo.find({
             select,
             where,
             relations: join,
@@ -81,17 +104,17 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
     }
 
     findOne(filter: Filter<T>, join?: Join, select?: Select): Promise<T | null> {
-        const where = this.mapOperators(filter) as FindOptionsWhere<T>;
-        return this.repo.findOne({ 
-            select, 
+        const where = this.mergeFilter(filter) as FindOptionsWhere<T>;
+        return this.repo.findOne({
+            select,
             where,
-            relations: join 
+            relations: join
         });
     }
 
     findOneWhere(filter: Filter<T>, join?: Join, select?: Select): Promise<T | null> {
-        const where = this.mapOperators(filter) as FindOptionsWhere<T>;
-        return this.repo.findOne({ 
+        const where = this.mergeFilter(filter) as FindOptionsWhere<T>;
+        return this.repo.findOne({
             select,
             where,
             relations: join
@@ -99,7 +122,18 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
     }
 
     async create(data: Partial<T>): Promise<T> {
-        return this.repo.save(this.repo.create(data as DeepPartial<T>));
+        const enriched = { ...data };
+        const store = DataIsolationContext.getStore();
+        if (store?.userId) {
+            const entityName = this.repo.metadata.target instanceof Function
+                ? this.repo.metadata.target.name
+                : "";
+            const config = entityIsolation[entityName];
+            if (config && config.field !== "_id") {
+                (enriched as any)[config.field] = store.userId;
+            }
+        }
+        return this.repo.save(this.repo.create(enriched as DeepPartial<T>));
     }
 
     async replace(id: string | undefined, data: Partial<T>): Promise<T | null> {
@@ -117,7 +151,8 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
             utils.log.error("TypeOrmRepositoryAdapter.update called without id — refuse update entity");
             return null;
         }
-        await this.repo.update({ _id: id } as unknown as FindOptionsWhere<T>, data);
+        const where = this.mergeFilter({ _id: id } as unknown as Filter<T>);
+        await this.repo.update(where as FindOptionsWhere<T>, data);
         return this.findOne({ _id: id } as unknown as Filter<T>);
     }
 
@@ -126,10 +161,12 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
             utils.log.error("TypeOrmRepositoryAdapter.delete called without id — refuse delete entity");
             return;
         }
-        await this.repo.delete({ _id: id } as unknown as FindOptionsWhere<T>);
+        const where = this.mergeFilter({ _id: id } as unknown as Filter<T>);
+        await this.repo.delete(where as FindOptionsWhere<T>);
     }
 
     async deleteWhere(filter: Record<string, unknown>): Promise<void> {
-        await this.repo.delete(filter as FindOptionsWhere<T>);
+        const where = this.mergeFilter(filter as unknown as Filter<T>);
+        await this.repo.delete(where as FindOptionsWhere<T>);
     }
 }

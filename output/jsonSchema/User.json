@@ -10,6 +10,9 @@
             "noRelations": true,
             "joinWhitelist": []
         },
+        "isolate": {
+            "user": false
+        },
         "uniqueIndex": [
             [
                 "email"

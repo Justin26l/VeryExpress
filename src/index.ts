@@ -22,6 +22,7 @@ import * as mongooseModelGen from "./generators/db/mongooseModel.generator";
 import * as sqlMigrationGen from "./generators/db/sqlMigration.generator";
 import * as interfaceGen from "./generators/interface/generator";
 import * as joinWhitelistRegistryGen from "./generators/middlewares/joinWhitelistRegistry.generator";
+import * as dataIsolationRegistryGen from "./generators/middlewares/dataIsolationRegistry.generator";
 
 export async function generate(
     options: types.compilerOptions
@@ -170,6 +171,12 @@ export async function generate(
 
     // generate join whitelist registry (centralized static map, used by JoinWhitelistMiddleware)
     await joinWhitelistRegistryGen.compile({
+        allSchemas: documents.map(d => d.schema),
+        middlewareDir: dir.middlewareDir,
+    });
+
+    // generate data isolation registry (entity → ownership field mapping, used by TypeOrmRepositoryAdapter)
+    await dataIsolationRegistryGen.compile({
         allSchemas: documents.map(d => d.schema),
         middlewareDir: dir.middlewareDir,
     });

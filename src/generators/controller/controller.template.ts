@@ -17,8 +17,9 @@ export default function controllerTemplate(templateOptions: {
     restApiNoRelations?: boolean;
     restApiJoinWhitelist?: boolean;
     compilerOptions: types.compilerOptions;
+    dataIsolation?: types.DataIsolationConfig;
 }): string {
-    const { documentName, idType, restApiMethods, restApiNoRelations, restApiJoinWhitelist, compilerOptions, modelPath, typePath } = templateOptions;
+    const { documentName, idType, restApiMethods, restApiNoRelations, restApiJoinWhitelist, compilerOptions, modelPath, typePath, dataIsolation } = templateOptions;
     const useRBAC = !!compilerOptions.useRBAC;
     const useAuth = compilerOptions.auth.localAuth || utils.generator.OAuthProviders(compilerOptions).length > 0;
     const cleanId = compilerOptions.app.allowApiCreateUpdate_id
@@ -32,7 +33,7 @@ export default function controllerTemplate(templateOptions: {
     // ── tsoa decorator imports ──────────────────────────────────────────────────
     const decoratorNames: string[] = [];
     decoratorNames.push("Route", "Tags", "Body", "Path", "Query", "SuccessResponse");
-    if (useRBAC || restApiJoinWhitelist) decoratorNames.push("Middlewares");
+    if (useRBAC || restApiJoinWhitelist || dataIsolation) decoratorNames.push("Middlewares");
     if (useRBAC) decoratorNames.push("Security");
     if (restApiMethods.includes("get"))                                decoratorNames.push("Get");
     if (restApiMethods.includes("post") || restApiMethods.includes("getList")) decoratorNames.push("Post");
@@ -44,6 +45,7 @@ export default function controllerTemplate(templateOptions: {
         useRBAC ? "import RoleBaseAccessControl from \"../_middlewares/RoleBaseAccessControl.gen\";" : "",
         useAuth ? "import Authentication from \"../_middlewares/Authentication.gen\";" : "",
         restApiJoinWhitelist ? "import JoinWhitelistMiddleware from \"../_middlewares/JoinWhitelistMiddleware.gen\";" : "",
+        dataIsolation ? "import DataIsolationContext from \"../_middlewares/DataIsolationContext.gen\";" : "",
     ].filter(Boolean).join("\n");
 
     // ── Class decorators ────────────────────────────────────────────────────────
@@ -52,6 +54,7 @@ export default function controllerTemplate(templateOptions: {
     classDecoratorLines.push(`@Tags("${documentName}")`);
     if (useRBAC) classDecoratorLines.push(`@Middlewares(RoleBaseAccessControl.middleware("${documentName}"))`);
     if (useAuth) {
+        if (dataIsolation) classDecoratorLines.push("@Middlewares(DataIsolationContext.middleware)");
         classDecoratorLines.push("@Middlewares(Authentication.middleware)");
         classDecoratorLines.push("@Security(\"BearerAuth\")");
         classDecoratorLines.push("@Security(\"AuthIndex\")");
