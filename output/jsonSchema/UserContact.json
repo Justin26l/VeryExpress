@@ -1,21 +1,39 @@
 {
     "type": "object",
     "x-documentConfig": {
-        "methods": [
-            "get",
-            "getList",
-            "post",
-            "put",
-            "patch",
-            "delete"
-        ],
-        "documentName": "UserContact"
+        "documentName": "UserContact",
+        "dataIsolation": {
+            "field": "userId"
+        },
+        "restApi": {
+            "methods": [
+                "get",
+                "getList",
+                "post",
+                "put",
+                "patch",
+                "delete"
+            ],
+            "joinWhitelist": [
+                "user"
+            ]
+        }
     },
     "properties": {
         "_id": {
             "type": "string",
-            "x-format": "ObjectId",
+            "x-format": "Primary",
             "index": true
+        },
+        "userId": {
+            "type": "string",
+            "x-format": "UUID",
+            "x-foreignKey": {
+                "schemaName": "User",
+                "fieldName": "_id",
+                "relationType": "one-to-one"
+            },
+            "required": true
         },
         "phoneNo": {
             "type": "string",
@@ -27,5 +45,7 @@
         }
     },
     "additionalProperties": false,
-    "required": []
+    "required": [
+        "userId"
+    ]
 }

@@ -1,0 +1,139 @@
+{
+    "type": "object",
+    "x-documentConfig": {
+        "documentName": "Job",
+        "dataIsolation": {
+            "field": "userId"
+        },
+        "restApi": {
+            "methods": [
+                "get",
+                "getList",
+                "post",
+                "patch"
+            ],
+            "joinWhitelist": [
+                "client",
+                "jobProposal",
+                "jobReview",
+                "jobSpecialization",
+                "portfolio"
+            ]
+        }
+    },
+    "properties": {
+        "_id": {
+            "type": "string",
+            "x-format": "PrimaryUUID"
+        },
+        "title": {
+            "type": "string",
+            "maxLength": 128,
+            "required": true
+        },
+        "clientId": {
+            "type": "string",
+            "x-format": "UUID",
+            "x-foreignKey": {
+                "schemaName": "Client",
+                "fieldName": "_id",
+                "relationType": "many-to-one"
+            }
+        },
+        "userId": {
+            "type": "string",
+            "x-format": "UUID",
+            "index": true,
+            "x-foreignKey": {
+                "schemaName": "User",
+                "fieldName": "_id",
+                "relationType": "many-to-one"
+            }
+        },
+        "address": {
+            "type": "string",
+            "maxLength": 256
+        },
+        "isPublic": {
+            "type": "boolean",
+            "default": true,
+            "description": "either publicly available or private invitation job"
+        },
+        "isAnonymous": {
+            "type": "boolean",
+            "default": false,
+            "description": "determine if job will show address & contact info"
+        },
+        "description": {
+            "type": "string",
+            "maxLength": 2048
+        },
+        "budgetRangeFrom": {
+            "type": "number",
+            "minimum": 0,
+            "required": true
+        },
+        "budgetRangeTo": {
+            "type": "number",
+            "minimum": 0,
+            "required": true
+        },
+        "jobScale": {
+            "type": "string",
+            "description": "small: installation, repair, maintenance. medium: moving, renovation, remodeling. large: new construction.",
+            "enum": [
+                "small",
+                "medium",
+                "large"
+            ]
+        },
+        "jobStatus": {
+            "type": "string",
+            "enum": [
+                "open",
+                "in_progress",
+                "completed",
+                "closed"
+            ],
+            "default": "open",
+            "required": true,
+            "description": "Lifecycle status of the job post"
+        },
+        "startDate": {
+            "type": "integer",
+            "x-format": "UnixTimestamp",
+            "description": "Expected start date (Unix timestamp)"
+        },
+        "endDate": {
+            "type": "integer",
+            "x-format": "UnixTimestamp",
+            "description": "Expected end / completion date (Unix timestamp)"
+        },
+        "isFeatured": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether this job is pinned to the featured carousel on the discover feed"
+        },
+        "active": {
+            "type": "boolean",
+            "default": true,
+            "required": true,
+            "description": "Soft-delete / account suspension flag"
+        },
+        "createdAt": {
+            "type": "integer",
+            "x-format": "UnixTimestamp"
+        },
+        "updatedAt": {
+            "type": "integer",
+            "x-format": "UnixTimestamp"
+        }
+    },
+    "required": [
+        "title",
+        "budgetRangeFrom",
+        "budgetRangeTo",
+        "jobStatus",
+        "active"
+    ]
+}

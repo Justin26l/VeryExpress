@@ -1,3 +1,13 @@
+export interface VexFileMeta {
+    lastWriteVersion: string;
+    allowOverwrite: boolean;
+}
+
+export interface VexMeta {
+    lastGeneratedVersion?: string;
+    files: { [relPath: string]: VexFileMeta };
+}
+
 export interface compilerOptions {
     jsonSchemaDir: string,
     openapiDir: string,
@@ -8,11 +18,12 @@ export interface compilerOptions {
     generator: {
         commitBeforeGenerate: boolean;
     },
+    // database target type: 'sql' (TypeORM/PostgreSQL) or 'mongo' (Mongoose/MongoDB)
+    dbType?: "sql" | "mongo",
 
     app: {
         enableSwagger: boolean,
         useUserSchema: boolean,
-        useObjectID: boolean,
         allowApiCreateUpdate_id: boolean,
         useStatefulRedisAuth: boolean,
     },
@@ -20,7 +31,6 @@ export interface compilerOptions {
     useRBAC?: {
         roles: string[]
         default: string,
-        schemaIncluded: string[]
     },
 
     auth:{
@@ -44,6 +54,24 @@ export interface roleJson {
     [key: string]: string[];
 }
 
+export enum DbRelationType {
+    OneToOne = "one-to-one",
+    OneToMany = "one-to-many",
+    ManyToOne = "many-to-one",
+}
+
+export enum xVexDataType {
+    Role = "role",
+}
+
+export enum xFormatType {
+    Primary = "Primary",
+    PrimaryUUID = "PrimaryUUID",
+    UUID = "UUID",
+    ObjectId = "ObjectId",
+    UnixTimestamp = "UnixTimestamp",
+}
+
 export interface jsonSchema {
     type: string;
     "x-documentConfig": documentConfig;
@@ -52,7 +80,20 @@ export interface jsonSchema {
     };
     required?: string[];
     index?: string[];
+    interface?: {
+        fkProps: {
+            propName: string;
+            interfaceName: string;
+            relationType: DbRelationType;
+        }[];
+    };
     [key: string]: any;
+}
+
+export interface foreignKeyConfig {
+    schemaName: string;
+    fieldName: string;
+    relationType: DbRelationType;
 }
 
 export interface jsonSchemaPropsItem {
@@ -63,29 +104,42 @@ export interface jsonSchemaPropsItem {
         [key: string]: jsonSchemaPropsItem;
     };
     items?: jsonSchemaPropsItem;
-    enum?: any[];
+    enum?: string[];
     required?: boolean | string[];
     index?: boolean;
+    unique?: string[];
     example?: any;
     minLength?: number;
     maxLength?: number;
     minimum?: number;
     maximum?: number;
-    "x-vexData"?: string;
-    "x-format"?: string;
-    "x-foreignKey"?: string;
-    "x-foreignValue"?: string[];
-    [key: string]: string | boolean | number | string[] | jsonSchemaPropsItem | { [key: string]: jsonSchemaPropsItem;} | any[] | undefined;
+    "x-vexData"?: xVexDataType | string;
+    "x-format"?: xFormatType | string;
+    "x-foreignKey"?: foreignKeyConfig;
+    /** For decimal columns: total significant digits (maps to TypeORM precision & scale) */
+    precision?: number;
+    scale?: number;
+    [key: string]: string | boolean | number | string[] | jsonSchemaPropsItem | foreignKeyConfig | { [key: string]: jsonSchemaPropsItem;} | any[] | undefined;
 }
 
 export interface populateOptions { 
     [key: string]: string,
 }
 
+export interface DataIsolationConfig {
+    field: string;
+}
+
 export interface documentConfig {
     documentName: string;
     keyPrefix?: string;
-    methods: schemaMethod[];
+    uniqueIndex?: string[][];
+    restApi: {
+        methods: schemaMethod[];
+        joinWhitelist?: string[];
+        noRelations?: boolean;
+    };
+    dataIsolation?: DataIsolationConfig;
 }
 
 /**
@@ -96,10 +150,10 @@ export interface removeKeyObj {
 }
 
 /** method key allowed in json schema, httpMethod with extra "getList" */
-export type schemaMethod = "get" | "getList" | "post" | "put" | "patch" | "delete" | "options" | "head" | "trace" ;
+export type schemaMethod = "get" | "getList" | "post" | "put" | "patch" | "delete" ;
 
-export const schemaMethodArr : schemaMethod[] = [ "get", "getList", "post", "put", "patch", "delete", "options", "head", "trace" ];
+export const schemaMethodArr : schemaMethod[] = [ "get", "getList", "post", "put", "patch", "delete"];
 
 /** schemaMethod without "getList" */
-export type httpMethod = "get" | "post" | "put" | "patch" | "delete" | "options" | "head" | "trace" ;
-export const httpMethodArr : httpMethod[] = [ "get", "post", "put", "patch", "delete", "options", "head", "trace"];
+export type httpMethod = "get" | "post" | "put" | "patch" | "delete" ;
+export const httpMethodArr : httpMethod[] = [ "get", "post", "put", "patch", "delete"];

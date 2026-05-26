@@ -1,35 +1,53 @@
 // {{headerComment}}
-import { UserModel, UserDocument } from "./../../_models/UserModel.gen";
-import { User } from "./../../_types/User.gen";
+import { UserEntity, User, UserWithRelations } from "./../../_models/UserModel.gen";
+import { UserAuthProfilesEntity, UserAuthProfiles } from "./../../_models/UserAuthProfilesModel.gen";
+import { VexRepository } from "./../../_types/vex";
 import JWTService from "./../auth/JWTService.gen";
 import OAuthProfileMap, { IProfile } from "./OAuthProfileMap.gen";
+import VexDb from "./../VexDb.gen";
 import utils from "../../_utils";
-
 
 export default class OAuthStrategyService {
 
-    public async verify(accessToken: string, refreshToken: string, profile: IProfile, done: (error: any, user?: any) => void) : Promise<void> {
+    private get userRepo(): VexRepository<UserWithRelations> {
+        return VexDb.getRepository<UserWithRelations>(UserEntity);
+    }
+
+    private get uapRepo(): VexRepository<UserAuthProfiles> {
+        return VexDb.getRepository<UserAuthProfiles>(UserAuthProfilesEntity);
+    }
+
+    constructor() {}
+
+    public async verify(accessToken: string, refreshToken: string, profile: IProfile, done: (error: any, user?: any) => void): Promise<void> {
         try {
 
-            let user: UserDocument;
+            let user: UserWithRelations;
             const authUser = new OAuthProfileMap().map(profile);
+            const authProfile = authUser.userAuthProfiles?.[0];
 
-            // find user by authProfiles.authId or email
-            const existingUser = await UserModel.findOne<UserDocument>({ 
-                email: authUser.email,
-                $or: authUser.authProfiles?.map((p) => {
-                    return { "authProfiles.authId": p.authId };
-                }),
-            });
+            // find user by oauthId + provider, or fall back to email
+            let existingUser: UserWithRelations | null = null;
+            if (authProfile?.oauthId && authProfile?.provider) {
+                const matchedProfile = await this.uapRepo.findOneWhere(
+                    { oauthId: authProfile.oauthId, provider: authProfile.provider },
+                );
+                if (matchedProfile?.userId) {
+                    existingUser = await this.userRepo.findOne({ _id: matchedProfile.userId });
+                }
+            }
+            if (!existingUser && authUser.email) {
+                existingUser = await this.userRepo.findOneWhere({ email: authUser.email });
+            }
 
             // 1. create new user
-            if ( !existingUser ){
+            if (!existingUser) {
                 user = await this.createNewUser(authUser);
             }
             // 2. update existing user
             else {
                 console.log("OAuthVerify UpdateUser");
-                user = await this.processExistingUser(authUser, existingUser);
+                user = await this.processExistingUser(authProfile, existingUser);
             }
 
             // set req.user
@@ -38,55 +56,53 @@ export default class OAuthStrategyService {
                 profile: new JWTService().sanitizeUser(user),
             });
         }
-        catch(err) { 
-            return done(err); 
+        catch (err) {
+            return done(err);
         }
     }
 
-    private async createNewUser(authProfile: User): Promise<UserDocument>{
+    private async createNewUser(authProfile: UserWithRelations): Promise<UserWithRelations> {
         utils.log.info("OAuthVerify > createNewUser");
-        const newUser = new UserModel(authProfile);
-        return await newUser.save();
+        const user = await this.userRepo.create(authProfile);
+
+        // create auth profile row linked to the new user
+        if (authProfile.userAuthProfiles?.[0]) {
+            await this.uapRepo.create({
+                ...authProfile.userAuthProfiles[0],
+                userId: user._id,
+            } as Partial<UserAuthProfiles>);
+        }
+
+        return user;
     }
 
-    private async processExistingUser( authUser: User, existingUser: UserDocument): Promise<UserDocument>{    
+    private async processExistingUser(incomingProfile: UserAuthProfiles | undefined, existingUser: User): Promise<User> {
         utils.log.info("OAuthVerify > processExistingUser");
-
-        let userUpdated = false;
-        const authProfile = authUser.authProfiles?.[0] || undefined;
-        const userProfiles = existingUser.authProfiles as User["authProfiles"] || [];
-
-        if(!authProfile){
-            utils.log.errorNoExit("OAuthVerify > Invalid OAuth Callback \"authProfile\"");
+        
+        if (!incomingProfile) {
+            utils.log.error("OAuthVerify > Invalid OAuth Callback \"authProfile\"");
             throw new Error("Invalid OAuth Callback \"authProfile\"");
         }
 
-        // B.1. check current provider exist in authProfiles
-        const providerExists = userProfiles.length > 0 &&  userProfiles.find((p: any) => {
-            return (p.provider === authProfile.provider) && (p.authId === authProfile.authId);
-        });
+        // check if this provider/oauthId already tracked
+        const existing = await this.uapRepo.findOneWhere(
+            { userId: existingUser._id, provider: incomingProfile.provider, oauthId: incomingProfile.oauthId },
+        );
 
-        // B.2. add if not exist
-        if (!providerExists){
-            utils.log.info("OAuthVerify > add new provider",authProfile.provider);
-            userProfiles.push(authProfile);
-            userUpdated = true;
+        if (!existing) {
+            // B.2. add new provider
+            utils.log.info("OAuthVerify > add new provider", incomingProfile.provider);
+            await this.uapRepo.create({
+                ...incomingProfile,
+                userId: existingUser._id,
+            } as Partial<UserAuthProfiles>);
         }
-        // B.3 update if username changed
-        else if (providerExists && providerExists.username !== authProfile.username){
-            utils.log.info("OAuthVerify > update username", authProfile.provider);
-            providerExists.username = authProfile.username;
-            userUpdated = true;
+        else if (existing.username !== incomingProfile.username) {
+            // B.3. update username if changed
+            utils.log.info("OAuthVerify > update username", incomingProfile.provider);
+            await this.uapRepo.update(existing._id, { username: incomingProfile.username });
         }
 
-        if (userUpdated){
-            utils.log.info("OAuthVerify > Update user");
-            return await existingUser.updateOne({ authProfiles: userProfiles });
-        }
-        else {
-            return existingUser;
-        }
+        return existingUser;
     }
-
-
 }

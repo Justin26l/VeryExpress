@@ -1,86 +1,58 @@
 {
-    "type": "object",
-    "x-documentConfig": {
+  "type": "object",
+  "x-documentConfig": {
+    "documentName": "User",
+    "dataIsolation": {
+        "field": "_id"
+    },
+    "restApi": {
         "methods": [
             "get",
-            "getList",
-            "post",
             "patch"
         ],
-        "documentName": "User"
+        "noRelations": true,
+        "joinWhitelist": []
     },
-    "properties": {
-        "_id": {
-            "type": "string",
-            "x-format": "ObjectId",
-            "index": true
-        },
-        "authProfiles": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "provider": {
-                        "type": "string",
-                        "index": true
-                    },
-                    "authId": {
-                        "type": "string",
-                        "index": true
-                    },
-                    "username": {
-                        "type": "string"
-                    },
-                    "password": {
-                        "type": "string"
-                    }
-                },
-                "required": []
-            }
-        },
-        "email": {
-            "type": "string",
-            "format": "email",
-            "index": true
-        },
-        "name": {
-            "type": "string",
-            "maxLength": 64,
-            "required": true
-        },
-        "active": {
-            "type": "boolean",
-            "default": true,
-            "required": true
-        },
-        "locale": {
-            "type": "string",
-            "maxLength": 8
-        },
-        "roles": {
-            "type": "array",
-            "x-vexData": "role",
-            "items": {
-                "type": "string",
-                "enum": [
-                    "visitor",
-                    "member",
-                    "admin"
-                ]
-            },
-            "default": [
-                "visitor"
-            ]
-        },
-        "profileErrors": {
-            "type": "array",
-            "items": {
-                "type": "string"
-            }
-        }
+    "isolate":{
+        "user": false
     },
-    "required": [
-        "name",
-        "active"
+    "uniqueIndex": [
+      [
+        "email"
+      ]
     ]
+  },
+  "properties": {
+    "_id": {
+      "type": "string",
+      "x-format": "Primary",
+      "index": true
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "index": true
+    },
+    "name": {
+      "type": "string",
+      "maxLength": 64,
+      "required": true
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "required": true
+    },
+    "locale": {
+      "type": "string",
+      "maxLength": 8
+    },
+    "profileErrors": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "active"
+  ]
 }

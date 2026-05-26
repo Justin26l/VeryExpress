@@ -23,7 +23,6 @@ jsonSchema/*.json  →  preprocess  →  generators  →  templates  →  output
 npm run dev          # compile (esbuild → dist/index.js) + run CLI
 npm run build        # lint + compile (production)
 npm run lint         # eslint --fix
-npm run v <type>     # bump version (major | minor | patch)
 ```
 
 - Build bundles everything into a single `dist/index.js` via esbuild (platform: node, target: es2016).
@@ -60,7 +59,7 @@ Every generator exports an async `compile(options)` that:
 Custom `x-*` properties drive generation — see [docs/vexJsonSchema.md](../docs/vexJsonSchema.md):
 
 - `x-documentConfig` — REST methods, document name
-- `x-foreignKey` / `x-foreignValue` — relationships ([docs/ForeignKey.md](../docs/ForeignKey.md))
+- `x-foreignKey` — relationships ([docs/ForeignKey.md](../docs/ForeignKey.md))
 - `x-vexData: "role"` — marks role field for RBAC
 - `x-format: "ObjectId"` — MongoDB ObjectId handling
 
@@ -71,7 +70,7 @@ Custom `x-*` properties drive generation — see [docs/vexJsonSchema.md](../docs
 ## Key docs (link, don't duplicate)
 
 - [docs/vexJsonSchema.md](../docs/vexJsonSchema.md) — full schema definition guide
-- [docs/ForeignKey.md](../docs/ForeignKey.md) — foreign-key joins and `_join`/`_select` params
+- [docs/ForeignKey.md](../docs/ForeignKey.md) — foreign-key joins and `join`/`select` params
 - [docs/appGenerated/auth.md](../docs/appGenerated/auth.md) — JWT rolling keys, OAuth2 setup
 - [docs/developmentNote.md](../docs/developmentNote.md) — dev conventions, `FUNC{{ }}` syntax
 - [docs/roadMap/](../docs/roadMap/) — released features and upcoming plans
@@ -82,3 +81,26 @@ Custom `x-*` properties drive generation — see [docs/vexJsonSchema.md](../docs
 - **Schema ↔ filename mismatch** — `x-documentConfig.documentName` must match the JSON schema filename (e.g. `User.json` → `"documentName": "User"`).
 - **`required` field format** — the preprocessor normalises `required: true` on individual properties into a root-level `required: string[]`, but source schemas should use the array form.
 - **No test runner** — confirm changes by running `npm run dev` and inspecting `output/`.
+
+
+## Core Rule
+
+Respond like smart caveman. Cut articles, filler, pleasantries. Keep all technical substance.
+
+## Grammar
+
+- Drop articles (a, an, the)
+- Drop filler (just, really, basically, actually, simply)
+- Drop pleasantries (sure, certainly, of course, happy to)
+- Short synonyms (big not extensive, fix not "implement a solution for")
+- No hedging (skip "it might be worth considering")
+- Fragments fine. No need full sentence
+- Technical terms stay exact. "Polymorphism" stays "polymorphism"
+- Code blocks unchanged. Caveman speak around code, not in code
+- Error messages quoted exact. Caveman only for explanation
+
+## Code Style
+- always consider readability and maintainability.
+- actively split different workflow's code into functions instead of large monolithic blocks.
+- define types, avoid use `any` or `unknown` as possible.
+- name variables, functions, interface, classes descriptively. 

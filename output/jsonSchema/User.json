@@ -1,42 +1,29 @@
 {
     "type": "object",
     "x-documentConfig": {
-        "methods": [
-            "get",
-            "getList",
-            "post",
-            "patch"
-        ],
-        "documentName": "User"
+        "documentName": "User",
+        "restApi": {
+            "methods": [
+                "get",
+                "patch"
+            ],
+            "noRelations": true,
+            "joinWhitelist": []
+        },
+        "isolate": {
+            "user": false
+        },
+        "uniqueIndex": [
+            [
+                "email"
+            ]
+        ]
     },
     "properties": {
         "_id": {
             "type": "string",
-            "x-format": "ObjectId",
+            "x-format": "Primary",
             "index": true
-        },
-        "authProfiles": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "provider": {
-                        "type": "string",
-                        "index": true
-                    },
-                    "authId": {
-                        "type": "string",
-                        "index": true
-                    },
-                    "username": {
-                        "type": "string"
-                    },
-                    "password": {
-                        "type": "string"
-                    }
-                },
-                "required": []
-            }
         },
         "email": {
             "type": "string",
@@ -57,26 +44,8 @@
             "type": "string",
             "maxLength": 8
         },
-        "roles": {
-            "type": "array",
-            "x-vexData": "role",
-            "items": {
-                "type": "string",
-                "enum": [
-                    "visitor",
-                    "member",
-                    "admin"
-                ]
-            },
-            "default": [
-                "visitor"
-            ]
-        },
         "profileErrors": {
-            "type": "array",
-            "items": {
-                "type": "string"
-            }
+            "type": "string"
         }
     },
     "required": [

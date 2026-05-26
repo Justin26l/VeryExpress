@@ -1,21 +1,36 @@
 {
     "type": "object",
     "x-documentConfig": {
-        "methods": [
-            "get",
-            "getList",
-            "post",
-            "put",
-            "patch",
-            "delete"
-        ],
-        "documentName": "Package"
+        "documentName": "Package",
+        "dataIsolation": {
+            "field": "userId"
+        },
+        "restApi": {
+            "methods": [
+                "get",
+                "getList",
+                "post",
+                "put",
+                "patch",
+                "delete"
+            ],
+            "joinWhitelist": []
+        }
     },
     "properties": {
         "_id": {
             "type": "string",
-            "x-format": "ObjectId",
+            "x-format": "Primary",
             "index": true
+        },
+        "userId": {
+            "type": "string",
+            "x-format": "UUID",
+            "x-foreignKey": {
+                "schemaName": "User",
+                "fieldName": "_id",
+                "relationType": "many-to-one"
+            }
         },
         "name": {
             "type": "string",
@@ -27,16 +42,18 @@
         },
         "price": {
             "type": "number",
+            "precision": 10,
+            "scale": 2,
             "required": true
         },
         "startDate": {
-            "type": "string",
-            "format": "date",
+            "type": "integer",
+            "x-format": "UnixTimestamp",
             "required": true
         },
         "endDate": {
-            "type": "string",
-            "format": "date",
+            "type": "integer",
+            "x-format": "UnixTimestamp",
             "required": true
         },
         "isActive": {

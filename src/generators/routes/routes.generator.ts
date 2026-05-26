@@ -1,63 +1,52 @@
-import routesTemplate from "./routes.template";
 import * as routesAuthGen from "./auth.generator";
 import * as routesSwaggerGen from "./swagger.generator";
 
 import * as types from "./../../types/types";
+import * as path from "path";
 
 import utils from "./../../utils";
 import log from "./../../utils/logger";
 
 /**
- * compile controllers to route source code
- * @param routesArr
- * @param routesDir output directory of routes
- * @param options
+ * compile auth & swagger routes (tsoa generates API routes separately)
  */
 export async function compile(options: {
-    routesArr: {
-        route: string,
-        documentName: string,
-        controllerPath: string,
-    }[],
     routesDir: string,
     compilerOptions: types.compilerOptions
 }): Promise<void> {
 
     log.process("Route");
-    
-    const routesApiOutPath: string = `${options.routesDir}/ApiRouter.gen.ts`;
-    const routesAuthOutPath: string = `${options.routesDir}/AuthRouter.gen.ts`;
+
+    const controllerDir = path.posix.join(options.compilerOptions.sysDir, "_controllers");
     const routesSwaggerOutPath: string = `${options.routesDir}/SwaggerRouter.gen.ts`;
 
-    // use oauth
-    if ( utils.generator.isAuthEnabled(options.compilerOptions) ) {
+    if (utils.generator.isAuthEnabled(options.compilerOptions)) {
+        // AuthController (tsoa) — token, refresh, register, local login at /api/auth/*
         utils.common.writeFile(
-            "Route Auth", 
-            routesAuthOutPath,
-            routesAuthGen.compile(options.compilerOptions)
+            "Route AuthController",
+            `${controllerDir}/AuthController.gen.ts`,
+            routesAuthGen.compileController(options.compilerOptions)
         );
+
+        // AuthRouter (express) — OAuth passport redirect flows at /auth/<provider>
+        if (routesAuthGen.hasOAuthProviders(options.compilerOptions)) {
+            utils.common.writeFile(
+                "Route AuthRouter",
+                `${options.routesDir}/AuthRouter.gen.ts`,
+                routesAuthGen.compileRouter(options.compilerOptions)
+            );
+        }
     }
 
     // use swagger
     if (options.compilerOptions.app.enableSwagger) {
         utils.common.writeFile(
-            "Route Swagger", 
-            routesSwaggerOutPath, 
+            "Route Swagger",
+            routesSwaggerOutPath,
             routesSwaggerGen.compile()
         );
     }
 
-    // write json schema api routes & skip sensitive controller generation
-    options.routesArr = options.routesArr.filter((r=>r.documentName!=="Session"));
-
-    utils.common.writeFile(
-        "Route API", 
-        routesApiOutPath, 
-        routesTemplate({
-            routes: options.routesArr,
-            compilerOptions: options.compilerOptions,
-        })
-    );
-
     return;
 }
+

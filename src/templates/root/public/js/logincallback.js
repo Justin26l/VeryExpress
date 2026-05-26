@@ -1,9 +1,9 @@
 
 document.addEventListener("DOMContentLoaded", function() {
-    console.log('Exchange Tokens from /auth/token');
+    console.log('Exchange Tokens from /api/auth/token');
     let sessionCode = new URLSearchParams(location.search).get('code');
     fetch(
-        '/auth/token?code=' + sessionCode, {
+        '/api/auth/token?code=' + sessionCode, {
             method: 'POST'
         }
     )

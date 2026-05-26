@@ -9,66 +9,53 @@ export default function RBACmiddlewareTemplate(options: {
     let template: string = options.template || `{{headerComment}}
 import { Request, Response, NextFunction } from "express";
 import * as roles from "../_roles";
-import utils from "../_utils";
+import { VexResErr } from "../_types/vex";
 import log from "../_utils/logger.gen";
 
 export { roles };
 
-export default class RoleBaseAccessControl {
-    private collection: string;
-    private actions: {[key:string]: string} = {
-        "GET": 'read',
-        "POST /": 'create',
-        "POST /search": 'search',
-        "PUT": 'update',
-        "PATCH": 'update',
-        "DELETE": 'delete',
+class RoleBaseAccessControl {
+    private static actions: {[key:string]: string} = {
+        "GET": "read",
+        "POST /": "create",
+        "POST /search": "search",
+        "PUT": "update",
+        "PATCH": "update",
+        "DELETE": "delete",
     };
 
-    constructor(
-        collection: string, 
-    ) {
-        this.collection = collection;
-    }
 
-    public middleware = (req: Request, res: Response, next: NextFunction) => {
-        try { 
-            log.info("RBAC.middleware", req.method, req.path, req.user);
+    public middleware(collection: string) {
+        return (req: Request, res: Response, next: NextFunction) => {
+            // log.info("RBAC.middleware", req.method, req.path, req.user);
             if ( !req.user ) {
-                throw 401;
+                throw new VexResErr(401);
             }
 
             const user :any = req.user;
-            const actionKey = req.method !== "POST" ? req.method : \`\${req.method} \${req.path}\`;
+            const actionKey = req.method !== "POST" ? req.method : req.path.endsWith("/search") ? "POST /search" : "POST /";
             {{roleSwitch}}
         }
-        catch (e: any) {
-            log.errorNoExit(e);
-            if (typeof e === 'number') {
-                utils.response.send(res, e);
-            }
-            else {
-                utils.response.send(res, 500, { message: e.errorMessages });
-            }
-        }
-    }
-}`;
+    };
+}
 
-    let roleSwitchCode = "";
+export default new RoleBaseAccessControl()
+`;
+
+    let roleSwitch = "";
     let counter = 0;
     options.roles.forEach(role => {
-        roleSwitchCode += `
-            ${ counter == 0 ? "" : "else " }if ( user.roles.includes('${role}') && new roles.${role}().checkAccess(this.collection, this.actions[actionKey]) ) {
+        roleSwitch += `
+            ${ counter == 0 ? "" : "else " }if ( user.roles.includes("${role}") && new roles.${role}().checkAccess(collection, RoleBaseAccessControl.actions[actionKey]) ) {
                 next();
             }`;
         counter++;
     });
 
-    roleSwitchCode += `else{
-                throw 403;
+    roleSwitch += `else {
+                throw new VexResErr(403);
             }`;
-            
-    template = template.replace(/{{roleSwitch}}/g, roleSwitchCode);
+    template = template.replace(/{{roleSwitch}}/g, roleSwitch);
 
     return template;
 }

@@ -5,13 +5,12 @@ import path from "path";
 // import express, { CookieOptions } from "express";
 
 import JWTKeyStore from "./JWTKeyStore.gen";
-import utils from "../../_utils";
 
-import VexResponseError from "../../_types/VexResponseError.gen";
+import { VexRepository, VexResErr } from "../../_types/vex";
 
-import { UserModel } from "../../_models/UserModel.gen";
-import { SessionModel } from "../../_models/SessionModel.gen";
-import { User } from "../../_types/User.gen";
+import VexDb from "../VexDb.gen";
+import { UserEntity, UserWithRelations } from "../../_models/UserModel.gen";
+import { SessionEntity, Session } from "../../_models/SessionModel.gen";
 
 interface tokenObj {
     token: string,
@@ -21,6 +20,15 @@ interface tokenObj {
 
 export default class JWTService {
     private keyStore = new JWTKeyStore();
+
+    private get userRepo(): VexRepository<UserWithRelations> {
+        return VexDb.getRepository<UserWithRelations>(UserEntity);
+    }
+    private get sessionRepo(): VexRepository<Session> {
+        return VexDb.getRepository<Session>(SessionEntity);
+    }
+
+    constructor() {}
 
     /**
      * Verifies a JSON Web Token (JWT) using the provided token and key index.
@@ -42,10 +50,10 @@ export default class JWTService {
         }
         catch (error) {
             if (error instanceof jwt.TokenExpiredError) {
-                throw new VexResponseError(401, utils.response.code.err_payload, "Token expired");
+                throw new VexResErr(401, null, "Token expired");
             }
             else if (error instanceof jwt.JsonWebTokenError) {
-                throw new VexResponseError(401, utils.response.code.err_payload, "jwt malformed");
+                throw new VexResErr(401, null, "jwt malformed");
             }
             else {
                 throw error;
@@ -56,41 +64,20 @@ export default class JWTService {
     /**
      * Process of login user, assign tokens and create session.
      */
-    public async assignTokens(user: User) {
+    public async assignTokens(user: UserWithRelations, provider: string): Promise<string> {
         if(!user._id) {
-            throw new VexResponseError(500, utils.response.code.err_db_data, "User Data Error, User._id missing.");
+            throw new VexResErr(500, null, "User Data Error, User._id missing.");
         }
-
-        // const accessToken = await this.generateAccessToken(user._id);
-        // const refreshToken = await this.generateRefreshToken({ _id: user._id });
-
-        // const accessTokenOptions: CookieOptions = {
-        //     maxAge: ms(process.env.ACCESS_TOKEN_EXPIRE_TIME as ms.StringValue),
-        //     httpOnly: true,
-        //     secure: true,
-        //     sameSite: "strict",
-        // };
-
-        // res.cookie("authorization", accessToken.token, accessTokenOptions);
-        // res.cookie("x-auth-index", accessToken.clientIndex, accessTokenOptions);
-        
-        // res.cookie("vex-refresh-token", {
-        //     refreshToken: refreshToken.token,
-        //     refreshTokenIndex: refreshToken.clientIndex,
-        // }, {
-        //     maxAge: ms(process.env.REFRESH_TOKEN_EXPIRE_TIME as ms.StringValue),
-        //     httpOnly: true,
-        //     secure: true,
-        //     sameSite: "strict",
-        // });
 
         const sessionCode = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
-        SessionModel.create({
-            sessionCode: sessionCode,
+        // insert new unique session for user
+        await this.sessionRepo.deleteWhere({ userId: user._id });
+        await this.sessionRepo.create({
+            sessionCode,
             userId: user._id,
-            provider: "local",
-            expired: Date.now() + 5000
+            provider: provider,
+            expired: Date.now() + 5000,
         });
 
         // return appAuthCode to client
@@ -99,7 +86,7 @@ export default class JWTService {
         return redirectPath;
     }
 
-    public returnToken(userProfile: User) {
+    public returnToken(userProfile: UserWithRelations) {
         const sanitizedProfile = this.sanitizeUser(userProfile);
         const accessToken = this.generateToken(sanitizedProfile, undefined, process.env.ACCESS_TOKEN_EXPIRE_TIME);
         const refreshToken = this.generateToken({ _id: userProfile._id }, 0, process.env.REFRESH_TOKEN_EXPIRE_TIME);
@@ -115,13 +102,13 @@ export default class JWTService {
 
     /** utils */
 
-    public sanitizeUser(user: User) {
+    public sanitizeUser(user: UserWithRelations) {
         return {
             _id: user._id,
             email: user.email,
             name: user.name,
             locale: user.locale,
-            roles: user.roles,
+            roles: user.userRole?.map((r: any) => r.role) || [],
             profileErrors: user.profileErrors,
             active: user.active
         };
@@ -150,13 +137,9 @@ export default class JWTService {
         };
     }
 
-    public async generateAccessToken(userId: string, index?: number): Promise<tokenObj> {
+    public async generateAccessToken(user: UserWithRelations, index?: number): Promise<tokenObj> {
 
-        const userDoc = await UserModel.findById(userId).exec();
-        if (!userDoc) {
-            throw new VexResponseError(404, utils.response.code.err_payload, "Invalid User Id");
-        }
-        const userInfo = this.sanitizeUser(userDoc);
+        const userInfo = this.sanitizeUser(user);
 
         return this.generateToken(userInfo, index, process.env.ACCESS_TOKEN_EXPIRE_TIME);
     }

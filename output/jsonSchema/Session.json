@@ -2,12 +2,25 @@
     "type": "object",
     "x-documentConfig": {
         "documentName": "Session",
-        "methods": []
+        "restApi": {
+            "methods": [],
+            "joinWhitelist": []
+        },
+        "uniqueIndex": [
+            [
+                "sessionCode"
+            ]
+        ]
     },
+    "required": [
+        "provider",
+        "userId",
+        "expired"
+    ],
     "properties": {
         "_id": {
             "type": "string",
-            "x-format": "ObjectId",
+            "x-format": "Primary",
             "index": true
         },
         "sessionCode": {
@@ -16,22 +29,21 @@
         },
         "provider": {
             "type": "string",
-            "required": true
+            "maxLength": 30
         },
         "userId": {
             "type": "string",
-            "x-format": "ObjectId",
-            "required": true
+            "x-format": "UUID",
+            "x-foreignKey": {
+                "schemaName": "User",
+                "fieldName": "_id",
+                "relationType": "one-to-one"
+            }
         },
         "expired": {
-            "type": "number",
-            "description": "expired time in unix timestamp format (ms)",
-            "required": true
+            "type": "integer",
+            "x-format": "UnixTimestamp",
+            "description": "expired time in unix timestamp format (ms)"
         }
-    },
-    "required": [
-        "provider",
-        "userId",
-        "expired"
-    ]
+    }
 }
