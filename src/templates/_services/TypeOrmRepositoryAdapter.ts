@@ -1,6 +1,6 @@
 // {{headerComment}}
 import { Repository, ObjectLiteral, FindOptionsWhere, DeepPartial, In, Not, Like, MoreThan, LessThan, MoreThanOrEqual, LessThanOrEqual, FindManyOptions } from "typeorm";
-import { VexRepository, Select, Filter, Join, FieldOperators } from "../_types/vex";
+import { VexRepository, Select, Filter, Join, FieldOperators, VexPagination } from "../_types/vex";
 import DataIsolationContext from "../_middlewares/DataIsolationContext.gen";
 import { entityIsolation } from "../_middlewares/DataIsolationRegistry.gen";
 import utils from "../_utils";
@@ -92,15 +92,27 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
         return this.repo;
     }
 
-    find(filter: Filter<T>, join?: Join, select?: Select, options?: FindManyOptions<T>): Promise<T[]> {
+    find(filter: Filter<T>, join?: Join, select?: Select, pagination?: VexPagination): Promise<T[]> {
         const where = this.mergeFilter(filter) as FindOptionsWhere<T>;
-        return this.repo.find({
-            select,
+        const options: FindManyOptions<T> = {
+            select: select as any,
             where,
             relations: join,
-            take: options?.take || 500,
-            ...options
-        });
+            take: 500,
+        };
+        if (pagination) {
+            const page = pagination.page || 1;
+            const perPage = Math.min(pagination.perPage || 20, 9999);
+            options.take = Math.min(perPage, 9999);
+            options.skip = (page - 1) * perPage;
+            if (pagination.sort) options.order = pagination.sort as any;
+        }
+        return this.repo.find(options);
+    }
+
+    async count(filter: Filter<T>): Promise<number> {
+        const where = this.mergeFilter(filter) as FindOptionsWhere<T>;
+        return this.repo.count({ where });
     }
 
     findOne(filter: Filter<T>, join?: Join, select?: Select): Promise<T | null> {

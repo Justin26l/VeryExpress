@@ -87,8 +87,13 @@ export default function controllerTemplate(templateOptions: {
             `@SuccessResponse(200, "Success")`,
             ...(joinWhitelistDecorator ? [joinWhitelistDecorator] : []),
         ],
-        `public async getList${documentName}(@Body() body: { filter: Filter${documentName}, join?: string[], select?: string[] }): Promise<VexResponse<${documentName}${restApiNoRelations ? '' : 'WithApiRelations'}[]>>`,
-        `const result = await this.repo.find(body.filter as Filter<${documentName}>, body.join, body.select);
+        `public async getList${documentName}(@Body() body: { filter: Filter${documentName}, join?: string[], select?: string[], pagination?: VexPagination }): Promise<VexResponse<${documentName}${restApiNoRelations ? '' : 'WithApiRelations'}[] | PaginatedResult<${documentName}${restApiNoRelations ? '' : 'WithApiRelations'}>>>`,
+        `if (body.pagination) {
+            const data = await this.repo.find(body.filter as Filter<${documentName}>, body.join, body.select, body.pagination);
+            const total = await this.repo.count(body.filter as Filter<${documentName}>);
+            throw new VexResOk(200, { result: { data, total, page: body.pagination.page || 1, perPage: body.pagination.perPage || 20 } });
+        }
+        const result = await this.repo.find(body.filter as Filter<${documentName}>, body.join, body.select);
         throw new VexResOk(200, { result });`
     );
 
@@ -149,7 +154,7 @@ export default function controllerTemplate(templateOptions: {
     const source = `{{headerComment}}
 import { ${decoratorNames.join(", ")} } from "tsoa";
 import * as controllerFactory from "./_ControllerFactory.gen";
-import { VexRepository, VexResponse, VexResErr, VexResOk, Select, Filter, Join, FieldFilter } from "../_types/vex";
+import { VexRepository, VexResponse, VexResErr, VexResOk, Select, Filter, Join, FieldFilter, VexPagination, PaginatedResult } from "../_types/vex";
 import VexDb from "../_services/VexDb.gen";
 
 ${optionalImports}

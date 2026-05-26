@@ -1,6 +1,6 @@
 // {{headerComment}}
 import { Model, Document } from "mongoose";
-import { VexRepository, Select, Filter, Join } from "../_types/vex";
+import { VexRepository, Select, Filter, Join, VexPagination } from "../_types/vex";
 import utils from "../_utils";
 
 export class MongooseRepositoryAdapter<T extends Document> implements VexRepository<T> {
@@ -10,9 +10,14 @@ export class MongooseRepositoryAdapter<T extends Document> implements VexReposit
         return this.model;
     }
 
-    find(filter: Filter, join?: Join, select?: Select): Promise<T[]> {
-        // TODO: complete mongoose support, handle join and select
+    find(filter: Filter, join?: Join, select?: Select, pagination?: VexPagination): Promise<T[]> {
+        // TODO: complete mongoose support, handle join, select, and pagination
         return this.model.find((filter || {}) as any).exec();
+    }
+
+    async count(filter: Filter): Promise<number> {
+        // TODO: complete mongoose support, handle filter
+        return 0;
     }
 
     findOne(filter: Filter, join?: Join, select?: Select): Promise<T | null> {
