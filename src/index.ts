@@ -58,9 +58,6 @@ export async function generate(
         controllerPath: string,
     }[] = [];
 
-    // handle versioning cleanup: if major.minor changed since last generate, remove sysDir
-    utils.common.handleVersioningCleanup();
-
     // create all directories if not exist
     if (!fs.existsSync(options.rootDir)) { fs.mkdirSync(options.rootDir); }
     if (!fs.existsSync(options.srcDir)) { fs.mkdirSync(options.srcDir); }
@@ -205,6 +202,8 @@ export async function generate(
     utils.common.saveVexMeta();
 
     // await configGen.compile(options);
+
+    utils.common.cleanupStaleFiles();
 
     return ;
 }
