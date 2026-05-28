@@ -64,6 +64,23 @@ export default function controllerTemplate(templateOptions: {
     // ── id parameter ────────────────────────────────────────────────────────────
     const idParam = idType === "string" ? "@Path() id: string" : "@Path() id: number";
 
+    // ── Vex type imports per route ──────────────────────────────────────────────
+    const alwaysVexImports = ["VexRepository", "VexResponse", "VexResErr", "VexResOk", "Filter", "FieldFilter"];
+    const routeVexImports: Record<string, string[]> = {
+        getList: ["VexPagination", "PaginatedResult"],
+        get: [],
+        post: [],
+        put: [],
+        patch: [],
+        delete: [],
+    };
+    const enabledVexImports = [...alwaysVexImports];
+    for (const method of restApiMethods) {
+        const add = routeVexImports[method];
+        if (add) enabledVexImports.push(...add);
+    }
+    const vexImports = [...new Set(enabledVexImports)].join(", ");
+
     // ── Route method builder ────────────────────────────────────────────────────
     function buildMethod(
         enabled: boolean,
@@ -154,7 +171,7 @@ export default function controllerTemplate(templateOptions: {
     const source = `{{headerComment}}
 import { ${decoratorNames.join(", ")} } from "tsoa";
 import * as controllerFactory from "./_ControllerFactory.gen";
-import { VexRepository, VexResponse, VexResErr, VexResOk, Select, Filter, Join, FieldFilter, VexPagination, PaginatedResult } from "../_types/vex";
+import { ${vexImports} } from "../_types/vex";
 import VexDb from "../_services/VexDb.gen";
 
 ${optionalImports}
