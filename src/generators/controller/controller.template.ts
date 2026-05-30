@@ -104,14 +104,27 @@ export default function controllerTemplate(templateOptions: {
             `@SuccessResponse(200, "Success")`,
             ...(joinWhitelistDecorator ? [joinWhitelistDecorator] : []),
         ],
-        `public async getList${documentName}(@Body() body: { filter: Filter${documentName}, join?: string[], select?: string[], pagination?: VexPagination }): Promise<VexResponse<${documentName}${restApiNoRelations ? '' : 'WithApiRelations'}[] | PaginatedResult<${documentName}${restApiNoRelations ? '' : 'WithApiRelations'}>>>`,
+        `public async getList${documentName}(@Body() body: { filter: Filter${documentName}, join?: string[], select?: string[], pagination?: VexPagination }): Promise<VexResponse<PaginatedResult<${documentName}${restApiNoRelations ? '' : 'WithApiRelations'}>>>`,
         `if (body.pagination) {
             const data = await this.repo.find(body.filter as Filter<${documentName}>, body.join, body.select, body.pagination);
             const total = await this.repo.count(body.filter as Filter<${documentName}>);
-            throw new VexResOk(200, { result: { data, total, page: body.pagination.page || 1, perPage: body.pagination.perPage || 20 } });
+            throw new VexResOk(200, { 
+                result: { 
+                    data, 
+                    total, 
+                    page: body.pagination.page || 1, 
+                    perPage: body.pagination.perPage || 20 
+                } 
+            });
         }
-        const result = await this.repo.find(body.filter as Filter<${documentName}>, body.join, body.select);
-        throw new VexResOk(200, { result });`
+        else {
+            const result = await this.repo.find(body.filter as Filter<${documentName}>, body.join, body.select);
+            throw new VexResOk(200, { 
+                result: { 
+                    data: result 
+                } 
+            });
+        };`
     );
 
     const getRoute = buildMethod(

@@ -37,9 +37,9 @@ export type VexPagination = {
 
 export type PaginatedResult<T> = {
   data: T[];
-  total: number;
-  page: number;
-  perPage: number;
+  total?: number;
+  page?: number;
+  perPage?: number;
 };
 
 export interface VexRequest<T = any> {
