@@ -23,28 +23,32 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
     }
 
     /** Merge caller filter with ownership filter. Ownership always wins. */
-    private mergeFilter(callerFilter: Filter<T>): Record<string, unknown> {
-        const mapped = this.mapOperators(callerFilter) as Record<string, unknown>;
+    private mergeFilter(callerFilter: Filter<T>): Record<string, unknown> | Array<Record<string, unknown>> {
+        const mapped = this.mapOperators(callerFilter);
         const ownership = this.getOwnershipFilter();
-        return ownership ? { ...mapped, ...ownership } : mapped;
+
+        if (mapped instanceof Array) {
+            return mapped.map(branch => ({ ...branch, ...ownership }));
+        } 
+        else {
+            return { ...mapped, ...ownership };
+        }
     }
 
-    private mapOperators(filter: Filter<T>): Record<string, unknown> {
+    private mapOperators(filter: Filter<T>): Record<string, unknown> | Array<Record<string, unknown>> {
         if (!filter || typeof filter !== "object") return {};
         // if (Array.isArray(filter)) return filter.map(f => this.mapOperators(f));
 
-        const out: Record<string, unknown> = {};
+        let out: Record<string, unknown> | Array<Record<string, unknown>> = {};
 
-        for (const [key, val] of Object.entries(filter)) {
-            if (key === "$and" && Array.isArray(val)) {
-                out["$and"] = val.map(v => this.mapOperators(v));
-                continue;
-            }
-            else if (key === "$or" && Array.isArray(val)) {
-                out["$or"] = val.map(v => this.mapOperators(v));
-                continue;
-            }
-            else if (val && typeof val === "object" && !Array.isArray(val)) {
+        if( filter["$or"] && Array.isArray(filter["$or"])) {
+            out = [];
+            out.push(...filter["$or"].map(v => this.mapOperators(v) as Record<string, unknown>));
+            return out;
+        }
+
+        for (const [key, val] of Object.entries(filter)) { 
+            if (val && typeof val === "object" && !Array.isArray(val)) {
                 // Common mongo-like operators supported in JSON payloads
                 const oval = val as FieldOperators;
 
