@@ -33,8 +33,14 @@ class JoinWhitelistMiddleware {
     private validateJoinPath(joinPath: string, rootDocumentName: string): void {
         const segments = joinPath.split(".");
         let currentDoc = rootDocumentName;
+        const visited = new Set<string>();
 
         for (const segment of segments) {
+            if (visited.has(currentDoc)) {
+                throw new VexResErr(403, undefined, `Circular join detected: "${joinPath}" revisits "${currentDoc}"`);
+            }
+            visited.add(currentDoc);
+
             const relations = joinWhitelistRegistry[currentDoc];
             if (!relations || !(segment in relations)) {
                 throw new VexResErr(403, undefined, `Join "${segment}" is not allowed on "${currentDoc}"`);
