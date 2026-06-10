@@ -78,7 +78,7 @@ function applyFkToInterface(interfaceString: string, jsonSchema: types.jsonSchem
         props.map((fkProp) => {
             const interfaceName = fkProp.interfaceName + typeSuffix;
             const isArray = fkProp.relationType === types.DbRelationType.OneToMany ? '[]' : '';
-            const typeString = `${interfaceName}${isArray}`;
+            const typeString = `Omit<${interfaceName}, '${utils.common.camelCase(currentDocumnetName)}'>${isArray}`; 
             if (!fkProp.imports.includes(interfaceName)) fkProp.imports.push(interfaceName);
             return `    ${fkProp.propName}?: ${typeString};`;
         })
