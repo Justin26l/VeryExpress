@@ -15,7 +15,7 @@
         "lint": "eslint ./src --ext .ts --fix",
         "compile": "node ./scripts/build.js && node ./scripts/copyTsTemplates.js",
         "preversion": "npm run build",
-        "postversion": "git add . && git commit -m 'lint' && git push && git push --tags"
+        "postversion": "git push && git push --tags"
     },
     "keywords": [
         "jsonSchema",
