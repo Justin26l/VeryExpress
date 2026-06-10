@@ -82,7 +82,7 @@ function applyFkToInterface(interfaceString: string, jsonSchema: types.jsonSchem
             if (!fkProp.imports.includes(interfaceName)) fkProp.imports.push(interfaceName);
             return `    ${fkProp.propName}?: ${typeString};`;
         })
-        .join("\n");
+            .join("\n");
     
 
     const relationsBlock =
