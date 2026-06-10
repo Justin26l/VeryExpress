@@ -81,13 +81,16 @@ export interface jsonSchema {
     required?: string[];
     index?: string[];
     interface?: {
-        fkProps: {
-            propName: string;
-            interfaceName: string;
-            relationType: DbRelationType;
-        }[];
+        fkProps: fkProps[];
     };
     [key: string]: any;
+}
+
+export interface fkProps {
+    propName: string;
+    interfaceName: string;
+    relationType: DbRelationType;
+    imports: string[];
 }
 
 export interface foreignKeyConfig {

@@ -19,7 +19,7 @@ import * as routeGen from "./generators/routes/routes.generator";
 import * as serverGen from "./generators/app/server.generator";
 import * as typeormEntityGen from "./generators/db/typeormEntity.generator";
 import * as mongooseModelGen from "./generators/db/mongooseModel.generator";
-import * as sqlMigrationGen from "./generators/db/sqlMigration.generator";
+// import * as sqlMigrationGen from "./generators/db/sqlMigration.generator";
 import * as interfaceGen from "./generators/interface/generator";
 import * as joinWhitelistRegistryGen from "./generators/middlewares/joinWhitelistRegistry.generator";
 import * as dataIsolationRegistryGen from "./generators/middlewares/dataIsolationRegistry.generator";
@@ -179,12 +179,12 @@ export async function generate(
     });
 
     // generate sql migrations
-    if (options.dbType === "sql") {
-        await sqlMigrationGen.compile({
-            schemas: documents.map((d) => d.schema),
-            outDir: dir.modelDir,
-        });
-    }
+    // if (options.dbType === "sql") {
+    //     await sqlMigrationGen.compile({
+    //         schemas: documents.map((d) => d.schema),
+    //         outDir: dir.modelDir,
+    //     });
+    // }
 
     // generate route from routeData
     await routeGen.compile({

@@ -3,7 +3,7 @@ import { Request, Response, NextFunction } from "express";
 import { DataSource, EntityTarget, ObjectLiteral } from "typeorm";
 import mongoose from "mongoose";
 // import { Document } from "mongoose";
-import { sqlMigrations } from "../_models/sqlMigration.gen";
+// import { sqlMigrations } from "../_models/sqlMigration.gen";
 import { VexRepository } from "../_types/vex";
 import { TypeOrmRepositoryAdapter } from "./TypeOrmRepositoryAdapter.gen";
 // import { MongooseRepositoryAdapter } from "./MongooseRepositoryAdapter.gen";
@@ -70,7 +70,7 @@ export class VexDbConnector {
                 .then(() => {
                     this.dataSource = ds;
                     utils.log.infoSql("TypeORM DataSource initialized");
-                    this.runSqlMigrations(ds);
+                    // this.runSqlMigrations(ds);
                 })
                 .catch((err) => {
                     utils.log.errorSql(`Failed to initialize TypeORM, retrying in ${retryTime}s`, err);
@@ -81,22 +81,22 @@ export class VexDbConnector {
         connectWithRetry(10);
     }
 
-    private async runSqlMigrations(ds: DataSource): Promise<void> {
-        if (!sqlMigrations.length) return;
-        const runner = ds.createQueryRunner();
-        await runner.connect();
-        try {
-            for (const sql of sqlMigrations) {
-                utils.log.infoSql(`Applying migration: ${sql}`);
-                await runner.query(sql);
-            }
-            utils.log.infoSql(`${sqlMigrations.length} migrations applied`);
-        } catch (err) {
-            utils.log.errorSql("SQL migration failed", err);
-        } finally {
-            await runner.release();
-        }
-    }
+    // private async runSqlMigrations(ds: DataSource): Promise<void> {
+    //     if (!sqlMigrations.length) return;
+    //     const runner = ds.createQueryRunner();
+    //     await runner.connect();
+    //     try {
+    //         for (const sql of sqlMigrations) {
+    //             utils.log.infoSql(`Applying migration: ${sql}`);
+    //             await runner.query(sql);
+    //         }
+    //         utils.log.infoSql(`${sqlMigrations.length} migrations applied`);
+    //     } catch (err) {
+    //         utils.log.errorSql("SQL migration failed", err);
+    //     } finally {
+    //         await runner.release();
+    //     }
+    // }
 
     closeSql(): void {
         if (this.dataSource?.isInitialized) {

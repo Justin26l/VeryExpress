@@ -88,6 +88,7 @@ function updateRelations(jsonSchemaMap: { [key: string]: types.jsonSchema }, jso
                 relationType: fkConfig.relationType === types.DbRelationType.ManyToOne
                     ? types.DbRelationType.OneToMany
                     : types.DbRelationType.OneToOne,
+                imports: [],
             });
         }
     });

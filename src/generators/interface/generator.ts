@@ -45,19 +45,21 @@ export async function compile(
 }
 
 function applyFkToInterface(interfaceString: string, jsonSchema: types.jsonSchema): string {
+    const currentDocumnetName = jsonSchema["x-documentConfig"]?.documentName;
+
     // Reverse FK relations (other schemas pointing to this one)
     const reverseFkProps = (jsonSchema.interface?.fkProps || [])
         .filter((fkProp, index, self) => index === self.findIndex((p) => p.propName === fkProp.propName));
 
     // Direct FK relations (this schema's own x-foreignKey properties / pointing to other schemas)
-    const directFkProps: { propName: string; interfaceName: string; relationType: types.DbRelationType }[] = [];
+    const directFkProps: types.fkProps[] = [];
     for (const prop of Object.values(jsonSchema.properties ?? {})) {
         const fk = (prop as types.jsonSchemaPropsItem)["x-foreignKey"];
         if (fk) {
             const propName = utils.common.camelCase(fk.schemaName);
             const interfaceName = utils.common.pascalCase(fk.schemaName);
             if (!directFkProps.some((p) => p.propName === propName)) {
-                directFkProps.push({ propName, interfaceName, relationType: fk.relationType as types.DbRelationType });
+                directFkProps.push({ propName, interfaceName, relationType: fk.relationType as types.DbRelationType, imports: [] });
             }
         }
     }
@@ -72,26 +74,29 @@ function applyFkToInterface(interfaceString: string, jsonSchema: types.jsonSchem
 
     let updatedInterface = interfaceString;
 
-    allFkProps.forEach((fkProp) => {
-        updatedInterface = prependImports(updatedInterface, fkProp.interfaceName);
-    });
-
-    const buildRelationsProps = (props: typeof allFkProps): string =>
-        props
-            .map((fkProp) => {
-                const typeString = fkProp.relationType === types.DbRelationType.OneToMany ? `${fkProp.interfaceName}[]` : fkProp.interfaceName;
-                return `    ${fkProp.propName}?: ${typeString};`;
-            })
-            .join("\n");
+    const buildRelationsProps = (props: typeof allFkProps, typeSuffix: string): string => 
+        props.map((fkProp) => {
+            const interfaceName = fkProp.interfaceName + typeSuffix;
+            const isArray = fkProp.relationType === types.DbRelationType.OneToMany ? '[]' : '';
+            const typeString = `Omit<${interfaceName}, '${utils.common.camelCase(currentDocumnetName)}'>${isArray}`; 
+            if (!fkProp.imports.includes(interfaceName)) fkProp.imports.push(interfaceName);
+            return `    ${fkProp.propName}?: ${typeString};`;
+        })
+        .join("\n");
+    
 
     const relationsBlock =
         `\n/** Full DB relations — internal use only, no whitelist restriction */\n` +
-        `export interface ${title}Relations {\n${buildRelationsProps(allFkProps)}\n}\n\n` +
+        `export interface ${title}Relations {\n${buildRelationsProps(allFkProps, "WithRelations")}\n}\n\n` +
         `export type ${title}WithRelations = ${title} & ${title}Relations;\n\n` +
         `/** API relations — restricted by restApi.joinWhitelist */\n` +
-        `export interface ${title}ApiRelations {\n${buildRelationsProps(apiFkProps)}\n}\n\n` +
+        `export interface ${title}ApiRelations {\n${buildRelationsProps(apiFkProps, "WithApiRelations")}\n}\n\n` +
         `export type ${title}WithApiRelations = ${title} & ${title}ApiRelations;\n`;
 
+    allFkProps.forEach((fkProp) => {
+        updatedInterface = prependImports(updatedInterface, fkProp.imports, fkProp.interfaceName);
+    });
+    
     updatedInterface = updatedInterface.replace(/\s+$/, "") + "\n" + relationsBlock;
 
     return updatedInterface;
@@ -130,8 +135,8 @@ function appendEnumDeclarations(interfaceString: string, jsonSchema: types.jsonS
  * @param importName 
  * @returns 
  */
-function prependImports(interfaceString: string, importName: string): string {
-    const importLine = `import { ${importName} } from "./${importName}.gen";`;
+function prependImports(interfaceString: string, imports: string[], importFile: string): string {
+    const importLine = `import { ${imports.join(", ")} } from "./${importFile}.gen";`;
     if (interfaceString.includes(importLine)) {
         return interfaceString;
     }
