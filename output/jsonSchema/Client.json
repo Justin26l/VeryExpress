@@ -53,13 +53,25 @@
             "default": true,
             "required": true
         },
+        "createdBy": {
+            "type": "string",
+            "x-format": "UUID",
+            "x-vexData": "userId"
+        },
         "createdAt": {
             "type": "integer",
-            "x-format": "UnixTimestamp"
+            "x-format": "UnixTimestamp",
+            "x-vexData": "unixTimestampOnCreate"
+        },
+        "updatedBy": {
+            "type": "string",
+            "x-format": "UUID",
+            "x-vexData": "userId"
         },
         "updatedAt": {
             "type": "integer",
-            "x-format": "UnixTimestamp"
+            "x-format": "UnixTimestamp",
+            "x-vexData": "unixTimestampOnUpdate"
         }
     },
     "required": [

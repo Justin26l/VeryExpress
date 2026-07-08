@@ -57,6 +57,18 @@ export function cleanXcustomValue(
     return obj;
 }
 
+export function normalizeOption<T extends string>(varuable?:string){
+    return varuable?.toLowerCase() as T;
+};
+
+export function getXFormat(xFormat?: string) {
+    return normalizeOption<types.xFormatType>(xFormat);
+}
+
+export function getXVexData(xVexData?: string) {
+    return normalizeOption<types.xVexDataType>(xVexData);
+}
+
 /** filter "getList" which not a http method */
 export function httpMethod(jsonSchemaMethod: string, documentName: string) : types.httpMethod {
     if (jsonSchemaMethod == "getList"){ 
@@ -75,4 +87,6 @@ export default {
     cleanXcustomValue,
     httpMethod,
     loadJsonSchema,
+    getXFormat,
+    getXVexData,
 };

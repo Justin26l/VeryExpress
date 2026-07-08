@@ -30,7 +30,7 @@ export async function compile(options: {
 
     // Determine id type
     const idProps = options.jsonSchema.properties["_id"]
-    const idXFormat = idProps?.["x-format"] || "";
+    const idXFormat = utils.jsonSchema.getXFormat(idProps?.["x-format"]);
     const idType = [types.xFormatType.Primary, types.xFormatType.ObjectId].includes(idXFormat as types.xFormatType) ? "string" : idProps?.type;
 
     // Session is an internal document — skip tsoa @Route decorator
@@ -61,7 +61,7 @@ export async function compile(options: {
 }
 
 function mapToTsType(prop: types.jsonSchemaPropsItem): string {
-    const fmt = prop["x-format"];
+    const fmt = utils.jsonSchema.getXFormat(prop["x-format"]);
     if (fmt === types.xFormatType.ObjectId || fmt === types.xFormatType.Primary) return "string";
     switch (prop.type) {
     case "string":  return "string";
