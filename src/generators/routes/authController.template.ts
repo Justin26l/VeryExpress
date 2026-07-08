@@ -26,7 +26,8 @@ import * as controllerFactory from "./_ControllerFactory.gen";
 import JWTService from "../_services/auth/JWTService.gen";
 import VexDb from "../_services/VexDb.gen";
 import { SessionEntity, Session } from "../_models/SessionModel.gen";
-import { VexRepository, VexResErr, VexResOk } from "../_types/vex";
+import { VexRepository, VexResponse, VexResErr, VexResOk } from "../_types/vex";
+import { tokenResponse, refreshTokenResponse${localAuth ? ', registerResponse, localLoginResponse' : '' } } from "../_types/auth.gen";
 
 import utils from "../_utils";
 ${localAuthImports}
@@ -42,7 +43,9 @@ ${OAuthNote}
 
     @Post("token")
     @SuccessResponse(200, "OK")
-    async exchangeToken(@Query() code: string): Promise<void> {
+    async exchangeToken(
+        @Query() code: string
+    ): Promise<VexResponse<tokenResponse>> {
         
         const session = await this.sessionRepo.findOneWhere({ sessionCode: code });
         if (!session) {
@@ -69,7 +72,12 @@ ${OAuthNote}
 
     @Post("refresh")
     @SuccessResponse(200, "OK")
-    async refreshToken(@Body() body: {refreshToken: string; refreshTokenIndex: string;}): Promise<void> {
+    async refreshToken(
+        @Body() body: {
+            refreshToken: string; 
+            refreshTokenIndex: string;
+        }
+    ): Promise<VexResponse<refreshTokenResponse>> {
         const payload = this.JWTService.verifyToken(body.refreshToken, body.refreshTokenIndex);
         
         const user = await this.userRepo.findOne({ _id: payload._id }${compilerOptions.useRBAC ? ', ["userRole"]' : ''});
@@ -84,7 +92,12 @@ ${OAuthNote}
 ${localAuth ? `
     @Post("register")
     @SuccessResponse(201, "Created")
-    async register(@Body() body: {email: string; password: string;}): Promise<void> {
+    async register(
+        @Body() body: {
+            email: string; 
+            password: string;
+        }
+    ): Promise<VexResponse<registerResponse>> {
         const { email, password } = body;
         const existing = await this.userRepo.findOneWhere({ email });
         if (existing) throw new VexResErr(409, null, "Email already registered.");
@@ -114,7 +127,12 @@ ${localAuth ? `
 ${localAuth ? `
     @Post("local")
     @SuccessResponse(302, "Redirect")
-    async localLogin(@Body() body: {email: string; password: string;}): Promise<void> {
+    async localLogin(
+        @Body() body: {
+            email: string;
+            password: string;
+        }
+    ): Promise<VexResponse<localLoginResponse>> {
         const { email, password } = body;
         
         const user = await this.userRepo.findOneWhere({ email }${compilerOptions.useRBAC ? ', ["userRole", "userAuthProfiles"]' : ', ["userAuthProfiles"]'});

@@ -45,8 +45,28 @@ export async function compile(
 }
 
 function applyFkToInterface(interfaceString: string, jsonSchema: types.jsonSchema): string {
-    const fkProps = (jsonSchema.interface?.fkProps || [])
+    const currentDocumnetName = jsonSchema["x-documentConfig"]?.documentName;
+
+    // Reverse FK relations (other schemas pointing to this one)
+    const reverseFkProps = (jsonSchema.interface?.fkProps || [])
         .filter((fkProp, index, self) => index === self.findIndex((p) => p.propName === fkProp.propName));
+
+    // Direct FK relations (this schema's own x-foreignKey properties / pointing to other schemas)
+    const directFkProps: types.fkProps[] = [];
+    for (const prop of Object.values(jsonSchema.properties ?? {})) {
+        const fk = (prop as types.jsonSchemaPropsItem)["x-foreignKey"];
+        if (fk) {
+            const propName = utils.common.camelCase(fk.schemaName);
+            const interfaceName = utils.common.pascalCase(fk.schemaName);
+            if (!directFkProps.some((p) => p.propName === propName)) {
+                directFkProps.push({ propName, interfaceName, relationType: fk.relationType as types.DbRelationType, imports: [] });
+            }
+        }
+    }
+
+    const joinWhitelist = jsonSchema["x-documentConfig"]?.restApi?.joinWhitelist as string[] | undefined;
+    const allFkProps = [...reverseFkProps, ...directFkProps];
+    const apiFkProps = !joinWhitelist ? allFkProps : allFkProps.filter((fkProp) => joinWhitelist.includes(fkProp.propName));
 
     const titleMatch = interfaceString.match(/export interface (\w+)/);
     if (!titleMatch) return interfaceString;
@@ -54,21 +74,46 @@ function applyFkToInterface(interfaceString: string, jsonSchema: types.jsonSchem
 
     let updatedInterface = interfaceString;
 
-    fkProps.forEach((fkProp) => {
-        updatedInterface = prependImports(updatedInterface, fkProp.interfaceName);
-    });
+    // Build a relations block with named Omit type aliases instead of inline Omit<>[].
+    // tsoa can parse named `type Foo = Omit<Bar, 'k'>`, but NOT `Omit<Bar, 'k'>[]` inline.
+    // We emit a type alias per FK prop so tsoa sees a clean type reference:
+    //   type TaskWithApiRelationsWoClient = Omit<TaskWithApiRelations, 'client'>;
+    const buildRelationsBlock = (props: typeof allFkProps, typeSuffix: string): string => {
+        const woTypes = new Map<string, string>();
+        const backRefName = utils.common.camelCase(currentDocumnetName);
 
-    const relationsProps = fkProps
-        .map((fkProp) => {
-            const typeString = fkProp.relationType === types.DbRelationType.OneToMany ? `${fkProp.interfaceName}[]` : fkProp.interfaceName;
-            return `    ${fkProp.propName}?: ${typeString};`;
-        })
-        .join("\n");
+        const propsLines = props.map((fkProp) => {
+            const interfaceName = fkProp.interfaceName + typeSuffix;
+            const isArray = fkProp.relationType === types.DbRelationType.OneToMany ? "[]" : "";
+            const woTypeName = `${interfaceName}Wo${utils.common.pascalCase(backRefName)}`;
+
+            if (!fkProp.imports.includes(interfaceName)) fkProp.imports.push(interfaceName);
+
+            if (!woTypes.has(woTypeName)) {
+                woTypes.set(woTypeName, `type ${woTypeName} = Omit<${interfaceName}, '${backRefName}'>;`);
+            }
+
+            return `    ${fkProp.propName}?: ${woTypeName}${isArray};`;
+        }).join("\n");
+
+        const interfaceSuffix = typeSuffix.startsWith("With") ? typeSuffix.slice(4) : typeSuffix;
+        const woBlock = Array.from(woTypes.values()).join("\n\n");
+
+        return `${woBlock ? woBlock + "\n\n" : ""}` +
+            `export interface ${title}${interfaceSuffix} {\n${propsLines}\n}\n\n` +
+            `export type ${title}${typeSuffix} = ${title} & ${title}${interfaceSuffix};`;
+    };
 
     const relationsBlock =
-        `\nexport interface ${title}Relations {\n${relationsProps}\n}\n\n` +
-        `export type ${title}WithRelations = ${title} & ${title}Relations;\n`;
+        `\n/** Full DB relations — internal use only, no whitelist restriction */\n` +
+        buildRelationsBlock(allFkProps, "WithRelations") + "\n\n" +
+        `/** API relations — restricted by restApi.joinWhitelist */\n` +
+        buildRelationsBlock(apiFkProps, "WithApiRelations") + "\n";
 
+    allFkProps.forEach((fkProp) => {
+        updatedInterface = prependImports(updatedInterface, fkProp.imports, fkProp.interfaceName);
+    });
+    
     updatedInterface = updatedInterface.replace(/\s+$/, "") + "\n" + relationsBlock;
 
     return updatedInterface;
@@ -107,8 +152,8 @@ function appendEnumDeclarations(interfaceString: string, jsonSchema: types.jsonS
  * @param importName 
  * @returns 
  */
-function prependImports(interfaceString: string, importName: string): string {
-    const importLine = `import { ${importName} } from "./${importName}.gen";`;
+function prependImports(interfaceString: string, imports: string[], importFile: string): string {
+    const importLine = `import { ${imports.join(", ")} } from "./${importFile}.gen";`;
     if (interfaceString.includes(importLine)) {
         return interfaceString;
     }

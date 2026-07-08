@@ -17,8 +17,9 @@ export default function controllerTemplate(templateOptions: {
     restApiNoRelations?: boolean;
     restApiJoinWhitelist?: boolean;
     compilerOptions: types.compilerOptions;
+    dataIsolation?: types.DataIsolationConfig;
 }): string {
-    const { documentName, idType, restApiMethods, restApiNoRelations, restApiJoinWhitelist, compilerOptions, modelPath, typePath } = templateOptions;
+    const { documentName, idType, restApiMethods, restApiNoRelations, restApiJoinWhitelist, compilerOptions, modelPath, typePath, dataIsolation } = templateOptions;
     const useRBAC = !!compilerOptions.useRBAC;
     const useAuth = compilerOptions.auth.localAuth || utils.generator.OAuthProviders(compilerOptions).length > 0;
     const cleanId = compilerOptions.app.allowApiCreateUpdate_id
@@ -32,7 +33,7 @@ export default function controllerTemplate(templateOptions: {
     // ── tsoa decorator imports ──────────────────────────────────────────────────
     const decoratorNames: string[] = [];
     decoratorNames.push("Route", "Tags", "Body", "Path", "Query", "SuccessResponse");
-    if (useRBAC || restApiJoinWhitelist) decoratorNames.push("Middlewares");
+    if (useRBAC || restApiJoinWhitelist || dataIsolation) decoratorNames.push("Middlewares");
     if (useRBAC) decoratorNames.push("Security");
     if (restApiMethods.includes("get"))                                decoratorNames.push("Get");
     if (restApiMethods.includes("post") || restApiMethods.includes("getList")) decoratorNames.push("Post");
@@ -44,6 +45,7 @@ export default function controllerTemplate(templateOptions: {
         useRBAC ? "import RoleBaseAccessControl from \"../_middlewares/RoleBaseAccessControl.gen\";" : "",
         useAuth ? "import Authentication from \"../_middlewares/Authentication.gen\";" : "",
         restApiJoinWhitelist ? "import JoinWhitelistMiddleware from \"../_middlewares/JoinWhitelistMiddleware.gen\";" : "",
+        dataIsolation ? "import DataIsolationContext from \"../_middlewares/DataIsolationContext.gen\";" : "",
     ].filter(Boolean).join("\n");
 
     // ── Class decorators ────────────────────────────────────────────────────────
@@ -52,6 +54,7 @@ export default function controllerTemplate(templateOptions: {
     classDecoratorLines.push(`@Tags("${documentName}")`);
     if (useRBAC) classDecoratorLines.push(`@Middlewares(RoleBaseAccessControl.middleware("${documentName}"))`);
     if (useAuth) {
+        if (dataIsolation) classDecoratorLines.push("@Middlewares(DataIsolationContext.middleware)");
         classDecoratorLines.push("@Middlewares(Authentication.middleware)");
         classDecoratorLines.push("@Security(\"BearerAuth\")");
         classDecoratorLines.push("@Security(\"AuthIndex\")");
@@ -60,6 +63,23 @@ export default function controllerTemplate(templateOptions: {
 
     // ── id parameter ────────────────────────────────────────────────────────────
     const idParam = idType === "string" ? "@Path() id: string" : "@Path() id: number";
+
+    // ── Vex type imports per route ──────────────────────────────────────────────
+    const alwaysVexImports = ["VexRepository", "VexResponse", "VexResErr", "VexResOk", "Filter", "FieldFilter"];
+    const routeVexImports: Record<string, string[]> = {
+        getList: ["VexPagination", "PaginatedResult"],
+        get: [],
+        post: [],
+        put: [],
+        patch: [],
+        delete: [],
+    };
+    const enabledVexImports = [...alwaysVexImports];
+    for (const method of restApiMethods) {
+        const add = routeVexImports[method];
+        if (add) enabledVexImports.push(...add);
+    }
+    const vexImports = [...new Set(enabledVexImports)].join(", ");
 
     // ── Route method builder ────────────────────────────────────────────────────
     function buildMethod(
@@ -84,9 +104,27 @@ export default function controllerTemplate(templateOptions: {
             `@SuccessResponse(200, "Success")`,
             ...(joinWhitelistDecorator ? [joinWhitelistDecorator] : []),
         ],
-        `public async getList${documentName}(@Body() body: { filter: Filter${documentName}, join?: string[], select?: string[] }): Promise<VexResponse<${documentName}${restApiNoRelations ? '' : 'WithRelations'}[]>>`,
-        `const result = await this.repo.find(body.filter as Filter<${documentName}>, body.join, body.select);
-        throw new VexResOk(200, { result });`
+        `public async getList${documentName}(@Body() body: { filter: Filter${documentName}, join?: string[], select?: string[], pagination?: VexPagination }): Promise<VexResponse<PaginatedResult<${documentName}${restApiNoRelations ? '' : 'WithApiRelations'}>>>`,
+        `if (body.pagination) {
+            const data = await this.repo.find(body.filter as Filter<${documentName}>, body.join, body.select, body.pagination);
+            const total = await this.repo.count(body.filter as Filter<${documentName}>);
+            throw new VexResOk(200, { 
+                result: { 
+                    data, 
+                    total, 
+                    page: body.pagination.page || 1, 
+                    perPage: body.pagination.perPage || 20 
+                } 
+            });
+        }
+        else {
+            const result = await this.repo.find(body.filter as Filter<${documentName}>, body.join, body.select);
+            throw new VexResOk(200, { 
+                result: { 
+                    data: result 
+                } 
+            });
+        };`
     );
 
     const getRoute = buildMethod(
@@ -96,7 +134,7 @@ export default function controllerTemplate(templateOptions: {
             `@SuccessResponse(200, "Success")`,
             ...(joinWhitelistDecorator ? [joinWhitelistDecorator] : []),
         ],
-        `public async get${documentName}(${idParam}, @Query() join?: string[], @Query() select?: string[]): Promise<VexResponse<${documentName}${restApiNoRelations ? '' : 'WithRelations'}>>`,
+        `public async get${documentName}(${idParam}, @Query() join?: string[], @Query() select?: string[]): Promise<VexResponse<${documentName}${restApiNoRelations ? '' : 'WithApiRelations'}>>`,
         `const result = await this.repo.findOne({ _id: id }, join, select);
         if (!result) throw new VexResErr(404);
         throw new VexResOk(200, { result });`
@@ -146,13 +184,13 @@ export default function controllerTemplate(templateOptions: {
     const source = `{{headerComment}}
 import { ${decoratorNames.join(", ")} } from "tsoa";
 import * as controllerFactory from "./_ControllerFactory.gen";
-import { VexRepository, VexResponse, VexResErr, VexResOk, Select, Filter, Join, FieldFilter } from "../_types/vex";
+import { ${vexImports} } from "../_types/vex";
 import VexDb from "../_services/VexDb.gen";
 
 ${optionalImports}
 
 import { ${documentName}Entity } from "${modelPath}";
-import { ${documentName}, ${documentName}WithRelations } from "${typePath}";
+import { ${documentName}, ${documentName}WithApiRelations } from "${typePath}";
 
 // extra type defined due to tsoa cannot capture runtime generic types,
 // this will make OAS have complete input parameters & correct validation

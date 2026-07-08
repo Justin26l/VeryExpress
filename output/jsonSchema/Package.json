@@ -2,6 +2,9 @@
     "type": "object",
     "x-documentConfig": {
         "documentName": "Package",
+        "dataIsolation": {
+            "field": "userId"
+        },
         "restApi": {
             "methods": [
                 "get",
@@ -11,9 +14,7 @@
                 "patch",
                 "delete"
             ],
-            "joinWhitelist": [
-                "user"
-            ]
+            "joinWhitelist": []
         }
     },
     "properties": {

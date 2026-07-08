@@ -27,6 +27,21 @@ export type Filter<T = any> = {
 
 export type Join = string[];
 
+export type SortOrder = "ASC" | "DESC";
+
+export type VexPagination = {
+  page?: number;
+  perPage?: number;
+  sort?: Record<string, SortOrder>;
+};
+
+export type PaginatedResult<T> = {
+  data: T[];
+  total?: number;
+  page?: number;
+  perPage?: number;
+};
+
 export interface VexRequest<T = any> {
     select?: Select;
     filter?: Filter<T>;

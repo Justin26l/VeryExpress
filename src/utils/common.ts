@@ -6,10 +6,12 @@ import log from "./logger";
 import * as generator from "./generator";
 import pkg from "package.json";
 
+// files written (or skipped due to no-change / allowOverwrite=false) during current generation run
 export const writtedFiles: string[] = [];
 export let _compilerOptions: types.compilerOptions = generator.defaultCompilerOptions;
-
 let _vexMeta: types.VexMeta = { files: {} };
+
+export function resetWrittedFiles(): void { writtedFiles.length = 0; }
 
 function vexMetaPath(): string {
     return path.posix.join(_compilerOptions?.rootDir || ".", ".vex", "meta.json");
@@ -37,7 +39,7 @@ function nestedToFlat(nested: Record<string, any>, prefix = ""): { [relPath: str
             Object.assign(flat, nestedToFlat(value, relPath));
         }
         else {
-            flat[relPath] = value as VexFileMeta;
+            flat[relPath] = value as types.VexFileMeta;
         }
     }
     return flat;
@@ -107,15 +109,16 @@ export function loadJson<T = any>(filePath: string, fileNotExistHandler?: () => 
         return fileNotExistHandler();
     }
     else if ( !fileExist ){
-        return log.error(`FILE : ${filePath} not found`);
+        log.error(`FILE : ${filePath} not found`);
     }
     else{
         try {
             const content = JSON.parse(fs.readFileSync(filePath, "utf8"));
-            return content ? content : log.error(`FILE JSON : Read Error ${filePath}`);
+            if (!content) log.error(`FILE JSON : Read Error ${filePath}`);
+            else return content; 
         }
         catch (err: any) {
-            return log.error(`FILE : ${filePath}\n`, err.message);
+            log.error(`FILE : ${filePath}\n`, err.message);
         }
     }
 }
@@ -136,7 +139,8 @@ export function writeFile(title: string, destination: string, newContent: string
     const newContentNoHeader = normalize(newContent.replace(newContentRegex, ""));
 
     if (oldContentNoHeader === newContentNoHeader) {
-        // log.info(`${title} : "${destination}" No changes`);
+        log.info(`${title} : "${destination}" No changes`);
+        writtedFiles.push(destination);
         return false;
     }
     else {
@@ -149,10 +153,12 @@ export function writeFile(title: string, destination: string, newContent: string
 
         if (!allowOverwrite && fs.existsSync(destination)) {
             log.info(`${title} : "${destination}" Skip (allowOverwrite=false)`);
+            writtedFiles.push(destination);
             return false;
         }
 
         log.writing(`${title} : "${destination}"`);
+        writtedFiles.push(destination);
         newContent = newContent.replace(/\/\/ {{headerComment}}|{{headerComment}}/g, headerComment || "// generated files by very-express");
         fs.writeFileSync(destination, newContent);
 
@@ -167,47 +173,10 @@ export function writeFile(title: string, destination: string, newContent: string
     }
 }
 
-function majorMinor(version: string): string {
-    if (!version) return "0.0";
-    const parts = version.split(".");
-    const major = parseInt(parts[0] || "0", 10) || 0;
-    const minor = parseInt(parts[1] || "0", 10) || 0;
-    return `${major}.${minor}`;
-}
-
 export function saveVexMeta(): void {
     if (!_compilerOptions?.rootDir) return;
     _vexMeta.lastGeneratedVersion = pkg.version;
     flushVexMeta();
-}
-
-export function handleVersioningCleanup(): void {
-    const opts = _compilerOptions as types.compilerOptions;
-    const metaPath = path.posix.join(opts.rootDir, ".vex", "meta.json");
-    const serverPath = path.posix.join(opts.rootDir, "server.ts");
-    try {
-        if (!fs.existsSync(metaPath)) {
-            // nothing to compare
-            return;
-        }
-        const meta = JSON.parse(fs.readFileSync(metaPath, "utf8") || "{}");
-        const last = meta.lastGeneratedVersion as string | undefined;
-        const curr = pkg.version as string;
-        if (last && majorMinor(last) !== majorMinor(curr)) {
-            // major.minor changed -> remove sysDir to force clean regen
-            try {
-                log.warn(`Version major/minor changed (${last} -> ${curr}), removing "${opts.sysDir}"`);
-                fs.rmSync(opts.sysDir, { recursive: true, force: true });
-                fs.rmSync(serverPath, { force: true });
-            }
-            catch (err: any) {
-                log.warn(`Failed to clear generated files: ${err.message}`);
-            }
-        }
-    }
-    catch (err: any) {
-        log.warn(`handleVersioningCleanup error: ${err.message}`);
-    }
 }
 
 export function copyDir(source: string, destination: string, compilerOptions: types.compilerOptions, overwrite?: boolean): void {
@@ -241,6 +210,35 @@ export function copyDir(source: string, destination: string, compilerOptions: ty
     }
 }
 
+export function scanDir(dir: string): string[] {
+    const files: string[] = [];
+    if (!fs.existsSync(dir)) return files;
+    for (const entry of fs.readdirSync(dir)) {
+        const fullPath = path.posix.join(dir, entry);
+        if (fs.lstatSync(fullPath).isDirectory()) {
+            files.push(...scanDir(fullPath));
+        } else {
+            files.push(fullPath);
+        }
+    }
+    return files;
+}
+
+export function cleanupStaleFiles(): void {
+    const sysDir = _compilerOptions?.sysDir;
+    if (!sysDir || !fs.existsSync(sysDir)) return;
+
+    const writtenSet = new Set(writtedFiles.map(f => path.resolve(f)));
+    const existing = scanDir(sysDir);
+
+    for (const file of existing) {
+        if (!writtenSet.has(path.resolve(file))) {
+            log.info(`CLEANUP : remove stale file "${file}"`);
+            fs.rmSync(file, { force: true });
+        }
+    }
+}
+
 // add setter/getter to update module-scoped _compilerOptions safely
 export function setCompilerOptions(opts: types.compilerOptions) {
     _compilerOptions = opts;
@@ -260,6 +258,7 @@ export default {
     writeFile,
     setCompilerOptions,
     getCompilerOptions,
-    handleVersioningCleanup,
-    saveVexMeta
+    saveVexMeta,
+    resetWrittedFiles,
+    cleanupStaleFiles,
 };

@@ -2,6 +2,9 @@
   "type": "object",
   "x-documentConfig": {
     "documentName": "User",
+    "dataIsolation": {
+        "field": "_id"
+    },
     "restApi": {
         "methods": [
             "get",
@@ -9,6 +12,9 @@
         ],
         "noRelations": true,
         "joinWhitelist": []
+    },
+    "isolate":{
+        "user": false
     },
     "uniqueIndex": [
       [

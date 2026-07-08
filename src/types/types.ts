@@ -81,13 +81,16 @@ export interface jsonSchema {
     required?: string[];
     index?: string[];
     interface?: {
-        fkProps: {
-            propName: string;
-            interfaceName: string;
-            relationType: DbRelationType;
-        }[];
+        fkProps: fkProps[];
     };
     [key: string]: any;
+}
+
+export interface fkProps {
+    propName: string;
+    interfaceName: string;
+    relationType: DbRelationType;
+    imports: string[];
 }
 
 export interface foreignKeyConfig {
@@ -126,6 +129,10 @@ export interface populateOptions {
     [key: string]: string,
 }
 
+export interface DataIsolationConfig {
+    field: string;
+}
+
 export interface documentConfig {
     documentName: string;
     keyPrefix?: string;
@@ -135,6 +142,7 @@ export interface documentConfig {
         joinWhitelist?: string[];
         noRelations?: boolean;
     };
+    dataIsolation?: DataIsolationConfig;
 }
 
 /**

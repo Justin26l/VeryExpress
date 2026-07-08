@@ -1,27 +1,54 @@
 // {{headerComment}}
 import { Repository, ObjectLiteral, FindOptionsWhere, DeepPartial, In, Not, Like, MoreThan, LessThan, MoreThanOrEqual, LessThanOrEqual, FindManyOptions } from "typeorm";
-import { VexRepository, Select, Filter, Join, FieldOperators } from "../_types/vex";
+import { VexRepository, Select, Filter, Join, FieldOperators, VexPagination } from "../_types/vex";
+import DataIsolationContext from "../_middlewares/DataIsolationContext.gen";
+import { entityIsolation } from "../_middlewares/DataIsolationRegistry.gen";
 import utils from "../_utils";
 
 export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRepository<T> {
     constructor(private repo: Repository<T>) {}
 
-    private mapOperators(filter: Filter<T>): Record<string, unknown> {
+    /** Build ownership filter from current request context, or null. */
+    private getOwnershipFilter(): Record<string, unknown> | null {
+        const store = DataIsolationContext.getStore();
+        if (!store?.userId) return null;
+
+        const entityName = this.repo.metadata.target instanceof Function
+            ? this.repo.metadata.target.name
+            : "";
+        const config = entityIsolation[entityName];
+        if (!config) return null;
+
+        return { [config.field]: store.userId };
+    }
+
+    /** Merge caller filter with ownership filter. Ownership always wins. */
+    private mergeFilter(callerFilter: Filter<T>): Record<string, unknown> | Array<Record<string, unknown>> {
+        const mapped = this.mapOperators(callerFilter);
+        const ownership = this.getOwnershipFilter();
+
+        if (mapped instanceof Array) {
+            return mapped.map(branch => ({ ...branch, ...ownership }));
+        } 
+        else {
+            return { ...mapped, ...ownership };
+        }
+    }
+
+    private mapOperators(filter: Filter<T>): Record<string, unknown> | Array<Record<string, unknown>> {
         if (!filter || typeof filter !== "object") return {};
         // if (Array.isArray(filter)) return filter.map(f => this.mapOperators(f));
 
-        const out: Record<string, unknown> = {};
+        let out: Record<string, unknown> | Array<Record<string, unknown>> = {};
 
-        for (const [key, val] of Object.entries(filter)) {
-            if (key === "$and" && Array.isArray(val)) {
-                out["$and"] = val.map(v => this.mapOperators(v));
-                continue;
-            }
-            else if (key === "$or" && Array.isArray(val)) {
-                out["$or"] = val.map(v => this.mapOperators(v));
-                continue;
-            }
-            else if (val && typeof val === "object" && !Array.isArray(val)) {
+        if( filter["$or"] && Array.isArray(filter["$or"])) {
+            out = [];
+            out.push(...filter["$or"].map(v => this.mapOperators(v) as Record<string, unknown>));
+            return out;
+        }
+
+        for (const [key, val] of Object.entries(filter)) { 
+            if (val && typeof val === "object" && !Array.isArray(val)) {
                 // Common mongo-like operators supported in JSON payloads
                 const oval = val as FieldOperators;
 
@@ -69,29 +96,41 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
         return this.repo;
     }
 
-    find(filter: Filter<T>, join?: Join, select?: Select, options?: FindManyOptions<T>): Promise<T[]> {
-        const where = this.mapOperators(filter) as FindOptionsWhere<T>;
-        return this.repo.find({ 
-            select,
+    find(filter: Filter<T>, join?: Join, select?: Select, pagination?: VexPagination): Promise<T[]> {
+        const where = this.mergeFilter(filter) as FindOptionsWhere<T>;
+        const options: FindManyOptions<T> = {
+            select: select as any,
             where,
             relations: join,
-            take: options?.take || 500,
-            ...options
-        });
+            take: 500,
+        };
+        if (pagination) {
+            const page = pagination.page || 1;
+            const perPage = Math.min(pagination.perPage || 20, 9999);
+            options.take = Math.min(perPage, 9999);
+            options.skip = (page - 1) * perPage;
+            if (pagination.sort) options.order = pagination.sort as any;
+        }
+        return this.repo.find(options);
+    }
+
+    async count(filter: Filter<T>): Promise<number> {
+        const where = this.mergeFilter(filter) as FindOptionsWhere<T>;
+        return this.repo.count({ where });
     }
 
     findOne(filter: Filter<T>, join?: Join, select?: Select): Promise<T | null> {
-        const where = this.mapOperators(filter) as FindOptionsWhere<T>;
-        return this.repo.findOne({ 
-            select, 
+        const where = this.mergeFilter(filter) as FindOptionsWhere<T>;
+        return this.repo.findOne({
+            select,
             where,
-            relations: join 
+            relations: join
         });
     }
 
     findOneWhere(filter: Filter<T>, join?: Join, select?: Select): Promise<T | null> {
-        const where = this.mapOperators(filter) as FindOptionsWhere<T>;
-        return this.repo.findOne({ 
+        const where = this.mergeFilter(filter) as FindOptionsWhere<T>;
+        return this.repo.findOne({
             select,
             where,
             relations: join
@@ -99,7 +138,18 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
     }
 
     async create(data: Partial<T>): Promise<T> {
-        return this.repo.save(this.repo.create(data as DeepPartial<T>));
+        const enriched = { ...data };
+        const store = DataIsolationContext.getStore();
+        if (store?.userId) {
+            const entityName = this.repo.metadata.target instanceof Function
+                ? this.repo.metadata.target.name
+                : "";
+            const config = entityIsolation[entityName];
+            if (config && config.field !== "_id") {
+                (enriched as any)[config.field] = store.userId;
+            }
+        }
+        return this.repo.save(this.repo.create(enriched as DeepPartial<T>));
     }
 
     async replace(id: string | undefined, data: Partial<T>): Promise<T | null> {
@@ -117,7 +167,8 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
             utils.log.error("TypeOrmRepositoryAdapter.update called without id — refuse update entity");
             return null;
         }
-        await this.repo.update({ _id: id } as unknown as FindOptionsWhere<T>, data);
+        const where = this.mergeFilter({ _id: id } as unknown as Filter<T>);
+        await this.repo.update(where as FindOptionsWhere<T>, data);
         return this.findOne({ _id: id } as unknown as Filter<T>);
     }
 
@@ -126,10 +177,12 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
             utils.log.error("TypeOrmRepositoryAdapter.delete called without id — refuse delete entity");
             return;
         }
-        await this.repo.delete({ _id: id } as unknown as FindOptionsWhere<T>);
+        const where = this.mergeFilter({ _id: id } as unknown as Filter<T>);
+        await this.repo.delete(where as FindOptionsWhere<T>);
     }
 
     async deleteWhere(filter: Record<string, unknown>): Promise<void> {
-        await this.repo.delete(filter as FindOptionsWhere<T>);
+        const where = this.mergeFilter(filter as unknown as Filter<T>);
+        await this.repo.delete(where as FindOptionsWhere<T>);
     }
 }

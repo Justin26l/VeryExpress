@@ -24,7 +24,7 @@ export async function compile(options: {
     const controllerToTypePath = `../_types/${schemaConfig.documentName}.gen`;
     const outPath = `${options.controllerOutDir}/${schemaConfig.documentName}Controller.gen.ts`;
 
-    if (!schemaConfig.restApi.methods) return;
+    if (!schemaConfig.restApi.methods || schemaConfig.restApi.methods.length == 0) return;
 
     log.process(`Controller : ${schemaConfig.documentName}`);
 
@@ -56,6 +56,7 @@ export async function compile(options: {
         restApiJoinWhitelist: schemaConfig.restApi.joinWhitelist !== undefined,
         restApiNoRelations: Boolean(schemaConfig.restApi.noRelations),
         compilerOptions: options.compilerOptions,
+        dataIsolation: schemaConfig.dataIsolation,
     }));
 }
 

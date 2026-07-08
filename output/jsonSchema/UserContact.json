@@ -2,6 +2,9 @@
     "type": "object",
     "x-documentConfig": {
         "documentName": "UserContact",
+        "dataIsolation": {
+            "field": "userId"
+        },
         "restApi": {
             "methods": [
                 "get",

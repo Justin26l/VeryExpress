@@ -1,0 +1,72 @@
+{
+    "type": "object",
+    "x-documentConfig": {
+        "documentName": "Job",
+        "dataIsolation": {
+            "field": "userId"
+        },
+        "restApi": {
+            "methods": [
+                "get",
+                "getList",
+                "post",
+                "patch"
+            ],
+            "joinWhitelist": [
+                "client",
+                "jobProposal",
+                "jobReview",
+                "jobSpecialization",
+                "portfolio"
+            ]
+        }
+    },
+    "properties": {
+        "_id": {
+            "type": "string",
+            "x-format": "PrimaryUUID"
+        },
+        "title": {
+            "type": "string",
+            "maxLength": 128,
+            "required": true
+        },
+        "clientId": {
+            "type": "string",
+            "x-format": "UUID",
+            "x-foreignKey": {
+                "schemaName": "Client",
+                "fieldName": "_id",
+                "relationType": "many-to-one"
+            }
+        },
+        "userId": {
+            "type": "string",
+            "x-format": "UUID",
+            "index": true,
+            "x-foreignKey": {
+                "schemaName": "User",
+                "fieldName": "_id",
+                "relationType": "many-to-one"
+            }
+        },
+        "active": {
+            "type": "boolean",
+            "default": true,
+            "required": true,
+            "description": "Soft-delete / account suspension flag"
+        },
+        "createdAt": {
+            "type": "integer",
+            "x-format": "UnixTimestamp"
+        },
+        "updatedAt": {
+            "type": "integer",
+            "x-format": "UnixTimestamp"
+        }
+    },
+    "required": [
+        "title",
+        "active"
+    ]
+}

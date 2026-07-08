@@ -19,9 +19,10 @@ import * as routeGen from "./generators/routes/routes.generator";
 import * as serverGen from "./generators/app/server.generator";
 import * as typeormEntityGen from "./generators/db/typeormEntity.generator";
 import * as mongooseModelGen from "./generators/db/mongooseModel.generator";
-import * as sqlMigrationGen from "./generators/db/sqlMigration.generator";
+// import * as sqlMigrationGen from "./generators/db/sqlMigration.generator";
 import * as interfaceGen from "./generators/interface/generator";
 import * as joinWhitelistRegistryGen from "./generators/middlewares/joinWhitelistRegistry.generator";
+import * as dataIsolationRegistryGen from "./generators/middlewares/dataIsolationRegistry.generator";
 
 export async function generate(
     options: types.compilerOptions
@@ -56,9 +57,6 @@ export async function generate(
         documentName: string,
         controllerPath: string,
     }[] = [];
-
-    // handle versioning cleanup: if major.minor changed since last generate, remove sysDir
-    utils.common.handleVersioningCleanup();
 
     // create all directories if not exist
     if (!fs.existsSync(options.rootDir)) { fs.mkdirSync(options.rootDir); }
@@ -174,13 +172,19 @@ export async function generate(
         middlewareDir: dir.middlewareDir,
     });
 
+    // generate data isolation registry (entity → ownership field mapping, used by TypeOrmRepositoryAdapter)
+    await dataIsolationRegistryGen.compile({
+        allSchemas: documents.map(d => d.schema),
+        middlewareDir: dir.middlewareDir,
+    });
+
     // generate sql migrations
-    if (options.dbType === "sql") {
-        await sqlMigrationGen.compile({
-            schemas: documents.map((d) => d.schema),
-            outDir: dir.modelDir,
-        });
-    }
+    // if (options.dbType === "sql") {
+    //     await sqlMigrationGen.compile({
+    //         schemas: documents.map((d) => d.schema),
+    //         outDir: dir.modelDir,
+    //     });
+    // }
 
     // generate route from routeData
     await routeGen.compile({
@@ -198,6 +202,8 @@ export async function generate(
     utils.common.saveVexMeta();
 
     // await configGen.compile(options);
+
+    utils.common.cleanupStaleFiles();
 
     return ;
 }

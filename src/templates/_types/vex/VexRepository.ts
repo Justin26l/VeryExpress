@@ -4,14 +4,15 @@
  */
 
 
-import { Select, Filter, Join } from "./VexRequest.gen";
+import { Select, Filter, Join, VexPagination } from "./VexRequest.gen";
 
 /**
  * DB-agnostic repository interface.
  * Controllers and services talk only to this — the adapter layer (TypeORM/Mongoose) absorbs DB specifics.
  */
 export interface VexRepository<T> {
-    find(filter: Filter<T>, join?: Join, select?: Select): Promise<T[]>;
+    find(filter: Filter<T>, join?: Join, select?: Select, pagination?: VexPagination): Promise<T[]>;
+    count(filter: Filter<T>): Promise<number>;
     findOne(filter: Filter<T>, join?: Join, select?: Select): Promise<T | null>;
     findOneWhere(filter: Filter<T>, join?: Join, select?: Select): Promise<T | null>;
     create(data: Partial<T>): Promise<T>;
