@@ -74,7 +74,7 @@ function resolveColumnLength(prop: types.jsonSchemaPropsItem, dbType: string): n
     if (!["varchar", "char"].includes(dbType)) return undefined;
     if (prop.maxLength)                         return prop.maxLength;
     if (prop.format === "email")                return 254;    // RFC 5321
-    if (prop["x-format"] === types.xFormatType.ObjectId)        return 24;     // MongoDB ObjectId hex length
+    if (utils.jsonSchema.getXFormat(prop["x-format"]) === types.xFormatType.ObjectId)        return 24;     // MongoDB ObjectId hex length
     return undefined;
 }
 
@@ -92,19 +92,29 @@ function mapPropToColumnDef(
     requiredFields: string[],
     singleFieldUniques: Set<string>,
 ): typeormModel.ColumnDef {
-    const isPrimary = prop["x-format"] === types.xFormatType.Primary || prop["x-format"] === types.xFormatType.PrimaryUUID;
+    const isPrimary = [types.xFormatType.Primary, types.xFormatType.PrimaryUUID].includes(utils.jsonSchema.getXFormat(prop["x-format"]));
     const isenum    = isEnum(prop);
     const nullable  = !requiredFields.includes(key) && !isPrimary;
     const dbType    = resolveDbType(prop);
 
     const isNumeric = isNumericDbType(dbType);
 
+    // SQL-level defaults for x-vexData timestamp fields
+    const vexType = utils.jsonSchema.getXVexData(prop["x-vexData"]);
+    const unixTsDefault = "EXTRACT(EPOCH FROM NOW())::bigint";
+    const defaultRaw = vexType === types.xVexDataType.UnixTimestampOnCreate || vexType === types.xVexDataType.UnixTimestampOnUpdate
+        ? unixTsDefault
+        : undefined;
+    const onUpdateRaw = vexType === types.xVexDataType.UnixTimestampOnUpdate
+        ? unixTsDefault
+        : undefined;
+
     return {
         name:    key,
         tsType:  isPrimary ? "string" : isenum ? utils.common.pascalCase(key) + "Enum" : jsonTypeToTs(prop),
         dbType,
         isPrimary,
-        isGenerated: isPrimary || Boolean(prop["x-format"] && [types.xFormatType.UUID, types.xFormatType.UnixTimestamp].includes(prop["x-format"] as types.xFormatType)),
+        isGenerated: isPrimary || Boolean([types.xFormatType.UUID, types.xFormatType.UnixTimestamp].includes(utils.jsonSchema.getXFormat(prop["x-format"]))),
         isIndex:  prop.index === true,
         isUnique: singleFieldUniques.has(key),
         isNested: prop.type === "object" || prop.type === "array",
@@ -119,6 +129,8 @@ function mapPropToColumnDef(
         enumValues:     isenum ? prop.enum : undefined,
         enumName:       isenum ? utils.common.pascalCase(key) + "Enum" : undefined,
         defaultValue:   prop.default,
+        defaultRaw,
+        onUpdateRaw,
     };
 }
 

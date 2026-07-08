@@ -62,14 +62,17 @@ export enum DbRelationType {
 
 export enum xVexDataType {
     Role = "role",
+    UserId = "userid",
+    UnixTimestampOnCreate = "unixtimestamponcreate",
+    UnixTimestampOnUpdate = "unixtimestamponupdate",
 }
 
 export enum xFormatType {
-    Primary = "Primary",
-    PrimaryUUID = "PrimaryUUID",
-    UUID = "UUID",
-    ObjectId = "ObjectId",
-    UnixTimestamp = "UnixTimestamp",
+    Primary = "primary",
+    PrimaryUUID = "primaryuuid",
+    UUID = "uuid",
+    ObjectId = "objectid",
+    UnixTimestamp = "unixtimestamp",
 }
 
 export interface jsonSchema {
