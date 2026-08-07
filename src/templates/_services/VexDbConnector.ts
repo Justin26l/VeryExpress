@@ -48,11 +48,11 @@ export class VexDbConnector {
         const insecure = (process.env.SQL_INSECURE_TLS || "").toLowerCase() === "true";
         const sslRequired = sqlUrl.searchParams.get("sslmode") === "require";
         const ssl = sslRequired ? 
-        {
-            rejectUnauthorized: insecure ? false : true,
-            ca,
-        } : 
-        undefined;
+            {
+                rejectUnauthorized: insecure ? false : true,
+                ca,
+            } : 
+            undefined;
 
         const ds = new DataSource({
             type: "postgres",
