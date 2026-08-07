@@ -46,10 +46,13 @@ export class VexDbConnector {
 
         const ca = !this.sqlCa ? undefined : this.sqlCa.startsWith("-----BEGIN") ? this.sqlCa : Buffer.from(this.sqlCa, "base64").toString("utf8");
         const insecure = (process.env.SQL_INSECURE_TLS || "").toLowerCase() === "true";
-        const ssl = { 
+        const sslRequired = sqlUrl.searchParams.get("sslmode") === "require";
+        const ssl = sslRequired ? 
+        {
             rejectUnauthorized: insecure ? false : true,
             ca,
-        };
+        } : 
+        undefined;
 
         const ds = new DataSource({
             type: "postgres",
