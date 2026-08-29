@@ -28,6 +28,10 @@ export interface ColumnDef {
     comment?: string;
     /** default column value emitted as @Column({ default }) */
     defaultValue?: unknown;
+    /** SQL expression default, e.g. "EXTRACT(EPOCH FROM NOW())::bigint" — emitted as @Column({ default: () => "<expr>" }) */
+    defaultRaw?: string;
+    /** SQL ON UPDATE expression, e.g. "EXTRACT(EPOCH FROM NOW())::bigint" — emitted as @Column({ onUpdate: "expr" }) */
+    onUpdateRaw?: string;
 }
 
 

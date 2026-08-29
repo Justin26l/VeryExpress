@@ -23,6 +23,7 @@ import * as mongooseModelGen from "./generators/db/mongooseModel.generator";
 import * as interfaceGen from "./generators/interface/generator";
 import * as joinWhitelistRegistryGen from "./generators/middlewares/joinWhitelistRegistry.generator";
 import * as dataIsolationRegistryGen from "./generators/middlewares/dataIsolationRegistry.generator";
+import * as vexFieldRegistryGen from "./generators/middlewares/vexFieldRegistry.generator";
 
 export async function generate(
     options: types.compilerOptions
@@ -174,6 +175,12 @@ export async function generate(
 
     // generate data isolation registry (entity → ownership field mapping, used by TypeOrmRepositoryAdapter)
     await dataIsolationRegistryGen.compile({
+        allSchemas: documents.map(d => d.schema),
+        middlewareDir: dir.middlewareDir,
+    });
+
+    // generate vex field registry (entity → x-vexData field list, used by repository adapters)
+    await vexFieldRegistryGen.compile({
         allSchemas: documents.map(d => d.schema),
         middlewareDir: dir.middlewareDir,
     });

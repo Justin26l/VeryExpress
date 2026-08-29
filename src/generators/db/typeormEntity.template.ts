@@ -42,10 +42,18 @@ function buildColumnArgs(col: typeormModel.ColumnDef): string {
         default:   col.defaultValue,
     };
     // bigint: PG driver returns string; transformer coerces to JS number
-    const rawArgs = col.needsBigintTransformer
-        ? { transformer: "{ to: (v: number) => v, from: (v: string) => Number(v) }" }
-        : undefined;
-    return serializeArgs(args, rawArgs);
+    const rawArgs: Record<string, string> = {};
+    if (col.needsBigintTransformer) {
+        rawArgs.transformer = "{ to: (v: number) => v, from: (v: string) => Number(v) }";
+    }
+    // SQL expression defaults (e.g. EXTRACT(EPOCH FROM NOW())::bigint)
+    if (col.defaultRaw) {
+        rawArgs.default = `() => "${col.defaultRaw}"`;
+    }
+    if (col.onUpdateRaw) {
+        rawArgs.onUpdate = `"${col.onUpdateRaw}"`;
+    }
+    return serializeArgs(args, Object.keys(rawArgs).length > 0 ? rawArgs : undefined);
 }
 
 // ─── Template ─────────────────────────────────────────────────────────────────

@@ -116,11 +116,19 @@ const X_FORMAT_VALID_TYPES: Record<string, string[]> = {
     [types.xFormatType.UnixTimestamp]: ["integer"],
 };
 
+/** Valid JSON Schema types for each x-vexData value */
+const X_VEXDATA_VALID_TYPES: Record<string, string[]> = {
+    [types.xVexDataType.UserId]:              ["string"],
+    [types.xVexDataType.UnixTimestampOnCreate]: ["integer"],
+    [types.xVexDataType.UnixTimestampOnUpdate]: ["integer"],
+};
+
 function checkXFormatType(schema: types.jsonSchema, jsonSchemaPath: string): void {
     const checkProps = (props: { [key: string]: types.jsonSchemaPropsItem }, contextPath: string) => {
         for (const key of Object.keys(props)) {
             const prop = props[key];
-            const xFormat = prop["x-format"];
+            const xFormat = utils.jsonSchema.getXFormat(prop["x-format"]);
+            const xVexData = utils.jsonSchema.getXVexData(prop["x-vexData"]);
 
             if (xFormat && X_FORMAT_VALID_TYPES[xFormat]) {
                 const valid = X_FORMAT_VALID_TYPES[xFormat];
@@ -128,6 +136,17 @@ function checkXFormatType(schema: types.jsonSchema, jsonSchemaPath: string): voi
                     log.error(
                         `Json Schema Formatting: "${jsonSchemaPath}" property "${contextPath}${key}" ` +
                         `has x-format "${xFormat}" but type is "${prop.type}" — expected: ${valid.join(" | ")}.`
+                    );
+                }
+            }
+
+            // Validate x-vexData type constraints
+            if (xVexData && X_VEXDATA_VALID_TYPES[xVexData as string]) {
+                const valid = X_VEXDATA_VALID_TYPES[xVexData as string];
+                if (!valid.includes(prop.type)) {
+                    log.error(
+                        `Json Schema Formatting: "${jsonSchemaPath}" property "${contextPath}${key}" ` +
+                        `has x-vexData "${xVexData}" but type is "${prop.type}" — expected: ${valid.join(" | ")}.`
                     );
                 }
             }
@@ -174,7 +193,7 @@ export function formatJsonSchemaRoleDefinition(options: {
 
     for (const key in schema.properties) {
         const prop = schema.properties[key];
-        if (prop["x-vexData"] === types.xVexDataType.Role && prop.enum !== roles) {
+        if (utils.jsonSchema.getXVexData(prop["x-vexData"]) === types.xVexDataType.Role && prop.enum !== roles) {
             prop.type = "string";
             prop.enum = roles;
             log.process(`Json Schema Formatting: update role definitions UserRole.${key} enum -> [${roles.join(", ")}]`);
@@ -249,7 +268,7 @@ function normalizeSqlTarget(jsonSchema: types.jsonSchema, jsonSchemaPath: string
             for (const k of Object.keys(props)) {
                 const p = props[k];
                 if (!p) continue;
-                if (p["x-format"] === types.xFormatType.ObjectId) {
+                if (utils.jsonSchema.getXFormat(p["x-format"]) === types.xFormatType.ObjectId) {
                     const isId = k === "_id";
                     p["x-format"] = isId ? types.xFormatType.Primary : undefined;
                     p.type = "string";
