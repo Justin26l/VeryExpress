@@ -157,12 +157,13 @@ function checkXFormatType(schema: types.jsonSchema, jsonSchemaPath: string): voi
 export function formatJsonSchemaRoleDefinition(options: {
     compilerOptions: types.compilerOptions
 }): void {
-    if (!options.compilerOptions.useRBAC) return;
+    if (!utils.generator.isRbacEnabled(options.compilerOptions)) return;
     
     // TODO: mongodb support, check userschema with x-vexData:"role", set enum to compilerOptions.useRBAC.roles for mongoose schema validation. --- IGNORE ---
     if (options.compilerOptions.dbType !== "sql") return;
 
-    const roles = options.compilerOptions.useRBAC.roles;
+    // isRbacEnabled guarantees a non-empty roles list
+    const roles = options.compilerOptions.useRBAC!.roles;
     const userRolePath = path.posix.join(options.compilerOptions.jsonSchemaDir, "UserRole.json");
 
     if (!fs.existsSync(userRolePath)) {

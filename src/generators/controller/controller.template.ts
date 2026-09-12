@@ -20,7 +20,7 @@ export default function controllerTemplate(templateOptions: {
     dataIsolation?: types.DataIsolationConfig;
 }): string {
     const { documentName, idType, restApiMethods, restApiNoRelations, restApiJoinWhitelist, compilerOptions, modelPath, typePath, dataIsolation } = templateOptions;
-    const useRBAC = !!compilerOptions.useRBAC;
+    const useRBAC = utils.generator.isRbacEnabled(compilerOptions);
     const useAuth = compilerOptions.auth.localAuth || utils.generator.OAuthProviders(compilerOptions).length > 0;
     const cleanId = compilerOptions.app.allowApiCreateUpdate_id
         ? ""

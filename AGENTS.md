@@ -57,6 +57,8 @@ Read from `vex.config.json → jsonSchemaDir` (this repo: `./output/jsonSchema`)
 - **`required` in source schemas uses the root array form.** Per-prop `required: true` is normalized into `required: string[]` by the preprocessor — do not write it that way.
 - **`src/` is ESM-style TypeScript with `~/*` → `src/*` aliasing.** Use `~/generators/...`, `~/utils/...`, `~/types/...` for intra-repo imports.
 - **Only `one-to-one` and `many-to-one` are declared in `x-foreignKey`.** `one-to-many` is derived from the other side and must not be hand-written.
+- **RBAC is opt-in.** `utils.generator.isRbacEnabled()` is the single gate for every RBAC code path. Absent `useRBAC`, or `roles: []`, means RBAC off — never "RBAC with zero roles". Never branch on `compilerOptions.useRBAC` directly.
+- **Boolean config defaults use `??`, not `||`.** `x || true` swallows an explicit `false`.
 
 ## Conventions
 

@@ -44,7 +44,14 @@ Conditional emission:
 }
 ```
 
-`useRBAC` presence is what enables RBAC generation and copies `src/templates/jsonSchemaRBAC/` over the sample schemas.
+RBAC is **opt-in**: it is generated only when `useRBAC` is present *and* declares at
+least one role (`utils.generator.isRbacEnabled`). Omitting the key, or passing
+`"roles": []`, generates the app with no RBAC at all — no `RoleBaseAccessControl`, no
+`_roles/`, no `UserRole` model. See
+[`generatorPipeline.md`](generatorPipeline.md#rbac-is-opt-in).
+
+When RBAC is on, `src/templates/jsonSchemaRBAC/` is copied over the sample schemas and
+`UserRole.role`'s enum is synced from `useRBAC.roles`.
 
 ## Auth internals
 

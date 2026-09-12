@@ -120,20 +120,62 @@ Uses `json-schema-to-typescript` to emit a TypeScript interface per schema, then
 ## CLI config normalization (`src/cli.ts`)
 
 The CLI rewrites `vex.config.json` on every run, filling in defaults before
-`generate()` sees the config. Two consequences are worth knowing, both verified
-by running the CLI:
+`generate()` sees the config. Use `??` for boolean defaults — `||` silently swallows
+an explicit `false`.
 
 | Setting | Behaviour |
 |---|---|
-| `app.enableSwagger` | `config.app.enableSwagger = config.app.enableSwagger \|\| true` — `false \|\| true` is `true`, so **swagger cannot be turned off** through config despite `routeGen` honouring the flag |
-| `useRBAC` | `config.useRBAC = config.useRBAC \|\| { roles: [], default: "user" }` — **always set**, so omitting the key yields an empty role list rather than disabling RBAC |
+| `app.enableSwagger` | `?? true` — omitting the key enables swagger; an explicit `false` disables it (`routeGen` skips `SwaggerRouter.gen.ts` and `serverGen` omits its wiring) |
+| `useRBAC` | Opt-in. If the key is absent, or `roles` is empty, `useRBAC` is normalised to `undefined` and generation runs without RBAC |
+| `app.useUserSchema` | Still uses `\|\| true` — an explicit `false` is ignored. Same defect class as the old `enableSwagger` bug; the `false` path is untested, so it was left alone deliberately |
 
-### Known issue: empty `useRBAC.roles` aborts generation
+## RBAC is opt-in
 
-`src/preprocess/roleDefinitions.ts` syncs the `UserRole.role` enum from
-`useRBAC.roles`. With an empty list the enum is `[]`, and
-`json-schema-to-typescript` renders an empty enum as `role: ()`, which is not
-valid TypeScript:
+`utils.generator.isRbacEnabled(compilerOptions)` is the **single gate** for every RBAC
+code path:
+
+```ts
+// src/utils/generator.ts
+export function isRbacEnabled(compilerOptions: types.compilerOptions): boolean {
+    const roles = compilerOptions.useRBAC?.roles;
+    return Array.isArray(roles) && roles.length > 0;
+}
+```
+
+RBAC is on only when `useRBAC` is present **and** declares at least one role. An absent
+`useRBAC`, or `roles: []`, means "RBAC off" — not "RBAC with zero roles".
+
+Gated by it: the `jsonSchemaRBAC` template copy (`src/index.ts`), the `_roles/` static
+templates, `role.generator`, `roleDefinitions`, `formatJsonSchemaRoleDefinition`, the
+controller `@Middlewares(RoleBaseAccessControl…)` decorator, the route-level RBAC
+middleware, the `AuthController`'s `userRoleRepo` and role lookups, and the `User`
+schema's role enum.
+
+With RBAC off the generated app contains no `RoleBaseAccessControl.gen.ts`, no
+`_roles/`, no `UserRole` model/controller/types, and no `src/roles/*.json`.
+
+### Switching an existing project to RBAC off
+
+`cleanupStaleFiles()` deletes the RBAC artifacts under `sysDir` on the next run —
+verified: `RoleBaseAccessControl.gen.ts`, `_roles/_RoleFactory.gen.ts`,
+`_roles/index.ts` and one `_roles/<role>.gen.ts` per role.
+
+Two things are deliberately **not** removed:
+
+- `src/roles/*.json` — user-editable role permission sources; they live under
+  `srcDir`, not `sysDir`, so cleanup does not touch them.
+- A leftover `UserRole.json` in *your* schema directory. The generator only copies
+  schemas in, never deletes them, so it keeps producing `UserRole.gen.ts` and
+  `UserRoleModel.gen.ts`. Delete the file yourself if you want them gone. It is
+  harmless: with RBAC off `formatJsonSchemaRoleDefinition` no longer rewrites its
+  enum, so a stale `enum` value cannot break generation.
+
+### Why the empty-role case used to abort generation
+
+`UserRole.json` is copied from `src/templates/jsonSchemaRBAC/` only when RBAC is on, and
+`formatJsonSchemaRoleDefinition` then rewrites its `role` field's enum from
+`useRBAC.roles`. With an empty list the enum became `[]`, which
+`json-schema-to-typescript` renders as the invalid type `role: ()`:
 
 ```
 SyntaxError: '=>' expected. (5:1)
@@ -142,8 +184,10 @@ SyntaxError: '=>' expected. (5:1)
 > 5 | }
 ```
 
-Because the CLI always injects `useRBAC`, **a `vex.config.json` that simply omits
-`useRBAC` fails to generate.** Workaround: always declare at least one role.
+The CLI made this reachable for everyone: it injected `useRBAC = { roles: [], default: "" }`
+when the key was absent, so a `vex.config.json` that simply omitted `useRBAC` crashed.
+Fixed by normalising empty role lists to `undefined` and gating every RBAC path on
+`isRbacEnabled`.
 
 ## Conventions
 

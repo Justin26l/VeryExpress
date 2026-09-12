@@ -71,15 +71,17 @@ export async function generate(
     // copy static files
     utils.common.copyDir(path.join(__dirname, "templates", "_controllers"), dir.controllerDir, options, true);
     utils.common.copyDir(path.join(__dirname, "templates", "_middlewares"), dir.middlewareDir, options, true);
-    utils.common.copyDir(path.join(__dirname, "templates", "_roles"), dir.roleDir, options, true);
     utils.common.copyDir(path.join(__dirname, "templates", "_routes"), dir.routeDir, options, true);
     utils.common.copyDir(path.join(__dirname, "templates", "_services"), dir.serviceDir, options, true);
     utils.common.copyDir(path.join(__dirname, "templates", "_types"), dir.typeDir, options, true);
     utils.common.copyDir(path.join(__dirname, "templates", "_utils"), dir.utilsDir, options, true);
     utils.common.copyDir(path.join(__dirname, "templates", "root"), options.rootDir, options, false);
     utils.common.copyDir(path.join(__dirname, "templates", "jsonSchema"), options.jsonSchemaDir, options, true);
-    if (options.useRBAC) utils.common.copyDir(path.join(__dirname, "templates", "jsonSchemaRBAC"), options.jsonSchemaDir, options, true);
-
+    if (utils.generator.isRbacEnabled(options)) {
+        utils.common.copyDir(path.join(__dirname, "templates", "_roles"), dir.roleDir, options, true);
+        utils.common.copyDir(path.join(__dirname, "templates", "jsonSchemaRBAC"), options.jsonSchemaDir, options, true);
+    }
+    
     // update userSchema
     await userSchemaGen.compile({ compilerOptions: options || utils.generator.defaultCompilerOptions });
     

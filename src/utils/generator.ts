@@ -35,6 +35,23 @@ export function isAuthEnabled(compilerOptions: types.compilerOptions): boolean {
     return compilerOptions.auth.localAuth || OAuthProviders(compilerOptions).length > 0;
 }
 
+/**
+ * Single gate for every RBAC code path.
+ *
+ * RBAC is opt-in: it is enabled only when `useRBAC` is present AND declares at
+ * least one role. An absent `useRBAC`, or an empty `roles` list, means "RBAC
+ * off" — not "RBAC with zero roles".
+ *
+ * The distinction matters: an empty role list used to propagate into
+ * `UserRole.role` as an empty JSON Schema enum, which
+ * `json-schema-to-typescript` renders as the invalid type `role: ()` and which
+ * aborted the whole generation. See docs/architecture/generatorPipeline.md.
+ */
+export function isRbacEnabled(compilerOptions: types.compilerOptions): boolean {
+    const roles = compilerOptions.useRBAC?.roles;
+    return Array.isArray(roles) && roles.length > 0;
+}
+
 export const defaultCompilerOptions: types.compilerOptions = {
 
     rootDir: ".",
@@ -80,4 +97,5 @@ export default {
     getSimpleStaticHeaderComment,
     OAuthProviders,
     isAuthEnabled,
+    isRbacEnabled,
 };

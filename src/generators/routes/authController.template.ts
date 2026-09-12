@@ -3,18 +3,21 @@ import * as utilsGenerator from "../../utils/generator";
 
 export default function authControllerTemplate(compilerOptions: types.compilerOptions): string {
     const localAuth = compilerOptions.auth.localAuth;
+    const useRBAC = utilsGenerator.isRbacEnabled(compilerOptions);
 
     const localAuthImports = localAuth
         ? "import { UserEntity, User } from \"../_models/UserModel.gen\";\nimport { UserAuthProfilesEntity, UserAuthProfiles } from \"../_models/UserAuthProfilesModel.gen\";"
         : "";
-    const RbacImports = compilerOptions.useRBAC
+    const RbacImports = useRBAC
         ? "import { UserRoleEntity, UserRole } from \"../_models/UserRoleModel.gen\";\nimport { RoleEnum } from \"../_types/UserRole.gen\";"
         : "";
-    
+    const userRoleRepo = useRBAC
+        ? "\n    private get userRoleRepo(): VexRepository<UserRole> { return VexDb.getRepository(UserRoleEntity); }"
+        : "";
+
     const localAuthRepos = localAuth ? `
     private get userRepo(): VexRepository<User> { return VexDb.getRepository(UserEntity); }
-    private get userAuthProfilesRepo(): VexRepository<UserAuthProfiles> { return VexDb.getRepository(UserAuthProfilesEntity); }
-    private get userRoleRepo(): VexRepository<UserRole> { return VexDb.getRepository(UserRoleEntity); }` : "";
+    private get userAuthProfilesRepo(): VexRepository<UserAuthProfiles> { return VexDb.getRepository(UserAuthProfilesEntity); }${userRoleRepo}` : "";
 
     // OAuth
     const oauthProviders: string[] = utilsGenerator.OAuthProviders(compilerOptions);
@@ -56,7 +59,7 @@ ${OAuthNote}
             throw new VexResErr(401, null, "code expired");
         }
         
-        const user = await this.userRepo.findOne({ _id: session.userId }${compilerOptions.useRBAC ? ', ["userRole"]' : ''});
+        const user = await this.userRepo.findOne({ _id: session.userId }${useRBAC ? ', ["userRole"]' : ''});
         if (!user) throw new VexResErr(404, null, "Invalid User Id");
         
         const accessToken = await this.JWTService.generateAccessToken(user);
@@ -80,7 +83,7 @@ ${OAuthNote}
     ): Promise<VexResponse<refreshTokenResponse>> {
         const payload = this.JWTService.verifyToken(body.refreshToken, body.refreshTokenIndex);
         
-        const user = await this.userRepo.findOne({ _id: payload._id }${compilerOptions.useRBAC ? ', ["userRole"]' : ''});
+        const user = await this.userRepo.findOne({ _id: payload._id }${useRBAC ? ', ["userRole"]' : ''});
         if (!user) throw new VexResErr(404, null, "Invalid User Id");
         
         const accessToken = await this.JWTService.generateAccessToken(user);
@@ -106,15 +109,15 @@ ${localAuth ? `
         
         const user = await this.userRepo.create({ name: email.split("@")[0], email, active: true })
             .catch( e => { throw new VexResErr(500, null, "User creation failed."); });
-        ${compilerOptions.useRBAC ? `
+        ${useRBAC ? `
         await this.userAuthProfilesRepo.create({ userId: user._id, provider: "local", password: hashedPassword })
             .catch( async e => { 
                 await this.userRepo.delete(user._id);
                 await this.userAuthProfilesRepo.deleteWhere({ userId: user._id });
                 throw new VexResErr(500, null, "User Auth profile creation failed."); 
             });` : ''}
-        ${compilerOptions.useRBAC ? `
-        await this.userRoleRepo.create({ userId: user._id, role: RoleEnum.${compilerOptions.useRBAC.default} })
+        ${useRBAC ? `
+        await this.userRoleRepo.create({ userId: user._id, role: RoleEnum.${compilerOptions.useRBAC!.default} })
             .catch( async e => { 
                 await this.userRepo.delete(user._id);
                 await this.userAuthProfilesRepo.deleteWhere({ userId: user._id });
@@ -135,7 +138,7 @@ ${localAuth ? `
     ): Promise<VexResponse<localLoginResponse>> {
         const { email, password } = body;
         
-        const user = await this.userRepo.findOneWhere({ email }${compilerOptions.useRBAC ? ', ["userRole", "userAuthProfiles"]' : ', ["userAuthProfiles"]'});
+        const user = await this.userRepo.findOneWhere({ email }${useRBAC ? ', ["userRole", "userAuthProfiles"]' : ', ["userAuthProfiles"]'});
         if (!user) throw new VexResErr(400, null, "incorrect email or password.");
         
         const isMatch = utils.hash.verifyPassword(user, password);

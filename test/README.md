@@ -58,7 +58,5 @@ Run with `KEEP_TMP=1` to stop the temp dirs being deleted, and `UPDATE_GOLDEN=1`
 | `sql-auth-oauth-rbac` | TypeORM entities, local auth + OAuth providers, 3-role RBAC |
 | `sql-noauth` | SQL with auth disabled — no `AuthController`, no cookie-parser |
 | `mongo-auth-rbac` | Mongoose models instead of TypeORM entities |
-
-Note: every scenario sets `useRBAC.roles` to a non-empty list. An empty role list
-currently aborts generation (see the known-issues note in
-`docs/architecture/generatorPipeline.md`), so there is no zero-role scenario yet.
+| `sql-noswagger` | `app.enableSwagger: false` — no `SwaggerRouter.gen.ts`, no swagger wiring in `server.ts` |
+| `sql-norbac` | `useRBAC` omitted — RBAC fully off: no `RoleBaseAccessControl`, no `_roles/`, no `UserRole` model/controller |
