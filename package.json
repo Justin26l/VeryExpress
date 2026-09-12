@@ -8,6 +8,9 @@
     "bin": {
         "vex": "./dist/index.js"
     },
+    "allowScripts": {
+        "esbuild": true
+    },
     "scripts": {
         "start": "node ./dist/index.js",
         "dev": "npm run compile && npm run start",
@@ -15,7 +18,10 @@
         "lint": "eslint ./src --ext .ts --fix",
         "compile": "node ./scripts/build.js && node ./scripts/copyTsTemplates.js",
         "preversion": "npm run build",
-        "postversion": "git push && git push --tags"
+        "postversion": "git push && git push --tags",
+        "test": "npm run compile && vitest run",
+        "test:watch": "vitest",
+        "test:update": "npm run compile && UPDATE_GOLDEN=1 vitest run"
     },
     "keywords": [
         "jsonSchema",
@@ -53,6 +59,7 @@
         "objection": "^3.1.5",
         "pg": "^8.20.0",
         "ts-node": "^10.9.2",
-        "typescript": "^5.3.3"
+        "typescript": "^5.3.3",
+        "vitest": "^2.1.9"
     }
 }

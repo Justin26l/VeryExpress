@@ -86,7 +86,9 @@ export async function generate(
     // prepair schema files
     formatJsonSchemaRoleDefinition({ compilerOptions: options || utils.generator.defaultCompilerOptions });
     
-    const files: string[] = fs.readdirSync(options.jsonSchemaDir);
+    // sort so document order — and therefore generated registry/route output — is
+    // reproducible across filesystems (readdir order is not guaranteed)
+    const files: string[] = fs.readdirSync(options.jsonSchemaDir).sort();
     files.forEach((schemaFileName: string) => {
         const schemaPath = `${options.jsonSchemaDir}/${schemaFileName}`;
         try {

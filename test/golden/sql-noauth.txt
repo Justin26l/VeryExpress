@@ -1,0 +1,3331 @@
+# Golden output — scenario "sql-noauth"
+#
+# Regenerate with:  npm run test:update
+# Not hand-edited. Content is normalized: generator version pinned to
+# <version>, absolute temp paths removed.
+
+===== out/.env =====
+APP_HOST=http://localhost
+APP_PORT=3000
+MONGODB_URI=mongodb://localhost:27017/veryExpressDB
+SQL_URI=postgresql://username:password@localhost:5432/mydatabase
+SQL_CA=""
+SQL_SYNCHRONIZE=true
+
+LOGIN_SUCCESS_REDIRECT_PATH=/logincallback
+LOGIN_FAILED_REDIRECT_PATH=/logincallback
+
+# OAUTH
+OAUTH_GOOGLE_CLIENTID=
+OAUTH_GOOGLE_CLIENTSECRET=
+OAUTH_GITHUB_CLIENTID=
+OAUTH_GITHUB_CLIENTSECRET=
+# OAUTH_MICROSOFT_CLIENTID=
+# OAUTH_MICROSOFT_CLIENTSECRET=
+# OAUTH_APPLE_CLIENTID=
+# OAUTH_APPLE_CLIENTSECRET=
+
+# JWT token
+ACCESS_TOKEN_EXPIRE_TIME='1h'
+REFRESH_TOKEN_EXPIRE_TIME='24h'
+SESSION_COOKIE_SECRET='my-session-cookie-secret'
+JWT_ALGORITHM='HS256'
+JWT_SECRET0='my-secret-key0'
+
+===== out/.vex/meta.json =====
+{
+  "lastGeneratedVersion": "0.7.9",
+  "files": {
+    "..": {
+      "vex.config.json": {
+        "lastWriteVersion": "0.7.9",
+        "allowOverwrite": true
+      },
+      "schemas": {
+        "Session.json": {
+          "lastWriteVersion": "0.7.9",
+          "allowOverwrite": true
+        },
+        "User.json": {
+          "lastWriteVersion": "0.7.9",
+          "allowOverwrite": true
+        },
+        "UserAuthProfiles.json": {
+          "lastWriteVersion": "0.7.9",
+          "allowOverwrite": true
+        },
+        "UserRole.json": {
+          "lastWriteVersion": "0.7.9",
+          "allowOverwrite": true
+        }
+      }
+    },
+    "src": {
+      "system": {
+        "_controllers": {
+          "_ControllerFactory.gen.ts": {
+            "lastWriteVersion": "0.7.9",
+            "allowOverwrite": true
+          },
+          "UserController.gen.ts": {
+            "lastWriteVersion": "0.7.9",
+            "allowOverwrite": true
+          }
+        },
+        "_middlewares": {
+          "Authentication.gen.ts": {
+            "lastWriteVersion": "0.7.9",
+            "allowOverwrite": true
+          },
+          "DataIsolationContext.gen.ts": {
+            "lastWriteVersion": "0.7.9",
+            "allowOverwrite": true
+          },
+          "JoinWhitelistMiddleware.gen.ts": {
+            "lastWriteVersion": "0.7.9",
+            "allowOverwrite": true
+          },
+          "tsoaAuthentication.gen.ts": {
+            "lastWriteVersion": "0.7.9",
+            "allowOverwrite": true
+          },
+          "RoleBaseAccessControl.gen.ts": {
+            "lastWriteVersion": "0.7.9",
+            "allowOverwrite": true
+          },
+          "JoinWhitelistRegistry.gen.ts": {
+            "lastWriteVersion": "0.7.9",
+            "allowOverwrite": true
+          },
+          "DataIsolationRegistry.gen.ts": {
+            "lastWriteVersion": "0.7.9",
+            "allowOverwrite": true
+          }
+        },
+        "_roles": {
+          "_RoleFactory.gen.ts": {
+            "lastWriteVersion": "0.7.9",
+            "allowOverwrite": true
+          },
+          "member.gen.ts": {
+            "lastWriteVersion": "0.7.9",
+            "allowOverwrite": true
+          },
+          "index.ts": {
+            "lastWriteVersion": "0.7.9",
+            "allowOverwrite": true
+          }
+        },
+        "_routes": {
+          "LoginUI.gen.ts": {
+            "lastWriteVersion": "0.7.9",
+            "allowOverwrite": true
+          },
+          "oauth": {
+            "OAuthRouteFactory.gen.ts": {
+              "lastWriteVersion": "0.7.9",
+              "allowOverwrite": true
+            }
+          },
+          "SwaggerRouter.gen.ts": {
+            "lastWriteVersion": "0.7.9",
+            "allowOverwrite": true
+          }
+        },
+        "_services": {
+          "MongooseRepositoryAdapter.gen.ts": {
+            "lastWriteVersion": "0.7.9",
+            "allowOverwrite": true
+          },
+          "TypeOrmRepositoryAdapter.gen.ts": {
+            "lastWriteVersion": "0.7.9",
+            "allowOverwrite": true
+          },
+          "VexDb.gen.ts": {
+            "lastWriteVersion": "0.7.9",
+            "allowOverwrite": true
+          },
+          "VexDbConnector.gen.ts": {
+            "lastWriteVersion": "0.7.9",
+            "allowOverwrite": true
+          },
+          "VexSystem.gen.ts": {
+            "lastWriteVersion": "0.7.9",
+            "allowOverwrite": true
+          },
+          "auth": {
+            "JWTKeyStore.gen.ts": {
+              "lastWriteVersion": "0.7.9",
+              "allowOverwrite": true
+            },
+            "JWTService.gen.ts": {
+              "lastWriteVersion": "0.7.9",
+              "allowOverwrite": true
+            }
+          },
+          "oauth": {
+            "OAuthProfileMap.gen.ts": {
+              "lastWriteVersion": "0.7.9",
+              "allowOverwrite": true
+            },
+            "OAuthStrategyService.gen.ts": {
+              "lastWriteVersion": "0.7.9",
+              "allowOverwrite": true
+            }
+          }
+        },
+        "_types": {
+          "auth.gen.ts": {
+            "lastWriteVersion": "0.7.9",
+            "allowOverwrite": true
+          },
+          "vex": {
+            "VexRepository.gen.ts": {
+              "lastWriteVersion": "0.7.9",
+              "allowOverwrite": true
+            },
+            "VexRequest.gen.ts": {
+              "lastWriteVersion": "0.7.9",
+              "allowOverwrite": true
+            },
+            "VexResErr.gen.ts": {
+              "lastWriteVersion": "0.7.9",
+              "allowOverwrite": true
+            },
+            "VexResOk.gen.ts": {
+              "lastWriteVersion": "0.7.9",
+              "allowOverwrite": true
+            },
+            "VexResponse.gen.ts": {
+              "lastWriteVersion": "0.7.9",
+              "allowOverwrite": true
+            },
+            "index.ts": {
+              "lastWriteVersion": "0.7.9",
+              "allowOverwrite": true
+            }
+          },
+          "Session.gen.ts": {
+            "lastWriteVersion": "0.7.9",
+            "allowOverwrite": true
+          },
+          "User.gen.ts": {
+            "lastWriteVersion": "0.7.9",
+            "allowOverwrite": true
+          },
+          "UserAuthProfiles.gen.ts": {
+            "lastWriteVersion": "0.7.9",
+            "allowOverwrite": true
+          },
+          "UserRole.gen.ts": {
+            "lastWriteVersion": "0.7.9",
+            "allowOverwrite": true
+          }
+        },
+        "_utils": {
+          "hash.gen.ts": {
+            "lastWriteVersion": "0.7.9",
+            "allowOverwrite": true
+          },
+          "index.ts": {
+            "lastWriteVersion": "0.7.9",
+            "allowOverwrite": true
+          },
+          "logger.gen.ts": {
+            "lastWriteVersion": "0.7.9",
+            "allowOverwrite": true
+          },
+          "processTimer.gen.ts": {
+            "lastWriteVersion": "0.7.9",
+            "allowOverwrite": true
+          },
+          "response.gen.ts": {
+            "lastWriteVersion": "0.7.9",
+            "allowOverwrite": true
+          },
+          "validator.gen.ts": {
+            "lastWriteVersion": "0.7.9",
+            "allowOverwrite": true
+          }
+        },
+        "_models": {
+          "SessionModel.gen.ts": {
+            "lastWriteVersion": "0.7.9",
+            "allowOverwrite": true
+          },
+          "UserModel.gen.ts": {
+            "lastWriteVersion": "0.7.9",
+            "allowOverwrite": true
+          },
+          "UserAuthProfilesModel.gen.ts": {
+            "lastWriteVersion": "0.7.9",
+            "allowOverwrite": true
+          },
+          "UserRoleModel.gen.ts": {
+            "lastWriteVersion": "0.7.9",
+            "allowOverwrite": true
+          }
+        }
+      },
+      "roles": {
+        "member.json": {
+          "lastWriteVersion": "0.7.9",
+          "allowOverwrite": true
+        }
+      },
+      "server.ts": {
+        "lastWriteVersion": "0.7.9",
+        "allowOverwrite": true
+      }
+    },
+    "Dockerfile": {
+      "lastWriteVersion": "0.7.9",
+      "allowOverwrite": true
+    },
+    "README.md": {
+      "lastWriteVersion": "0.7.9",
+      "allowOverwrite": true
+    },
+    "public": {
+      "css": {
+        "style.css": {
+          "lastWriteVersion": "0.7.9",
+          "allowOverwrite": true
+        }
+      },
+      "js": {
+        "login.js": {
+          "lastWriteVersion": "0.7.9",
+          "allowOverwrite": true
+        },
+        "logincallback.js": {
+          "lastWriteVersion": "0.7.9",
+          "allowOverwrite": true
+        },
+        "mytokens.js": {
+          "lastWriteVersion": "0.7.9",
+          "allowOverwrite": true
+        },
+        "refreshtokens.js": {
+          "lastWriteVersion": "0.7.9",
+          "allowOverwrite": true
+        }
+      }
+    },
+    "scripts": {
+      "build.js": {
+        "lastWriteVersion": "0.7.9",
+        "allowOverwrite": true
+      },
+      "oacg-fix.js": {
+        "lastWriteVersion": "0.7.9",
+        "allowOverwrite": true
+      }
+    },
+    "tsconfig.json": {
+      "lastWriteVersion": "0.7.9",
+      "allowOverwrite": true
+    },
+    "package.json": {
+      "lastWriteVersion": "0.7.9",
+      "allowOverwrite": true
+    },
+    ".env": {
+      "lastWriteVersion": "0.7.9",
+      "allowOverwrite": true
+    },
+    "tsoa.json": {
+      "lastWriteVersion": "0.7.9",
+      "allowOverwrite": true
+    }
+  }
+}
+
+===== out/Dockerfile =====
+# Use the official Node.js image as the base image
+FROM node:14
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy package.json and package-lock.json to the working directory
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy only the /dist directory to the working directory
+COPY dist ./dist
+
+# Expose the port the app runs on
+EXPOSE 3000
+
+# Define the command to run the application
+CMD ["npm", "start"]
+
+===== out/package.json =====
+{
+    "main": "index.js",
+    "scripts": {
+        "build": "npm run openapi && tsc -p . && node scripts/build.js",
+        "start": "node dist/server.js",
+        "dev": "nodemon --watch src --ext ts --ignore src/system/_routes/tsoa_routes.ts --ignore src/openapi/ --exec \"tsoa spec-and-routes && ts-node src/server.ts\"",
+        "openapi": "tsoa spec-and-routes",
+        "docker-build": "docker build -t very-express .",
+        "docker-start": "docker run -p 3000:3000 very-express"
+    },
+    "dependencies": {
+        "cookie": "^0.6.0",
+        "cookie-parser": "^1.4.6",
+        "dotenv": "^16.4.4",
+        "express": "^4.18.2",
+        "helmet": "^7.1.0",
+        "js-yaml": "^4.1.0",
+        "jsonwebtoken": "^9.0.2",
+        "passport": "^0.7.0",
+        "passport-github": "^1.1.0",
+        "passport-google-oauth20": "^2.0.0",
+        "passport-jwt": "^4.0.1",
+        "pg": "^8.20.0",
+        "reflect-metadata": "^0.2.2",
+        "swagger-ui-express": "^5.0.0",
+        "tsoa": "^7.0.0-alpha.0",
+        "typeorm": "^0.3.20"
+    },
+    "devDependencies": {
+        "@types/cookie-parser": "^1.4.7",
+        "@types/crypto-js": "^4.1.2",
+        "@types/dotenv": "^8.2.0",
+        "@types/express": "^4.17.17",
+        "@types/js-yaml": "^4.0.9",
+        "@types/jsonwebtoken": "^9.0.7",
+        "@types/mongodb": "^4.0.7",
+        "@types/ms": "^2.1.0",
+        "@types/node": "^20.4.2",
+        "@types/passport": "^1.0.16",
+        "@types/passport-github": "^1.1.12",
+        "@types/passport-google-oauth20": "^2.0.14",
+        "@types/pg": "^8.11.0",
+        "@types/swagger-ui-express": "^4.1.6",
+        "@types/ws": "^8.5.5",
+        "nodemon": "^2.0.22",
+        "strip-json-comments": "^5.0.1",
+        "ts-node": "^10.9.1",
+        "typescript": "^5.1.6"
+    }
+}
+
+===== out/public/css/style.css =====
+
+pre {
+  background-color: #f4f4f4;
+  padding: 20px;
+  overflow: auto;
+  border: 1px solid #ccc;
+  white-space: pre-wrap;
+}
+
+===== out/public/js/login.js =====
+
+document.addEventListener("DOMContentLoaded", function () {
+    // add event listener to login button
+    document.querySelector("#localLoginBtn").addEventListener("click", function () {
+        // call /api/auth/local
+        fetch("/api/auth/local", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                email: document.querySelector("#email").value,
+                password: document.querySelector("#password").value
+            })
+        })
+            .then(async (res) => {
+                if (res.status === 301 || res.status === 302) {
+                    const data = await res.json();
+                    if (data.result?.url) {
+                        window.location.href = data.result?.url;
+                    }
+                    else {
+                        alert("Login successful, but no redirect URL provided.");
+                    }
+                }
+                else {
+                    const data = await res.json();
+                    alert("Login Failed: " + data.message);
+                }
+            })
+            .catch((err) => {
+                console.error("Error during login:", err);
+                alert("Login Error: " + err.message);
+            });
+    });
+
+    document.querySelector("#localRegisterBtn").addEventListener("click", function () {
+        // call /api/auth/register
+        fetch("/api/auth/register", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                email: document.querySelector("#email").value,
+                password: document.querySelector("#password").value
+            })
+        })
+            .then(async (res) => {
+                if (res.status === 201) {
+                    alert("Registration successful. You can now log in.");
+                }
+            })
+            .catch((err) => {
+                console.error("Error during registration:", err);
+                alert("An error occurred during registration. Please try again later.");
+            });
+    });
+});
+
+===== out/public/js/logincallback.js =====
+
+document.addEventListener("DOMContentLoaded", function() {
+    console.log('Exchange Tokens from /api/auth/token');
+    let sessionCode = new URLSearchParams(location.search).get('code');
+    fetch(
+        '/api/auth/token?code=' + sessionCode, {
+            method: 'POST'
+        }
+    )
+        .then((res) => res.text())
+        .then((data) => {
+            const jsonData = JSON.parse(data);
+            document.querySelector("#tokenData").innerHTML = JSON.stringify(jsonData, null, 2);
+            localStorage.setItem('accessToken', jsonData.result.accessToken);
+            localStorage.setItem('accessTokenIndex', jsonData.result.accessTokenIndex);
+            localStorage.setItem('refreshToken', jsonData.result.refreshToken);
+            localStorage.setItem('refreshTokenIndex', jsonData.result.refreshTokenIndex);
+        });
+});
+
+===== out/public/js/mytokens.js =====
+let jsonData = {};
+
+document.addEventListener("DOMContentLoaded", function () {
+    jsonData = {
+        accessToken: localStorage.getItem("accessToken"),
+        accessTokenIndex: localStorage.getItem("accessTokenIndex"),
+        refreshToken: localStorage.getItem("refreshToken"),
+        refreshTokenIndex: localStorage.getItem("refreshTokenIndex"),
+    };
+    document.querySelector("#tokenData").innerHTML = JSON.stringify(jsonData, null, 2);
+});
+
+===== out/public/js/refreshtokens.js =====
+document.addEventListener("DOMContentLoaded", function () {
+    jsonPayload = {
+        refreshToken: localStorage.getItem("refreshToken"),
+        refreshTokenIndex: localStorage.getItem("refreshTokenIndex"),
+    };
+
+    fetch("/api/auth/refresh", {
+        method: "POST",
+        body: JSON.stringify(jsonPayload),
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer " + localStorage.getItem("accessToken"),
+            "X-Auth-Index": localStorage.getItem("accessTokenIndex")
+        }
+    })
+        .then(res => res.json())
+        .then((response) => {
+            localStorage.setItem("accessToken", response.accessToken);
+            localStorage.setItem("accessTokenIndex", response.accessTokenIndex);
+            document.querySelector("#tokenData").innerHTML = JSON.stringify(response, null, 2);
+        });
+});
+
+===== out/README.md =====
+# This app is generated by [VeryExpress](https://github.com/Justin26l/VeryExpress)
+
+ 
+# Quick Start
+1. install `very-express` from npm  
+    `npm install -g very-express` or `npm update -g very-express`  
+
+2. check configuration file [vex.config.json](./vex.config.json) under project root directory and keep it updated (re-generate the app with very-express).  
+    `vex`  
+
+3. we should have a express typescript app.  
+    ```
+    ├── src/ 
+    │   └── openapi
+    │   └── roles (role based access control settings)
+    │   └── system (very express generated app)
+    ├── package.json  
+    ├── tsconfig.json  
+    ├── vex.config.json  
+    ├── .env  
+    └── ... 
+    ```  
+
+4. start the generated express app.  
+    ```
+    npm i  
+    npm build    
+    npm run start
+    ```
+
+5. start the app in docker.  
+    ```
+    npm run docker-build  
+    npm run docker-start
+    ```
+
+# Resource
+- [Documents](https://github.com/Justin26l/VeryExpress/blob/main/README.md)
+- [VeryExpress Discord](https://discord.gg/PZGMzDp7)
+
+===== out/scripts/build.js =====
+// copy openapiDir to tsconfig's outDir
+
+const fs = require('fs');
+const path = require('path');
+
+async function loadStripJsonComments() {
+    const { default: stripJsonComments } = await import('strip-json-comments');
+    return stripJsonComments;
+}
+
+async function main() {
+    // Load strip-json-comments dynamically
+    const stripJsonComments = await loadStripJsonComments();
+
+    const openapiDir = "src/openapi";
+    const tsconfigPath = "tsconfig.json"
+
+    // 1. read tsconfig.json to get outDir
+    const tsconfigContent = fs.readFileSync(tsconfigPath, 'utf-8');
+    const tsconfig = JSON.parse(stripJsonComments(tsconfigContent));
+    const outDir = tsconfig.compilerOptions.outDir;
+
+    // 2. copy ./openapi to outDir
+    const outDirOpenapi = path.resolve(outDir, 'openapi');
+    if (!fs.existsSync(outDirOpenapi)) {
+        fs.mkdirSync(outDirOpenapi, { recursive: true });
+    }
+    fs.readdirSync(openapiDir).forEach((file) => {
+        fs.copyFileSync(path.resolve(openapiDir, file), path.resolve(outDirOpenapi, file));
+    });
+}
+
+
+// Execute the main function
+main()
+.catch(err => {
+    console.error(err);
+    process.exit(1);
+});
+
+===== out/scripts/oacg-fix.js =====
+#!/usr/bin/env node
+
+// Fix openapi-generated filter types to allow primitives, based on swagger schema info.
+
+import { readdirSync, readFileSync, writeFileSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dir = dirname(fileURLToPath(import.meta.url));
+const modelsDir = join(__dir, '../src/api-client/models');
+const swaggerPath = join(__dir, '../../api/src/openapi/swagger.json');
+
+const swagger = JSON.parse(readFileSync(swaggerPath, 'utf8'));
+const schemas = swagger?.components?.schemas ?? {};
+
+function primitiveTypeFromSwaggerProp(prop) {
+    if (!prop?.anyOf) return null;
+    const primitive = prop.anyOf.find(s => s.type && !s['$ref']);
+    if (!primitive) return null;
+    if (primitive.type === 'boolean') return 'boolean';
+    if (primitive.type === 'number' || primitive.type === 'integer') return 'number';
+    return 'string';
+}
+
+function primitiveTypeFromTsTypeName(tsType, swaggerEntityName, fieldKey) {
+    if (tsType === 'FieldFilterBoolean') return 'boolean';
+    if (tsType === 'FieldFilterNumber') return 'number';
+    if (tsType === 'FieldFilterString') return 'string';
+    if (/^FieldFilter[A-Z]/.test(tsType)) return 'string';
+    if (swaggerEntityName && fieldKey && schemas[swaggerEntityName]?.properties) {
+        const swaggerKey = fieldKey === 'id' ? '_id' : fieldKey;
+        const prop = schemas[swaggerEntityName].properties[swaggerKey];
+        if (prop) return primitiveTypeFromSwaggerProp(prop);
+    }
+    return null;
+}
+
+// Field-level: FieldFilterBoolean, FilterAreaActive, FilterAreaCountryCode, etc.
+const FIELD_FILTER_RE = /^(FieldFilter[A-Z]|Filter[A-Z][a-z]+[A-Z])[a-zA-Z]*\.ts$/;
+// Top-level aggregates: FilterArea, FilterClient, FilterJob, etc.
+const TOP_FILTER_RE = /^Filter([A-Z][a-zA-Z]+)\.ts$/;
+
+const NULL_CHECK = '    if (value == null) {\n        return value;\n    }';
+const PRIMITIVE_GUARD = '\n    // patch: pass primitives unchanged\n    if (typeof value !== \'object\') return value;';
+
+let stats = { fieldPatched: 0, topPatched: 0, skipped: 0 };
+
+// Pass 1: patch field-level ToJSONTyped / FromJSONTyped
+for (const file of readdirSync(modelsDir)) {
+    if (!FIELD_FILTER_RE.test(file)) continue;
+    const filePath = join(modelsDir, file);
+    let src = readFileSync(filePath, 'utf8');
+    if (src.includes('// patch:') || !src.includes(NULL_CHECK)) { stats.skipped++; continue; }
+    src = src.replaceAll(NULL_CHECK, NULL_CHECK + PRIMITIVE_GUARD);
+    writeFileSync(filePath, src, 'utf8');
+    console.log('[patch] field  v  ' + file);
+    stats.fieldPatched++;
+}
+
+// Pass 2: patch top-level filter interface property types
+for (const file of readdirSync(modelsDir)) {
+    const match = TOP_FILTER_RE.exec(file);
+    if (!match) continue;
+    const filePath = join(modelsDir, file);
+    let src = readFileSync(filePath, 'utf8');
+    if (src.includes('// patch:')) { stats.skipped++; continue; }
+    const swaggerEntityName = file.replace('.ts', '');
+    // Match: `    fieldName?: SomeType;` — skip $or/$and lines
+    const PROP_RE = /^( {4}(?!\$or|\$and)(\w+)\?:\s*)([A-Za-z]+)(;)$/gm;
+    let modified = false;
+    const patched = src.replace(PROP_RE, (line, prefix, fieldKey, tsType, semi) => {
+        const primitive = primitiveTypeFromTsTypeName(tsType, swaggerEntityName, fieldKey);
+        if (!primitive || line.includes(' | ' + primitive)) return line;
+        modified = true;
+        return prefix + tsType + ' | ' + primitive + semi;
+    });
+    if (!modified) { stats.skipped++; continue; }
+    writeFileSync(filePath, patched, 'utf8');
+    console.log('[patch] top    v  ' + file);
+    stats.topPatched++;
+}
+
+console.log('\n[patch-filter-types] Done. Field: ' + stats.fieldPatched + ', Top: ' + stats.topPatched + ', Skipped: ' + stats.skipped);
+
+===== out/src/roles/member.json =====
+{
+    "Session": [
+        "create",
+        "read",
+        "update",
+        "delete",
+        "search"
+    ],
+    "User": [
+        "create",
+        "read",
+        "update",
+        "delete",
+        "search"
+    ],
+    "UserAuthProfiles": [
+        "create",
+        "read",
+        "update",
+        "delete",
+        "search"
+    ],
+    "UserRole": [
+        "create",
+        "read",
+        "update",
+        "delete",
+        "search"
+    ]
+}
+
+===== out/src/server.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import express, { Request, Response, NextFunction } from "express";
+import dotenv from "dotenv";
+import crypto from "crypto";
+import helmet from "helmet";
+
+import "reflect-metadata";
+import log from "./system/_utils/logger.gen";
+import processTimer from "./system/_utils/processTimer.gen";
+import vexDB from "./system/_services/VexDb.gen";
+
+import { RegisterRoutes } from "./system/_routes/tsoa_routes";
+import VexSystem from "./system/_services/VexSystem.gen";
+import SwaggerRouter from "./system/_routes/SwaggerRouter.gen";
+import LoginUI from "./system/_routes/LoginUI.gen";
+
+/** 
+ * Configure
+ */
+dotenv.config();
+
+const helmetConfig = {
+    xPoweredBy: false,
+    xDnsPrefetchControl: { allow: false },
+};
+
+const SwaggerRoute = new SwaggerRouter();
+const loginUI = new LoginUI({ localAuth: false, oauthProviders: [] });
+
+/** 
+ * App
+ */
+async function main(): Promise<void> {
+
+    const app = express();
+    app.disable("x-powered-by");
+
+    // UseMiddleware
+    app.use(express.json());
+    app.use(express.static("public"));
+    app.use(helmet(helmetConfig));
+    app.use(processTimer);
+    app.use(vexDB.middleware);
+
+    // UsePlugins
+    
+
+    // Routes
+    RegisterRoutes(app);
+    app.use(VexSystem.responseHandler);
+    app.use("/swagger", SwaggerRoute.getRouter());
+    app.use("/", loginUI.getRouter());
+
+    // ping
+    app.get("/hello", (req, res) => {
+        res.send("Hello");
+    });
+
+    app.listen(process.env.APP_PORT, () => {
+        vexDB.connect();
+        log.ok(`Server is running on : ${process.env.APP_HOST}:${process.env.APP_PORT}`);
+    });
+
+}
+
+main();
+
+===== out/src/system/_controllers/_ControllerFactory.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import { Controller } from "tsoa";
+
+export class _ControllerFactory extends Controller {
+
+    constructor() {
+        super();
+    }
+
+    protected isObjectId(id: string): boolean {
+        return /^[0-9a-fA-F]{24}$/.test(id);
+    }
+
+}
+
+===== out/src/system/_controllers/UserController.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import { Route, Tags, Body, Path, Query, SuccessResponse, Middlewares, Security, Get, Patch } from "tsoa";
+import * as controllerFactory from "./_ControllerFactory.gen";
+import { VexRepository, VexResponse, VexResErr, VexResOk, Filter, FieldFilter } from "../_types/vex";
+import VexDb from "../_services/VexDb.gen";
+
+import RoleBaseAccessControl from "../_middlewares/RoleBaseAccessControl.gen";
+import JoinWhitelistMiddleware from "../_middlewares/JoinWhitelistMiddleware.gen";
+import DataIsolationContext from "../_middlewares/DataIsolationContext.gen";
+
+import { UserEntity } from "../_models/UserModel.gen";
+import { User, UserWithApiRelations } from "../_types/User.gen";
+
+// extra type defined due to tsoa cannot capture runtime generic types,
+// this will make OAS have complete input parameters & correct validation
+export type FilterUser = { [K in keyof User]?: FieldFilter<User[K]> } & Filter<User>;
+
+@Route("user")
+@Tags("User")
+@Middlewares(RoleBaseAccessControl.middleware("User"))
+export class UserController extends controllerFactory._ControllerFactory {
+    private get repo(): VexRepository<User> {
+        return VexDb.getRepository(UserEntity);
+    }
+
+    // Post("/search") disabled
+
+    @Get("{id}")
+    @SuccessResponse(200, "Success")
+    @Middlewares(JoinWhitelistMiddleware.middleware("User"))
+    public async getUser(@Path() id: string, @Query() join?: string[], @Query() select?: string[]): Promise<VexResponse<User>> {
+        const result = await this.repo.findOne({ _id: id }, join, select);
+        if (!result) throw new VexResErr(404);
+        throw new VexResOk(200, { result });
+    }
+
+    // Post() disabled
+
+    // Put("{id}") disabled
+
+    @Patch("{id}")
+    @SuccessResponse(200, "Success")
+    public async updateUser(@Path() id: string, @Body() body: Partial<User>): Promise<VexResponse<User>> {
+        if ((body as any)._id) delete (body as any)._id;
+        const result = await this.repo.update(id, body);
+        if (!result) throw new VexResErr(404);
+        throw new VexResOk(200, { result });
+    }
+
+    // Delete("{id}") disabled
+}
+
+===== out/src/system/_middlewares/Authentication.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import { Request, Response, NextFunction } from "express";
+import { JsonWebTokenError } from "jsonwebtoken";
+import JWTService from "../_services/auth/JWTService.gen";
+import log from "../_utils/logger.gen";
+import { VexResErr } from "../_types/vex";
+
+class Authentication {
+
+    private JWTService = new JWTService();
+
+    public middleware = (req: Request, res: Response, next: NextFunction) => {
+        try {
+            // gate keeper
+            // log.info("Authentication.middleware", req.headers["x-auth-index"], req.headers.authorization);
+            const token = req.headers.authorization?.split(" ")[1];
+            const accessTokenIndex = req.headers["x-auth-index"]?.toString();
+            
+            if (!token || !accessTokenIndex) {
+                log.warn("invalid header", {
+                    "X-Auth-Index": req.headers["x-auth-index"], 
+                    "Authorization": req.headers.authorization
+                });
+                throw 401;
+            }
+
+            // verify token
+            const tokenData = this.JWTService.verifyToken(token, accessTokenIndex);
+            req.user = tokenData;
+            next();
+        }
+        catch (e: any) {
+            if (typeof e === "number") {
+                throw new VexResErr(e, undefined);
+            }
+            else if (e instanceof JsonWebTokenError) {
+                throw new VexResErr(400, undefined, e?.message);
+            }
+            else {
+                throw new VexResErr(500, undefined, e?.message);
+            }
+        }
+    };
+}
+
+export default new Authentication();
+
+===== out/src/system/_middlewares/DataIsolationContext.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import { AsyncLocalStorage } from "async_hooks";
+import { Request, Response, NextFunction } from "express";
+
+export interface DataIsolationStore {
+  userId: string;
+}
+
+const als = new AsyncLocalStorage<DataIsolationStore>();
+
+class DataIsolationContext {
+    /**
+   * Express middleware — creates ALS context with authenticated user's _id.
+   * Must run AFTER Authentication.middleware (which sets req.user).
+   */
+    middleware(req: Request, _res: Response, next: NextFunction): void {
+        const user = (req as any).user;
+        if (user?._id) {
+            als.run({ userId: user._id }, () => next());
+        } else {
+            next();
+        }
+    }
+
+    /** Get current store from per-request ALS context. */
+    getStore(): DataIsolationStore | undefined {
+        return als.getStore();
+    }
+}
+
+export default new DataIsolationContext();
+
+===== out/src/system/_middlewares/DataIsolationRegistry.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+export interface DataIsolationEntry {
+  field: string;
+}
+
+export const entityIsolation: Record<string, DataIsolationEntry> = {
+    "UserEntity": { field: "_id" }
+};
+
+===== out/src/system/_middlewares/JoinWhitelistMiddleware.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import { Request, Response, NextFunction } from "express";
+import { VexResErr } from "../_types/vex";
+import joinWhitelistRegistry from "./JoinWhitelistRegistry.gen";
+
+/**
+ * Validates join paths against the centralized whitelist registry.
+ *
+ * The registry maps documentName → { relationName → relatedDocumentName }
+ * and is generated at build time by VeryExpress from schema FK metadata.
+ *
+ * Nested paths like "user.userContact" on Package are validated hop-by-hop:
+ *   1. check "user"        in Package's map → next doc = "User"
+ *   2. check "userContact" in User's map    → ok
+ */
+class JoinWhitelistMiddleware {
+    middleware(documentName: string) {
+        return (req: Request, res: Response, next: NextFunction): void => {
+            const join = this.extractJoin(req);
+
+            if (!join || join.length === 0) {
+                return next();
+            }
+
+            for (const joinPath of join) {
+                this.validateJoinPath(joinPath, documentName);
+            }
+
+            next();
+        };
+    }
+
+    private validateJoinPath(joinPath: string, rootDocumentName: string): void {
+        const segments = joinPath.split(".");
+        let currentDoc = rootDocumentName;
+        const visited = new Set<string>();
+
+        for (const segment of segments) {
+            if (visited.has(currentDoc)) {
+                throw new VexResErr(403, undefined, `Circular join detected: "${joinPath}" revisits "${currentDoc}"`);
+            }
+            visited.add(currentDoc);
+
+            const relations = joinWhitelistRegistry[currentDoc];
+            if (!relations || !(segment in relations)) {
+                throw new VexResErr(403, undefined, `Join "${segment}" is not allowed on "${currentDoc}"`);
+            }
+            currentDoc = relations[segment];
+        }
+    }
+
+    private extractJoin(req: Request): string[] | undefined {
+        // getList sends join inside POST body; get sends it as query param
+        const bodyJoin = (req.body as { join?: string[] })?.join;
+        const queryJoin = req.query?.join;
+
+        if (bodyJoin) return bodyJoin;
+        if (!queryJoin) return undefined;
+        return Array.isArray(queryJoin) ? (queryJoin as string[]) : [queryJoin as string];
+    }
+}
+
+export default new JoinWhitelistMiddleware();
+
+===== out/src/system/_middlewares/JoinWhitelistRegistry.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+const joinWhitelistRegistry: Record<string, Record<string, string>> = {
+
+};
+
+export default joinWhitelistRegistry;
+
+===== out/src/system/_middlewares/RoleBaseAccessControl.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import { Request, Response, NextFunction } from "express";
+import * as roles from "../_roles";
+import { VexResErr } from "../_types/vex";
+import log from "../_utils/logger.gen";
+
+export { roles };
+
+class RoleBaseAccessControl {
+    private static actions: {[key:string]: string} = {
+        "GET": "read",
+        "POST /": "create",
+        "POST /search": "search",
+        "PUT": "update",
+        "PATCH": "update",
+        "DELETE": "delete",
+    };
+
+
+    public middleware(collection: string) {
+        return (req: Request, res: Response, next: NextFunction) => {
+            // log.info("RBAC.middleware", req.method, req.path, req.user);
+            if ( !req.user ) {
+                throw new VexResErr(401);
+            }
+
+            const user :any = req.user;
+            const actionKey = req.method !== "POST" ? req.method : req.path.endsWith("/search") ? "POST /search" : "POST /";
+            
+            if ( user.roles.includes("member") && new roles.member().checkAccess(collection, RoleBaseAccessControl.actions[actionKey]) ) {
+                next();
+            }else {
+                throw new VexResErr(403);
+            }
+        }
+    };
+}
+
+export default new RoleBaseAccessControl()
+
+===== out/src/system/_middlewares/tsoaAuthentication.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import { Request } from "express";
+import { VexResErr } from "../_types/vex";
+
+/**
+ * Called by tsoa-generated routes for every @Security decorator.
+ * securityName matches the key in tsoa.json securityDefinitions.
+ */
+export async function expressAuthentication(
+    request: Request,
+    securityName: string,
+    _scopes?: string[]
+): Promise<unknown> {
+
+    if (securityName === "BearerAuth" && !request.headers["authorization"]) {
+        throw new VexResErr(401, null, "Missing Authorization header");
+    }
+
+    if (securityName === "AuthIndex" && !request.headers["x-auth-index"]) {
+        throw new VexResErr(401, null, "Missing X-Auth-Index header");
+    }
+
+    return {};
+}
+
+===== out/src/system/_models/SessionModel.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import { Entity, Column, PrimaryGeneratedColumn, Unique, Index, Relation, JoinColumn, OneToOne } from "typeorm";
+import { Session } from "./../_types/Session.gen";
+import { UserEntity, User } from "./UserModel.gen";
+
+export * from "./../_types/Session.gen";
+
+@Entity("session")
+@Unique('unique_sessionCode', ['sessionCode'])
+export class SessionEntity implements Partial<Session> {
+    @PrimaryGeneratedColumn("uuid")
+    _id!: string;
+
+    @Index()
+    @Column({type: "text", nullable: true, unique: true})
+    sessionCode?: string;
+
+    @Column({type: "varchar", nullable: false, length: 30})
+    provider!: string;
+
+    @Column({type: "uuid", nullable: false})
+    userId!: string;
+
+    @Column({type: "bigint", nullable: false, comment: "expired time in unix timestamp format (ms)", transformer: { to: (v: number) => v, from: (v: string) => Number(v) }})
+    expired!: number;
+
+    @OneToOne(() => UserEntity)
+    @JoinColumn({ name: "userId" })
+    user?: Relation<User>;
+}
+
+===== out/src/system/_models/UserAuthProfilesModel.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import { Entity, Column, PrimaryGeneratedColumn, Index, Relation, JoinColumn, ManyToOne } from "typeorm";
+import { UserAuthProfiles } from "./../_types/UserAuthProfiles.gen";
+import { UserEntity, User } from "./UserModel.gen";
+
+export * from "./../_types/UserAuthProfiles.gen";
+
+@Entity("userauthprofiles")
+export class UserAuthProfilesEntity implements Partial<UserAuthProfiles> {
+    @PrimaryGeneratedColumn("uuid")
+    _id!: string;
+
+    @Index()
+    @Column({type: "uuid", nullable: true})
+    userId?: string;
+
+    @Index()
+    @Column({type: "text", nullable: true})
+    provider?: string;
+
+    @Index()
+    @Column({type: "text", nullable: true})
+    oauthId?: string;
+
+    @Column({type: "text", nullable: true})
+    email?: string;
+
+    @Column({type: "text", nullable: true})
+    username?: string;
+
+    @Column({type: "text", nullable: true})
+    password?: string;
+
+    @ManyToOne(() => UserEntity)
+    @JoinColumn({ name: "userId" })
+    user?: Relation<User>;
+}
+
+===== out/src/system/_models/UserModel.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import { Entity, Column, PrimaryGeneratedColumn, Unique, Index, Relation, JoinColumn, OneToMany, OneToOne } from "typeorm";
+import { User } from "./../_types/User.gen";
+import { UserAuthProfilesEntity, UserAuthProfiles } from "./UserAuthProfilesModel.gen";
+import { UserRoleEntity, UserRole } from "./UserRoleModel.gen";
+import { SessionEntity, Session } from "./SessionModel.gen";
+
+export * from "./../_types/User.gen";
+
+@Entity("user")
+@Unique('unique_email', ['email'])
+export class UserEntity implements Partial<User> {
+    @PrimaryGeneratedColumn("uuid")
+    _id!: string;
+
+    @Index()
+    @Column({type: "varchar", nullable: true, unique: true, length: 254})
+    email?: string;
+
+    @Column({type: "varchar", nullable: false, length: 64})
+    name!: string;
+
+    @Column({type: "boolean", nullable: false, default: true})
+    active!: boolean;
+
+    @Column({type: "varchar", nullable: true, length: 8})
+    locale?: string;
+
+    @Column({type: "text", nullable: true})
+    profileErrors?: string;
+
+    @OneToOne(() => SessionEntity, sessionEntity => sessionEntity.user)
+    session?: Relation<Session>;
+
+    @OneToMany(() => UserAuthProfilesEntity, userAuthProfilesEntity => userAuthProfilesEntity.user)
+    userAuthProfiles?: Relation<UserAuthProfiles[]>;
+
+    @OneToMany(() => UserRoleEntity, userRoleEntity => userRoleEntity.user)
+    userRole?: Relation<UserRole[]>;
+}
+
+===== out/src/system/_models/UserRoleModel.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import { Entity, Column, PrimaryGeneratedColumn, Index, Relation, JoinColumn, ManyToOne } from "typeorm";
+import { UserRole, RoleEnum } from "./../_types/UserRole.gen";
+import { UserEntity, User } from "./UserModel.gen";
+
+export * from "./../_types/UserRole.gen";
+
+@Entity("userrole")
+export class UserRoleEntity implements Partial<UserRole> {
+    @PrimaryGeneratedColumn("uuid")
+    _id!: string;
+
+    @Index()
+    @Column({type: "text", nullable: false})
+    userId!: string;
+
+    @Index()
+    @Column({type: "enum", nullable: false, enum: ["member"], enumName: "RoleEnum"})
+    role!: RoleEnum;
+
+    @ManyToOne(() => UserEntity)
+    @JoinColumn({ name: "userId" })
+    user?: Relation<User>;
+}
+
+===== out/src/system/_roles/_RoleFactory.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+export type accessAction = "create" | "read" | "search" | "update" | "delete";
+export const accessActionArr: accessAction[] = ["create", "read", "search", "update", "delete"];
+
+export interface accessControl< T = accessAction > { 
+    [key:string]: T[] 
+}
+
+export class _RoleFactory<T = accessAction> {
+    private accessControl: accessControl<T> = {};
+
+    constructor(accessControl: accessControl<T>) {
+        this.accessControl = accessControl;
+    }
+
+    public checkAccess(document: string, access: string): boolean {
+        if (this.accessControl[document]) {
+            return this.accessControl[document].includes(access as T);
+        }
+        return false;
+    }
+    
+}
+
+===== out/src/system/_roles/index.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+export { default as member } from "./member.gen";
+
+===== out/src/system/_roles/member.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import * as roleFactory from "./../../system/_roles/_RoleFactory.gen";
+
+export type accessActionmember = roleFactory.accessAction;
+
+const memberAccessControl: roleFactory.accessControl<accessActionmember> = {
+    "Session": [
+        "create",
+        "read",
+        "update",
+        "delete",
+        "search"
+    ],
+    "User": [
+        "create",
+        "read",
+        "update",
+        "delete",
+        "search"
+    ],
+    "UserAuthProfiles": [
+        "create",
+        "read",
+        "update",
+        "delete",
+        "search"
+    ],
+    "UserRole": [
+        "create",
+        "read",
+        "update",
+        "delete",
+        "search"
+    ]
+};
+
+export default class Rolemember extends roleFactory._RoleFactory<accessActionmember> {
+    constructor() {
+        super(memberAccessControl);
+    }
+}
+
+===== out/src/system/_routes/LoginUI.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import { Router, Request, Response } from "express";
+import crypto from "crypto";
+
+export interface LoginUIConfig {
+    localAuth: boolean;
+    oauthProviders: string[];
+}
+
+export default class LoginUI {
+
+    private router: Router = Router();
+    private config: LoginUIConfig;
+
+    constructor(config: LoginUIConfig) {
+        this.config = config;
+        this.registerRoutes();
+    }
+
+    getRouter(): Router {
+        return this.router;
+    }
+
+    private registerRoutes(): void {
+        this.router.get("/", this.homePage.bind(this));
+        this.router.get("/login", this.loginPage.bind(this));
+        this.router.get("/logout", this.logoutPage.bind(this));
+        this.router.get("/mytokens", this.myTokensPage.bind(this));
+        this.router.get("/refreshtoken", this.refreshTokenPage.bind(this));
+        this.router.get("/logincallback", this.loginCallbackPage.bind(this));
+    }
+
+    private nonce(): string {
+        return crypto.randomBytes(16).toString("base64");
+    }
+
+    private homePage(_req: Request, res: Response): void {
+        const authLinks = this.config.localAuth || this.config.oauthProviders.length > 0
+            ? `<li><a href="/login">Login</a></li>
+                    <li><a href="/mytokens">myTokens</a></li>
+                    <li><a href="/refreshtoken">RefreshToken</a></li>
+                    <li><a href="/logout">LogOut</a></li>`
+            : "";
+
+        res.send(`
+            <div>
+                <h1>Hello World</h1>
+                <ul>
+                    ${authLinks}
+                    <li><a href="/swagger">Swagger UI</a></li>
+                </ul>
+                <h1>Others</h1>
+                <ul>
+                    <li><a href="/logincallback">logincallback</a></li>
+                </ul>
+            </div>
+        `);
+    }
+
+    private loginPage(_req: Request, res: Response): void {
+        const nonce = this.nonce();
+        res.setHeader("Content-Security-Policy", `script-src 'self' 'nonce-${nonce}'`);
+
+        let formHtml = "";
+        if (this.config.localAuth) {
+            formHtml += `
+                <p>Email:</p>
+                <input type="email" id="email"/>
+                <p>Password:</p>
+                <input type="password" id="password"/>
+                <br/><br/>
+                <button id="localLoginBtn">Login</button>
+                <button id="localRegisterBtn">Register</button>
+                <br/><br/>`;
+        }
+
+        formHtml += "                <p>Login with SSO:</p>\n";
+        if (this.config.oauthProviders.length === 0) {
+            formHtml += "                <p>No OAuth provider configured.</p>\n";
+        }
+        else {
+            this.config.oauthProviders.forEach((provider) => {
+                formHtml += `                <a href="/api/auth/${provider}">${provider}</a><br/>\n`;
+            });
+        }
+
+        const scriptTag = this.config.localAuth
+            ? `<script nonce="${nonce}" src="/js/login.js?d=${Date.now()}"></script>`
+            : "";
+
+        res.send(`${scriptTag}<body>${formHtml}</body>`);
+    }
+
+    private logoutPage(_req: Request, res: Response): void {
+        const nonce = this.nonce();
+        res.setHeader("Content-Security-Policy", `script-src 'self' 'nonce-${nonce}'`);
+        res.send(`
+            <script nonce="${nonce}">
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('accessTokenIndex');
+                localStorage.removeItem('refreshToken');
+                localStorage.removeItem('refreshTokenIndex');
+            </script>
+        `);
+    }
+
+    private myTokensPage(_req: Request, res: Response): void {
+        const nonce = this.nonce();
+        res.setHeader("Content-Security-Policy", `script-src 'self' 'nonce-${nonce}'`);
+        res.send(`
+            <script nonce="${nonce}" src="/js/mytokens.js"></script>
+            <link rel="stylesheet" href="/css/style.css">
+            <body>
+                <h1>My Token</h1>
+                <pre id="tokenData"></pre>
+                <a href="/">back to home</a>
+            </body>
+        `);
+    }
+
+    private refreshTokenPage(_req: Request, res: Response): void {
+        const nonce = this.nonce();
+        res.setHeader("Content-Security-Policy", `script-src 'self' 'nonce-${nonce}'`);
+        res.send(`
+            <script nonce="${nonce}" src="/js/refreshtokens.js"></script>
+            <link rel="stylesheet" href="/css/style.css">
+            <body>
+                <h1>New Token</h1>
+                <pre id="tokenData"></pre>
+                <a href="/">back to home</a>
+            </body>
+        `);
+    }
+
+    private loginCallbackPage(_req: Request, res: Response): void {
+        const nonce = this.nonce();
+        res.setHeader("Content-Security-Policy", `script-src 'self' 'nonce-${nonce}'`);
+        res.send(`
+            <script nonce="${nonce}" src="/js/logincallback.js"></script>
+            <link rel="stylesheet" href="/css/style.css">
+            <body>
+                <h1>Profile Data</h1>
+                <pre id="tokenData"></pre>
+                <a href="/">back to home</a>
+            </body>
+        `);
+    }
+}
+
+===== out/src/system/_routes/oauth/OAuthRouteFactory.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import path from "path";
+import { Router } from "express";
+import passport, { PassportStatic, Profile } from "passport";
+import * as oauth2 from "passport-oauth2";
+import JWTService from "../../_services/auth/JWTService.gen";
+import { User } from "../../_types/User.gen";
+
+export type { Profile };
+
+export interface passportFactoryConfig {
+    strategyName: string,
+    strategy: oauth2.Strategy | passport.Strategy,
+    authenticateOptions?: any,
+}
+
+/** Provides a router and passport instance for Google OAuth */
+export default class OAuthRouteFactory {
+
+    private config: passportFactoryConfig;
+    private router: Router = Router();
+    private passport: PassportStatic = passport;
+    private JWTService = new JWTService();
+
+    private loginSuccessRedirectPath = "";
+    private loginFailedRedirectPath = "";
+
+    constructor(config: passportFactoryConfig ) {
+
+        this.config = config;
+        this.config.authenticateOptions = this.config.authenticateOptions || { 
+            session: false, 
+            scope: ["profile", "email"], 
+            failureRedirect: ""
+        };
+        
+        this.loginSuccessRedirectPath = path.posix.join("/", process.env.LOGIN_SUCCESS_REDIRECT_PATH || "/logincallback");
+        this.loginFailedRedirectPath = path.posix.join("/", process.env.LOGIN_FAILED_REDIRECT_PATH || "/logincallback");
+        
+        this.initPassport(this.config.strategy);
+        this.initRoutes();
+
+    }
+
+    private initPassport(strategy: passport.Strategy){
+        this.passport.use(strategy);
+        this.passport.initialize();
+    }
+    
+
+    private initRoutes(){
+        // redirect to provider's login page
+        this.router.get("/",
+            this.passport.authenticate(this.config.strategyName, this.config.authenticateOptions)
+        );
+
+        // back from provider's login page
+        // insert temporary sessionCode to database
+        this.router.get("/callback", 
+            this.passport.authenticate(this.config.strategyName, this.config.authenticateOptions), 
+            async (req, res) => {
+                const { state, error } = req.query;
+
+                if(error){
+                    return res.redirect(`${this.loginFailedRedirectPath}?error=${error}`);
+                }
+                else if(state){
+                    return res.redirect(`${this.loginFailedRedirectPath}?state=${state}`);
+                }
+                else if(!req.user){
+                    return res.redirect(`${this.loginFailedRedirectPath}?error=invalid user`);
+                }
+
+                // return appAuthCode to client
+                const redirectUrl = await this.JWTService.assignTokens(req.user as User, this.config.strategyName);
+                return res.redirect(redirectUrl);
+                
+            }
+        );
+    }
+    public getRouter() {
+        return this.router;
+    }
+}
+
+===== out/src/system/_routes/SwaggerRouter.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import path from "path";
+import fs from "fs";
+import { Router } from "express";
+import swaggerUi from "swagger-ui-express";
+
+export default class SwaggerRouter {
+
+    private router: Router = Router();
+
+    constructor() {
+        const specPath = path.join(__dirname, "../../openapi/swagger.json");
+        try {
+            const spec = JSON.parse(fs.readFileSync(specPath, "utf-8"));
+            this.router.get("/openapi.json", (_req, res) => res.json(spec));
+            this.router.use("/", swaggerUi.serve, swaggerUi.setup(spec));
+        } catch {
+            this.router.get("/", (_req, res) =>
+                res.status(503).json({ error: "Run 'tsoa spec-and-routes' to generate the OAS spec first." })
+            );
+        }
+    }
+
+    public getRouter() {
+        return this.router;
+    }
+
+}
+
+===== out/src/system/_services/auth/JWTKeyStore.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import dotenv from "dotenv";
+import { Algorithm } from "jsonwebtoken";
+
+dotenv.config();
+
+export interface keyObj {
+    key: string, 
+    index?: number, 
+    clientIndex?:string, 
+}
+
+export class JWTKeyStore{
+    readonly algorithm: Algorithm = this.getAlgorithm(process.env.JWT_ALGORITHM);
+    readonly expireTime: string | undefined = process.env.JWT_EXPIRE_TIME || "1h";
+    private secrets: string[] = [];
+
+    constructor(){
+        this.secrets = [
+            process.env.JWT_SECRET0 || "",
+            process.env.JWT_SECRET1 || "",
+            process.env.JWT_SECRET2 || "",
+            process.env.JWT_SECRET3 || "",
+            process.env.JWT_SECRET4 || "",
+            process.env.JWT_SECRET5 || "",
+            process.env.JWT_SECRET6 || "",
+            process.env.JWT_SECRET7 || "",
+            process.env.JWT_SECRET8 || "",
+            process.env.JWT_SECRET9 || "",
+        ].filter((key) => key !== "");
+    }
+
+    /**
+     * @return {number} 
+     * - key
+     * - index (actual index of key)
+     * - client index (index with random string)
+     */
+    public getRandomKey(): keyObj {
+        // get leng of secrets and return random key
+        const len = this.secrets.length;
+        const tokenInfo = {
+            index: 0,
+            clientIndex: "",
+            key: ""
+        };
+        if (len > 1) {
+            tokenInfo.index = Math.floor(Math.random() * len);
+        }
+
+        tokenInfo.clientIndex = this.getRandomCharString() + tokenInfo.index;
+        tokenInfo.key = this.secrets[tokenInfo.index];
+
+        return tokenInfo;
+    }
+
+    /**
+     * retrive key by index or client index
+     */
+    public getSecret(index:number|string): string {
+        if (typeof index === "string") {
+            index = parseInt(index.replace(/\D/g, ""));
+        }
+
+        return this.secrets[index];
+    }
+
+    /**
+     * retrive key by index or client index
+     */
+    public getSecretObj(index:number|string): keyObj {
+        if (typeof index === "string") {
+            index = parseInt(index.replace(/\D/g, ""));
+        }
+
+        return {
+            key: this.secrets[index]
+        };
+    }
+
+    private getRandomCharString(length: number = 3): string {
+        const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+        let result = "";
+        for (let i = 0; i < length; i++) {
+            const randomIndex = Math.floor(Math.random() * characters.length);
+            result += characters[randomIndex];
+        }
+        return result;
+    }
+
+    /**
+     * Type guard to check if a string is a valid Algorithm.
+     * @param str - The string to check.
+     * @returns True if the string is a valid Algorithm, false otherwise.
+     */
+    private getAlgorithm(str: string | undefined): Algorithm {
+        const algorithms: Algorithm[] = [
+            "HS256", "HS384", "HS512",
+            "RS256", "RS384", "RS512",
+            "ES256", "ES384", "ES512",
+            "PS256", "PS384", "PS512",
+            "none"
+        ];
+
+        if ( algorithms.includes(str as Algorithm) ) {
+            return str as Algorithm;
+        }
+        else {
+            return "HS256";
+        }
+    }
+}
+
+export default JWTKeyStore;
+
+===== out/src/system/_services/auth/JWTService.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import jwt from "jsonwebtoken";
+import ms from "ms";
+import path from "path";
+// import express, { CookieOptions } from "express";
+
+import JWTKeyStore from "./JWTKeyStore.gen";
+
+import { VexRepository, VexResErr } from "../../_types/vex";
+
+import VexDb from "../VexDb.gen";
+import { UserEntity, UserWithRelations } from "../../_models/UserModel.gen";
+import { SessionEntity, Session } from "../../_models/SessionModel.gen";
+
+interface tokenObj {
+    token: string,
+    index?: number,
+    clientIndex?: string
+}
+
+export default class JWTService {
+    private keyStore = new JWTKeyStore();
+
+    private get userRepo(): VexRepository<UserWithRelations> {
+        return VexDb.getRepository<UserWithRelations>(UserEntity);
+    }
+    private get sessionRepo(): VexRepository<Session> {
+        return VexDb.getRepository<Session>(SessionEntity);
+    }
+
+    constructor() {}
+
+    /**
+     * Verifies a JSON Web Token (JWT) using the provided token and key index.
+     *
+     * @param {string} token - The JSON Web Token to be verified.
+     * @param {number} index - The index of the key used to verify the token.
+     * @return {jwt.JwtPayload } The decoded token payload, an error message, or false if verification fails.
+     */
+    public verifyToken(token: string, index?: number | string): jwt.JwtPayload {
+
+        if (token.startsWith("Bearer ")) {
+            token = token.split("Bearer ")[1];
+        }
+
+        const key = this.keyStore.getSecret(index || 0);
+
+        try {
+            return jwt.verify(token, key) as jwt.JwtPayload;
+        }
+        catch (error) {
+            if (error instanceof jwt.TokenExpiredError) {
+                throw new VexResErr(401, null, "Token expired");
+            }
+            else if (error instanceof jwt.JsonWebTokenError) {
+                throw new VexResErr(401, null, "jwt malformed");
+            }
+            else {
+                throw error;
+            }
+        }
+    }
+
+    /**
+     * Process of login user, assign tokens and create session.
+     */
+    public async assignTokens(user: UserWithRelations, provider: string): Promise<string> {
+        if(!user._id) {
+            throw new VexResErr(500, null, "User Data Error, User._id missing.");
+        }
+
+        const sessionCode = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
+        // insert new unique session for user
+        await this.sessionRepo.deleteWhere({ userId: user._id });
+        await this.sessionRepo.create({
+            sessionCode,
+            userId: user._id,
+            provider: provider,
+            expired: Date.now() + 5000,
+        });
+
+        // return appAuthCode to client
+        const redirectPath = `${path.posix.join("/", process.env.LOGIN_SUCCESS_REDIRECT_PATH || "/logincallback")}?code=${sessionCode}`;
+        
+        return redirectPath;
+    }
+
+    public returnToken(userProfile: UserWithRelations) {
+        const sanitizedProfile = this.sanitizeUser(userProfile);
+        const accessToken = this.generateToken(sanitizedProfile, undefined, process.env.ACCESS_TOKEN_EXPIRE_TIME);
+        const refreshToken = this.generateToken({ _id: userProfile._id }, 0, process.env.REFRESH_TOKEN_EXPIRE_TIME);
+
+        return {
+            profile: sanitizedProfile,
+            accessToken: accessToken.token,
+            accessTokenIndex: accessToken.index,
+            clientIndex: accessToken.clientIndex,
+            refreshToken: refreshToken.token
+        };
+    }
+
+    /** utils */
+
+    public sanitizeUser(user: UserWithRelations) {
+        return {
+            _id: user._id,
+            email: user.email,
+            name: user.name,
+            locale: user.locale,
+            roles: user.userRole?.map((r: any) => r.role) || [],
+            profileErrors: user.profileErrors,
+            active: user.active
+        };
+    }
+
+    private generateToken(
+        data: any,
+        index?: number,
+        expiresIn?: string
+    ): tokenObj {
+        data = JSON.parse(JSON.stringify(data));
+        const keyInfo = typeof index == "number" ? this.keyStore.getSecretObj(index) : this.keyStore.getRandomKey();
+        const token = jwt.sign(
+            data,
+            keyInfo.key as jwt.Secret,
+            {
+                expiresIn: (expiresIn || this.keyStore.expireTime || "1h") as ms.StringValue,
+                algorithm: this.keyStore.algorithm
+            }
+        );
+
+        return {
+            token: token,
+            index: keyInfo.index,
+            clientIndex: keyInfo.clientIndex
+        };
+    }
+
+    public async generateAccessToken(user: UserWithRelations, index?: number): Promise<tokenObj> {
+
+        const userInfo = this.sanitizeUser(user);
+
+        return this.generateToken(userInfo, index, process.env.ACCESS_TOKEN_EXPIRE_TIME);
+    }
+
+    public generateRefreshToken(data: any, index?: number): tokenObj {
+        return this.generateToken(data, index, process.env.REFRESH_TOKEN_EXPIRE_TIME);
+    }
+
+}
+
+===== out/src/system/_services/MongooseRepositoryAdapter.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import { Model, Document } from "mongoose";
+import { VexRepository, Select, Filter, Join, VexPagination } from "../_types/vex";
+import utils from "../_utils";
+
+export class MongooseRepositoryAdapter<T extends Document> implements VexRepository<T> {
+    constructor(private model: Model<T>) {}
+
+    public get native(): Model<T> {
+        return this.model;
+    }
+
+    find(filter: Filter, join?: Join, select?: Select, pagination?: VexPagination): Promise<T[]> {
+        // TODO: complete mongoose support, handle join, select, and pagination
+        return this.model.find((filter || {}) as any).exec();
+    }
+
+    async count(filter: Filter): Promise<number> {
+        // TODO: complete mongoose support, handle filter
+        return 0;
+    }
+
+    findOne(filter: Filter, join?: Join, select?: Select): Promise<T | null> {
+        // TODO: complete mongoose support, handle join and select
+        return this.model.findOne(filter as any).exec();
+    }
+
+    findOneWhere(filter: Filter, join?: Join, select?: Select): Promise<T | null> {
+        // TODO: complete mongoose support, handle join and select
+        return this.model.findOne(filter as any).exec();
+    }
+
+    async create(data: Partial<T>): Promise<T> {
+        const doc = new this.model(data);
+        return doc.save();
+    }
+
+    replace(id: string | undefined, data: Partial<T>): Promise<T | null> {
+        if(!id) {
+            utils.log.error("MongooseRepositoryAdapter.replace called without id — refuse replace document");
+            return Promise.resolve(null);
+        }
+        return this.model.findByIdAndUpdate(id, data, { new: true, overwrite: true }).exec();
+    }
+
+    update(id: string | undefined, data: Partial<T>): Promise<T | null> {
+        if(!id) {
+            utils.log.error("MongooseRepositoryAdapter.update called without id — refuse update document");
+            return Promise.resolve(null);
+        }
+        return this.model.findByIdAndUpdate(id, { $set: data }, { new: true }).exec();
+    }
+
+    async delete(id: string | undefined): Promise<void> {
+        if(!id) {
+            utils.log.error("MongooseRepositoryAdapter.delete called without id — refuse delete document");
+            return;
+        }
+        await this.model.findByIdAndDelete(id).exec();
+    }
+
+    async deleteWhere(filter: Record<string, unknown>): Promise<void> {
+        await this.model.deleteOne(filter as any).exec();
+    }
+}
+
+===== out/src/system/_services/oauth/OAuthProfileMap.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import { Profile } from "passport";
+import { UserWithRelations } from "./../../_types/User.gen";
+
+export interface IProfile extends Profile {
+    [key: string]: any;
+}
+
+export default class OAuthProfileMap {
+
+    public map(oauthProfile: Profile) {
+        let authProfile: UserWithRelations;
+        switch (oauthProfile.provider) {
+        case "github":
+            authProfile = this.GithubProfileMapping(oauthProfile);
+            break;
+        case "google":
+            authProfile = this.GoogleProfileMapping(oauthProfile);
+            break;
+        default:
+            throw new Error("Invalid OAuth Provider");
+            break;
+        }
+        return authProfile;
+    }
+
+    private GithubProfileMapping(oauthProfile: IProfile): UserWithRelations {
+        const user: UserWithRelations = {
+            active: true,
+            userAuthProfiles: [{
+                provider: oauthProfile.provider,
+                oauthId: oauthProfile.id,
+                username: oauthProfile.username || oauthProfile.displayName
+            }],
+            name: oauthProfile.username || oauthProfile.displayName,
+            email: oauthProfile._json.email || oauthProfile._json.notification_email || undefined,
+            locale: undefined,
+            profileErrors: ""
+        };
+
+        return user;
+    }
+    private GoogleProfileMapping(oauthProfile: IProfile): UserWithRelations {
+        const user: UserWithRelations = {
+            active: true,
+            userAuthProfiles: [{
+                provider: oauthProfile.provider,
+                oauthId: oauthProfile.id,
+                username: oauthProfile.username || oauthProfile.displayName
+            }],
+            name: oauthProfile.username || oauthProfile.displayName,
+            // data below could be missing depend on the provider
+            email: oauthProfile._json.email || oauthProfile._json.notification_email || undefined,
+            locale: oauthProfile._json.locale || undefined,
+            profileErrors: ""
+        };
+
+        return user;
+    }
+
+}
+
+===== out/src/system/_services/oauth/OAuthStrategyService.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import { UserEntity, User, UserWithRelations } from "./../../_models/UserModel.gen";
+import { UserAuthProfilesEntity, UserAuthProfiles } from "./../../_models/UserAuthProfilesModel.gen";
+import { VexRepository } from "./../../_types/vex";
+import JWTService from "./../auth/JWTService.gen";
+import OAuthProfileMap, { IProfile } from "./OAuthProfileMap.gen";
+import VexDb from "./../VexDb.gen";
+import utils from "../../_utils";
+
+export default class OAuthStrategyService {
+
+    private get userRepo(): VexRepository<UserWithRelations> {
+        return VexDb.getRepository<UserWithRelations>(UserEntity);
+    }
+
+    private get uapRepo(): VexRepository<UserAuthProfiles> {
+        return VexDb.getRepository<UserAuthProfiles>(UserAuthProfilesEntity);
+    }
+
+    constructor() {}
+
+    public async verify(accessToken: string, refreshToken: string, profile: IProfile, done: (error: any, user?: any) => void): Promise<void> {
+        try {
+
+            let user: UserWithRelations;
+            const authUser = new OAuthProfileMap().map(profile);
+            const authProfile = authUser.userAuthProfiles?.[0];
+
+            // find user by oauthId + provider, or fall back to email
+            let existingUser: UserWithRelations | null = null;
+            if (authProfile?.oauthId && authProfile?.provider) {
+                const matchedProfile = await this.uapRepo.findOneWhere(
+                    { oauthId: authProfile.oauthId, provider: authProfile.provider },
+                );
+                if (matchedProfile?.userId) {
+                    existingUser = await this.userRepo.findOne({ _id: matchedProfile.userId });
+                }
+            }
+            if (!existingUser && authUser.email) {
+                existingUser = await this.userRepo.findOneWhere({ email: authUser.email });
+            }
+
+            // 1. create new user
+            if (!existingUser) {
+                user = await this.createNewUser(authUser);
+            }
+            // 2. update existing user
+            else {
+                console.log("OAuthVerify UpdateUser");
+                user = await this.processExistingUser(authProfile, existingUser);
+            }
+
+            // set req.user
+            done(null, {
+                provider: profile.provider,
+                profile: new JWTService().sanitizeUser(user),
+            });
+        }
+        catch (err) {
+            return done(err);
+        }
+    }
+
+    private async createNewUser(authProfile: UserWithRelations): Promise<UserWithRelations> {
+        utils.log.info("OAuthVerify > createNewUser");
+        const user = await this.userRepo.create(authProfile);
+
+        // create auth profile row linked to the new user
+        if (authProfile.userAuthProfiles?.[0]) {
+            await this.uapRepo.create({
+                ...authProfile.userAuthProfiles[0],
+                userId: user._id,
+            } as Partial<UserAuthProfiles>);
+        }
+
+        return user;
+    }
+
+    private async processExistingUser(incomingProfile: UserAuthProfiles | undefined, existingUser: User): Promise<User> {
+        utils.log.info("OAuthVerify > processExistingUser");
+        
+        if (!incomingProfile) {
+            utils.log.error("OAuthVerify > Invalid OAuth Callback \"authProfile\"");
+            throw new Error("Invalid OAuth Callback \"authProfile\"");
+        }
+
+        // check if this provider/oauthId already tracked
+        const existing = await this.uapRepo.findOneWhere(
+            { userId: existingUser._id, provider: incomingProfile.provider, oauthId: incomingProfile.oauthId },
+        );
+
+        if (!existing) {
+            // B.2. add new provider
+            utils.log.info("OAuthVerify > add new provider", incomingProfile.provider);
+            await this.uapRepo.create({
+                ...incomingProfile,
+                userId: existingUser._id,
+            } as Partial<UserAuthProfiles>);
+        }
+        else if (existing.username !== incomingProfile.username) {
+            // B.3. update username if changed
+            utils.log.info("OAuthVerify > update username", incomingProfile.provider);
+            await this.uapRepo.update(existing._id, { username: incomingProfile.username });
+        }
+
+        return existingUser;
+    }
+}
+
+===== out/src/system/_services/TypeOrmRepositoryAdapter.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import { Repository, ObjectLiteral, FindOptionsWhere, DeepPartial, In, Not, Like, MoreThan, LessThan, MoreThanOrEqual, LessThanOrEqual, FindManyOptions } from "typeorm";
+import { VexRepository, Select, Filter, Join, FieldOperators, VexPagination } from "../_types/vex";
+import DataIsolationContext from "../_middlewares/DataIsolationContext.gen";
+import { entityIsolation } from "../_middlewares/DataIsolationRegistry.gen";
+import utils from "../_utils";
+
+export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRepository<T> {
+    constructor(private repo: Repository<T>) {}
+
+    /** Build ownership filter from current request context, or null. */
+    private getOwnershipFilter(): Record<string, unknown> | null {
+        const store = DataIsolationContext.getStore();
+        if (!store?.userId) return null;
+
+        const entityName = this.repo.metadata.target instanceof Function
+            ? this.repo.metadata.target.name
+            : "";
+        const config = entityIsolation[entityName];
+        if (!config) return null;
+
+        return { [config.field]: store.userId };
+    }
+
+    /** Merge caller filter with ownership filter. Ownership always wins. */
+    private mergeFilter(callerFilter: Filter<T>): Record<string, unknown> | Array<Record<string, unknown>> {
+        const mapped = this.mapOperators(callerFilter);
+        const ownership = this.getOwnershipFilter();
+
+        if (mapped instanceof Array) {
+            return mapped.map(branch => ({ ...branch, ...ownership }));
+        } 
+        else {
+            return { ...mapped, ...ownership };
+        }
+    }
+
+    private mapOperators(filter: Filter<T>): Record<string, unknown> | Array<Record<string, unknown>> {
+        if (!filter || typeof filter !== "object") return {};
+        // if (Array.isArray(filter)) return filter.map(f => this.mapOperators(f));
+
+        let out: Record<string, unknown> | Array<Record<string, unknown>> = {};
+
+        if( filter["$or"] && Array.isArray(filter["$or"])) {
+            out = [];
+            out.push(...filter["$or"].map(v => this.mapOperators(v) as Record<string, unknown>));
+            return out;
+        }
+
+        for (const [key, val] of Object.entries(filter)) { 
+            if (val && typeof val === "object" && !Array.isArray(val)) {
+                // Common mongo-like operators supported in JSON payloads
+                const oval = val as FieldOperators;
+
+                if (oval?.$in && Array.isArray(oval.$in) && oval.$in.every((v: unknown) => typeof v === "string")) {
+                    out[key] = In(oval.$in);
+                    continue;
+                }
+                if (oval?.$nin && Array.isArray(oval.$nin) && oval.$nin.every((v: unknown) => typeof v === "string")) {
+                    out[key] = Not(In(oval.$nin));
+
+                    continue;
+                }
+                if (oval?.$gt) {
+                    out[key] = MoreThan(oval.$gt);
+                    continue;
+                }
+                if (oval?.$gte) {
+                    out[key] = MoreThanOrEqual(oval.$gte);
+                    continue;
+                }
+                if (oval?.$lt) {
+                    out[key] = LessThan(oval.$lt);
+                    continue;
+                }
+                if (oval?.$lte) {
+                    out[key] = LessThanOrEqual(oval.$lte);
+                    continue;
+                }
+                if (oval?.$like) {
+                    out[key] = Like(oval.$like as string);
+                    continue;
+                }
+                // if (val?.$raw) {
+                //     out[key] = Raw(val.$raw as string);
+                //     continue;
+                // }
+            } else {
+                out[key] = val;
+            }
+        }
+        return out;
+    }
+
+    public get native(): Repository<T> {
+        return this.repo;
+    }
+
+    find(filter: Filter<T>, join?: Join, select?: Select, pagination?: VexPagination): Promise<T[]> {
+        const where = this.mergeFilter(filter) as FindOptionsWhere<T>;
+        const options: FindManyOptions<T> = {
+            select: select as any,
+            where,
+            relations: join,
+            take: 500,
+        };
+        if (pagination) {
+            const page = pagination.page || 1;
+            const perPage = Math.min(pagination.perPage || 20, 9999);
+            options.take = Math.min(perPage, 9999);
+            options.skip = (page - 1) * perPage;
+            if (pagination.sort) options.order = pagination.sort as any;
+        }
+        return this.repo.find(options);
+    }
+
+    async count(filter: Filter<T>): Promise<number> {
+        const where = this.mergeFilter(filter) as FindOptionsWhere<T>;
+        return this.repo.count({ where });
+    }
+
+    findOne(filter: Filter<T>, join?: Join, select?: Select): Promise<T | null> {
+        const where = this.mergeFilter(filter) as FindOptionsWhere<T>;
+        return this.repo.findOne({
+            select,
+            where,
+            relations: join
+        });
+    }
+
+    findOneWhere(filter: Filter<T>, join?: Join, select?: Select): Promise<T | null> {
+        const where = this.mergeFilter(filter) as FindOptionsWhere<T>;
+        return this.repo.findOne({
+            select,
+            where,
+            relations: join
+        });
+    }
+
+    async create(data: Partial<T>): Promise<T> {
+        const enriched = { ...data };
+        const store = DataIsolationContext.getStore();
+        if (store?.userId) {
+            const entityName = this.repo.metadata.target instanceof Function
+                ? this.repo.metadata.target.name
+                : "";
+            const config = entityIsolation[entityName];
+            if (config && config.field !== "_id") {
+                (enriched as any)[config.field] = store.userId;
+            }
+        }
+        return this.repo.save(this.repo.create(enriched as DeepPartial<T>));
+    }
+
+    async replace(id: string | undefined, data: Partial<T>): Promise<T | null> {
+        if (!id) {
+            utils.log.error("TypeOrmRepositoryAdapter.replace called without id — refuse replace entity");
+            return null;
+        }
+        const existing = await this.findOne({ _id: id } as unknown as Filter<T>);
+        if (!existing) return null;
+        return this.repo.save(this.repo.merge(existing, data as DeepPartial<T>));
+    }
+
+    async update(id: string | undefined, data: Partial<T>): Promise<T | null> {
+        if (!id) {
+            utils.log.error("TypeOrmRepositoryAdapter.update called without id — refuse update entity");
+            return null;
+        }
+        const where = this.mergeFilter({ _id: id } as unknown as Filter<T>);
+        await this.repo.update(where as FindOptionsWhere<T>, data);
+        return this.findOne({ _id: id } as unknown as Filter<T>);
+    }
+
+    async delete(id: string | undefined): Promise<void> {
+        if (!id) {
+            utils.log.error("TypeOrmRepositoryAdapter.delete called without id — refuse delete entity");
+            return;
+        }
+        const where = this.mergeFilter({ _id: id } as unknown as Filter<T>);
+        await this.repo.delete(where as FindOptionsWhere<T>);
+    }
+
+    async deleteWhere(filter: Record<string, unknown>): Promise<void> {
+        const where = this.mergeFilter(filter as unknown as Filter<T>);
+        await this.repo.delete(where as FindOptionsWhere<T>);
+    }
+}
+
+===== out/src/system/_services/VexDb.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import { VexDbConnector } from "./VexDbConnector.gen";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const VexDb = new VexDbConnector({
+    sqlUrl: process.env.SQL_URI ?? undefined,
+    sqlCa: process.env.SQL_CA ?? undefined,
+    mongoUrl: process.env.MONGO_URI ?? undefined,
+    recordAccessLog: false,
+});
+
+export default VexDb;
+
+===== out/src/system/_services/VexDbConnector.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import { Request, Response, NextFunction } from "express";
+import { DataSource, EntityTarget, ObjectLiteral } from "typeorm";
+import mongoose from "mongoose";
+// import { Document } from "mongoose";
+// import { sqlMigrations } from "../_models/sqlMigration.gen";
+import { VexRepository } from "../_types/vex";
+import { TypeOrmRepositoryAdapter } from "./TypeOrmRepositoryAdapter.gen";
+// import { MongooseRepositoryAdapter } from "./MongooseRepositoryAdapter.gen";
+import utils from "./../_utils";
+
+export class VexDbConnector {
+    private sqlUrl: string;
+    private sqlCa: string;
+    private mongoUrl: string;
+    private recordAccessLog: boolean = false;
+
+    public dataSource?: DataSource;
+
+    constructor(options: {
+        sqlUrl?: string;
+        sqlCa?: string;
+        mongoUrl?: string;
+        recordAccessLog?: boolean;
+    }) {
+        this.sqlUrl = options.sqlUrl || "";
+        this.sqlCa = options.sqlCa || "";
+        this.mongoUrl = options.mongoUrl || "";
+        this.recordAccessLog = options.recordAccessLog || false;
+        this.middleware = this.middleware.bind(this);
+    }
+
+    connect(): void {
+        if (this.sqlUrl) this.connectSql();
+        if (this.mongoUrl) this.connectMongo();
+    }
+
+    close(): void {
+        if (this.sqlUrl) this.closeSql();
+        if (this.mongoUrl) this.closeMongo();
+    }
+
+    connectSql(): void {
+        utils.log.infoSql("Connecting to SQL DB (TypeORM)...");
+        const sqlUrl = new URL(this.sqlUrl);
+
+        const ca = !this.sqlCa ? undefined : this.sqlCa.startsWith("-----BEGIN") ? this.sqlCa : Buffer.from(this.sqlCa, "base64").toString("utf8");
+        const insecure = (process.env.SQL_INSECURE_TLS || "").toLowerCase() === "true";
+        const sslRequired = sqlUrl.searchParams.get("sslmode") === "require";
+        const ssl = sslRequired ? 
+            {
+                rejectUnauthorized: insecure ? false : true,
+                ca,
+            } : 
+            undefined;
+
+        const ds = new DataSource({
+            type: "postgres",
+            host: sqlUrl.hostname,
+            port: Number(sqlUrl.port) || 5432,
+            username: sqlUrl.username,
+            password: sqlUrl.password,
+            database: sqlUrl.pathname.slice(1),
+            ssl,
+            synchronize: (process.env.SQL_SYNCHRONIZE || "").toLowerCase() === "true",
+            logging: false,
+            entities: [__dirname + "/../_models/*.gen.{ts,js}"],
+            migrations: [],
+        });
+
+        const connectWithRetry = (retryTime = 10): void => {
+            ds.initialize()
+                .then(() => {
+                    this.dataSource = ds;
+                    utils.log.infoSql("TypeORM DataSource initialized");
+                    // this.runSqlMigrations(ds);
+                })
+                .catch((err) => {
+                    utils.log.errorSql(`Failed to initialize TypeORM, retrying in ${retryTime}s`, err);
+                    setTimeout(() => connectWithRetry(retryTime), retryTime * 1000);
+                });
+        };
+
+        connectWithRetry(10);
+    }
+
+    // private async runSqlMigrations(ds: DataSource): Promise<void> {
+    //     if (!sqlMigrations.length) return;
+    //     const runner = ds.createQueryRunner();
+    //     await runner.connect();
+    //     try {
+    //         for (const sql of sqlMigrations) {
+    //             utils.log.infoSql(`Applying migration: ${sql}`);
+    //             await runner.query(sql);
+    //         }
+    //         utils.log.infoSql(`${sqlMigrations.length} migrations applied`);
+    //     } catch (err) {
+    //         utils.log.errorSql("SQL migration failed", err);
+    //     } finally {
+    //         await runner.release();
+    //     }
+    // }
+
+    closeSql(): void {
+        if (this.dataSource?.isInitialized) {
+            this.dataSource.destroy()
+                .then(() => utils.log.infoSql("TypeORM DataSource closed"))
+                .catch((err) => utils.log.errorSql("Error closing TypeORM DataSource", err));
+        }
+    }
+
+    // TODO: complete mongoose support, handle join and select
+    connectMongo(): void {
+        console.warn("VeryExpress unified db adapter (MongooseRepositoryAdapter) for Mongodb are under development, use with caution. Contribute to \"https://github.com/Justin26l/VeryExpress\"");
+        utils.log.infoMongo("Connecting to MongoDB (Driver: Mongoose)...");
+        const connectWithRetry = (retryTime = 10): void => {
+            mongoose.connect(this.mongoUrl)
+                .then(() => utils.log.infoMongo("Mongoose connected"))
+                .catch((err) => {
+                    utils.log.errorMongo(`Failed to connect Mongoose, retrying in ${retryTime}s`, err);
+                    setTimeout(() => connectWithRetry(retryTime), retryTime * 1000);
+                });
+        };
+        connectWithRetry(10);
+    }
+
+    // TODO: complete mongoose support, handle join and select
+    closeMongo(): void {
+        console.warn("VeryExpress unified db adapter (MongooseRepositoryAdapter) for Mongodb are under development, use with caution. Contribute to \"https://github.com/Justin26l/VeryExpress\"");
+        mongoose.disconnect()
+            .then(() => utils.log.infoMongo("Mongoose disconnected"))
+            .catch((err) => utils.log.errorMongo("Error disconnecting Mongoose", err));
+    }
+
+    // getRepository<T extends Document>(target: { schema: unknown; modelName: string }): VexRepository<T>;
+    getRepository<T extends ObjectLiteral>(target: EntityTarget<T>): VexRepository<T>;
+    getRepository<T>(target: EntityTarget<ObjectLiteral> | any): VexRepository<T> {
+        // TODO: complete mongoose support, handle join and select
+        if (target?.schema && target?.modelName) {
+            console.warn("VeryExpress unified db adapter (MongooseRepositoryAdapter) for Mongodb are under development, use with caution. Contribute to \"https://github.com/Justin26l/VeryExpress\"");
+            // return new MongooseRepositoryAdapter<T & Document>(target);
+        }
+        if (!this.dataSource) throw new Error("SQL DataSource not initialized");
+        return new TypeOrmRepositoryAdapter<T & ObjectLiteral>(this.dataSource.getRepository(target));
+    }
+
+    async middleware(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            if (this.sqlUrl && (!this.dataSource || !this.dataSource.isInitialized)) {
+                utils.response.send(res, 503, { code: utils.response.code.DB_CONN_ERR });
+                return;
+            }
+
+            if (this.recordAccessLog && this.dataSource?.isInitialized) {
+                const logEntry = {
+                    timestamp: new Date().getTime(),
+                    ipa: req.socket.remoteAddress || req.headers["x-forwarded-for"],
+                    method: req.method,
+                    url: req.url.split("?")[0],
+                    headers: JSON.stringify(req.headers),
+                    query: JSON.stringify(req.query),
+                };
+                try {
+                    await this.dataSource.getRepository("AccessLog").save(logEntry);
+                }
+                catch { /* table may not exist */ }
+            }
+
+            next();
+        }
+        catch (err: unknown) {
+            utils.response.send(res, 500, { code: utils.response.code.DB_CONN_ERR });
+            return;
+        }
+    }
+}
+
+export default VexDbConnector;
+
+===== out/src/system/_services/VexSystem.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import { Request, Response, NextFunction } from "express";
+import utils from "./../_utils";
+import { VexResErr, VexResOk } from "../_types/vex";
+
+
+export default class VexSystem {
+
+    /**
+     * Express error-handling middleware.
+     * Register AFTER all routes: app.use(VexSystem.responseHandler)
+     */
+    static responseHandler(err: unknown, _req: Request, res: Response, _next: NextFunction): Response {
+        if (err instanceof VexResOk) {
+            return utils.response.send(res, err.status, err.body);
+        }
+        else if (err instanceof VexResErr) {
+            const vexErr = err as VexResErr;
+            return utils.response.send(res, vexErr.status, {
+                code: vexErr.ret_code,
+                message: vexErr.message,
+            });
+        }
+        else {
+            utils.log.error("Unhandled error:", err);
+            const e: any = err;
+            return utils.response.send(res, e?.status ?? 500, {
+                code: e?.ret_code ?? utils.response.code.SERVER_ERROR,
+                message: e?.message ?? "Internal Server Error",
+            });
+        }
+    }
+
+}
+
+===== out/src/system/_types/auth.gen.ts =====
+export interface tokenResponse {
+    accessToken: string;
+    accessTokenIndex: string;
+    refreshToken: string;
+    refreshTokenIndex: string
+}
+
+export interface refreshTokenResponse {
+    accessToken: string;
+    accessTokenIndex: string;
+}
+
+export interface registerResponse {
+    message: string
+}
+
+export interface localLoginResponse {
+    url: string;
+}
+
+===== out/src/system/_types/Session.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import { UserWithRelations } from "./User.gen";
+export interface Session {
+    _id?: string;
+    sessionCode?: string;
+    provider: string;
+    userId: string;
+    /**
+     * expired time in unix timestamp format (ms)
+     */
+    expired: number;
+}
+
+/** Full DB relations — internal use only, no whitelist restriction */
+type UserWithRelationsWoSession = Omit<UserWithRelations, 'session'>;
+
+export interface SessionRelations {
+    user?: UserWithRelationsWoSession;
+}
+
+export type SessionWithRelations = Session & SessionRelations;
+
+/** API relations — restricted by restApi.joinWhitelist */
+export interface SessionApiRelations {
+
+}
+
+export type SessionWithApiRelations = Session & SessionApiRelations;
+
+===== out/src/system/_types/User.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import { SessionWithRelations } from "./Session.gen";
+import { UserAuthProfilesWithRelations } from "./UserAuthProfiles.gen";
+import { UserRoleWithRelations } from "./UserRole.gen";
+export interface User {
+    _id?: string;
+    email?: string;
+    name: string;
+    active: boolean;
+    locale?: string;
+    profileErrors?: string;
+}
+
+/** Full DB relations — internal use only, no whitelist restriction */
+type SessionWithRelationsWoUser = Omit<SessionWithRelations, 'user'>;
+
+type UserAuthProfilesWithRelationsWoUser = Omit<UserAuthProfilesWithRelations, 'user'>;
+
+type UserRoleWithRelationsWoUser = Omit<UserRoleWithRelations, 'user'>;
+
+export interface UserRelations {
+    session?: SessionWithRelationsWoUser;
+    userAuthProfiles?: UserAuthProfilesWithRelationsWoUser[];
+    userRole?: UserRoleWithRelationsWoUser[];
+}
+
+export type UserWithRelations = User & UserRelations;
+
+/** API relations — restricted by restApi.joinWhitelist */
+export interface UserApiRelations {
+
+}
+
+export type UserWithApiRelations = User & UserApiRelations;
+
+===== out/src/system/_types/UserAuthProfiles.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import { UserWithRelations } from "./User.gen";
+export interface UserAuthProfiles {
+    _id?: string;
+    userId?: string;
+    provider?: string;
+    oauthId?: string;
+    email?: string;
+    username?: string;
+    password?: string;
+}
+
+/** Full DB relations — internal use only, no whitelist restriction */
+type UserWithRelationsWoUserAuthProfiles = Omit<UserWithRelations, 'userAuthProfiles'>;
+
+export interface UserAuthProfilesRelations {
+    user?: UserWithRelationsWoUserAuthProfiles;
+}
+
+export type UserAuthProfilesWithRelations = UserAuthProfiles & UserAuthProfilesRelations;
+
+/** API relations — restricted by restApi.joinWhitelist */
+export interface UserAuthProfilesApiRelations {
+
+}
+
+export type UserAuthProfilesWithApiRelations = UserAuthProfiles & UserAuthProfilesApiRelations;
+
+===== out/src/system/_types/UserRole.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import { UserWithRelations } from "./User.gen";
+export interface UserRole {
+    _id?: string;
+    userId: string;
+    role: RoleEnum;
+}
+
+/** Full DB relations — internal use only, no whitelist restriction */
+type UserWithRelationsWoUserRole = Omit<UserWithRelations, 'userRole'>;
+
+export interface UserRoleRelations {
+    user?: UserWithRelationsWoUserRole;
+}
+
+export type UserRoleWithRelations = UserRole & UserRoleRelations;
+
+/** API relations — restricted by restApi.joinWhitelist */
+export interface UserRoleApiRelations {
+
+}
+
+export type UserRoleWithApiRelations = UserRole & UserRoleApiRelations;
+
+export enum RoleEnum {
+    member = "member"
+}
+
+===== out/src/system/_types/vex/index.ts =====
+export * from "./VexRepository.gen";
+export * from "./VexRequest.gen";
+export * from "./VexResponse.gen";
+export * from "./VexResOk.gen";
+export * from "./VexResErr.gen";
+
+===== out/src/system/_types/vex/VexRepository.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+
+import { Select, Filter, Join, VexPagination } from "./VexRequest.gen";
+
+/**
+ * DB-agnostic repository interface.
+ * Controllers and services talk only to this — the adapter layer (TypeORM/Mongoose) absorbs DB specifics.
+ */
+export interface VexRepository<T, U=undefined> {
+    find(filter: Filter<T>, join?: Join, select?: Select, pagination?: VexPagination): Promise<[U] extends [undefined] ? T[] : U[]>;
+    count(filter: Filter<T>): Promise<number>;
+    findOne(filter: Filter<T>, join?: Join, select?: Select): Promise<[U] extends [undefined] ? T | null : U | null>;
+    findOneWhere(filter: Filter<T>, join?: Join, select?: Select): Promise<[U] extends [undefined] ? T | null : U | null>;
+    create(data: Partial<T>): Promise<T>;
+    replace(id: string | undefined, data: Partial<T>): Promise<T | null>;
+    update(id: string | undefined, data: Partial<T>): Promise<T | null>;
+    delete(id: string | undefined): Promise<void>;
+    deleteWhere(filter: Filter<T>): Promise<void>;
+}
+
+===== out/src/system/_types/vex/VexRequest.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+export type FieldOperators = {
+  $in?: string[] | number[];
+  $nin?: string[] | number[];
+  $gt?: number | string;
+  $gte?: number | string;
+  $lt?: number | string;
+  $lte?: number | string;
+  $like?: string;
+  $raw?: string;
+};
+
+export type FieldFilter<V> = V | FieldOperators;
+
+export type Select = string[];
+
+export type Filter<T = any> = {
+  [K in keyof T]?: FieldFilter<T[K]>;
+} & {
+  $and?: Filter<T>[];
+  $or?: Filter<T>[];
+};
+
+export type Join = string[];
+
+export type SortOrder = "ASC" | "DESC";
+
+export type VexPagination = {
+  page?: number;
+  perPage?: number;
+  sort?: Record<string, SortOrder>;
+};
+
+export type PaginatedResult<T> = {
+  data: T[];
+  total?: number;
+  page?: number;
+  perPage?: number;
+};
+
+export interface VexRequest<T = any> {
+    select?: Select;
+    filter?: Filter<T>;
+    join?: Join;
+};
+
+===== out/src/system/_types/vex/VexResErr.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import { ResponseCode } from "./../../_utils/response.gen";
+import utils from "./../../_utils/index";
+
+export class VexResErr extends Error {
+    public status: number;
+    public ret_code: ResponseCode | string;
+    public ret_msg: any;
+
+    constructor(
+        status: number = 200, 
+        code?: ResponseCode | null,
+        message?: string,
+    ) {
+        super(message);
+        this.name = "VexResErr";
+        this.status = status;
+        this.ret_code = code || utils.response.statusCodeMap.get(status) || utils.response.code.SERVER_ERROR;
+        this.ret_msg = message || utils.response.msg.SERVER_ERROR;
+    }
+}
+
+===== out/src/system/_types/vex/VexResOk.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import { ResponseCode } from "./../../_utils/response.gen";
+
+export class VexResOk<T = unknown> extends Error {
+    public status: number;
+    public body?: {
+        code?: ResponseCode;
+        message?: string | null;
+        result?: T;
+    };
+
+    constructor(
+        status: number = 200,
+        body?: {
+            code?: ResponseCode;
+            message?: string | null;
+            result?: T;
+        }
+    ) {
+        super("VexResOk");
+        this.name = "VexResOk";
+        this.status = status;
+        this.body = body;
+    }
+}
+
+===== out/src/system/_types/vex/VexResponse.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import { ResponseCode } from "./../../_utils/response.gen";
+
+export interface VexResponse<T = unknown>{
+    ret_code?: ResponseCode;
+    ret_msg?: string | null;
+    elapse?: number;
+    result?: T;
+}
+
+===== out/src/system/_utils/hash.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import crypto from "crypto";
+// import log from "~/utils/logger";
+import { UserWithRelations } from "../_types/User.gen";
+
+/**
+ * Hashes a password with a salt (e.g., user email).
+ * @param plainPassword The plain text password to hash.
+ * @param salt The salt to use (e.g., user email).
+ * @param algorithm The hash algorithm (default: 'sha256').
+ * @returns The hashed password (hex encoded).
+ */
+export function hashPassword(
+    plainPassword: string,
+    salt: string,
+    algorithm: "sha256" = "sha256"
+): string {
+    return crypto.createHash(algorithm).update(plainPassword + salt).digest("hex");
+}
+
+/**
+ * Verifies if a plain password (with salt) matches a given hashed password.
+ * @param user The user object containing email and userAuthProfiles.
+ * @param plainPassword The plain text password to verify.
+ * @returns True if the password matches, false otherwise.
+ */
+export function verifyPassword(
+    user: UserWithRelations,
+    plainPassword: string,
+): boolean {
+    if(!user.email || !user.userAuthProfiles) {
+        // log.error(`User "${user._id}" email or userAuthProfiles missing for local auth's password verification.`);
+        return false;
+    }
+
+    const hashedPassword = user.userAuthProfiles.find((profile:any) => profile.provider === "local")?.password;
+    if(!hashedPassword) {
+        // log.error(`User "${user._id}" Local auth profile or password missing.`);
+        return false;
+    }
+
+    return hashPassword(plainPassword, user.email) === hashedPassword;
+}
+
+export default {
+    hashPassword,
+    verifyPassword
+};
+
+===== out/src/system/_utils/index.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import hash from "./hash.gen";
+import logger from "./logger.gen";
+import response from "./response.gen";
+import validator from "./validator.gen";
+
+export default {
+    hash,
+    log : logger,
+    response,
+    validator,
+};
+
+===== out/src/system/_utils/logger.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+export function processing(msg: any, ...optionalParams: any[]): void {
+    console.log("\x1b[34m%s\x1b[0m", "[PROCESSING]" , new Date().toLocaleString() +" -", msg, ...optionalParams);
+}
+
+export function ok(msg: any, ...optionalParams: any[]): void {
+    console.log("\x1b[32m%s\x1b[0m", "[OK]" , new Date().toLocaleString() +" -", msg, ...optionalParams);
+}
+
+export function info(msg: any, ...optionalParams: any[]): void {
+    console.log("\x1b[36m%s\x1b[0m", "[INFO]" , new Date().toLocaleString() +" -", msg, ...optionalParams);
+}
+
+export function warn(msg: any, ...optionalParams: any[]): void {
+    console.log("\x1b[33m%s\x1b[0m", "[WARN]" , new Date().toLocaleString() +" -", msg, ...optionalParams);
+}
+
+export function error(msg: any, ...optionalParams: any[]): void {
+    console.log("\x1b[41m%s\x1b[0m", "[ERROR]" , new Date().toLocaleString() +" -", msg, ...optionalParams);
+}
+
+export function errorExit(msg: any, ...optionalParams: any[]): never {
+    error(msg, ...optionalParams);
+    process.exit(1);
+}
+
+// wrapper 
+export function infoMongo(msg: any, ...optionalParams: any[]): void {
+    info("[MONGO]", msg, ...optionalParams);
+}
+
+export function errorMongo(msg: any, ...optionalParams: any[]): void {
+    error("[MONGO]", msg, ...optionalParams);
+}
+
+export function infoSql(msg: any, ...optionalParams: any[]): void {
+    info("[SQL]", msg, ...optionalParams);
+}
+
+export function errorSql(msg: any, ...optionalParams: any[]): void {
+    error("[SQL]", msg, ...optionalParams);
+}
+
+export default {
+    process : processing,
+    ok,
+    info,
+    warn,
+    errorExit,
+    error,
+
+    infoMongo,
+    errorMongo,
+    infoSql,
+    errorSql,
+};
+
+===== out/src/system/_utils/processTimer.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import { Request, Response, NextFunction } from "express";
+
+export default function processTimer(req: Request, res: Response, next: NextFunction) {
+    res.locals.startAt = Date.now(); 
+    next(); 
+}
+
+===== out/src/system/_utils/response.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import { Response } from "express";
+
+/**
+ * @param res express response object
+ * @param status http response code
+ * @param code response code
+ * @param message response message, default is response message by response code
+ * @param result response data
+ * @returns express response object
+ */
+export function send<T = undefined>(
+    res: Response,
+    status: number = 200,
+    body?: {
+        code?: ResponseCode,
+        message?: string | null,
+        result?: T,
+    }
+): Response<any, Record<string, any>> {
+    const noBody = !body || (body.code === undefined && body.message === undefined && body.result === undefined);
+
+    if (noBody) {
+        return res.status(status).send();
+    }
+    else {
+        const code: ResponseCode | undefined = body?.code ?? responseStatusCodeMap.get(status) ?? responseCode.SERVER_ERROR;
+        const msg: string | undefined = body?.message ?? (code ? responseMessage[code] : undefined);
+
+        return res.status(status)
+            .header({
+                "Content-Type": "application/json",
+            })
+            .json({
+                ret_code: code,
+                ret_msg: msg,
+                elapse: Date.now() - res.locals?.startAt || 0,
+                result: body?.result,
+            });
+    }
+}
+
+const responseMessage : Record<string, string> = {
+
+    DB_CONN_ERR: "Database connection error",
+    SERVER_ERROR: "Unknown Server Error",
+
+    success: "Success",
+
+    err_db_data: "Corrupted Database Record",
+
+    err_permission: "Permission Denied",
+
+    err_payload: "Invalid Request Payload",
+    err_query: "Invalid Request Query",
+    err_body: "Invalid Request Body",
+
+    err_validation: "Validation Error",
+    err_query_validation: "Query Validation Error",
+    err_body_validation: "Body Validation Error",
+
+    err_create: "Falied to Insert Data",
+    err_read: "Falied to Read Data",
+    err_update: "Falied to Edit Data",
+    err_delete: "Falied to Delete Data",
+};
+
+const responseCode = Object.keys(responseMessage).reduce((acc, key) => {
+    acc[key] = key as ResponseCode;
+    return acc;
+}, {} as Record<string, ResponseCode>);
+
+const responseStatusCodeMap = new Map<number, string>([
+    [100, "Continue"],
+    [101, "Switching Protocols"],
+    [102, "Processing"],
+    [103, "Early Hints"],
+    [200, responseCode.success],
+    [201, responseCode.success],
+    [202, responseCode.success],
+    [203, "Non-Authoritative Information"],
+    [204, "No Content"],
+    [205, "Reset Content"],
+    [206, "Partial Content"],
+    [207, "Multi-Status"],
+    [208, "Already Reported"],
+    [226, "IM Used"],
+    [300, "Multiple Choices"],
+    [301, "Moved Permanently"],
+    [302, "Found"],
+    [303, "See Other"],
+    [304, "Not Modified"],
+    [307, "Temporary Redirect"],
+    [308, "Permanent Redirect"],
+    [400, responseCode.err_payload],
+    [401, responseCode.err_permission],
+    [402, "Payment Required"],
+    [403, "Forbidden"],
+    [404, "Not Found"],
+    [405, "Method Not Allowed"],
+    [406, "Not Acceptable"],
+    [407, "Proxy Authentication Required"],
+    [408, "Request Timeout"],
+    [409, "Conflict"],
+    [410, "Gone"],
+    [411, "Length Required"],
+    [412, "Precondition Failed"],
+    [413, "Content Too Large"],
+    [414, "URI Too Long"],
+    [415, "Unsupported Media Type"],
+    [416, "Range Not Satisfiable"],
+    [417, "Expectation Failed"],
+    [418, "I'm a teapot"],
+    [421, "Misdirected Request"],
+    [422, "Unprocessable Content"],
+    [423, "Locked"],
+    [424, "Failed Dependency"],
+    [425, "Too Early"],
+    [426, "Upgrade Required"],
+    [428, "Precondition Required"],
+    [429, "Too Many Requests"],
+    [431, "Request Header Fields Too Large"],
+    [451, "Unavailable For Legal Reasons"],
+    [500, "Internal Server Error"],
+    [501, "Not Implemented"],
+    [502, "Bad Gateway"],
+    [503, "Service Unavailable"],
+    [504, "Gateway Timeout"],
+    [505, "HTTP Version Not Supported"],
+    [506, "Variant Also Negotiates"],
+    [507, "Insufficient Storage"],
+    [508, "Loop Detected"],
+    [510, "Not Extended"],
+    [511, "Network Authentication Required"],
+]);
+
+export type ResponseCode = string;
+
+export default {
+    send,
+    msg: responseMessage,
+    code: responseCode,
+    statusCodeMap: responseStatusCodeMap,
+};
+
+===== out/src/system/_utils/validator.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+export function checkObjectId(value:string): boolean {
+    return /^[0-9a-fA-F]{24}$/.test(value);
+}
+
+export default {
+    checkObjectId
+};
+
+===== out/tsconfig.json =====
+{
+    "compilerOptions": {
+      /* Visit https://aka.ms/tsconfig to read more about this file */
+        
+      "baseUrl": ".",
+      "paths": {
+        "@": ["src"],
+        "@/*": ["src/*"]
+      },
+      
+      /* Language and Environment */
+      "target": "es2021",                                  /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
+  
+      /* Modules */
+      "module": "commonjs", 
+  
+      /* Emit */
+      "outDir": "./dist",                                   /* Specify an output folder for all emitted files. */
+      "esModuleInterop": true,                             /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */
+      "forceConsistentCasingInFileNames": true,            /* Ensure that casing is correct in imports. */
+      "allowArbitraryExtensions": true,                    /* Allow arbitrary file extensions. */
+      
+      /* Type Checking */
+      "experimentalDecorators": true,                     /* Enable experimental support for TC39 stage 2+ decorators. */
+      "emitDecoratorMetadata": true,                       /* Emit design-type metadata for decorated declarations. */
+      "strict": true,                                      /* Enable all strict type-checking options. */
+      "skipLibCheck": true                                 /* Skip type checking all .d.ts files. */
+    }
+  }
+  
+
+===== out/tsoa.json =====
+{
+    "entryFile": "src/server.ts",
+    "noImplicitAdditionalProperties": "throw-on-extras",
+    "controllerPathGlobs": [
+        "src/system/_controllers/**Controller.gen.ts",
+        "!src/system/_controllers/SessionController.gen.ts"
+    ],
+    "spec": {
+        "outputDirectory": "src/openapi",
+        "specVersion": 3,
+        "basePath": "/api",
+        "securityDefinitions": {
+            "BearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            },
+            "AuthIndex": {
+                "type": "apiKey",
+                "in": "header",
+                "name": "X-Auth-Index"
+            }
+        }
+    },
+    "routes": {
+        "routesDir": "src/system/_routes",
+        "routesFileName": "tsoa_routes.ts",
+        "basePath": "/api",
+        "middleware": "express",
+        "authenticationModule": "src/system/_middlewares/tsoaAuthentication.gen.ts"
+    }
+}
