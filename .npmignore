@@ -3,12 +3,16 @@ plan/
 output/
 tsc_out/
 
+# Test suites and the e2e harness state (generated app + its npm cache) — not needed in the package
+test/
+
 # Dependency directories
 node_modules/
 jspm_packages/
 
 # Optional npm cache directory
 .npm
+.npm-cache/
 
 # Compiled binary addons (https://nodejs.org/api/addons.html)
 build/Release
