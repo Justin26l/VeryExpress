@@ -18,6 +18,11 @@ interface tokenObj {
     clientIndex?: string
 }
 
+function rolesOf(user: unknown): string[] {
+    const relation = (user as { userRole?: Array<{ role: string }> }).userRole;
+    return Array.isArray(relation) ? relation.map((r) => r.role) : [];
+}
+
 export default class JWTService {
     private keyStore = new JWTKeyStore();
 
@@ -108,7 +113,7 @@ export default class JWTService {
             email: user.email,
             name: user.name,
             locale: user.locale,
-            roles: user.userRole?.map((r: any) => r.role) || [],
+            roles: rolesOf(user),
             profileErrors: user.profileErrors,
             active: user.active
         };

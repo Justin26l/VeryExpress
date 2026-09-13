@@ -34,7 +34,7 @@ export default function controllerTemplate(templateOptions: {
     const decoratorNames: string[] = [];
     decoratorNames.push("Route", "Tags", "Body", "Path", "Query", "SuccessResponse");
     if (useRBAC || restApiJoinWhitelist || dataIsolation) decoratorNames.push("Middlewares");
-    if (useRBAC) decoratorNames.push("Security");
+    if (useAuth) decoratorNames.push("Security");
     if (restApiMethods.includes("get"))                                decoratorNames.push("Get");
     if (restApiMethods.includes("post") || restApiMethods.includes("getList")) decoratorNames.push("Post");
     if (restApiMethods.includes("put"))                                decoratorNames.push("Put");
@@ -56,8 +56,11 @@ export default function controllerTemplate(templateOptions: {
     if (useAuth) {
         if (dataIsolation) classDecoratorLines.push("@Middlewares(DataIsolationContext.middleware)");
         classDecoratorLines.push("@Middlewares(Authentication.middleware)");
-        classDecoratorLines.push("@Security(\"BearerAuth\")");
-        classDecoratorLines.push("@Security(\"AuthIndex\")");
+        // One security requirement object holds BOTH schemes, which OpenAPI reads as
+        // AND: every listed scheme must be satisfied. Two separate `@Security(...)`
+        // decorators instead document them as alternatives (OR), which contradicted
+        // the middleware — it rejects a request carrying only one of the headers.
+        classDecoratorLines.push("@Security({ BearerAuth: [], AuthIndex: [] })");
     }
     const classDecorators = classDecoratorLines.length > 0 ? classDecoratorLines.join("\n") + "\n" : "";
 

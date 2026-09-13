@@ -15,6 +15,37 @@ Route path is always `documentName.toLowerCase()`:
 
 Auth middleware for the generated app: `src/templates/_middlewares/tsoaAuthentication.ts`, handling the `BearerAuth` and `AuthIndex` security schemes.
 
+### Both credentials are required
+
+Secured operations need **both**:
+
+```
+Authorization: Bearer <accessToken>
+X-Auth-Index: <accessTokenIndex>
+```
+
+(`accessTokenIndex` comes back from the token endpoint alongside `accessToken`; it
+selects the rolling JWT key slot.) Sending only one header returns 401.
+
+Controllers declare this as a single security requirement object:
+
+```ts
+@Security({ BearerAuth: [], AuthIndex: [] })
+```
+
+OpenAPI reads one requirement object listing two schemes as **AND**; two separate
+`@Security("BearerAuth")` / `@Security("AuthIndex")` decorators produce two requirement
+objects, which means **OR** — i.e. "either credential suffices", contradicting the
+middleware. The single-object form keeps the emitted spec honest.
+
+Note `/api/auth/token` is **not** a login endpoint: it takes `?code=` from a session and
+exchanges it for tokens. Local login goes through `/api/auth/local`, which answers 302
+with `{ result: { url: "...?code=..." } }`.
+
+The `@Security` decorator and its tsoa import are both gated on auth being enabled;
+they must use the same condition, or the generated controller references an
+unimported decorator.
+
 ## Route kinds
 
 | Kind | Output | Generator |

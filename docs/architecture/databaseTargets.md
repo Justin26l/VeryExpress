@@ -40,6 +40,26 @@ deleteWhere(filter)
 
 Both are static templates — file extensions are `.ts` in-repo, copied as `.gen.ts` into the generated app.
 
+### The Mongo target does not currently type-check
+
+`npm run test:e2e` compiles a generated app per config variant. The Mongoose variant
+is asserted with `it.fails` because it fails with **8 TypeScript errors with auth off
+and 11 with it on**. These are independent of RBAC and of auth being enabled:
+
+| Error | Where |
+|---|---|
+| `declares 'User' locally, but it is not exported` | `_models/*Model.gen.ts` do not re-export the entity types their importers expect (the TypeORM generator does: `export * from "./../_types/User.gen"`) |
+| `has no exported member 'UserWithRelations'` | same — the relations type is not surfaced by the Mongoose model template |
+| `'{ type: StringConstructor, … ref: {...} }' is not assignable to 'SchemaDefinitionProperty'` | Mongoose model template's `ref` shape |
+| `VexRepository<UserDocument…> is not assignable to VexRepository<User>` | the Mongoose adapter's generics |
+
+Consequence: `vex` with `dbType: "mongo"` produces an app that cannot be built with
+`npm run build` (`tsc -p .`). The golden scenarios still cover the mongo *output text*,
+which is why this went unnoticed — goldens compare text, they do not compile.
+
+`test/e2e/compile.test.ts` turns red once the Mongoose target compiles, as a prompt to
+move it into the passing variant matrix.
+
 ## Filter operators
 
 The SQL adapter maps the filter DSL (`$and`, `$or`, `$like`, `$in`, comparison operators) onto TypeORM `FindOptions`. See [`docs/features/filterOperators.md`](../features/filterOperators.md).

@@ -20,3 +20,35 @@ export function normalizeContent(content: string, workDir: string): string {
         // a checkout on Windows must not fail every scenario
         .replace(/\r\n/g, "\n");
 }
+
+/** Recursively sort object keys so serialization does not depend on insertion order. */
+function sortKeys(value: unknown): unknown {
+    if (Array.isArray(value)) return value.map(sortKeys);
+    if (value && typeof value === "object") {
+        return Object.fromEntries(
+            Object.entries(value as Record<string, unknown>)
+                .sort(([a], [b]) => a.localeCompare(b))
+                .map(([k, v]) => [k, sortKeys(v)]),
+        );
+    }
+    return value;
+}
+
+/**
+ * Canonicalize `.vex/meta.json`.
+ *
+ * Its key order is a byproduct of the order files happened to be written in — pure
+ * implementation detail. Reordering two `copyDir` calls once rewrote four golden
+ * files while the generated output was byte-identical. Sorting the keys keeps the
+ * golden sensitive to what actually matters (which files are tracked, and their
+ * `allowOverwrite` / version values) without pinning incidental write order.
+ */
+export function canonicalizeMetaJson(content: string): string {
+    try {
+        return `${JSON.stringify(sortKeys(JSON.parse(content)), null, 2)}\n`;
+    }
+    catch {
+        // never let a normalization helper be the reason a golden test fails
+        return content;
+    }
+}

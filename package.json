@@ -18,7 +18,8 @@
         "postversion": "git push && git push --tags",
         "test": "npm run compile && vitest run",
         "test:watch": "vitest",
-        "test:update": "npm run compile && UPDATE_GOLDEN=1 vitest run"
+        "test:update": "npm run compile && UPDATE_GOLDEN=1 vitest run",
+        "test:e2e": "npm run compile && VEX_E2E=1 vitest run test/e2e"
     },
     "keywords": [
         "jsonSchema",

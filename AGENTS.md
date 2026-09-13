@@ -35,6 +35,7 @@ Bundled to a single `dist/index.js` (esbuild, platform: node, target: es2016). `
 npm test              # compile, then run every test
 npm run test:update   # recompile and rewrite the golden files
 npm run test:watch    # vitest in watch mode (no compile step)
+npm run test:e2e      # boot a real generated app + Postgres and drive it over HTTP (slow)
 ```
 
 `test/unit/` covers pure internals. `test/golden.test.ts` runs a full generation per
@@ -42,8 +43,13 @@ scenario in an isolated temp dir and compares the whole output tree against a
 committed golden file — this is the main regression net for generator and template
 changes. `npm test` compiles first because the golden tests spawn `dist/index.js`.
 
+`test/e2e/contract.test.ts` is opt-in (`test:e2e`): it installs the generated app's
+own dependencies, boots it against a Docker Postgres and asserts the HTTP contract.
+Too slow for `npm test`, but it is the only layer that proves a generated app actually
+compiles, starts and serves. See [`test/README.md`](test/README.md).
+
 When a golden changes, decide whether the new output is correct before running
-`test:update`. See [`test/README.md`](test/README.md).
+`test:update`.
 
 ## Input schemas
 

@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { goldenDir } from "./paths";
-import { normalizeContent } from "./normalize";
+import { canonicalizeMetaJson, normalizeContent } from "./normalize";
 
 const FILE_SEPARATOR = "=====";
 
@@ -41,7 +41,8 @@ export function dumpTree(outDir: string, workDir: string, scenario: string): str
     for (const rel of walk(outDir)) {
         const absolute = path.join(outDir, rel);
         const raw = fs.readFileSync(absolute, "utf8");
-        const normalized = normalizeContent(raw, workDir);
+        let normalized = normalizeContent(raw, workDir);
+        if (rel === ".vex/meta.json") normalized = canonicalizeMetaJson(normalized);
         lines.push(`${FILE_SEPARATOR} out/${rel} ${FILE_SEPARATOR}`);
         lines.push(normalized.endsWith("\n") ? normalized.trimEnd() : normalized);
         lines.push("");

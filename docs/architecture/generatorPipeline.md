@@ -127,7 +127,6 @@ an explicit `false`.
 |---|---|
 | `app.enableSwagger` | `?? true` — omitting the key enables swagger; an explicit `false` disables it (`routeGen` skips `SwaggerRouter.gen.ts` and `serverGen` omits its wiring) |
 | `useRBAC` | Opt-in. If the key is absent, or `roles` is empty, `useRBAC` is normalised to `undefined` and generation runs without RBAC |
-| `app.useUserSchema` | Still uses `\|\| true` — an explicit `false` is ignored. Same defect class as the old `enableSwagger` bug; the `false` path is untested, so it was left alone deliberately |
 
 ## RBAC is opt-in
 
