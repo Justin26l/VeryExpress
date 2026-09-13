@@ -66,7 +66,7 @@ The SQL adapter maps the filter DSL (`$and`, `$or`, `$like`, `$in`, comparison o
 
 ## Data isolation (row-level ownership)
 
-Declared per entity in `x-documentConfig.restApi → dataIsolation: { field: "ownerId" }`.
+Declared per entity in `x-documentConfig → dataIsolation: { field: "ownerId" }`.
 
 Generation produces three pieces:
 
@@ -75,6 +75,16 @@ Generation produces three pieces:
 3. The TypeORM adapter reads the user ID from that context and injects `{ [field]: userId }` into every query — transparent row-level ownership, no per-controller code
 
 Full guide: [`docs/features/dataIsolation.md`](../features/dataIsolation.md).
+
+## Auto-written audit fields
+
+Columns declared with a reserved `default` keyword (`onCreateTimestamp`, `onUpdateUserId`, …) are filled by
+the repository adapters on `create` / `update` / `replace` — a shared helper strips client-supplied values
+first, then injects per write phase. Both targets implement it; the entity → field map comes from
+`VexFieldRegistry.gen.ts` (`src/generators/middlewares/vexFieldRegistry.generator.ts`), which also exports the
+`x-vexData: "userId"` identity field the token pipeline reads.
+
+Guide: [`docs/features/auditFields.md`](../features/auditFields.md).
 
 ## Join whitelist
 

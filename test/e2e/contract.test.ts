@@ -129,6 +129,33 @@ describeE2E("generated app — end-to-end contract", () => {
         )._id;
     });
 
+    /**
+     * The auth service resolves the identity through the token claim, not through a hardcoded
+     * `_id` — that is what lets the audit fields follow the schema's `x-vexData: "userId"` field.
+     */
+    it("carries the identity claims in the access token, and not in the profile", async () => {
+        const login = await fetch(`${app.baseUrl}/api/auth/local`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+        });
+        const code = new URL(`http://localhost${(await login.json()).result.url}`).searchParams.get("code");
+        const { result } = await (await fetch(`${app.baseUrl}/api/auth/token?code=${code}`, { method: "POST" })).json();
+
+        const claims = JSON.parse(Buffer.from(result.accessToken.split(".")[1], "base64url").toString("utf8"));
+        expect(claims.vexUserId).toBe(userId);
+        expect(claims.vexRole).toEqual(["admin"]);
+
+        // long-lived refresh tokens carry the identity pointer only — roles would go stale
+        const refreshClaims = JSON.parse(Buffer.from(result.refreshToken.split(".")[1], "base64url").toString("utf8"));
+        expect(refreshClaims.vexUserId).toBe(userId);
+        expect(refreshClaims.vexRole).toBeUndefined();
+
+        // the existing profile fields stay in the payload, so clients depending on them keep working
+        expect(claims.email).toBe(email);
+        expect(claims.roles).toEqual(["admin"]);
+    });
+
     it("rejects an unauthenticated request to a secured operation", async () => {
         const res = await fetch(`${app.baseUrl}/api/user/${userId}`);
         expect(res.status).toBe(401);
@@ -161,6 +188,44 @@ describeE2E("generated app — end-to-end contract", () => {
 
         const check = await fetch(`${app.baseUrl}/api/user/${userId}`, { headers: authHeaders() });
         expect((await check.json()).result.name).toBe(name);
+    });
+
+    /**
+     * Audit fields are declared with reserved `default` keywords in the schema; the adapter
+     * owns them. Registration created this row without a request context, so `createdBy`
+     * stays NULL there — the write path must not fall over when there is no identity.
+     */
+    it("writes createdAt on create and leaves createdBy NULL without a request context", async () => {
+        const res = await fetch(`${app.baseUrl}/api/user/${userId}`, { headers: authHeaders() });
+        const user = (await res.json()).result;
+
+        expect(user.createdAt, "onCreateTimestamp").toBeTruthy();
+        expect(new Date(user.createdAt).toString()).not.toBe("Invalid Date");
+        expect(user.createdBy ?? null, "no ALS context during register").toBeNull();
+    });
+
+    /**
+     * `onCreate*` is written once: an update strips it and never re-injects, which is what makes
+     * the ownership columns trustworthy. The caller cannot set them either — forged values are dropped.
+     */
+    it("keeps createdAt and createdBy across an update, and rejects forged audit values", async () => {
+        const before = (await (await fetch(`${app.baseUrl}/api/user/${userId}`, { headers: authHeaders() })).json()).result;
+        const forged = "00000000-0000-0000-0000-0000000000ff";
+
+        const res = await fetch(`${app.baseUrl}/api/user/${userId}`, {
+            method: "PATCH",
+            headers: { ...authHeaders(), "Content-Type": "application/json" },
+            body: JSON.stringify({ name: `Audited ${Date.now()}`, createdBy: forged, createdAt: "1999-01-01T00:00:00.000Z", updatedBy: forged }),
+        });
+        expect(res.status).toBe(200);
+
+        const after = (await (await fetch(`${app.baseUrl}/api/user/${userId}`, { headers: authHeaders() })).json()).result;
+
+        expect(after.createdAt).toBe(before.createdAt);
+        expect(after.createdBy ?? null).toBe(before.createdBy ?? null);
+        expect(after.createdBy).not.toBe(forged);
+        expect(after.updatedAt, "onUpdateTimestamp").toBeTruthy();
+        expect(after.updatedBy, "onUpdateUserId comes from the request context").toBe(userId);
     });
 
     /**

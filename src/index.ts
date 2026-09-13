@@ -7,6 +7,7 @@ import utils from "./utils";
 import log from "./utils/logger";
 import { applyFkMetadata } from "./preprocess/jsonSchemaForeignKeys";
 import { formatJsonSchema, formatJsonSchemaRoleDefinition } from "./preprocess/jsonschemaFormat";
+import { validateAuditFields } from "./preprocess/auditFields";
 
 import * as types from "./types/types";
 import * as userSchemaGen from "./generators/projectSettings/userSchema.generator";
@@ -23,6 +24,7 @@ import * as mongooseModelGen from "./generators/db/mongooseModel.generator";
 import * as interfaceGen from "./generators/interface/generator";
 import * as joinWhitelistRegistryGen from "./generators/middlewares/joinWhitelistRegistry.generator";
 import * as dataIsolationRegistryGen from "./generators/middlewares/dataIsolationRegistry.generator";
+import * as vexFieldRegistryGen from "./generators/middlewares/vexFieldRegistry.generator";
 
 export async function generate(
     options: types.compilerOptions
@@ -115,6 +117,9 @@ export async function generate(
     });
     applyFkMetadata(documents);
 
+    // audit / ownership declarations are cross-document (one identity source) — validate once
+    validateAuditFields(documents);
+
     // ===== Start Generations ===== //
 
     // generate role & permissions
@@ -179,6 +184,13 @@ export async function generate(
     // generate data isolation registry (entity → ownership field mapping, used by TypeOrmRepositoryAdapter)
     await dataIsolationRegistryGen.compile({
         allSchemas: documents.map(d => d.schema),
+        middlewareDir: dir.middlewareDir,
+    });
+
+    // generate vex field registry (entity → auto-written audit fields + identity field, used by both adapters)
+    await vexFieldRegistryGen.compile({
+        allSchemas: documents.map(d => d.schema),
+        documents: documents.map(d => ({ path: d.path, schema: d.schema })),
         middlewareDir: dir.middlewareDir,
     });
 

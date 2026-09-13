@@ -29,7 +29,8 @@ import * as controllerFactory from "./_ControllerFactory.gen";
 import JWTService from "../_services/auth/JWTService.gen";
 import VexDb from "../_services/VexDb.gen";
 import { SessionEntity, Session } from "../_models/SessionModel.gen";
-import { VexRepository, VexResponse, VexResErr, VexResOk } from "../_types/vex";
+import { VexRepository, VexResponse, VexResErr, VexResOk, Filter } from "../_types/vex";
+import { vexUserIdField } from "../_middlewares/VexFieldRegistry.gen";
 import { tokenResponse, refreshTokenResponse${localAuth ? ', registerResponse, localLoginResponse' : '' } } from "../_types/auth.gen";
 
 import utils from "../_utils";
@@ -63,7 +64,7 @@ ${OAuthNote}
         if (!user) throw new VexResErr(404, null, "Invalid User Id");
         
         const accessToken = await this.JWTService.generateAccessToken(user);
-        const refreshToken = this.JWTService.generateRefreshToken({ _id: user._id });
+        const refreshToken = this.JWTService.generateRefreshToken({ vexUserId: this.JWTService.userIdOf(user) });
         
         throw new VexResOk(200, { result: {
             accessToken: accessToken.token,
@@ -83,7 +84,12 @@ ${OAuthNote}
     ): Promise<VexResponse<refreshTokenResponse>> {
         const payload = this.JWTService.verifyToken(body.refreshToken, body.refreshTokenIndex);
         
-        const user = await this.userRepo.findOne({ _id: payload._id }${useRBAC ? ', ["userRole"]' : ''});
+        // vexUserId is the schema-declared identity; _id keeps refresh tokens issued before it working
+        const userId = payload.vexUserId ?? payload._id;
+        if (!userId) throw new VexResErr(401, null, "Invalid refresh token");
+        const identity = { [vexUserIdField]: userId } as unknown as Filter;
+
+        const user = await this.userRepo.findOne(identity${useRBAC ? ', ["userRole"]' : ''});
         if (!user) throw new VexResErr(404, null, "Invalid User Id");
         
         const accessToken = await this.JWTService.generateAccessToken(user);

@@ -108,7 +108,7 @@ This file covers only what every session needs. Deeper material lives in `docs/`
 | [`docs/ForeignKey.md`](docs/ForeignKey.md) | FK joins via the API `join` parameter |
 | [`docs/developmentNote.md`](docs/developmentNote.md) | Why no ts-node, esbuild/dist working dir, `FUNC{{ }}` intent |
 | [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) | Setup, branch/PR workflow, PR checklist |
-| [`docs/features/`](docs/features/) | rbac, dataIsolation, filterOperators, joinWhitelist |
+| [`docs/features/`](docs/features/) | rbac, dataIsolation, filterOperators, joinWhitelist, auditFields |
 | [`docs/appGenerated/auth.md`](docs/appGenerated/auth.md) | JWT rolling keys, OAuth2 providers |
 | [`docs/roadMap/`](docs/roadMap/) | Released features and version milestones |
 | [`docs/releaseNote/`](docs/releaseNote/) | Per-version release notes |

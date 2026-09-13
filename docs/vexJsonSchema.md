@@ -49,7 +49,7 @@ Each `.json` file defines one REST resource. Filename must match `x-documentConf
 | `format` | `string` | JSON Schema format hint, e.g. `email`, `date-time` |
 | `index` | `boolean` | Create DB index on this field |
 | `enum` | `array<string>` | Restrict values to this list |
-| `default` | `any` | Default value |
+| `default` | `any` | Default value. Six reserved keyword values make the DB layer fill the field itself — see [auto-written audit fields](#auto-written-audit-fields-default-keywords) |
 | `minLength` / `maxLength` | `number` | String length constraints (used in validator) |
 | `minimum` / `maximum` | `number` | Number constraints (used in validator) |
 | `description` | `string` | OpenAPI description |
@@ -64,8 +64,11 @@ Each `.json` file defines one REST resource. Filename must match `x-documentConf
 | Value | Description |
 | --- | --- |
 | `Primary` | Marks field as primary key (`_id`). Auto-indexed. |
-| `UUID` | UUID string field |
+| `PrimaryUUID` | Primary key stored as a UUID column (SQL: `uuid`) |
+| `UUID` | UUID string field (SQL: `uuid`) |
 | `ObjectId` | MongoDB ObjectId (mongo mode) |
+| `UnixTimestamp` | Integer epoch **seconds** (SQL: `bigint`) |
+| `Timestamp` | ISO-8601 datetime (SQL: `timestamptz`, mapped back to an ISO string) |
 | `enum` | Enum field — pair with `enum` array |
 
 ### `x-vexData` values
@@ -73,6 +76,36 @@ Each `.json` file defines one REST resource. Filename must match `x-documentConf
 | Value | Description |
 | --- | --- |
 | `role` | Marks this field as the RBAC role field. Required for role-based access control to work. |
+| `userId` | Marks the field that holds the identity value. Declare it **exactly once**, on the account schema (`User._id`) — every `onXXUserId` audit field is filled from it. |
+
+---
+
+## Auto-written audit fields (`default` keywords)
+
+A field whose `default` is one of the reserved keywords below is owned by the DB layer: the
+repository adapter strips any client-supplied value and writes the correct one per write phase.
+Works for both `sql` and `mongo` targets. Full reference:
+[`docs/features/auditFields.md`](features/auditFields.md).
+
+| `default` keyword | field declaration | written on |
+| --- | --- | --- |
+| `onCreateTimestamp` | `{ "type": "string", "x-format": "Timestamp" }` | create only |
+| `onCreateUnixTimestamp` | `{ "type": "integer", "x-format": "UnixTimestamp" }` | create only |
+| `onUpdateTimestamp` | `{ "type": "string", "x-format": "Timestamp" }` | update / replace only |
+| `onUpdateUnixTimestamp` | `{ "type": "integer", "x-format": "UnixTimestamp" }` | update / replace only |
+| `onCreateUserId` | `{ "type": "string", "x-format": "UUID" }` | create only |
+| `onUpdateUserId` | `{ "type": "string", "x-format": "UUID" }` | update / replace only |
+
+```jsonc
+"createdAt": { "type": "string",  "x-format": "Timestamp", "default": "onCreateTimestamp" },
+"createdBy": { "type": "string",  "x-format": "UUID",      "default": "onCreateUserId" },
+"updatedAt": { "type": "string",  "x-format": "Timestamp", "default": "onUpdateTimestamp" },
+"updatedBy": { "type": "string",  "x-format": "UUID",      "default": "onUpdateUserId" }
+```
+
+Generation fails early on a contradiction: an unknown `x-vexData` value, an `onXXUserId` field whose
+column type differs from the tagged identity field, a mismatched timestamp keyword, a missing identity
+field, or an audit field marked `required`.
 
 ---
 

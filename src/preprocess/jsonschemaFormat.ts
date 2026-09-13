@@ -114,6 +114,7 @@ const X_FORMAT_VALID_TYPES: Record<string, string[]> = {
     [types.xFormatType.UUID]:          ["string"],
     [types.xFormatType.ObjectId]:      ["string"],
     [types.xFormatType.UnixTimestamp]: ["integer"],
+    [types.xFormatType.Timestamp]:     ["string"],
 };
 
 function checkXFormatType(schema: types.jsonSchema, jsonSchemaPath: string): void {

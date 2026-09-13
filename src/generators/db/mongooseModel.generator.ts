@@ -1,9 +1,9 @@
 import utils from "../../utils";
 import log from "../../utils/logger";
-import fs from "fs";
 import * as types from "../../types/types";
 import path from "path";
 import j2m from "json2mongoose";
+import { hasReservedDefaults, stripReservedDefaults } from "../../preprocess/auditFields";
 
 const { modelsGen } = j2m;
 
@@ -20,15 +20,20 @@ export async function compile(options: {
     const typeRelPath = path.relative(options.outDir, options.typeDir).replace(/\\/g, "/");
     const outPath = `${options.outDir}/${documentName}Model.gen.ts`;
 
-    modelsGen.compileFromFile(
-        options.schemaPath,
+    // json2mongoose copies `default` straight into the mongoose schema, where a reserved audit
+    // keyword would become a literal string default. Feed it a sanitized copy — the adapter
+    // owns the audit values, the declaration stays in the source schema.
+    const schema = hasReservedDefaults(options.jsonSchema)
+        ? stripReservedDefaults(options.jsonSchema)
+        : options.jsonSchema;
+
+    const content: string = modelsGen.json2Mongoose(
+        schema as never,
         `${typeRelPath}/${documentName}.gen`,
-        outPath,
-        { use_id: true },
+        { use_id: true } as never,
     );
 
     // rename export to match controller expectations (${doc}Entity)
-    const content: string = fs.readFileSync(outPath, "utf8");
     const patched = content
         .replace(/export const \w+Model\b/g, `export const ${documentName}Entity`)
         .replace(/mongoose\.model<\w+Document>\("\w+"/g, `mongoose.model<${documentName}Document>("${documentName}"`);

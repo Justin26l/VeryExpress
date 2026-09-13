@@ -57,12 +57,24 @@
             "description": "Soft-delete / account suspension flag"
         },
         "createdAt": {
-            "type": "integer",
-            "x-format": "UnixTimestamp"
+            "type": "string",
+            "x-format": "Timestamp",
+            "default": "onCreateTimestamp"
+        },
+        "createdBy": {
+            "type": "string",
+            "x-format": "UUID",
+            "default": "onCreateUserId"
         },
         "updatedAt": {
-            "type": "integer",
-            "x-format": "UnixTimestamp"
+            "type": "string",
+            "x-format": "Timestamp",
+            "default": "onUpdateTimestamp"
+        },
+        "updatedBy": {
+            "type": "string",
+            "x-format": "UUID",
+            "default": "onUpdateUserId"
         }
     },
     "required": [

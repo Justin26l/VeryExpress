@@ -39,330 +39,334 @@ JWT_SECRET0='my-secret-key0'
       "schemas": {
         "Session.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.7.9"
+          "lastWriteVersion": "0.8.0"
         },
         "User.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.7.9"
+          "lastWriteVersion": "0.8.0"
         },
         "UserAuthProfiles.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.7.9"
+          "lastWriteVersion": "0.8.0"
         },
         "UserRole.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.7.9"
+          "lastWriteVersion": "0.8.0"
         }
       },
       "vex.config.json": {
         "allowOverwrite": true,
-        "lastWriteVersion": "0.7.9"
+        "lastWriteVersion": "0.8.0"
       }
     },
     ".env": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.7.9"
+      "lastWriteVersion": "0.8.0"
     },
     "Dockerfile": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.7.9"
+      "lastWriteVersion": "0.8.0"
     },
     "package.json": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.7.9"
+      "lastWriteVersion": "0.8.0"
     },
     "public": {
       "css": {
         "style.css": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.7.9"
+          "lastWriteVersion": "0.8.0"
         }
       },
       "js": {
         "login.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.7.9"
+          "lastWriteVersion": "0.8.0"
         },
         "logincallback.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.7.9"
+          "lastWriteVersion": "0.8.0"
         },
         "mytokens.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.7.9"
+          "lastWriteVersion": "0.8.0"
         },
         "refreshtokens.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.7.9"
+          "lastWriteVersion": "0.8.0"
         }
       }
     },
     "README.md": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.7.9"
+      "lastWriteVersion": "0.8.0"
     },
     "scripts": {
       "build.js": {
         "allowOverwrite": true,
-        "lastWriteVersion": "0.7.9"
+        "lastWriteVersion": "0.8.0"
       },
       "oacg-fix.js": {
         "allowOverwrite": true,
-        "lastWriteVersion": "0.7.9"
+        "lastWriteVersion": "0.8.0"
       }
     },
     "src": {
       "roles": {
         "admin.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.7.9"
+          "lastWriteVersion": "0.8.0"
         },
         "member.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.7.9"
+          "lastWriteVersion": "0.8.0"
         },
         "visitor.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.7.9"
+          "lastWriteVersion": "0.8.0"
         }
       },
       "server.ts": {
         "allowOverwrite": true,
-        "lastWriteVersion": "0.7.9"
+        "lastWriteVersion": "0.8.0"
       },
       "system": {
         "_controllers": {
           "_ControllerFactory.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.0"
           },
           "AuthController.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.0"
           },
           "UserController.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.0"
           }
         },
         "_middlewares": {
           "Authentication.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.0"
           },
           "DataIsolationContext.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.0"
           },
           "DataIsolationRegistry.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.0"
           },
           "JoinWhitelistMiddleware.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.0"
           },
           "JoinWhitelistRegistry.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.0"
           },
           "RoleBaseAccessControl.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.0"
           },
           "tsoaAuthentication.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.0"
+          },
+          "VexFieldRegistry.gen.ts": {
+            "allowOverwrite": true,
+            "lastWriteVersion": "0.8.0"
           }
         },
         "_models": {
           "SessionModel.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.0"
           },
           "UserAuthProfilesModel.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.0"
           },
           "UserModel.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.0"
           },
           "UserRoleModel.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.0"
           }
         },
         "_roles": {
           "_RoleFactory.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.0"
           },
           "admin.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.0"
           },
           "index.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.0"
           },
           "member.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.0"
           },
           "visitor.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.0"
           }
         },
         "_routes": {
           "AuthRouter.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.0"
           },
           "LoginUI.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.0"
           },
           "oauth": {
             "OAuthRouteFactory.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.7.9"
+              "lastWriteVersion": "0.8.0"
             }
           },
           "SwaggerRouter.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.0"
           }
         },
         "_services": {
           "auth": {
             "JWTKeyStore.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.7.9"
+              "lastWriteVersion": "0.8.0"
             },
             "JWTService.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.7.9"
+              "lastWriteVersion": "0.8.0"
             }
           },
           "MongooseRepositoryAdapter.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.0"
           },
           "oauth": {
             "OAuthProfileMap.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.7.9"
+              "lastWriteVersion": "0.8.0"
             },
             "OAuthStrategyService.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.7.9"
+              "lastWriteVersion": "0.8.0"
             }
           },
           "TypeOrmRepositoryAdapter.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.0"
           },
           "VexDb.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.0"
           },
           "VexDbConnector.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.0"
           },
           "VexSystem.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.0"
           }
         },
         "_types": {
           "auth.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.0"
           },
           "Session.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.0"
           },
           "User.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.0"
           },
           "UserAuthProfiles.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.0"
           },
           "UserRole.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.0"
           },
           "vex": {
             "index.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.7.9"
+              "lastWriteVersion": "0.8.0"
             },
             "VexRepository.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.7.9"
+              "lastWriteVersion": "0.8.0"
             },
             "VexRequest.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.7.9"
+              "lastWriteVersion": "0.8.0"
             },
             "VexResErr.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.7.9"
+              "lastWriteVersion": "0.8.0"
             },
             "VexResOk.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.7.9"
+              "lastWriteVersion": "0.8.0"
             },
             "VexResponse.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.7.9"
+              "lastWriteVersion": "0.8.0"
             }
           }
         },
         "_utils": {
           "hash.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.0"
           },
           "index.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.0"
           },
           "logger.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.0"
           },
           "processTimer.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.0"
           },
           "response.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.0"
           },
           "validator.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.0"
           }
         }
       }
     },
     "tsconfig.json": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.7.9"
+      "lastWriteVersion": "0.8.0"
     },
     "tsoa.json": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.7.9"
+      "lastWriteVersion": "0.8.0"
     }
   },
-  "lastGeneratedVersion": "0.7.9"
+  "lastGeneratedVersion": "0.8.0"
 }
 
 ===== out/Dockerfile =====
@@ -939,7 +943,8 @@ import * as controllerFactory from "./_ControllerFactory.gen";
 import JWTService from "../_services/auth/JWTService.gen";
 import VexDb from "../_services/VexDb.gen";
 import { SessionEntity, Session } from "../_models/SessionModel.gen";
-import { VexRepository, VexResponse, VexResErr, VexResOk } from "../_types/vex";
+import { VexRepository, VexResponse, VexResErr, VexResOk, Filter } from "../_types/vex";
+import { vexUserIdField } from "../_middlewares/VexFieldRegistry.gen";
 import { tokenResponse, refreshTokenResponse, registerResponse, localLoginResponse } from "../_types/auth.gen";
 
 import utils from "../_utils";
@@ -978,7 +983,7 @@ export class AuthController extends controllerFactory._ControllerFactory {
         if (!user) throw new VexResErr(404, null, "Invalid User Id");
         
         const accessToken = await this.JWTService.generateAccessToken(user);
-        const refreshToken = this.JWTService.generateRefreshToken({ _id: user._id });
+        const refreshToken = this.JWTService.generateRefreshToken({ vexUserId: this.JWTService.userIdOf(user) });
         
         throw new VexResOk(200, { result: {
             accessToken: accessToken.token,
@@ -998,7 +1003,12 @@ export class AuthController extends controllerFactory._ControllerFactory {
     ): Promise<VexResponse<refreshTokenResponse>> {
         const payload = this.JWTService.verifyToken(body.refreshToken, body.refreshTokenIndex);
         
-        const user = await this.userRepo.findOne({ _id: payload._id }, ["userRole"]);
+        // vexUserId is the schema-declared identity; _id keeps refresh tokens issued before it working
+        const userId = payload.vexUserId ?? payload._id;
+        if (!userId) throw new VexResErr(401, null, "Invalid refresh token");
+        const identity = { [vexUserIdField]: userId } as unknown as Filter;
+
+        const user = await this.userRepo.findOne(identity, ["userRole"]);
         if (!user) throw new VexResErr(404, null, "Invalid User Id");
         
         const accessToken = await this.JWTService.generateAccessToken(user);
@@ -1193,13 +1203,19 @@ const als = new AsyncLocalStorage<DataIsolationStore>();
 
 class DataIsolationContext {
     /**
-   * Express middleware — creates ALS context with authenticated user's _id.
+   * Express middleware — creates ALS context with the authenticated user's identity value.
    * Must run AFTER Authentication.middleware (which sets req.user).
+   *
+   * The identity is the `vexUserId` token claim, which the auth service fills from the field
+   * tagged `x-vexData: "userId"` in the schemas. `_id` is the fallback for tokens issued
+   * before that claim existed.
    */
     middleware(req: Request, _res: Response, next: NextFunction): void {
-        const user = (req as any).user;
-        if (user?._id) {
-            als.run({ userId: user._id }, () => next());
+        const user = (req as Request & { user?: { vexUserId?: string, _id?: string } }).user;
+        const userId = user?.vexUserId ?? user?._id;
+
+        if (userId) {
+            als.run({ userId }, () => next());
         } else {
             next();
         }
@@ -1389,6 +1405,44 @@ export async function expressAuthentication(
     return {};
 }
 
+===== out/src/system/_middlewares/VexFieldRegistry.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+export type VexFieldType =
+    | "onCreateTimestamp"
+    | "onCreateUnixTimestamp"
+    | "onUpdateTimestamp"
+    | "onUpdateUnixTimestamp"
+    | "onCreateUserId"
+    | "onUpdateUserId";
+
+export interface VexFieldEntry {
+    field: string;
+    type: VexFieldType;
+}
+
+/**
+ * Fields the DB layer owns per entity. Declared with the reserved `default` keywords in the
+ * JSON Schema; stripped from client input and filled by the repository adapter.
+ */
+export const entityVexFields: Record<string, VexFieldEntry[]> = {
+    "UserEntity": [
+        { field: "createdAt", type: "onCreateTimestamp" },
+        { field: "createdBy", type: "onCreateUserId" },
+        { field: "updatedAt", type: "onUpdateTimestamp" },
+        { field: "updatedBy", type: "onUpdateUserId" }
+    ]
+};
+
+/**
+ * Field tagged `x-vexData: "userId"` — where the identity value (createdBy / updatedBy) comes from.
+ * Falls back to "_id" when no schema tags one.
+ */
+export const vexUserIdField = "_id";
+
 ===== out/src/system/_models/SessionModel.gen.ts =====
 /**
  * Generated by veryExpress@<version> 
@@ -1503,6 +1557,18 @@ export class UserEntity implements Partial<User> {
 
     @Column({type: "text", nullable: true})
     profileErrors?: string;
+
+    @Column({type: "timestamptz", nullable: true, transformer: { to: (v: string) => v, from: (v: Date) => (v instanceof Date ? v.toISOString() : v) }})
+    createdAt?: string;
+
+    @Column({type: "uuid", nullable: true})
+    createdBy?: string;
+
+    @Column({type: "timestamptz", nullable: true, transformer: { to: (v: string) => v, from: (v: Date) => (v instanceof Date ? v.toISOString() : v) }})
+    updatedAt?: string;
+
+    @Column({type: "uuid", nullable: true})
+    updatedBy?: string;
 
     @OneToOne(() => SessionEntity, sessionEntity => sessionEntity.user)
     session?: Relation<Session>;
@@ -2199,6 +2265,7 @@ import { VexRepository, VexResErr } from "../../_types/vex";
 import VexDb from "../VexDb.gen";
 import { UserEntity, UserWithRelations } from "../../_models/UserModel.gen";
 import { SessionEntity, Session } from "../../_models/SessionModel.gen";
+import { vexUserIdField } from "../../_middlewares/VexFieldRegistry.gen";
 
 interface tokenObj {
     token: string,
@@ -2206,12 +2273,6 @@ interface tokenObj {
     clientIndex?: string
 }
 
-/**
- * `userRole` is part of `UserWithRelations` only when the RBAC schema was generated.
- * This service is a shared static template, so it must compile in both modes — read
- * the relation defensively rather than depending on a type that may not exist. With
- * RBAC off the token payload simply carries no roles.
- */
 function rolesOf(user: unknown): string[] {
     const relation = (user as { userRole?: Array<{ role: string }> }).userRole;
     return Array.isArray(relation) ? relation.map((r) => r.role) : [];
@@ -2287,8 +2348,8 @@ export default class JWTService {
 
     public returnToken(userProfile: UserWithRelations) {
         const sanitizedProfile = this.sanitizeUser(userProfile);
-        const accessToken = this.generateToken(sanitizedProfile, undefined, process.env.ACCESS_TOKEN_EXPIRE_TIME);
-        const refreshToken = this.generateToken({ _id: userProfile._id }, 0, process.env.REFRESH_TOKEN_EXPIRE_TIME);
+        const accessToken = this.generateToken(this.tokenPayload(userProfile), undefined, process.env.ACCESS_TOKEN_EXPIRE_TIME);
+        const refreshToken = this.generateToken({ vexUserId: this.userIdOf(userProfile) }, 0, process.env.REFRESH_TOKEN_EXPIRE_TIME);
 
         return {
             profile: sanitizedProfile,
@@ -2300,6 +2361,28 @@ export default class JWTService {
     }
 
     /** utils */
+
+    /**
+     * Identity value of a user record: the field tagged `x-vexData: "userId"` in the schemas,
+     * with `_id` as the fallback. This is what every audit field (createdBy / updatedBy) stores.
+     */
+    public userIdOf(user: UserWithRelations): string | undefined {
+        const raw = user as unknown as Record<string, unknown>;
+        return (raw[vexUserIdField] as string | undefined) ?? user._id;
+    }
+
+    /**
+     * Access-token payload: the public profile plus the identity claims the DB layer reads.
+     * The profile itself is unchanged, so API responses keep their existing shape.
+     * Roles are a signing-time snapshot, which is why they belong to the short-lived access token only.
+     */
+    public tokenPayload(user: UserWithRelations) {
+        return {
+            ...this.sanitizeUser(user),
+            vexUserId: this.userIdOf(user),
+            vexRole: rolesOf(user)
+        };
+    }
 
     public sanitizeUser(user: UserWithRelations) {
         return {
@@ -2338,7 +2421,7 @@ export default class JWTService {
 
     public async generateAccessToken(user: UserWithRelations, index?: number): Promise<tokenObj> {
 
-        const userInfo = this.sanitizeUser(user);
+        const userInfo = this.tokenPayload(user);
 
         return this.generateToken(userInfo, index, process.env.ACCESS_TOKEN_EXPIRE_TIME);
     }
@@ -2357,10 +2440,67 @@ export default class JWTService {
 
 import { Model, Document } from "mongoose";
 import { VexRepository, Select, Filter, Join, VexPagination } from "../_types/vex";
+import DataIsolationContext from "../_middlewares/DataIsolationContext.gen";
+import { entityVexFields, VexFieldEntry } from "../_middlewares/VexFieldRegistry.gen";
 import utils from "../_utils";
+
+/** When a framework-managed field is written. */
+type writePhase = "create" | "update";
+
+/** Phase a reserved default keyword belongs to — `onCreate*` is write-once, `onUpdate*` is refreshed. */
+function vexFieldPhaseOf(type: VexFieldEntry["type"]): writePhase {
+    return type.startsWith("onCreate") ? "create" : "update";
+}
+
+/**
+ * Value the DB layer writes for a framework-managed field.
+ * Mongo documents store `Timestamp` fields as ISO strings and `UnixTimestamp` fields as
+ * epoch seconds, so both targets end up with the same values.
+ * Returns undefined when the field has no value in this context (no authenticated user).
+ */
+function resolveVexFieldValue(type: VexFieldEntry["type"], userId?: string): unknown {
+    switch (type) {
+    case "onCreateTimestamp":
+    case "onUpdateTimestamp":
+        return new Date().toISOString();
+    case "onCreateUnixTimestamp":
+    case "onUpdateUnixTimestamp":
+        return Math.floor(Date.now() / 1000);
+    case "onCreateUserId":
+    case "onUpdateUserId":
+        return userId;
+    default:
+        return undefined;
+    }
+}
 
 export class MongooseRepositoryAdapter<T extends Document> implements VexRepository<T> {
     constructor(private model: Model<T>) {}
+
+    /**
+     * Framework-managed audit fields: strip the caller's values first — a client must never
+     * forge createdBy / updatedAt — then fill the ones owned by this write phase.
+     * Fields of the other phase are stripped without being written, which is what keeps
+     * createdAt / createdBy immutable across an update.
+     */
+    private applyVexFields(data: Partial<T>, phase: writePhase): void {
+        const fields = entityVexFields[this.model.modelName + "Entity"] ?? [];
+        if (fields.length === 0) return;
+
+        const userId = DataIsolationContext.getStore()?.userId;
+        const values: Record<string, unknown> = {};
+
+        for (const entry of fields) {
+            delete (data as Record<string, unknown>)[entry.field];
+
+            if (vexFieldPhaseOf(entry.type) !== phase) continue;
+
+            const value = resolveVexFieldValue(entry.type, userId);
+            if (value !== undefined) values[entry.field] = value;
+        }
+
+        Object.assign(data, values);
+    }
 
     public get native(): Model<T> {
         return this.model;
@@ -2387,7 +2527,9 @@ export class MongooseRepositoryAdapter<T extends Document> implements VexReposit
     }
 
     async create(data: Partial<T>): Promise<T> {
-        const doc = new this.model(data);
+        const enriched = { ...data };
+        this.applyVexFields(enriched, "create");
+        const doc = new this.model(enriched);
         return doc.save();
     }
 
@@ -2396,7 +2538,9 @@ export class MongooseRepositoryAdapter<T extends Document> implements VexReposit
             utils.log.error("MongooseRepositoryAdapter.replace called without id — refuse replace document");
             return Promise.resolve(null);
         }
-        return this.model.findByIdAndUpdate(id, data, { new: true, overwrite: true }).exec();
+        const enriched = { ...data };
+        this.applyVexFields(enriched, "update");
+        return this.model.findByIdAndUpdate(id, enriched, { new: true, overwrite: true }).exec();
     }
 
     update(id: string | undefined, data: Partial<T>): Promise<T | null> {
@@ -2404,7 +2548,9 @@ export class MongooseRepositoryAdapter<T extends Document> implements VexReposit
             utils.log.error("MongooseRepositoryAdapter.update called without id — refuse update document");
             return Promise.resolve(null);
         }
-        return this.model.findByIdAndUpdate(id, { $set: data }, { new: true }).exec();
+        const enriched = { ...data };
+        this.applyVexFields(enriched, "update");
+        return this.model.findByIdAndUpdate(id, { $set: enriched }, { new: true }).exec();
     }
 
     async delete(id: string | undefined): Promise<void> {
@@ -2611,20 +2757,79 @@ import { Repository, ObjectLiteral, FindOptionsWhere, DeepPartial, In, Not, Like
 import { VexRepository, Select, Filter, Join, FieldOperators, VexPagination } from "../_types/vex";
 import DataIsolationContext from "../_middlewares/DataIsolationContext.gen";
 import { entityIsolation } from "../_middlewares/DataIsolationRegistry.gen";
+import { entityVexFields, VexFieldEntry } from "../_middlewares/VexFieldRegistry.gen";
 import utils from "../_utils";
+
+/** When a framework-managed field is written. */
+type writePhase = "create" | "update";
+
+/** Phase a reserved default keyword belongs to — `onCreate*` is write-once, `onUpdate*` is refreshed. */
+function vexFieldPhaseOf(type: VexFieldEntry["type"]): writePhase {
+    return type.startsWith("onCreate") ? "create" : "update";
+}
+
+/**
+ * Value the DB layer writes for a framework-managed field.
+ * Returns undefined when the field has no value in this context (no authenticated user) —
+ * the column is then left untouched instead of being set to "undefined".
+ */
+function resolveVexFieldValue(type: VexFieldEntry["type"], userId?: string): unknown {
+    switch (type) {
+    case "onCreateTimestamp":
+    case "onUpdateTimestamp":
+        return new Date().toISOString();
+    case "onCreateUnixTimestamp":
+    case "onUpdateUnixTimestamp":
+        return Math.floor(Date.now() / 1000);
+    case "onCreateUserId":
+    case "onUpdateUserId":
+        return userId;
+    default:
+        return undefined;
+    }
+}
 
 export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRepository<T> {
     constructor(private repo: Repository<T>) {}
+
+    /** Entity class name from TypeORM metadata — the key used by the generated registries. */
+    private getEntityName(): string {
+        return this.repo.metadata.target instanceof Function
+            ? this.repo.metadata.target.name
+            : "";
+    }
+
+    /**
+     * Framework-managed audit fields: strip the caller's values first — a client must never
+     * forge createdBy / updatedAt — then fill the ones owned by this write phase.
+     * Fields of the other phase are stripped without being written, which is what keeps
+     * createdAt / createdBy immutable across an update.
+     */
+    private applyVexFields(data: Partial<T>, phase: writePhase): void {
+        const fields = entityVexFields[this.getEntityName()] ?? [];
+        if (fields.length === 0) return;
+
+        const userId = DataIsolationContext.getStore()?.userId;
+        const values: Record<string, unknown> = {};
+
+        for (const entry of fields) {
+            delete (data as Record<string, unknown>)[entry.field];
+
+            if (vexFieldPhaseOf(entry.type) !== phase) continue;
+
+            const value = resolveVexFieldValue(entry.type, userId);
+            if (value !== undefined) values[entry.field] = value;
+        }
+
+        Object.assign(data, values);
+    }
 
     /** Build ownership filter from current request context, or null. */
     private getOwnershipFilter(): Record<string, unknown> | null {
         const store = DataIsolationContext.getStore();
         if (!store?.userId) return null;
 
-        const entityName = this.repo.metadata.target instanceof Function
-            ? this.repo.metadata.target.name
-            : "";
-        const config = entityIsolation[entityName];
+        const config = entityIsolation[this.getEntityName()];
         if (!config) return null;
 
         return { [config.field]: store.userId };
@@ -2749,14 +2954,12 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
         const enriched = { ...data };
         const store = DataIsolationContext.getStore();
         if (store?.userId) {
-            const entityName = this.repo.metadata.target instanceof Function
-                ? this.repo.metadata.target.name
-                : "";
-            const config = entityIsolation[entityName];
+            const config = entityIsolation[this.getEntityName()];
             if (config && config.field !== "_id") {
-                (enriched as any)[config.field] = store.userId;
+                (enriched as Record<string, unknown>)[config.field] = store.userId;
             }
         }
+        this.applyVexFields(enriched, "create");
         return this.repo.save(this.repo.create(enriched as DeepPartial<T>));
     }
 
@@ -2765,9 +2968,11 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
             utils.log.error("TypeOrmRepositoryAdapter.replace called without id — refuse replace entity");
             return null;
         }
+        const enriched = { ...data };
+        this.applyVexFields(enriched, "update");
         const existing = await this.findOne({ _id: id } as unknown as Filter<T>);
         if (!existing) return null;
-        return this.repo.save(this.repo.merge(existing, data as DeepPartial<T>));
+        return this.repo.save(this.repo.merge(existing, enriched as DeepPartial<T>));
     }
 
     async update(id: string | undefined, data: Partial<T>): Promise<T | null> {
@@ -2775,8 +2980,10 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
             utils.log.error("TypeOrmRepositoryAdapter.update called without id — refuse update entity");
             return null;
         }
+        const enriched = { ...data };
+        this.applyVexFields(enriched, "update");
         const where = this.mergeFilter({ _id: id } as unknown as Filter<T>);
-        await this.repo.update(where as FindOptionsWhere<T>, data);
+        await this.repo.update(where as FindOptionsWhere<T>, enriched);
         return this.findOne({ _id: id } as unknown as Filter<T>);
     }
 
@@ -3110,6 +3317,10 @@ export interface User {
     active: boolean;
     locale?: string;
     profileErrors?: string;
+    createdAt?: string;
+    createdBy?: string;
+    updatedAt?: string;
+    updatedBy?: string;
 }
 
 /** Full DB relations — internal use only, no whitelist restriction */
