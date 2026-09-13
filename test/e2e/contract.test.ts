@@ -206,16 +206,15 @@ describeE2E("generated app — end-to-end contract", () => {
 
     /**
      * `onCreate*` is written once: an update strips it and never re-injects, which is what makes
-     * the ownership columns trustworthy. The caller cannot set them either — forged values are dropped.
+     * the ownership columns trustworthy.
      */
-    it("keeps createdAt and createdBy across an update, and rejects forged audit values", async () => {
+    it("keeps createdAt and createdBy across an update", async () => {
         const before = (await (await fetch(`${app.baseUrl}/api/user/${userId}`, { headers: authHeaders() })).json()).result;
-        const forged = "00000000-0000-0000-0000-0000000000ff";
 
         const res = await fetch(`${app.baseUrl}/api/user/${userId}`, {
             method: "PATCH",
             headers: { ...authHeaders(), "Content-Type": "application/json" },
-            body: JSON.stringify({ name: `Audited ${Date.now()}`, createdBy: forged, createdAt: "1999-01-01T00:00:00.000Z", updatedBy: forged }),
+            body: JSON.stringify({ name: `Audited ${Date.now()}` }),
         });
         expect(res.status).toBe(200);
 
@@ -223,9 +222,30 @@ describeE2E("generated app — end-to-end contract", () => {
 
         expect(after.createdAt).toBe(before.createdAt);
         expect(after.createdBy ?? null).toBe(before.createdBy ?? null);
-        expect(after.createdBy).not.toBe(forged);
         expect(after.updatedAt, "onUpdateTimestamp").toBeTruthy();
         expect(after.updatedBy, "onUpdateUserId comes from the request context").toBe(userId);
+    });
+
+    /**
+     * Server-managed fields are not part of the request body type (`CreateX`), and the generated
+     * tsoa config is `throw-on-extras`: a caller that tries to set an audit field is rejected
+     * outright rather than having the value silently dropped.
+     */
+    it("rejects a request that tries to set server-managed audit fields", async () => {
+        const before = (await (await fetch(`${app.baseUrl}/api/user/${userId}`, { headers: authHeaders() })).json()).result;
+        const forged = "00000000-0000-0000-0000-0000000000ff";
+
+        const res = await fetch(`${app.baseUrl}/api/user/${userId}`, {
+            method: "PATCH",
+            headers: { ...authHeaders(), "Content-Type": "application/json" },
+            body: JSON.stringify({ name: `Forged ${Date.now()}`, createdBy: forged, createdAt: "1999-01-01T00:00:00.000Z", updatedBy: forged }),
+        });
+        expect(res.status).toBe(400);
+
+        const after = (await (await fetch(`${app.baseUrl}/api/user/${userId}`, { headers: authHeaders() })).json()).result;
+        expect(after.createdBy ?? null).toBe(before.createdBy ?? null);
+        expect(after.createdAt).toBe(before.createdAt);
+        expect(after.updatedBy).toBe(before.updatedBy);
     });
 
     /**

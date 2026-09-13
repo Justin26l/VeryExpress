@@ -10,6 +10,7 @@ APP_PORT=3000
 MONGODB_URI=mongodb://localhost:27017/veryExpressDB
 SQL_URI=postgresql://username:password@localhost:5432/mydatabase
 SQL_CA=""
+SQL_INSECURE_TLS=true
 SQL_SYNCHRONIZE=true
 
 LOGIN_SUCCESS_REDIRECT_PATH=/logincallback
@@ -39,334 +40,334 @@ JWT_SECRET0='my-secret-key0'
       "schemas": {
         "Session.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.0"
+          "lastWriteVersion": "0.7.9"
         },
         "User.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.0"
+          "lastWriteVersion": "0.7.9"
         },
         "UserAuthProfiles.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.0"
+          "lastWriteVersion": "0.7.9"
         },
         "UserRole.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.0"
+          "lastWriteVersion": "0.7.9"
         }
       },
       "vex.config.json": {
         "allowOverwrite": true,
-        "lastWriteVersion": "0.8.0"
+        "lastWriteVersion": "0.7.9"
       }
     },
     ".env": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.0"
+      "lastWriteVersion": "0.7.9"
     },
     "Dockerfile": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.0"
+      "lastWriteVersion": "0.7.9"
     },
     "package.json": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.0"
+      "lastWriteVersion": "0.7.9"
     },
     "public": {
       "css": {
         "style.css": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.0"
+          "lastWriteVersion": "0.7.9"
         }
       },
       "js": {
         "login.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.0"
+          "lastWriteVersion": "0.7.9"
         },
         "logincallback.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.0"
+          "lastWriteVersion": "0.7.9"
         },
         "mytokens.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.0"
+          "lastWriteVersion": "0.7.9"
         },
         "refreshtokens.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.0"
+          "lastWriteVersion": "0.7.9"
         }
       }
     },
     "README.md": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.0"
+      "lastWriteVersion": "0.7.9"
     },
     "scripts": {
       "build.js": {
         "allowOverwrite": true,
-        "lastWriteVersion": "0.8.0"
+        "lastWriteVersion": "0.7.9"
       },
       "oacg-fix.js": {
         "allowOverwrite": true,
-        "lastWriteVersion": "0.8.0"
+        "lastWriteVersion": "0.7.9"
       }
     },
     "src": {
       "roles": {
         "admin.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.0"
+          "lastWriteVersion": "0.7.9"
         },
         "member.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.0"
+          "lastWriteVersion": "0.7.9"
         },
         "visitor.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.0"
+          "lastWriteVersion": "0.7.9"
         }
       },
       "server.ts": {
         "allowOverwrite": true,
-        "lastWriteVersion": "0.8.0"
+        "lastWriteVersion": "0.7.9"
       },
       "system": {
         "_controllers": {
           "_ControllerFactory.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.7.9"
           },
           "AuthController.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.7.9"
           },
           "UserController.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.7.9"
           }
         },
         "_middlewares": {
           "Authentication.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.7.9"
           },
           "DataIsolationContext.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.7.9"
           },
           "DataIsolationRegistry.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.7.9"
           },
           "JoinWhitelistMiddleware.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.7.9"
           },
           "JoinWhitelistRegistry.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.7.9"
           },
           "RoleBaseAccessControl.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.7.9"
           },
           "tsoaAuthentication.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.7.9"
           },
           "VexFieldRegistry.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.7.9"
           }
         },
         "_models": {
           "SessionModel.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.7.9"
           },
           "UserAuthProfilesModel.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.7.9"
           },
           "UserModel.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.7.9"
           },
           "UserRoleModel.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.7.9"
           }
         },
         "_roles": {
           "_RoleFactory.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.7.9"
           },
           "admin.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.7.9"
           },
           "index.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.7.9"
           },
           "member.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.7.9"
           },
           "visitor.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.7.9"
           }
         },
         "_routes": {
           "AuthRouter.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.7.9"
           },
           "LoginUI.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.7.9"
           },
           "oauth": {
             "OAuthRouteFactory.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.0"
+              "lastWriteVersion": "0.7.9"
             }
           },
           "SwaggerRouter.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.7.9"
           }
         },
         "_services": {
           "auth": {
             "JWTKeyStore.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.0"
+              "lastWriteVersion": "0.7.9"
             },
             "JWTService.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.0"
+              "lastWriteVersion": "0.7.9"
             }
           },
           "MongooseRepositoryAdapter.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.7.9"
           },
           "oauth": {
             "OAuthProfileMap.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.0"
+              "lastWriteVersion": "0.7.9"
             },
             "OAuthStrategyService.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.0"
+              "lastWriteVersion": "0.7.9"
             }
           },
           "TypeOrmRepositoryAdapter.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.7.9"
           },
           "VexDb.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.7.9"
           },
           "VexDbConnector.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.7.9"
           },
           "VexSystem.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.7.9"
           }
         },
         "_types": {
           "auth.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.7.9"
           },
           "Session.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.7.9"
           },
           "User.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.7.9"
           },
           "UserAuthProfiles.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.7.9"
           },
           "UserRole.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.7.9"
           },
           "vex": {
             "index.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.0"
+              "lastWriteVersion": "0.7.9"
             },
             "VexRepository.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.0"
+              "lastWriteVersion": "0.7.9"
             },
             "VexRequest.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.0"
+              "lastWriteVersion": "0.7.9"
             },
             "VexResErr.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.0"
+              "lastWriteVersion": "0.7.9"
             },
             "VexResOk.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.0"
+              "lastWriteVersion": "0.7.9"
             },
             "VexResponse.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.0"
+              "lastWriteVersion": "0.7.9"
             }
           }
         },
         "_utils": {
           "hash.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.7.9"
           },
           "index.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.7.9"
           },
           "logger.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.7.9"
           },
           "processTimer.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.7.9"
           },
           "response.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.7.9"
           },
           "validator.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.7.9"
           }
         }
       }
     },
     "tsconfig.json": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.0"
+      "lastWriteVersion": "0.7.9"
     },
     "tsoa.json": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.0"
+      "lastWriteVersion": "0.7.9"
     }
   },
-  "lastGeneratedVersion": "0.8.0"
+  "lastGeneratedVersion": "0.7.9"
 }
 
 ===== out/Dockerfile =====
@@ -1090,7 +1091,7 @@ import JoinWhitelistMiddleware from "../_middlewares/JoinWhitelistMiddleware.gen
 import DataIsolationContext from "../_middlewares/DataIsolationContext.gen";
 
 import { UserEntity } from "../_models/UserModel.gen";
-import { User, UserWithApiRelations } from "../_types/User.gen";
+import { User, UserWithApiRelations, CreateUser } from "../_types/User.gen";
 
 // extra type defined due to tsoa cannot capture runtime generic types,
 // this will make OAS have complete input parameters & correct validation
@@ -1124,7 +1125,7 @@ export class UserController extends controllerFactory._ControllerFactory {
 
     @Patch("{id}")
     @SuccessResponse(200, "Success")
-    public async updateUser(@Path() id: string, @Body() body: Partial<User>): Promise<VexResponse<User>> {
+    public async updateUser(@Path() id: string, @Body() body: Partial<CreateUser>): Promise<VexResponse<User>> {
         if ((body as any)._id) delete (body as any)._id;
         const result = await this.repo.update(id, body);
         if (!result) throw new VexResErr(404);
@@ -1431,7 +1432,6 @@ export interface VexFieldEntry {
 export const entityVexFields: Record<string, VexFieldEntry[]> = {
     "UserEntity": [
         { field: "createdAt", type: "onCreateTimestamp" },
-        { field: "createdBy", type: "onCreateUserId" },
         { field: "updatedAt", type: "onUpdateTimestamp" },
         { field: "updatedBy", type: "onUpdateUserId" }
     ]
@@ -1560,9 +1560,6 @@ export class UserEntity implements Partial<User> {
 
     @Column({type: "timestamptz", nullable: true, transformer: { to: (v: string) => v, from: (v: Date) => (v instanceof Date ? v.toISOString() : v) }})
     createdAt?: string;
-
-    @Column({type: "uuid", nullable: true})
-    createdBy?: string;
 
     @Column({type: "timestamptz", nullable: true, transformer: { to: (v: string) => v, from: (v: Date) => (v instanceof Date ? v.toISOString() : v) }})
     updatedAt?: string;
@@ -3301,6 +3298,9 @@ export interface SessionApiRelations {
 
 export type SessionWithApiRelations = Session & SessionApiRelations;
 
+/** Request body for create / put / patch — server-managed fields are not accepted from the client */
+export type CreateSession = Omit<Session, "_id">;
+
 ===== out/src/system/_types/User.gen.ts =====
 /**
  * Generated by veryExpress@<version> 
@@ -3318,7 +3318,6 @@ export interface User {
     locale?: string;
     profileErrors?: string;
     createdAt?: string;
-    createdBy?: string;
     updatedAt?: string;
     updatedBy?: string;
 }
@@ -3344,6 +3343,9 @@ export interface UserApiRelations {
 }
 
 export type UserWithApiRelations = User & UserApiRelations;
+
+/** Request body for create / put / patch — server-managed fields are not accepted from the client */
+export type CreateUser = Omit<User, "createdAt" | "updatedAt" | "updatedBy" | "_id">;
 
 ===== out/src/system/_types/UserAuthProfiles.gen.ts =====
 /**
@@ -3377,6 +3379,9 @@ export interface UserAuthProfilesApiRelations {
 }
 
 export type UserAuthProfilesWithApiRelations = UserAuthProfiles & UserAuthProfilesApiRelations;
+
+/** Request body for create / put / patch — server-managed fields are not accepted from the client */
+export type CreateUserAuthProfiles = Omit<UserAuthProfiles, "_id">;
 
 ===== out/src/system/_types/UserRole.gen.ts =====
 /**
@@ -3412,6 +3417,9 @@ export enum RoleEnum {
     member = "member",
     admin = "admin"
 }
+
+/** Request body for create / put / patch — server-managed fields are not accepted from the client */
+export type CreateUserRole = Omit<UserRole, "_id">;
 
 ===== out/src/system/_types/vex/index.ts =====
 export * from "./VexRepository.gen";

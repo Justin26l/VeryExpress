@@ -132,6 +132,32 @@ Values written:
 The registry generator is the only place that knows the mapping: adapters import
 `entityVexFields` at runtime rather than re-deriving it from the schema.
 
+### Request body type — `Create{Doc}`
+
+Server-owned fields must not appear in the API *input*. The interface generator therefore emits, into
+`src/system/_types/{Doc}.gen.ts`:
+
+```ts
+export type CreateJob = Omit<Job, "createdAt" | "createdBy" | "updatedAt" | "updatedBy" | "_id">;
+```
+
+and the controllers accept `Create{Doc}` (create, put) / `Partial<Create{Doc}>` (patch). The omission is
+**declaration-based, never name-based**: a field is dropped when it carries a reserved `default` keyword,
+or when it is the primary key (`x-format: Primary` / `PrimaryUUID`) and `app.allowApiCreateUpdate_id` is
+false. A column literally named `createdAt` without a keyword stays client-writable — the declaration is
+the contract.
+
+Two consequences:
+
+- The OpenAPI request schema stops advertising fields the server strips or overwrites; the response schema
+  keeps them, because clients still read them.
+- The generated tsoa config is `noImplicitAdditionalProperties: "throw-on-extras"`, so a request that
+  **still sends** one of those fields is rejected with `400 Invalid Request Body` instead of having the
+  value quietly dropped. Clients that echo a whole row back on PATCH must strip these fields first.
+
+The adapter's strip step stays as defence in depth: it also covers non-HTTP callers (internal services,
+seed scripts) that bypass tsoa validation entirely.
+
 `delete()` is **not** covered. There is no soft delete in the framework
 (`grep -rn "softDelete\|active: false" src/` is empty) — `delete()` issues a real `DELETE`, so there is no
 row left to audit. Soft delete is out of scope for this feature.

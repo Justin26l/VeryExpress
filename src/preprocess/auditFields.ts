@@ -89,6 +89,31 @@ export function hasReservedDefaults(schema: types.jsonSchema): boolean {
     return collectVexFields(schema).length > 0;
 }
 
+/**
+ * Fields the client must not supply, i.e. what the generated request body type omits:
+ *
+ * - every field declared with a reserved `default` keyword (the adapter strips and fills them)
+ * - the primary key (`x-format: Primary` / `PrimaryUUID`), unless the app opted into
+ *   letting clients set `_id` via `app.allowApiCreateUpdate_id`
+ *
+ * Consequences: the OpenAPI request schema stops advertising server-owned fields, and the
+ * tsoa validator cannot demand them. Declared by shape, never by field name.
+ */
+export function collectRequestManagedFields(
+    schema: types.jsonSchema,
+    allowApiCreateUpdateId: boolean,
+): string[] {
+    const fields = collectVexFields(schema).map(field => field.field);
+
+    if (!allowApiCreateUpdateId) {
+        for (const [key, prop] of Object.entries(schema.properties ?? {})) {
+            if (prop && isPrimaryFormat(prop) && !fields.includes(key)) fields.push(key);
+        }
+    }
+
+    return fields;
+}
+
 /** The single `x-vexData: "userId"` field across all documents, if any. */
 export function findUserIdIdentity(
     documents: { path: string, schema: types.jsonSchema }[],

@@ -136,6 +136,7 @@ export async function generate(
         await interfaceGen.compile(
             doc.schema as any,
             path.join(dir.typeDir, `${doc.config.documentName}.gen.ts`),
+            options || utils.generator.defaultCompilerOptions,
         );
 
         if (options.dbType === "mongo") {

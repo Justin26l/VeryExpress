@@ -107,6 +107,11 @@ Generation fails early on a contradiction: an unknown `x-vexData` value, an `onX
 column type differs from the tagged identity field, a mismatched timestamp keyword, a missing identity
 field, or an audit field marked `required`.
 
+Declaring a keyword also removes the field from the **request body**: the generator emits
+`export type Create{Doc} = Omit<{Doc}, "createdAt" | … >;` into `src/system/_types/{Doc}.gen.ts` and the
+controllers use it, so the OpenAPI request schema only advertises what a client may actually send.
+Because tsoa runs with `throw-on-extras`, a request still carrying such a field gets `400`.
+
 ---
 
 ## Foreign keys (`x-foreignKey`)
