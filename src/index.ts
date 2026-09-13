@@ -7,6 +7,7 @@ import utils from "./utils";
 import log from "./utils/logger";
 import { applyFkMetadata } from "./preprocess/jsonSchemaForeignKeys";
 import { formatJsonSchema, formatJsonSchemaRoleDefinition } from "./preprocess/jsonschemaFormat";
+import { validateAuditFields } from "./preprocess/auditFields";
 
 import * as types from "./types/types";
 import * as userSchemaGen from "./generators/projectSettings/userSchema.generator";
@@ -23,6 +24,7 @@ import * as mongooseModelGen from "./generators/db/mongooseModel.generator";
 import * as interfaceGen from "./generators/interface/generator";
 import * as joinWhitelistRegistryGen from "./generators/middlewares/joinWhitelistRegistry.generator";
 import * as dataIsolationRegistryGen from "./generators/middlewares/dataIsolationRegistry.generator";
+import * as vexFieldRegistryGen from "./generators/middlewares/vexFieldRegistry.generator";
 
 export async function generate(
     options: types.compilerOptions
@@ -71,22 +73,26 @@ export async function generate(
     // copy static files
     utils.common.copyDir(path.join(__dirname, "templates", "_controllers"), dir.controllerDir, options, true);
     utils.common.copyDir(path.join(__dirname, "templates", "_middlewares"), dir.middlewareDir, options, true);
-    utils.common.copyDir(path.join(__dirname, "templates", "_roles"), dir.roleDir, options, true);
     utils.common.copyDir(path.join(__dirname, "templates", "_routes"), dir.routeDir, options, true);
     utils.common.copyDir(path.join(__dirname, "templates", "_services"), dir.serviceDir, options, true);
     utils.common.copyDir(path.join(__dirname, "templates", "_types"), dir.typeDir, options, true);
     utils.common.copyDir(path.join(__dirname, "templates", "_utils"), dir.utilsDir, options, true);
     utils.common.copyDir(path.join(__dirname, "templates", "root"), options.rootDir, options, false);
     utils.common.copyDir(path.join(__dirname, "templates", "jsonSchema"), options.jsonSchemaDir, options, true);
-    if (options.useRBAC) utils.common.copyDir(path.join(__dirname, "templates", "jsonSchemaRBAC"), options.jsonSchemaDir, options, true);
-
+    if (utils.generator.isRbacEnabled(options)) {
+        utils.common.copyDir(path.join(__dirname, "templates", "_roles"), dir.roleDir, options, true);
+        utils.common.copyDir(path.join(__dirname, "templates", "jsonSchemaRBAC"), options.jsonSchemaDir, options, true);
+    }
+    
     // update userSchema
     await userSchemaGen.compile({ compilerOptions: options || utils.generator.defaultCompilerOptions });
     
     // prepair schema files
     formatJsonSchemaRoleDefinition({ compilerOptions: options || utils.generator.defaultCompilerOptions });
     
-    const files: string[] = fs.readdirSync(options.jsonSchemaDir);
+    // sort so document order — and therefore generated registry/route output — is
+    // reproducible across filesystems (readdir order is not guaranteed)
+    const files: string[] = fs.readdirSync(options.jsonSchemaDir).sort();
     files.forEach((schemaFileName: string) => {
         const schemaPath = `${options.jsonSchemaDir}/${schemaFileName}`;
         try {
@@ -111,6 +117,9 @@ export async function generate(
     });
     applyFkMetadata(documents);
 
+    // audit / ownership declarations are cross-document (one identity source) — validate once
+    validateAuditFields(documents);
+
     // ===== Start Generations ===== //
 
     // generate role & permissions
@@ -127,6 +136,7 @@ export async function generate(
         await interfaceGen.compile(
             doc.schema as any,
             path.join(dir.typeDir, `${doc.config.documentName}.gen.ts`),
+            options || utils.generator.defaultCompilerOptions,
         );
 
         if (options.dbType === "mongo") {
@@ -175,6 +185,13 @@ export async function generate(
     // generate data isolation registry (entity → ownership field mapping, used by TypeOrmRepositoryAdapter)
     await dataIsolationRegistryGen.compile({
         allSchemas: documents.map(d => d.schema),
+        middlewareDir: dir.middlewareDir,
+    });
+
+    // generate vex field registry (entity → auto-written audit fields + identity field, used by both adapters)
+    await vexFieldRegistryGen.compile({
+        allSchemas: documents.map(d => d.schema),
+        documents: documents.map(d => ({ path: d.path, schema: d.schema })),
         middlewareDir: dir.middlewareDir,
     });
 

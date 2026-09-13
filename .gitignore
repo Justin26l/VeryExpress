@@ -14,6 +14,10 @@ jspm_packages/
 
 # Optional npm cache directory
 .npm
+.npm-cache/
+
+# e2e harness state (generated app + its node_modules)
+test/.e2e/
 
 # Compiled binary addons (https://nodejs.org/api/addons.html)
 build/Release

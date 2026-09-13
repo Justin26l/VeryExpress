@@ -34,10 +34,10 @@ export default class ApiRouter{
     const useRoutes = [];
 
     const rbacMiddleware = (path: string) => {
-        return options.compilerOptions.useRBAC ? `new RoleBaseAccessControl("${path}").middleware,` : "";
+        return utilsGenerator.isRbacEnabled(options.compilerOptions) ? `new RoleBaseAccessControl("${path}").middleware, ` : "";
     };
 
-    if (options.compilerOptions.useRBAC) {
+    if (utilsGenerator.isRbacEnabled(options.compilerOptions)) {
         importRoutes.push("import RoleBaseAccessControl from \"../_middlewares/RoleBaseAccessControl.gen\";");
     }
     if (utilsGenerator.isAuthEnabled(options.compilerOptions)) {
@@ -47,7 +47,7 @@ export default class ApiRouter{
 
     options.routes.forEach((obj) => {
         importRoutes.push(`import ${obj.documentName}Controller from "${obj.controllerPath}";`);
-        useRoutes.push(`this.router.use("${obj.route}", ${rbacMiddleware(obj.documentName)} ${obj.documentName}Controller.router);`);
+        useRoutes.push(`this.router.use("${obj.route}", ${rbacMiddleware(obj.documentName)}${obj.documentName}Controller.router);`);
     });
 
     template = template.replace(/{{importRoutes}}/g, importRoutes.join("\n"));

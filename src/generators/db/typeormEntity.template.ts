@@ -42,8 +42,17 @@ function buildColumnArgs(col: typeormModel.ColumnDef): string {
         default:   col.defaultValue,
     };
     // bigint: PG driver returns string; transformer coerces to JS number
-    const rawArgs = col.needsBigintTransformer
-        ? { transformer: "{ to: (v: number) => v, from: (v: string) => Number(v) }" }
+    // timestamptz: driver returns a Date; keep the string (ISO-8601) contract the API and
+    // its generated interfaces already expose
+    const transformers: string[] = [];
+    if (col.needsBigintTransformer) {
+        transformers.push("{ to: (v: number) => v, from: (v: string) => Number(v) }");
+    }
+    if (col.needsTimestampTransformer) {
+        transformers.push("{ to: (v: string) => v, from: (v: Date) => (v instanceof Date ? v.toISOString() : v) }");
+    }
+    const rawArgs = transformers.length > 0
+        ? { transformer: transformers.length === 1 ? transformers[0] : `[${transformers.join(", ")}]` }
         : undefined;
     return serializeArgs(args, rawArgs);
 }

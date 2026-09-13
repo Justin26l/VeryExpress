@@ -42,26 +42,33 @@ async function main() {
 
     // app
     config.app = config.app || {},
-    config.app.enableSwagger = config.app.enableSwagger || true,
-    config.app.useUserSchema = config.app.useUserSchema || true,
-    config.app.allowApiCreateUpdate_id = config.app.allowApiCreateUpdate_id || false,
-    // config.app.useStatefulRedisAuth = config.app.useStatefulRedisAuth || false;
+    // `||` would swallow an explicit false (false || true === true); `??` only
+    // applies the default when the key is absent.
+    config.app.enableSwagger = config.app.enableSwagger ?? true,
+    config.app.useUserSchema = config.app.useUserSchema ?? true,
+    config.app.allowApiCreateUpdate_id = config.app.allowApiCreateUpdate_id ?? false;
+    // config.app.useStatefulRedisAuth = config.app.useStatefulRedisAuth ?? false;
 
-    // RBAC
-    config.useRBAC = config.useRBAC || { roles: [], default: "" };
-    config.useRBAC.roles = config.useRBAC.roles || ["user"];
-    config.useRBAC.default = config.useRBAC.default || "user";
+    // RBAC — opt-in. `useRBAC` stays undefined unless the config asks for it with
+    // at least one role; `isRbacEnabled()` is the single gate for RBAC code paths.
+    // Normalising to undefined here (rather than to `{ roles: [] }`) is what makes
+    // "no useRBAC in vex.config.json" a valid, RBAC-free generation.
+    if (config.useRBAC) {
+        config.useRBAC.roles = config.useRBAC.roles ?? ["user"];
+        config.useRBAC.default = config.useRBAC.default ?? "user";
+        if (config.useRBAC.roles.length === 0) config.useRBAC = undefined;
+    }
 
     // oauth
-    config.auth = config.auth || {};
-    config.auth.localAuth = config.auth.localAuth || false;
-    config.auth.oauthProviders = config.auth.oauthProviders || {};
-    config.auth.oauthProviders.google = config.auth.oauthProviders.google || false;
-    config.auth.oauthProviders.github = config.auth.oauthProviders.github || false;
-    // config.auth.oauthProviders.apple = config.auth.oauthProviders.apple || false;
-    // config.auth.oauthProviders.microsoft = config.auth.oauthProviders.microsoft || false;
-    // config.auth.oauthProviders.facebook = config.auth.oauthProviders.facebook || false;
-    // config.auth.oauthProviders.azure = config.auth.oauthProviders.microsoft || false;
+    config.auth = config.auth ?? {};
+    config.auth.localAuth = config.auth.localAuth ?? false;
+    config.auth.oauthProviders = config.auth.oauthProviders ?? {};
+    config.auth.oauthProviders.google = config.auth.oauthProviders.google ?? false;
+    config.auth.oauthProviders.github = config.auth.oauthProviders.github ?? false;
+    // config.auth.oauthProviders.apple = config.auth.oauthProviders.apple ?? false;
+    // config.auth.oauthProviders.microsoft = config.auth.oauthProviders.microsoft ?? false;
+    // config.auth.oauthProviders.facebook = config.auth.oauthProviders.facebook ?? false;
+    // config.auth.oauthProviders.azure = config.auth.oauthProviders.microsoft ?? false;
 
     // errors
     if(config.auth.localAuth && !config.app.useUserSchema){

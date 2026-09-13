@@ -12,8 +12,8 @@ export async function compile(options: {
 
     // 1. read userSchema file
     const schemaOutPath = `${options.compilerOptions.jsonSchemaDir}/User.json`;
-    const templateSchema = utils.common.loadJson(__dirname + "/templates/jsonSchema/User.json");
-    const userSchema = utils.common.loadJson(schemaOutPath, () => templateSchema);
+    const templateSchema = utils.common.loadJson<types.jsonSchema>(__dirname + "/templates/jsonSchema/User.json");
+    const userSchema = utils.common.loadJson<types.jsonSchema>(schemaOutPath, () => templateSchema);
 
     // 2. check userSchema.properties fields as templateSchema
     Object.keys(templateSchema.properties).forEach((key) => {
@@ -21,8 +21,11 @@ export async function compile(options: {
             userSchema.properties[key] = templateSchema.properties[key];
         }
 
-        if (userSchema.properties[key]?.["x-vexData"] == types.xVexDataType.Role) {
-            userSchema.properties[key].items.enum = options.compilerOptions.useRBAC?.roles || ["user"];
+        const roleProp = userSchema.properties[key];
+        if (roleProp?.["x-vexData"] == types.xVexDataType.Role && roleProp.items) {
+            roleProp.items.enum = utils.generator.isRbacEnabled(options.compilerOptions)
+                ? options.compilerOptions.useRBAC!.roles
+                : ["user"];
         }
     });
 

@@ -20,7 +20,7 @@ export async function compile(options: {
     middlewareDir: string,
     compilerOptions: types.compilerOptions,
 }): Promise<void> {
-    if(!options.compilerOptions.useRBAC && options.compilerOptions.useRBAC!.roles.length <= 0 ) return;
+    if(!utils.generator.isRbacEnabled(options.compilerOptions)) return;
 
     const indexFileData: { name: string, from: string }[] = [];
 

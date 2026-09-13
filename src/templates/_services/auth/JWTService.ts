@@ -11,11 +11,17 @@ import { VexRepository, VexResErr } from "../../_types/vex";
 import VexDb from "../VexDb.gen";
 import { UserEntity, UserWithRelations } from "../../_models/UserModel.gen";
 import { SessionEntity, Session } from "../../_models/SessionModel.gen";
+import { vexUserIdField } from "../../_middlewares/VexFieldRegistry.gen";
 
 interface tokenObj {
     token: string,
     index?: number,
     clientIndex?: string
+}
+
+function rolesOf(user: unknown): string[] {
+    const relation = (user as { userRole?: Array<{ role: string }> }).userRole;
+    return Array.isArray(relation) ? relation.map((r) => r.role) : [];
 }
 
 export default class JWTService {
@@ -88,8 +94,8 @@ export default class JWTService {
 
     public returnToken(userProfile: UserWithRelations) {
         const sanitizedProfile = this.sanitizeUser(userProfile);
-        const accessToken = this.generateToken(sanitizedProfile, undefined, process.env.ACCESS_TOKEN_EXPIRE_TIME);
-        const refreshToken = this.generateToken({ _id: userProfile._id }, 0, process.env.REFRESH_TOKEN_EXPIRE_TIME);
+        const accessToken = this.generateToken(this.tokenPayload(userProfile), undefined, process.env.ACCESS_TOKEN_EXPIRE_TIME);
+        const refreshToken = this.generateToken({ vexUserId: this.userIdOf(userProfile) }, 0, process.env.REFRESH_TOKEN_EXPIRE_TIME);
 
         return {
             profile: sanitizedProfile,
@@ -102,13 +108,35 @@ export default class JWTService {
 
     /** utils */
 
+    /**
+     * Identity value of a user record: the field tagged `x-vexData: "userId"` in the schemas,
+     * with `_id` as the fallback. This is what every audit field (createdBy / updatedBy) stores.
+     */
+    public userIdOf(user: UserWithRelations): string | undefined {
+        const raw = user as unknown as Record<string, unknown>;
+        return (raw[vexUserIdField] as string | undefined) ?? user._id;
+    }
+
+    /**
+     * Access-token payload: the public profile plus the identity claims the DB layer reads.
+     * The profile itself is unchanged, so API responses keep their existing shape.
+     * Roles are a signing-time snapshot, which is why they belong to the short-lived access token only.
+     */
+    public tokenPayload(user: UserWithRelations) {
+        return {
+            ...this.sanitizeUser(user),
+            vexUserId: this.userIdOf(user),
+            vexRole: rolesOf(user)
+        };
+    }
+
     public sanitizeUser(user: UserWithRelations) {
         return {
             _id: user._id,
             email: user.email,
             name: user.name,
             locale: user.locale,
-            roles: user.userRole?.map((r: any) => r.role) || [],
+            roles: rolesOf(user),
             profileErrors: user.profileErrors,
             active: user.active
         };
@@ -139,7 +167,7 @@ export default class JWTService {
 
     public async generateAccessToken(user: UserWithRelations, index?: number): Promise<tokenObj> {
 
-        const userInfo = this.sanitizeUser(user);
+        const userInfo = this.tokenPayload(user);
 
         return this.generateToken(userInfo, index, process.env.ACCESS_TOKEN_EXPIRE_TIME);
     }

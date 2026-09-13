@@ -1,20 +1,17 @@
 /**
- * - apply function calling syntax FUNC{{...}}
- * @param content 
- * @returns 
+ * Strip the quotes wrapping `'FUNC{{ ... }}'` so the inner code is emitted as
+ * runnable JavaScript instead of a string literal.
+ *
+ * Replaces every block, in one pass. A `.replace()`-inside-`exec()` loop cannot
+ * do this: replacing shortens the string while `lastIndex` still points into the
+ * pre-replacement text, so all but the first block were skipped.
+ *
+ * `[\s\S]` (rather than `.`) so multi-line bodies match too.
+ *
+ * @param content generated source
  */
 export function format(content:string){
-    // format function calling syntax
-    const regex = /'FUNC{{(.*?)}}'/g;
-    let match;
-
-    match = regex.exec(content);
-    while (match != null) {
-        content = content.replace(match[0], match[1]);
-        match = regex.exec(content);
-    }
-
-    return content;
+    return content.replace(/'FUNC{{([\s\S]*?)}}'/g, "$1");
 }
 
 export default {

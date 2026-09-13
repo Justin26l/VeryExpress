@@ -62,6 +62,8 @@ export enum DbRelationType {
 
 export enum xVexDataType {
     Role = "role",
+    /** marks the field that holds the identity value stored in audit fields (createdBy / updatedBy) */
+    UserId = "userId",
 }
 
 export enum xFormatType {
@@ -70,6 +72,21 @@ export enum xFormatType {
     UUID = "UUID",
     ObjectId = "ObjectId",
     UnixTimestamp = "UnixTimestamp",
+    /** ISO-8601 datetime column (SQL: timestamptz) */
+    Timestamp = "Timestamp",
+}
+
+/**
+ * Reserved `default` values. A field declared with one of these is filled by the
+ * DB layer on the write paths instead of by the client — see docs/features/auditFields.md.
+ */
+export enum vexDefaultKeyword {
+    OnCreateTimestamp = "onCreateTimestamp",
+    OnCreateUnixTimestamp = "onCreateUnixTimestamp",
+    OnUpdateTimestamp = "onUpdateTimestamp",
+    OnUpdateUnixTimestamp = "onUpdateUnixTimestamp",
+    OnCreateUserId = "onCreateUserId",
+    OnUpdateUserId = "onUpdateUserId",
 }
 
 export interface jsonSchema {

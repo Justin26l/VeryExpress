@@ -1,6 +1,6 @@
 {
     "name": "very-express",
-    "version": "0.7.9",
+    "version": "0.8.0",
     "description": "based on json schema and openapi, generate Express RestApi server with mongoDb ",
     "author": "Justin26l",
     "license": "MIT",
@@ -14,8 +14,11 @@
         "build": "npm run lint && npm run compile",
         "lint": "eslint ./src --ext .ts --fix",
         "compile": "node ./scripts/build.js && node ./scripts/copyTsTemplates.js",
-        "preversion": "npm run build",
-        "postversion": "git push && git push --tags"
+        "postversion": "npm run build && git push && git push --tags",
+        "test": "npm run compile && vitest run",
+        "test:watch": "vitest",
+        "test:update": "npm run compile && UPDATE_GOLDEN=1 vitest run",
+        "test:e2e": "npm run compile && VEX_E2E=1 vitest run test/e2e"
     },
     "keywords": [
         "jsonSchema",
@@ -53,6 +56,7 @@
         "objection": "^3.1.5",
         "pg": "^8.20.0",
         "ts-node": "^10.9.2",
-        "typescript": "^5.3.3"
+        "typescript": "^5.3.3",
+        "vitest": "^2.1.9"
     }
 }

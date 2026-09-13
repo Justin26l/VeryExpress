@@ -25,7 +25,8 @@
     "properties": {
         "_id": {
             "type": "string",
-            "x-format": "Primary",
+            "x-format": "PrimaryUUID",
+            "x-vexData": "userId",
             "index": true
         },
         "email": {
@@ -49,6 +50,21 @@
         },
         "profileErrors": {
             "type": "string"
+        },
+        "createdAt": {
+            "type": "string",
+            "x-format": "Timestamp",
+            "default": "onCreateTimestamp"
+        },
+        "updatedAt": {
+            "type": "string",
+            "x-format": "Timestamp",
+            "default": "onUpdateTimestamp"
+        },
+        "updatedBy": {
+            "type": "string",
+            "x-format": "UUID",
+            "default": "onUpdateUserId"
         }
     },
     "required": [

@@ -3,6 +3,7 @@ import log from "../../utils/logger";
 import typeormEntityTemplate from "./typeormEntity.template";
 import * as types from "../../types/types";
 import * as typeormModel from "../../types/typeormModel";
+import { isVexDefaultKeyword } from "../../preprocess/auditFields";
 
 function isEnum(props: types.jsonSchemaPropsItem): boolean {
     return props.enum !== undefined && Array.isArray(props.enum) && props.enum.every(v => typeof v === "string");
@@ -35,7 +36,8 @@ const X_FORMAT_DB_TYPE: Record<string, string> = {
     PrimaryUUID:   "uuid",
     UUID:          "uuid",
     ObjectId:      "varchar",   // MongoDB ObjectId stored as varchar(24)
-    UnixTimestamp: "bigint",    // epoch ms — needs bigint transformer
+    UnixTimestamp: "bigint",    // epoch seconds — needs bigint transformer
+    Timestamp:     "timestamptz", // ISO-8601 datetime — needs timestamp transformer
 };
 
 /** JSON Schema `format` hints that map to PostgreSQL column types */
@@ -110,6 +112,7 @@ function mapPropToColumnDef(
         isNested: prop.type === "object" || prop.type === "array",
         isArray:  prop.type === "array",
         needsBigintTransformer: dbType === "bigint",
+        needsTimestampTransformer: dbType === "timestamptz",
         unsigned: isNumeric && prop.minimum !== undefined && prop.minimum >= 0 ? true : undefined,
         nullable,
         comment:        prop.description,
@@ -118,7 +121,8 @@ function mapPropToColumnDef(
         scale:          prop.scale,
         enumValues:     isenum ? prop.enum : undefined,
         enumName:       isenum ? utils.common.pascalCase(key) + "Enum" : undefined,
-        defaultValue:   prop.default,
+        // a reserved keyword is a write-time rule, never a SQL default — the adapter owns the value
+        defaultValue:   isVexDefaultKeyword(prop.default) ? undefined : prop.default,
     };
 }
 

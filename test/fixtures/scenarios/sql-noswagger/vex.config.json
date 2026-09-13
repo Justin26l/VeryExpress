@@ -1,0 +1,26 @@
+{
+    "jsonSchemaDir": "./schemas",
+    "rootDir": "./out",
+    "dbType": "sql",
+    "app": {
+        "enableSwagger": false,
+        "useUserSchema": true,
+        "useObjectID": true,
+        "allowApiCreateUpdate_id": false
+    },
+    "auth": {
+        "localAuth": true,
+        "useHttpOnlyCookieToken": true,
+        "oauthProviders": {
+            "google": false,
+            "github": false
+        }
+    },
+    "useRBAC": {
+        "roles": ["visitor", "member", "admin"],
+        "default": "admin"
+    },
+    "generator": {
+        "commitBeforeGenerate": false
+    }
+}

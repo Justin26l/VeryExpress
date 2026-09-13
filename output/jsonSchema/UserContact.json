@@ -42,6 +42,26 @@
         "isActive": {
             "type": "boolean",
             "default": true
+        },
+        "createdAt": {
+            "type": "string",
+            "x-format": "Timestamp",
+            "default": "onCreateTimestamp"
+        },
+        "createdBy": {
+            "type": "string",
+            "x-format": "UUID",
+            "default": "onCreateUserId"
+        },
+        "updatedAt": {
+            "type": "string",
+            "x-format": "Timestamp",
+            "default": "onUpdateTimestamp"
+        },
+        "updatedBy": {
+            "type": "string",
+            "x-format": "UUID",
+            "default": "onUpdateUserId"
         }
     },
     "additionalProperties": false,

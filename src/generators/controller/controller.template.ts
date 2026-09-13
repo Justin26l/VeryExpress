@@ -18,14 +18,21 @@ export default function controllerTemplate(templateOptions: {
     restApiJoinWhitelist?: boolean;
     compilerOptions: types.compilerOptions;
     dataIsolation?: types.DataIsolationConfig;
+    /** fields the server owns — the request body type omits them */
+    requestManagedFields?: string[];
 }): string {
-    const { documentName, idType, restApiMethods, restApiNoRelations, restApiJoinWhitelist, compilerOptions, modelPath, typePath, dataIsolation } = templateOptions;
-    const useRBAC = !!compilerOptions.useRBAC;
+    const { documentName, idType, restApiMethods, restApiNoRelations, restApiJoinWhitelist, compilerOptions, modelPath, typePath, dataIsolation, requestManagedFields = [] } = templateOptions;
+    const useRBAC = utils.generator.isRbacEnabled(compilerOptions);
     const useAuth = compilerOptions.auth.localAuth || utils.generator.OAuthProviders(compilerOptions).length > 0;
     const cleanId = compilerOptions.app.allowApiCreateUpdate_id
         ? ""
         : "if ((body as any)._id) delete (body as any)._id;";
     const routePath = documentName.toLowerCase();
+
+    // Request body type. When the schema declares server-managed fields (reserved `default`
+    // keywords, primary key), the interface generator emits `Create{Doc}` without them, so the
+    // OpenAPI request schema stops advertising fields the server strips or overwrites.
+    const requestBodyType = requestManagedFields.length > 0 ? `Create${documentName}` : documentName;
 
     // body fields — exclude _id (auto-generated primary key)
     // const bodyFields = fields.filter(f => f.name !== "_id");
@@ -34,7 +41,7 @@ export default function controllerTemplate(templateOptions: {
     const decoratorNames: string[] = [];
     decoratorNames.push("Route", "Tags", "Body", "Path", "Query", "SuccessResponse");
     if (useRBAC || restApiJoinWhitelist || dataIsolation) decoratorNames.push("Middlewares");
-    if (useRBAC) decoratorNames.push("Security");
+    if (useAuth) decoratorNames.push("Security");
     if (restApiMethods.includes("get"))                                decoratorNames.push("Get");
     if (restApiMethods.includes("post") || restApiMethods.includes("getList")) decoratorNames.push("Post");
     if (restApiMethods.includes("put"))                                decoratorNames.push("Put");
@@ -56,8 +63,11 @@ export default function controllerTemplate(templateOptions: {
     if (useAuth) {
         if (dataIsolation) classDecoratorLines.push("@Middlewares(DataIsolationContext.middleware)");
         classDecoratorLines.push("@Middlewares(Authentication.middleware)");
-        classDecoratorLines.push("@Security(\"BearerAuth\")");
-        classDecoratorLines.push("@Security(\"AuthIndex\")");
+        // One security requirement object holds BOTH schemes, which OpenAPI reads as
+        // AND: every listed scheme must be satisfied. Two separate `@Security(...)`
+        // decorators instead document them as alternatives (OR), which contradicted
+        // the middleware — it rejects a request carrying only one of the headers.
+        classDecoratorLines.push("@Security({ BearerAuth: [], AuthIndex: [] })");
     }
     const classDecorators = classDecoratorLines.length > 0 ? classDecoratorLines.join("\n") + "\n" : "";
 
@@ -143,7 +153,7 @@ export default function controllerTemplate(templateOptions: {
     const postRoute = buildMethod(
         restApiMethods.includes("post"),
         ["@Post()", `@SuccessResponse(201, "Created")`],
-        `public async create${documentName}(@Body() body: ${documentName}): Promise<VexResponse<${documentName}>>`,
+        `public async create${documentName}(@Body() body: ${requestBodyType}): Promise<VexResponse<${documentName}>>`,
         `${cleanId}
         const result = await this.repo.create(body);
         if (!result) throw new VexResErr(400);
@@ -154,7 +164,7 @@ export default function controllerTemplate(templateOptions: {
     const putRoute = buildMethod(
         restApiMethods.includes("put"),
         ["@Put(\"{id}\")", `@SuccessResponse(200, "Success")`],
-        `public async replace${documentName}(${idParam}, @Body() body: ${documentName}): Promise<VexResponse<${documentName}>>`,
+        `public async replace${documentName}(${idParam}, @Body() body: ${requestBodyType}): Promise<VexResponse<${documentName}>>`,
         `${cleanId}
         const result = await this.repo.replace(id, body);
         if (!result) throw new VexResErr(404);
@@ -164,7 +174,7 @@ export default function controllerTemplate(templateOptions: {
     const patchRoute = buildMethod(
         restApiMethods.includes("patch"),
         ["@Patch(\"{id}\")", `@SuccessResponse(200, "Success")`],
-        `public async update${documentName}(${idParam}, @Body() body: Partial<${documentName}>): Promise<VexResponse<${documentName}>>`,
+        `public async update${documentName}(${idParam}, @Body() body: Partial<${requestBodyType}>): Promise<VexResponse<${documentName}>>`,
         `${cleanId}
         const result = await this.repo.update(id, body);
         if (!result) throw new VexResErr(404);
@@ -190,7 +200,7 @@ import VexDb from "../_services/VexDb.gen";
 ${optionalImports}
 
 import { ${documentName}Entity } from "${modelPath}";
-import { ${documentName}, ${documentName}WithApiRelations } from "${typePath}";
+import { ${documentName}, ${documentName}WithApiRelations${requestManagedFields.length > 0 ? `, ${requestBodyType}` : ""} } from "${typePath}";
 
 // extra type defined due to tsoa cannot capture runtime generic types,
 // this will make OAS have complete input parameters & correct validation

@@ -2,14 +2,22 @@ import * as jsonToTypescript from "json-schema-to-typescript";
 import log from "../../utils/logger";
 import utils from "~/utils";
 import * as types from "~/types/types";
+import { collectRequestManagedFields } from "~/preprocess/auditFields";
 
 export async function compile(
     jsonSchema: types.jsonSchema, 
     outputPath: string,
-    // compilerOptions: types.compilerOptions
+    compilerOptions?: types.compilerOptions,
 ): Promise<void> {
     const title = String(outputPath.split("/").pop()?.split(".")[0]);
     log.process(`Type : ${title} > ${outputPath}`);
+
+    // fields the server owns — the request body type omits them
+    const requestManagedFields = collectRequestManagedFields(
+        jsonSchema,
+        compilerOptions?.app?.allowApiCreateUpdate_id ?? false,
+    );
+
     const content = await jsonToTypescript
         .compile(
             jsonSchema as jsonToTypescript.JSONSchema, 
@@ -38,10 +46,38 @@ export async function compile(
             }
         )
         .then(interfaceString => applyFkToInterface(interfaceString, jsonSchema))
-        .then(interfaceString => appendEnumDeclarations(interfaceString, jsonSchema));
+        .then(interfaceString => appendEnumDeclarations(interfaceString, jsonSchema))
+        .then(interfaceString => appendCreateType(interfaceString, jsonSchema, requestManagedFields));
 
     utils.common.writeFile(title, outputPath, "// {{headerComment}}\n" + content);
     return;
+}
+
+/**
+ * Emit the request-body alias for a document.
+ *
+ * `Create{Doc}` is what the controllers accept on POST / PUT / PATCH. Framework-managed fields
+ * (reserved `default` keywords, and the primary key unless the app allows clients to set it) are
+ * omitted, so the generated OpenAPI request schema does not advertise fields the server strips
+ * or overwrites — while the response type keeps them, since clients must still read them.
+ *
+ * A named alias is deliberate: tsoa parses `Omit<T, 'k'>` when it is declared as its own type.
+ */
+function appendCreateType(
+    interfaceString: string,
+    jsonSchema: types.jsonSchema,
+    requestManagedFields: string[],
+): string {
+    if (requestManagedFields.length === 0) return interfaceString;
+
+    const interfaceName = interfaceString.match(/export interface (\w+)/)?.[1];
+    if (!interfaceName) return interfaceString;
+
+    const omitted = requestManagedFields.map(field => `"${field}"`).join(" | ");
+
+    return interfaceString.replace(/\s+$/, "") + "\n\n" +
+        `/** Request body for create / put / patch — server-managed fields are not accepted from the client */\n` +
+        `export type Create${interfaceName} = Omit<${interfaceName}, ${omitted}>;\n`;
 }
 
 function applyFkToInterface(interfaceString: string, jsonSchema: types.jsonSchema): string {

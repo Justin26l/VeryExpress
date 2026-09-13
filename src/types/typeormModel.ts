@@ -28,6 +28,8 @@ export interface ColumnDef {
     comment?: string;
     /** default column value emitted as @Column({ default }) */
     defaultValue?: unknown;
+    /** timestamptz columns: the driver returns a Date, transformer keeps the ISO-8601 string contract */
+    needsTimestampTransformer?: boolean;
 }
 
 

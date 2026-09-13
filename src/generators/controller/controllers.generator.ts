@@ -5,6 +5,7 @@ import utils from "./../../utils";
 import log from "./../../utils/logger";
 
 import * as types from "./../../types/types";
+import { collectRequestManagedFields } from "../../preprocess/auditFields";
 
 
 /**
@@ -57,6 +58,11 @@ export async function compile(options: {
         restApiNoRelations: Boolean(schemaConfig.restApi.noRelations),
         compilerOptions: options.compilerOptions,
         dataIsolation: schemaConfig.dataIsolation,
+        // server-managed fields: the request body type omits them (see the interface generator)
+        requestManagedFields: collectRequestManagedFields(
+            schema,
+            options.compilerOptions.app?.allowApiCreateUpdate_id ?? false,
+        ),
     }));
 }
 

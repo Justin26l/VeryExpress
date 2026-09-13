@@ -8,7 +8,7 @@ export function generateRolesSettings(options: {
     rolesDir: string,
     compilerOptions: types.compilerOptions
 }): void {
-    if(!options.compilerOptions.useRBAC){ return; }
+    if(!utils.generator.isRbacEnabled(options.compilerOptions)){ return; }
 
     const permissionArray = [ "create", "read", "update", "delete", "search"];
 
