@@ -30,9 +30,9 @@ export default function controllerTemplate(templateOptions: {
     const routePath = documentName.toLowerCase();
 
     // Request body type. When the schema declares server-managed fields (reserved `default`
-    // keywords, primary key), the interface generator emits `Create{Doc}` without them, so the
+    // keywords, primary key), the interface generator emits `Payload{Doc}` without them, so the
     // OpenAPI request schema stops advertising fields the server strips or overwrites.
-    const requestBodyType = requestManagedFields.length > 0 ? `Create${documentName}` : documentName;
+    const requestBodyType = requestManagedFields.length > 0 ? `Payload${documentName}` : documentName;
 
     // body fields — exclude _id (auto-generated primary key)
     // const bodyFields = fields.filter(f => f.name !== "_id");

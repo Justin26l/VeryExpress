@@ -132,16 +132,16 @@ Values written:
 The registry generator is the only place that knows the mapping: adapters import
 `entityVexFields` at runtime rather than re-deriving it from the schema.
 
-### Request body type — `Create{Doc}`
+### Request body type — `Payload{Doc}`
 
 Server-owned fields must not appear in the API *input*. The interface generator therefore emits, into
 `src/system/_types/{Doc}.gen.ts`:
 
 ```ts
-export type CreateJob = Omit<Job, "createdAt" | "createdBy" | "updatedAt" | "updatedBy" | "_id">;
+export type PayloadJob = Omit<Job, "createdAt" | "createdBy" | "updatedAt" | "updatedBy" | "_id">;
 ```
 
-and the controllers accept `Create{Doc}` (create, put) / `Partial<Create{Doc}>` (patch). The omission is
+and the controllers accept `Payload{Doc}` (create, put) / `Partial<Payload{Doc}>` (patch). The omission is
 **declaration-based, never name-based**: a field is dropped when it carries a reserved `default` keyword,
 or when it is the primary key (`x-format: Primary` / `PrimaryUUID`) and `app.allowApiCreateUpdate_id` is
 false. A column literally named `createdAt` without a keyword stays client-writable — the declaration is
