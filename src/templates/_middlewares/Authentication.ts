@@ -2,6 +2,7 @@
 import { Request, Response, NextFunction } from "express";
 import { JsonWebTokenError } from "jsonwebtoken";
 import JWTService from "../_services/auth/JWTService.gen";
+import UserContext from "./UserContext.gen";
 import log from "../_utils/logger.gen";
 import { VexResErr } from "../_types/vex";
 
@@ -27,7 +28,7 @@ class Authentication {
             // verify token
             const tokenData = this.JWTService.verifyToken(token, accessTokenIndex);
             req.user = tokenData;
-            next();
+            UserContext.run(tokenData, () => next());
         }
         catch (e: any) {
             if (typeof e === "number") {

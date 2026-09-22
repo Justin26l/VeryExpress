@@ -9,7 +9,7 @@ import * as types from "~/types/types";
  * Each entity with a dataIsolation config gets an entry. The TypeORM
  * repository adapter reads this registry at runtime and injects the
  * ownership filter into all queries using the current user context
- * from AsyncLocalStorage (DataIsolationContext).
+ * from AsyncLocalStorage (UserContext).
  */
 export async function compile(options: {
     allSchemas: types.jsonSchema[];

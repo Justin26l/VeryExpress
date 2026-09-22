@@ -40,310 +40,310 @@ JWT_SECRET0='my-secret-key0'
       "schemas": {
         "Session.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.0"
+          "lastWriteVersion": "0.8.2"
         },
         "User.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.0"
+          "lastWriteVersion": "0.8.2"
         },
         "UserAuthProfiles.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.0"
+          "lastWriteVersion": "0.8.2"
         },
         "UserRole.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.0"
+          "lastWriteVersion": "0.8.2"
         }
       },
       "vex.config.json": {
         "allowOverwrite": true,
-        "lastWriteVersion": "0.8.0"
+        "lastWriteVersion": "0.8.2"
       }
     },
     ".env": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.0"
+      "lastWriteVersion": "0.8.2"
     },
     "Dockerfile": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.0"
+      "lastWriteVersion": "0.8.2"
     },
     "package.json": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.0"
+      "lastWriteVersion": "0.8.2"
     },
     "public": {
       "css": {
         "style.css": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.0"
+          "lastWriteVersion": "0.8.2"
         }
       },
       "js": {
         "login.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.0"
+          "lastWriteVersion": "0.8.2"
         },
         "logincallback.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.0"
+          "lastWriteVersion": "0.8.2"
         },
         "mytokens.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.0"
+          "lastWriteVersion": "0.8.2"
         },
         "refreshtokens.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.0"
+          "lastWriteVersion": "0.8.2"
         }
       }
     },
     "README.md": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.0"
+      "lastWriteVersion": "0.8.2"
     },
     "scripts": {
       "build.js": {
         "allowOverwrite": true,
-        "lastWriteVersion": "0.8.0"
+        "lastWriteVersion": "0.8.2"
       },
       "oacg-fix.js": {
         "allowOverwrite": true,
-        "lastWriteVersion": "0.8.0"
+        "lastWriteVersion": "0.8.2"
       }
     },
     "src": {
       "roles": {
         "member.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.0"
+          "lastWriteVersion": "0.8.2"
         }
       },
       "server.ts": {
         "allowOverwrite": true,
-        "lastWriteVersion": "0.8.0"
+        "lastWriteVersion": "0.8.2"
       },
       "system": {
         "_controllers": {
           "_ControllerFactory.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.8.2"
           },
           "UserController.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.8.2"
           }
         },
         "_middlewares": {
           "Authentication.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
-          },
-          "DataIsolationContext.gen.ts": {
-            "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.8.2"
           },
           "DataIsolationRegistry.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.8.2"
           },
           "JoinWhitelistMiddleware.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.8.2"
           },
           "JoinWhitelistRegistry.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.8.2"
           },
           "RoleBaseAccessControl.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.8.2"
           },
           "tsoaAuthentication.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.8.2"
+          },
+          "UserContext.gen.ts": {
+            "allowOverwrite": true,
+            "lastWriteVersion": "0.8.2"
           },
           "VexFieldRegistry.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.8.2"
           }
         },
         "_models": {
           "SessionModel.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.8.2"
           },
           "UserAuthProfilesModel.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.8.2"
           },
           "UserModel.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.8.2"
           },
           "UserRoleModel.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.8.2"
           }
         },
         "_roles": {
           "_RoleFactory.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.8.2"
           },
           "index.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.8.2"
           },
           "member.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.8.2"
           }
         },
         "_routes": {
           "LoginUI.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.8.2"
           },
           "oauth": {
             "OAuthRouteFactory.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.0"
+              "lastWriteVersion": "0.8.2"
             }
           },
           "SwaggerRouter.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.8.2"
           }
         },
         "_services": {
           "auth": {
             "JWTKeyStore.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.0"
+              "lastWriteVersion": "0.8.2"
             },
             "JWTService.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.0"
+              "lastWriteVersion": "0.8.2"
             }
           },
           "MongooseRepositoryAdapter.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.8.2"
           },
           "oauth": {
             "OAuthProfileMap.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.0"
+              "lastWriteVersion": "0.8.2"
             },
             "OAuthStrategyService.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.0"
+              "lastWriteVersion": "0.8.2"
             }
           },
           "TypeOrmRepositoryAdapter.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.8.2"
           },
           "VexDb.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.8.2"
           },
           "VexDbConnector.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.8.2"
           },
           "VexSystem.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.8.2"
           }
         },
         "_types": {
           "auth.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.8.2"
           },
           "Session.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.8.2"
           },
           "User.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.8.2"
           },
           "UserAuthProfiles.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.8.2"
           },
           "UserRole.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.8.2"
           },
           "vex": {
             "index.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.0"
+              "lastWriteVersion": "0.8.2"
             },
             "VexRepository.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.0"
+              "lastWriteVersion": "0.8.2"
             },
             "VexRequest.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.0"
+              "lastWriteVersion": "0.8.2"
             },
             "VexResErr.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.0"
+              "lastWriteVersion": "0.8.2"
             },
             "VexResOk.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.0"
+              "lastWriteVersion": "0.8.2"
             },
             "VexResponse.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.0"
+              "lastWriteVersion": "0.8.2"
             }
           }
         },
         "_utils": {
           "hash.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.8.2"
           },
           "index.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.8.2"
           },
           "logger.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.8.2"
           },
           "processTimer.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.8.2"
           },
           "response.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.8.2"
           },
           "validator.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.0"
+            "lastWriteVersion": "0.8.2"
           }
         }
       }
     },
     "tsconfig.json": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.0"
+      "lastWriteVersion": "0.8.2"
     },
     "tsoa.json": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.0"
+      "lastWriteVersion": "0.8.2"
     }
   },
-  "lastGeneratedVersion": "0.8.0"
+  "lastGeneratedVersion": "0.8.2"
 }
 
 ===== out/Dockerfile =====
@@ -854,7 +854,6 @@ import VexDb from "../_services/VexDb.gen";
 
 import RoleBaseAccessControl from "../_middlewares/RoleBaseAccessControl.gen";
 import JoinWhitelistMiddleware from "../_middlewares/JoinWhitelistMiddleware.gen";
-import DataIsolationContext from "../_middlewares/DataIsolationContext.gen";
 
 import { UserEntity } from "../_models/UserModel.gen";
 import { User, UserWithApiRelations, PayloadUser } from "../_types/User.gen";
@@ -907,6 +906,7 @@ export class UserController extends controllerFactory._ControllerFactory {
 import { Request, Response, NextFunction } from "express";
 import { JsonWebTokenError } from "jsonwebtoken";
 import JWTService from "../_services/auth/JWTService.gen";
+import UserContext from "./UserContext.gen";
 import log from "../_utils/logger.gen";
 import { VexResErr } from "../_types/vex";
 
@@ -932,7 +932,11 @@ class Authentication {
             // verify token
             const tokenData = this.JWTService.verifyToken(token, accessTokenIndex);
             req.user = tokenData;
-            next();
+
+            // establish the per-request identity context the data layer reads from.
+            // Unconditional: verification succeeded, so a token exists — whether it
+            // carries a usable identity is decided when the context is read.
+            UserContext.run(tokenData, () => next());
         }
         catch (e: any) {
             if (typeof e === "number") {
@@ -949,49 +953,6 @@ class Authentication {
 }
 
 export default new Authentication();
-
-===== out/src/system/_middlewares/DataIsolationContext.gen.ts =====
-/**
- * Generated by veryExpress@<version> 
- * https://github.com/Justin26l/VeryExpress
- */
-
-import { AsyncLocalStorage } from "async_hooks";
-import { Request, Response, NextFunction } from "express";
-
-export interface DataIsolationStore {
-  userId: string;
-}
-
-const als = new AsyncLocalStorage<DataIsolationStore>();
-
-class DataIsolationContext {
-    /**
-   * Express middleware — creates ALS context with the authenticated user's identity value.
-   * Must run AFTER Authentication.middleware (which sets req.user).
-   *
-   * The identity is the `vexUserId` token claim, which the auth service fills from the field
-   * tagged `x-vexData: "userId"` in the schemas. `_id` is the fallback for tokens issued
-   * before that claim existed.
-   */
-    middleware(req: Request, _res: Response, next: NextFunction): void {
-        const user = (req as Request & { user?: { vexUserId?: string, _id?: string } }).user;
-        const userId = user?.vexUserId ?? user?._id;
-
-        if (userId) {
-            als.run({ userId }, () => next());
-        } else {
-            next();
-        }
-    }
-
-    /** Get current store from per-request ALS context. */
-    getStore(): DataIsolationStore | undefined {
-        return als.getStore();
-    }
-}
-
-export default new DataIsolationContext();
 
 ===== out/src/system/_middlewares/DataIsolationRegistry.gen.ts =====
 /**
@@ -1162,6 +1123,66 @@ export async function expressAuthentication(
 
     return {};
 }
+
+===== out/src/system/_middlewares/UserContext.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import { AsyncLocalStorage } from "async_hooks";
+
+/** Identity-bearing claims carried from the verified access token. */
+export interface UserContextData {
+    tokenData: Record<string, unknown>;
+}
+
+/**
+ * Pure: identity value carried by a verified access token.
+ *
+ * `vexUserId` is the schema-declared identity (the field tagged `x-vexData: "userId"`,
+ * which JWTService copies into the token); `_id` keeps tokens issued before that claim
+ * existed working.
+ */
+export function userIdOfToken(tokenData: Record<string, unknown> | undefined): string | undefined {
+    return (tokenData?.vexUserId as string | undefined) ?? (tokenData?._id as string | undefined);
+}
+
+const als = new AsyncLocalStorage<UserContextData>();
+
+class UserContext {
+    /**
+     * Enter the per-request identity context.
+     *
+     * Called ONLY by Authentication.middleware, after token verification succeeded — at
+     * that point a verified token always exists, so this runs unconditionally. The store
+     * is the request's context; whether it carries a usable identity is decided when it
+     * is read (`userId`), not when it is created.
+     *
+     * Never use `enterWith()`: it mutates the current execution context instead of
+     * scoping a new one, and leaks into whatever runs next on the same tick.
+     */
+    run<T>(tokenData: Record<string, unknown>, fn: () => T): T {
+        return als.run({ tokenData }, fn);
+    }
+
+    /** Current store from the per-request async context. */
+    getStore(): UserContextData | undefined {
+        return als.getStore();
+    }
+
+    /**
+     * Normalized identity of the authenticated caller.
+     *
+     * The data layer MUST read the identity through this accessor and never inspect the
+     * token shape itself — that keeps the token → identity mapping in exactly one place.
+     */
+    get userId(): string | undefined {
+        return userIdOfToken(als.getStore()?.tokenData);
+    }
+}
+
+export default new UserContext();
 
 ===== out/src/system/_middlewares/VexFieldRegistry.gen.ts =====
 /**
@@ -2038,8 +2059,8 @@ export default class JWTService {
  */
 
 import { Model, Document } from "mongoose";
-import { VexRepository, Select, Filter, Join, VexPagination } from "../_types/vex";
-import DataIsolationContext from "../_middlewares/DataIsolationContext.gen";
+import { VexRepository, Select, Filter, Join, VexPagination, VexResErr } from "../_types/vex";
+import UserContext from "../_middlewares/UserContext.gen";
 import { entityVexFields, VexFieldEntry } from "../_middlewares/VexFieldRegistry.gen";
 import utils from "../_utils";
 
@@ -2077,6 +2098,21 @@ export class MongooseRepositoryAdapter<T extends Document> implements VexReposit
     constructor(private model: Model<T>) {}
 
     /**
+     * Fail loud when an entity declares a create-phase user field but no identity is in
+     * scope — a silent NULL is exactly the failure this enforcement exists to kill.
+     *
+     * `onUpdateUserId` is deliberately NOT enforced: `updatedBy` is allowed to stay absent,
+     * and refusing a context-less update would also break pre-auth writes that don't touch it.
+     */
+    private assertCreateIdentity(fields: VexFieldEntry[]): void {
+        if (!fields.some(f => f.type === "onCreateUserId")) return;
+        if (UserContext.userId) return;
+
+        throw new VexResErr(500, undefined,
+            `${this.model.modelName} declares onCreateUserId but UserContext carries no user identity`);
+    }
+
+    /**
      * Framework-managed audit fields: strip the caller's values first — a client must never
      * forge createdBy / updatedAt — then fill the ones owned by this write phase.
      * Fields of the other phase are stripped without being written, which is what keeps
@@ -2086,7 +2122,9 @@ export class MongooseRepositoryAdapter<T extends Document> implements VexReposit
         const fields = entityVexFields[this.model.modelName + "Entity"] ?? [];
         if (fields.length === 0) return;
 
-        const userId = DataIsolationContext.getStore()?.userId;
+        if (phase === "create") this.assertCreateIdentity(fields);
+
+        const userId = UserContext.userId;
         const values: Record<string, unknown> = {};
 
         for (const entry of fields) {
@@ -2353,8 +2391,8 @@ export default class OAuthStrategyService {
  */
 
 import { Repository, ObjectLiteral, FindOptionsWhere, DeepPartial, In, Not, Like, MoreThan, LessThan, MoreThanOrEqual, LessThanOrEqual, FindManyOptions } from "typeorm";
-import { VexRepository, Select, Filter, Join, FieldOperators, VexPagination } from "../_types/vex";
-import DataIsolationContext from "../_middlewares/DataIsolationContext.gen";
+import { VexRepository, Select, Filter, Join, FieldOperators, VexPagination, VexResErr } from "../_types/vex";
+import UserContext from "../_middlewares/UserContext.gen";
 import { entityIsolation } from "../_middlewares/DataIsolationRegistry.gen";
 import { entityVexFields, VexFieldEntry } from "../_middlewares/VexFieldRegistry.gen";
 import utils from "../_utils";
@@ -2399,6 +2437,21 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
     }
 
     /**
+     * Fail loud when an entity declares a create-phase user field but no identity is in
+     * scope — a silent NULL is exactly the failure this enforcement exists to kill.
+     *
+     * `onUpdateUserId` is deliberately NOT enforced: `updatedBy` is allowed to stay absent,
+     * and refusing a context-less update would also break pre-auth writes that don't touch it.
+     */
+    private assertCreateIdentity(fields: VexFieldEntry[]): void {
+        if (!fields.some(f => f.type === "onCreateUserId")) return;
+        if (UserContext.userId) return;
+
+        throw new VexResErr(500, undefined,
+            `${this.getEntityName()} declares onCreateUserId but UserContext carries no user identity`);
+    }
+
+    /**
      * Framework-managed audit fields: strip the caller's values first — a client must never
      * forge createdBy / updatedAt — then fill the ones owned by this write phase.
      * Fields of the other phase are stripped without being written, which is what keeps
@@ -2408,7 +2461,9 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
         const fields = entityVexFields[this.getEntityName()] ?? [];
         if (fields.length === 0) return;
 
-        const userId = DataIsolationContext.getStore()?.userId;
+        if (phase === "create") this.assertCreateIdentity(fields);
+
+        const userId = UserContext.userId;
         const values: Record<string, unknown> = {};
 
         for (const entry of fields) {
@@ -2425,13 +2480,13 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
 
     /** Build ownership filter from current request context, or null. */
     private getOwnershipFilter(): Record<string, unknown> | null {
-        const store = DataIsolationContext.getStore();
-        if (!store?.userId) return null;
+        const userId = UserContext.userId;
+        if (!userId) return null;
 
         const config = entityIsolation[this.getEntityName()];
         if (!config) return null;
 
-        return { [config.field]: store.userId };
+        return { [config.field]: userId };
     }
 
     /** Merge caller filter with ownership filter. Ownership always wins. */
@@ -2551,11 +2606,11 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
 
     async create(data: Partial<T>): Promise<T> {
         const enriched = { ...data };
-        const store = DataIsolationContext.getStore();
-        if (store?.userId) {
+        const userId = UserContext.userId;
+        if (userId) {
             const config = entityIsolation[this.getEntityName()];
             if (config && config.field !== "_id") {
-                (enriched as Record<string, unknown>)[config.field] = store.userId;
+                (enriched as Record<string, unknown>)[config.field] = userId;
             }
         }
         this.applyVexFields(enriched, "create");

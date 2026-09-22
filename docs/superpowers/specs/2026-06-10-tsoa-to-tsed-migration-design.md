@@ -255,7 +255,7 @@ Filter 类型是编译期类型工具，不影响 OAS。
 |---------|--------|
 | `tsoaAuthentication.ts` | ❌ 废弃 |
 | `Authentication.ts` | Ts.ED `@Middleware()` class |
-| `DataIsolationContext.ts` | Ts.ED `@Middleware()` |
+| `UserContext.ts` (原 `DataIsolationContext.ts`) | 无需 `@Middleware()` —— 由 `Authentication` 建立上下文 |
 | `JoinWhitelistMiddleware.ts` | Ts.ED `@Middleware()` + 补充循环路径检测 |
 
 Authentication 迁移示例：
@@ -392,7 +392,7 @@ OAS 3.x spec 本身不会因此循环展开——$ref 是静态引用定义。�
 |------|------|
 | `_middlewares/tsoaAuthentication.ts` | **删除** |
 | `_middlewares/Authentication.ts` | 重写为 Ts.ED `@Middleware()` |
-| `_middlewares/DataIsolationContext.ts` | 注册模式改 Ts.ED |
+| `_middlewares/UserContext.ts` | 无需注册 —— 由 `Authentication` 建立上下文 |
 | `_middlewares/JoinWhitelistMiddleware.ts` | 注册模式改 Ts.ED |
 | `_controllers/_ControllerFactory.ts` | tsoa `Controller` → Ts.ED `Controller` |
 | `_projectSettings/package.json` | +Ts.ED deps, -tsoa |

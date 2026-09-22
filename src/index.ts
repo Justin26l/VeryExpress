@@ -118,7 +118,7 @@ export async function generate(
     applyFkMetadata(documents);
 
     // audit / ownership declarations are cross-document (one identity source) — validate once
-    validateAuditFields(documents);
+    validateAuditFields(documents, options);
 
     // ===== Start Generations ===== //
 

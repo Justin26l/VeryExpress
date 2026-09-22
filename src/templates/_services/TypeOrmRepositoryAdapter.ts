@@ -1,7 +1,7 @@
 // {{headerComment}}
 import { Repository, ObjectLiteral, FindOptionsWhere, DeepPartial, In, Not, Like, MoreThan, LessThan, MoreThanOrEqual, LessThanOrEqual, FindManyOptions } from "typeorm";
-import { VexRepository, Select, Filter, Join, FieldOperators, VexPagination } from "../_types/vex";
-import DataIsolationContext from "../_middlewares/DataIsolationContext.gen";
+import { VexRepository, Select, Filter, Join, FieldOperators, VexPagination, VexResErr } from "../_types/vex";
+import UserContext from "../_middlewares/UserContext.gen";
 import { entityIsolation } from "../_middlewares/DataIsolationRegistry.gen";
 import { entityVexFields, VexFieldEntry } from "../_middlewares/VexFieldRegistry.gen";
 import utils from "../_utils";
@@ -46,6 +46,21 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
     }
 
     /**
+     * Fail loud when an entity declares a create-phase user field but no identity is in
+     * scope — a silent NULL is exactly the failure this enforcement exists to kill.
+     *
+     * `onUpdateUserId` is deliberately NOT enforced: `updatedBy` is allowed to stay absent,
+     * and refusing a context-less update would also break pre-auth writes that don't touch it.
+     */
+    private assertCreateIdentity(fields: VexFieldEntry[]): void {
+        if (!fields.some(f => f.type === "onCreateUserId")) return;
+        if (UserContext.userId) return;
+
+        throw new VexResErr(500, undefined,
+            `${this.getEntityName()} declares onCreateUserId but UserContext carries no user identity`);
+    }
+
+    /**
      * Framework-managed audit fields: strip the caller's values first — a client must never
      * forge createdBy / updatedAt — then fill the ones owned by this write phase.
      * Fields of the other phase are stripped without being written, which is what keeps
@@ -55,7 +70,9 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
         const fields = entityVexFields[this.getEntityName()] ?? [];
         if (fields.length === 0) return;
 
-        const userId = DataIsolationContext.getStore()?.userId;
+        if (phase === "create") this.assertCreateIdentity(fields);
+
+        const userId = UserContext.userId;
         const values: Record<string, unknown> = {};
 
         for (const entry of fields) {
@@ -72,13 +89,13 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
 
     /** Build ownership filter from current request context, or null. */
     private getOwnershipFilter(): Record<string, unknown> | null {
-        const store = DataIsolationContext.getStore();
-        if (!store?.userId) return null;
+        const userId = UserContext.userId;
+        if (!userId) return null;
 
         const config = entityIsolation[this.getEntityName()];
         if (!config) return null;
 
-        return { [config.field]: store.userId };
+        return { [config.field]: userId };
     }
 
     /** Merge caller filter with ownership filter. Ownership always wins. */
@@ -198,11 +215,11 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
 
     async create(data: Partial<T>): Promise<T> {
         const enriched = { ...data };
-        const store = DataIsolationContext.getStore();
-        if (store?.userId) {
+        const userId = UserContext.userId;
+        if (userId) {
             const config = entityIsolation[this.getEntityName()];
             if (config && config.field !== "_id") {
-                (enriched as Record<string, unknown>)[config.field] = store.userId;
+                (enriched as Record<string, unknown>)[config.field] = userId;
             }
         }
         this.applyVexFields(enriched, "create");

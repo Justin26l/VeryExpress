@@ -1,7 +1,7 @@
 // {{headerComment}}
 import { Model, Document } from "mongoose";
-import { VexRepository, Select, Filter, Join, VexPagination } from "../_types/vex";
-import DataIsolationContext from "../_middlewares/DataIsolationContext.gen";
+import { VexRepository, Select, Filter, Join, VexPagination, VexResErr } from "../_types/vex";
+import UserContext from "../_middlewares/UserContext.gen";
 import { entityVexFields, VexFieldEntry } from "../_middlewares/VexFieldRegistry.gen";
 import utils from "../_utils";
 
@@ -39,6 +39,21 @@ export class MongooseRepositoryAdapter<T extends Document> implements VexReposit
     constructor(private model: Model<T>) {}
 
     /**
+     * Fail loud when an entity declares a create-phase user field but no identity is in
+     * scope — a silent NULL is exactly the failure this enforcement exists to kill.
+     *
+     * `onUpdateUserId` is deliberately NOT enforced: `updatedBy` is allowed to stay absent,
+     * and refusing a context-less update would also break pre-auth writes that don't touch it.
+     */
+    private assertCreateIdentity(fields: VexFieldEntry[]): void {
+        if (!fields.some(f => f.type === "onCreateUserId")) return;
+        if (UserContext.userId) return;
+
+        throw new VexResErr(500, undefined,
+            `${this.model.modelName} declares onCreateUserId but UserContext carries no user identity`);
+    }
+
+    /**
      * Framework-managed audit fields: strip the caller's values first — a client must never
      * forge createdBy / updatedAt — then fill the ones owned by this write phase.
      * Fields of the other phase are stripped without being written, which is what keeps
@@ -48,7 +63,9 @@ export class MongooseRepositoryAdapter<T extends Document> implements VexReposit
         const fields = entityVexFields[this.model.modelName + "Entity"] ?? [];
         if (fields.length === 0) return;
 
-        const userId = DataIsolationContext.getStore()?.userId;
+        if (phase === "create") this.assertCreateIdentity(fields);
+
+        const userId = UserContext.userId;
         const values: Record<string, unknown> = {};
 
         for (const entry of fields) {
