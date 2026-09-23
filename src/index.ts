@@ -26,6 +26,7 @@ import * as interfaceGen from "./generators/interface/generator";
 import * as joinWhitelistRegistryGen from "./generators/middlewares/joinWhitelistRegistry.generator";
 import * as dataIsolationRegistryGen from "./generators/middlewares/dataIsolationRegistry.generator";
 import * as vexFieldRegistryGen from "./generators/middlewares/vexFieldRegistry.generator";
+import * as accountStateGuardGen from "./generators/services/accountStateGuard.generator";
 
 export async function generate(
     options: types.compilerOptions
@@ -208,6 +209,14 @@ export async function generate(
     //         outDir: dir.modelDir,
     //     });
     // }
+
+    // generate account-state guard — Authentication.middleware imports it unconditionally,
+    // so it is emitted for every project (no-op when the identity document is not soft-deletable)
+    await accountStateGuardGen.compile({
+        documents: documents.map(d => ({ path: d.path, schema: d.schema })),
+        serviceDir: dir.serviceDir,
+        compilerOptions: options,
+    });
 
     // generate route from routeData
     await routeGen.compile({
