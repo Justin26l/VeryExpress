@@ -935,20 +935,22 @@ export class _ControllerFactory extends Controller {
  * https://github.com/Justin26l/VeryExpress
  */
 
-import { Route, Tags, Post, Body, Query, SuccessResponse } from "tsoa";
+import { Route, Tags, Post, Body, Query, SuccessResponse, Middlewares, Security } from "tsoa";
 import * as controllerFactory from "./_ControllerFactory.gen";
 import JWTService from "../_services/auth/JWTService.gen";
 import VexDb from "../_services/VexDb.gen";
 import { SessionEntity, Session } from "../_models/SessionModel.gen";
 import { VexRepository, VexResponse, VexResErr, VexResOk, Filter } from "../_types/vex";
 import { vexUserIdField } from "../_middlewares/VexFieldRegistry.gen";
-import { tokenResponse, refreshTokenResponse, registerResponse, localLoginResponse } from "../_types/auth.gen";
+import { tokenResponse, refreshTokenResponse, registerResponse, localLoginResponse, deleteAccountResponse } from "../_types/auth.gen";
 
 import utils from "../_utils";
 import { UserEntity, User } from "../_models/UserModel.gen";
 import { UserAuthProfilesEntity, UserAuthProfiles } from "../_models/UserAuthProfilesModel.gen";
 import { UserRoleEntity, UserRole } from "../_models/UserRoleModel.gen";
 import { RoleEnum } from "../_types/UserRole.gen";
+import Authentication from "../_middlewares/Authentication.gen";
+import AccountDeletionService from "../_services/account/AccountDeletionService.gen";
 
 @Route("auth")
 @Tags("Auth")
@@ -959,7 +961,19 @@ export class AuthController extends controllerFactory._ControllerFactory {
     private get userRepo(): VexRepository<User> { return VexDb.getRepository(UserEntity); }
     private get userAuthProfilesRepo(): VexRepository<UserAuthProfiles> { return VexDb.getRepository(UserAuthProfilesEntity); }
     private get userRoleRepo(): VexRepository<UserRole> { return VexDb.getRepository(UserRoleEntity); }
+    private accountDeletionService = new AccountDeletionService();
 
+
+
+
+    @Post("delete-account")
+    @SuccessResponse(200, "OK")
+    @Middlewares(Authentication.middleware)
+    @Security({ BearerAuth: [], AuthIndex: [] })
+    async deleteAccount(): Promise<VexResponse<deleteAccountResponse>> {
+        const result = await this.accountDeletionService.deleteSelf();
+        throw new VexResOk(200, { result });
+    }
 
     @Post("token")
     @SuccessResponse(200, "OK")
