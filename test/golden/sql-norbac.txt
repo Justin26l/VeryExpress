@@ -76,6 +76,10 @@ JWT_SECRET0='my-secret-key0'
         }
       },
       "js": {
+        "deleteaccount.js": {
+          "allowOverwrite": true,
+          "lastWriteVersion": "0.8.3"
+        },
         "login.js": {
           "allowOverwrite": true,
           "lastWriteVersion": "0.8.3"
@@ -408,6 +412,75 @@ pre {
   white-space: pre-wrap;
 }
 
+===== out/public/js/deleteaccount.js =====
+// Self-service account deletion page.
+//
+// Sends the access token the same way the rest of the app does — Authorization + X-Auth-Index —
+// and clears the stored tokens on success, because the account is gone the moment the tombstone
+// is written: keeping a token the server will now reject only produces confusing 401s.
+
+(function () {
+    var button = document.getElementById("deleteAccountBtn");
+    var input = document.getElementById("confirmInput");
+    var result = document.getElementById("deleteResult");
+
+    if (!button || !input || !result) return;
+
+    function clearTokens() {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("accessTokenIndex");
+        localStorage.removeItem("refreshToken");
+        localStorage.removeItem("refreshTokenIndex");
+    }
+
+    function render(data) {
+        result.textContent = JSON.stringify(data, null, 2);
+    }
+
+    button.addEventListener("click", function () {
+        if (input.value !== "DELETE") {
+            render({ error: 'Type DELETE in the box to confirm.' });
+            return;
+        }
+
+        button.disabled = true;
+        render({ status: "Deleting…" });
+
+        fetch("/api/auth/delete-account", {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + (localStorage.getItem("accessToken") || ""),
+                "X-Auth-Index": localStorage.getItem("accessTokenIndex") || "",
+            },
+        })
+            .then(function (response) {
+                return response.json().then(function (body) {
+                    return { ok: response.ok, status: response.status, body: body };
+                });
+            })
+            .then(function (outcome) {
+                if (!outcome.ok) {
+                    render({ status: outcome.status, error: outcome.body });
+                    button.disabled = false;
+                    return;
+                }
+
+                clearTokens();
+                render({
+                    status: "Account deleted. You have been signed out.",
+                    result: outcome.body,
+                });
+                input.value = "";
+            })
+            .catch(function (err) {
+                render({ error: String(err) });
+                button.disabled = false;
+            });
+    });
+})();
+
 ===== out/public/js/login.js =====
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -728,7 +801,7 @@ const helmetConfig = {
 };
 
 const SwaggerRoute = new SwaggerRouter();
-const loginUI = new LoginUI({ localAuth: true, oauthProviders: [] });
+const loginUI = new LoginUI({ localAuth: true, oauthProviders: [], deleteAccount: true });
 
 /** 
  * App
@@ -1434,6 +1507,13 @@ import crypto from "crypto";
 export interface LoginUIConfig {
     localAuth: boolean;
     oauthProviders: string[];
+    /**
+     * Serve the self-service deletion page at `/delete_account`.
+     *
+     * Optional and defaulting to true so an app generated before this feature existed still
+     * constructs — its `server.ts` is generated once and is not overwritten on later runs.
+     */
+    deleteAccount?: boolean;
 }
 
 export default class LoginUI {
@@ -1450,6 +1530,10 @@ export default class LoginUI {
         return this.router;
     }
 
+    private get deleteAccountEnabled(): boolean {
+        return this.config.deleteAccount ?? true;
+    }
+
     private registerRoutes(): void {
         this.router.get("/", this.homePage.bind(this));
         this.router.get("/login", this.loginPage.bind(this));
@@ -1457,6 +1541,9 @@ export default class LoginUI {
         this.router.get("/mytokens", this.myTokensPage.bind(this));
         this.router.get("/refreshtoken", this.refreshTokenPage.bind(this));
         this.router.get("/logincallback", this.loginCallbackPage.bind(this));
+        if (this.deleteAccountEnabled) {
+            this.router.get("/delete_account", this.deleteAccountPage.bind(this));
+        }
     }
 
     private nonce(): string {
@@ -1471,11 +1558,16 @@ export default class LoginUI {
                     <li><a href="/logout">LogOut</a></li>`
             : "";
 
+        const deleteAccountLink = this.deleteAccountEnabled
+            ? `<li><a href="/delete_account">Delete account</a></li>`
+            : "";
+
         res.send(`
             <div>
                 <h1>Hello World</h1>
                 <ul>
                     ${authLinks}
+                    ${deleteAccountLink}
                     <li><a href="/swagger">Swagger UI</a></li>
                 </ul>
                 <h1>Others</h1>
@@ -1570,6 +1662,43 @@ export default class LoginUI {
             <body>
                 <h1>Profile Data</h1>
                 <pre id="tokenData"></pre>
+                <a href="/">back to home</a>
+            </body>
+        `);
+    }
+
+    /**
+     * Self-service account deletion.
+     *
+     * The copy is deliberately explicit about what survives: this is a tombstone, not an erasure of
+     * everything. Claiming otherwise would contradict both the implementation and the store listing.
+     */
+    private deleteAccountPage(_req: Request, res: Response): void {
+        const nonce = this.nonce();
+        res.setHeader("Content-Security-Policy", `script-src 'self' 'nonce-${nonce}'`);
+        res.send(`
+            <script nonce="${nonce}" src="/js/deleteaccount.js"></script>
+            <link rel="stylesheet" href="/css/style.css">
+            <body>
+                <h1>Delete account</h1>
+                <p><strong>This cannot be undone.</strong></p>
+                <p>
+                    Your account, sign-in methods and personal details are removed and you are
+                    signed out. Content you posted — posts, quotes, reviews and conversations —
+                    is kept with the author shown as <strong>Deleted user</strong>, so other
+                    people's threads stay readable. Viewing appointments are kept but
+                    deactivated, with addresses and notes cleared. Chat attachments are deleted.
+                </p>
+                <p>
+                    You will need to create a new account to use the service again; the same
+                    sign-in provider will not restore this one.
+                </p>
+                <p>Type <code>DELETE</code> to confirm:</p>
+                <input type="text" id="confirmInput" autocomplete="off"/>
+                <br/><br/>
+                <button id="deleteAccountBtn">Delete my account</button>
+                <br/><br/>
+                <pre id="deleteResult"></pre>
                 <a href="/">back to home</a>
             </body>
         `);
