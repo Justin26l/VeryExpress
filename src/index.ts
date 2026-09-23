@@ -8,6 +8,7 @@ import log from "./utils/logger";
 import { applyFkMetadata } from "./preprocess/jsonSchemaForeignKeys";
 import { formatJsonSchema, formatJsonSchemaRoleDefinition } from "./preprocess/jsonschemaFormat";
 import { validateAuditFields } from "./preprocess/auditFields";
+import { validateSoftDeleteFields } from "./preprocess/softDelete";
 
 import * as types from "./types/types";
 import * as userSchemaGen from "./generators/projectSettings/userSchema.generator";
@@ -120,6 +121,10 @@ export async function generate(
     // audit / ownership declarations are cross-document (one identity source) — validate once
     validateAuditFields(documents, options);
 
+    // soft-delete markers are per-document, but validated in the same pass so every schema
+    // contradiction is reported together, before anything is generated
+    validateSoftDeleteFields(documents);
+
     // ===== Start Generations ===== //
 
     // generate role & permissions
@@ -193,6 +198,7 @@ export async function generate(
         allSchemas: documents.map(d => d.schema),
         documents: documents.map(d => ({ path: d.path, schema: d.schema })),
         middlewareDir: dir.middlewareDir,
+        compilerOptions: options,
     });
 
     // generate sql migrations

@@ -94,6 +94,8 @@ export function hasReservedDefaults(schema: types.jsonSchema): boolean {
  * Fields the client must not supply, i.e. what the generated request body type omits:
  *
  * - every field declared with a reserved `default` keyword (the adapter strips and fills them)
+ * - the soft-delete marker (`x-vexData: "softDelete"`) — a client must never be able to
+ *   soft-delete, resurrect or pre-tombstone a row through the CRUD API
  * - the primary key (`x-format: Primary` / `PrimaryUUID`), unless the app opted into
  *   letting clients set `_id` via `app.allowApiCreateUpdate_id`
  *
@@ -105,6 +107,12 @@ export function collectRequestManagedFields(
     allowApiCreateUpdateId: boolean,
 ): string[] {
     const fields = collectVexFields(schema).map(field => field.field);
+
+    for (const [key, prop] of Object.entries(schema.properties ?? {})) {
+        if (prop?.["x-vexData"] === types.xVexDataType.SoftDelete && !fields.includes(key)) {
+            fields.push(key);
+        }
+    }
 
     if (!allowApiCreateUpdateId) {
         for (const [key, prop] of Object.entries(schema.properties ?? {})) {

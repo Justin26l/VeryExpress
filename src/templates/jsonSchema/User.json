@@ -65,10 +65,17 @@
       "type": "string",
       "x-format": "UUID",
       "default": "onUpdateUserId"
+    },
+    "deleted": {
+      "type": "boolean",
+      "default": false,
+      "x-vexData": "softDelete",
+      "description": "Soft-delete marker. Framework-managed; never client-writable. Hides the row from every ordinary query unless app.showSoftDeleted is on."
     }
   },
   "required": [
     "name",
-    "active"
+    "active",
+    "deleted"
   ]
 }

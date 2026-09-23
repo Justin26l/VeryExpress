@@ -20,5 +20,26 @@ export interface VexRepository<T, U=undefined> {
     update(id: string | undefined, data: Partial<T>): Promise<T | null>;
     delete(id: string | undefined): Promise<void>;
     deleteWhere(filter: Filter<T>): Promise<void>;
+
+    /**
+     * Mark an entity soft-deleted, optionally merging app-level redaction into the same write.
+     *
+     * Runs the normal update-phase machinery, so `updatedAt` / `updatedBy` record who tombstoned
+     * the row and when. No-op returning null when the entity declares no marker.
+     *
+     * Only for framework-internal callers: the marker is deliberately not part of `Filter`, and
+     * it is stripped from every generated request body, so no client can reach this through the API.
+     */
+    softDelete(id: string | undefined, data?: Partial<T>): Promise<[U] extends [undefined] ? T | null : U | null>;
+
+    /**
+     * Read a row that may be soft-deleted.
+     *
+     * Skips ONLY the adapter's soft-delete term — the ownership filter still applies, so this is
+     * not a way around `dataIsolation`. Exists for internal state checks (account-deletion
+     * idempotency, the account-state guard); a `Filter`-level escape hatch would have been part of
+     * every HTTP filter body, which is exactly what must not be possible.
+     */
+    findOneWithDeleted(filter: Filter<T>, join?: Join, select?: Select): Promise<[U] extends [undefined] ? T | null : U | null>;
 }
 

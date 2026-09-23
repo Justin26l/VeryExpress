@@ -2,7 +2,7 @@
 import { Model, Document } from "mongoose";
 import { VexRepository, Select, Filter, Join, VexPagination, VexResErr } from "../_types/vex";
 import UserContext from "../_middlewares/UserContext.gen";
-import { entityVexFields, VexFieldEntry } from "../_middlewares/VexFieldRegistry.gen";
+import { entityVexFields, entitySoftDeleteFields, showSoftDeleted, VexFieldEntry } from "../_middlewares/VexFieldRegistry.gen";
 import utils from "../_utils";
 
 /** When a framework-managed field is written. */
@@ -84,9 +84,34 @@ export class MongooseRepositoryAdapter<T extends Document> implements VexReposit
         return this.model;
     }
 
+    /** Entity class name — the key used by the generated registries. */
+    private getEntityName(): string {
+        return this.model.modelName + "Entity";
+    }
+
+    /**
+     * Soft-delete term for this model, or null when it declares no marker.
+     *
+     * `$ne: true` (not `$eq: false`) so documents written before the field existed still count as
+     * live — the same leniency the SQL side gets from NOT NULL DEFAULT false.
+     */
+    private getSoftDeleteFilter(): Record<string, unknown> | null {
+        if (showSoftDeleted) return null;
+
+        const field = entitySoftDeleteFields[this.getEntityName()];
+        if (!field) return null;
+
+        return { [field]: { $ne: true } };
+    }
+
+    private mergeFilter(filter: Filter, options?: { includeSoftDeleted?: boolean }): Record<string, unknown> {
+        const softDelete = options?.includeSoftDeleted ? null : this.getSoftDeleteFilter();
+        return { ...((filter || {}) as Record<string, unknown>), ...softDelete };
+    }
+
     find(filter: Filter, join?: Join, select?: Select, pagination?: VexPagination): Promise<T[]> {
         // TODO: complete mongoose support, handle join, select, and pagination
-        return this.model.find((filter || {}) as any).exec();
+        return this.model.find(this.mergeFilter(filter) as any).exec();
     }
 
     async count(filter: Filter): Promise<number> {
@@ -96,12 +121,12 @@ export class MongooseRepositoryAdapter<T extends Document> implements VexReposit
 
     findOne(filter: Filter, join?: Join, select?: Select): Promise<T | null> {
         // TODO: complete mongoose support, handle join and select
-        return this.model.findOne(filter as any).exec();
+        return this.model.findOne(this.mergeFilter(filter) as any).exec();
     }
 
     findOneWhere(filter: Filter, join?: Join, select?: Select): Promise<T | null> {
         // TODO: complete mongoose support, handle join and select
-        return this.model.findOne(filter as any).exec();
+        return this.model.findOne(this.mergeFilter(filter) as any).exec();
     }
 
     async create(data: Partial<T>): Promise<T> {
@@ -140,6 +165,43 @@ export class MongooseRepositoryAdapter<T extends Document> implements VexReposit
     }
 
     async deleteWhere(filter: Record<string, unknown>): Promise<void> {
-        await this.model.deleteOne(filter as any).exec();
+        await this.model.deleteOne(this.mergeFilter(filter as Filter) as any).exec();
+    }
+
+    /**
+     * Tombstone the document: run the normal update-phase field machinery (so `updatedAt` /
+     * `updatedBy` record who deleted it and when), then write the marker plus any redaction
+     * the caller merged in.
+     */
+    async softDelete(id: string | undefined, data?: Partial<T>): Promise<T | null> {
+        if (!id) {
+            utils.log.error("MongooseRepositoryAdapter.softDelete called without id — refuse update document");
+            return null;
+        }
+
+        const field = entitySoftDeleteFields[this.getEntityName()];
+        if (!field) {
+            utils.log.error(
+                `MongooseRepositoryAdapter.softDelete on ${this.getEntityName()} — entity declares no ` +
+                `x-vexData "softDelete" field, refuse update document`
+            );
+            return null;
+        }
+
+        const enriched: Record<string, unknown> = { ...((data ?? {}) as Record<string, unknown>) };
+        this.applyVexFields(enriched as Partial<T>, "update");
+        enriched[field] = true;
+
+        const filter = this.mergeFilter({ _id: id } as Filter);
+        return this.model.findOneAndUpdate(filter as any, { $set: enriched }, { new: true }).exec();
+    }
+
+    /**
+     * Read a document that may be soft-deleted: skips the soft-delete term only.
+     * Framework-internal — see VexRepository.
+     */
+    findOneWithDeleted(filter: Filter, join?: Join, select?: Select): Promise<T | null> {
+        // TODO: complete mongoose support, handle join and select
+        return this.model.findOne(this.mergeFilter(filter, { includeSoftDeleted: true }) as any).exec();
     }
 }

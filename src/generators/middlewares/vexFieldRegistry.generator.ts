@@ -1,24 +1,30 @@
 import utils from "~/utils";
+import * as utilsGenerator from "~/utils/generator";
 import log from "~/utils/logger";
 import * as types from "~/types/types";
 import { collectVexFields, findUserIdIdentity } from "~/preprocess/auditFields";
+import { collectSoftDeleteEntities } from "~/preprocess/softDelete";
 
 /**
- * Generates VexFieldRegistry.gen.ts — the runtime contract for auto-written
- * audit / ownership fields.
+ * Generates VexFieldRegistry.gen.ts — the runtime contract for framework-managed fields.
  *
  * - `entityVexFields`: entity class name → fields the adapter must strip and then
  *   fill on the matching write phase.
  * - `vexUserIdField`: the single field tagged x-vexData "userId"; the token and the
  *   request context read the identity value from it.
+ * - `entitySoftDeleteFields`: entity class name → the boolean field carrying its
+ *   soft-delete marker (`x-vexData: "softDelete"`).
+ * - `showSoftDeleted`: `app.showSoftDeleted` baked in as a constant, i.e. whether the
+ *   adapters hide marked rows.
  *
- * The TypeORM and Mongoose adapters read this registry at runtime. See
- * docs/features/auditFields.md.
+ * The TypeORM and Mongoose adapters read this registry at runtime, and so does the generated
+ * account-state guard. See docs/features/auditFields.md and docs/features/accountDeletion.md.
  */
 export async function compile(options: {
     allSchemas: types.jsonSchema[];
     documents?: { path: string, schema: types.jsonSchema }[];
     middlewareDir: string;
+    compilerOptions?: types.compilerOptions;
 }): Promise<void> {
     log.process("Vex Field Registry");
 
@@ -35,6 +41,21 @@ export async function compile(options: {
 
     const identity = options.documents ? findUserIdIdentity(options.documents) : undefined;
     const userIdField = identity ? identity.field : "_id";
+
+    // soft delete — only entities that declare a marker, so the adapter check stays a map lookup
+    const softDeleteEntities = options.documents ? collectSoftDeleteEntities(options.documents) : [];
+    const softDeleteEntries = softDeleteEntities.map(
+        entity => `    "${entity.documentName}Entity": "${entity.field}"`
+    );
+
+    const showSoftDeleted = options.compilerOptions
+        ? utilsGenerator.isShowSoftDeleted(options.compilerOptions)
+        : false;
+    const showSoftDeletedComment = showSoftDeleted
+        ? "// WARNING: app.showSoftDeleted is ON — soft-deleted rows are visible to every query,\n" +
+          "// are writable through the ordinary CRUD path again, and the account-state guard still\n" +
+          "// rejects tombstoned identities because it reads the marker value directly."
+        : "// app.showSoftDeleted is off (default) — the repository hides soft-deleted rows.";
 
     const source = `// {{headerComment}}
 export type VexFieldType =
@@ -63,6 +84,17 @@ ${entries.join(",\n")}
  * Falls back to "_id" when no schema tags one.
  */
 export const vexUserIdField = "${userIdField}";
+
+/**
+ * Entity class name → the boolean field carrying its soft-delete marker
+ * (\`x-vexData: "softDelete"\`). Empty when no schema declares one.
+ */
+export const entitySoftDeleteFields: Record<string, string> = {
+${softDeleteEntries.join(",\n")}
+};
+
+${showSoftDeletedComment}
+export const showSoftDeleted = ${showSoftDeleted};
 `;
 
     const outPath = `${options.middlewareDir}/VexFieldRegistry.gen.ts`;
