@@ -27,6 +27,7 @@ import * as joinWhitelistRegistryGen from "./generators/middlewares/joinWhitelis
 import * as dataIsolationRegistryGen from "./generators/middlewares/dataIsolationRegistry.generator";
 import * as vexFieldRegistryGen from "./generators/middlewares/vexFieldRegistry.generator";
 import * as accountStateGuardGen from "./generators/services/accountStateGuard.generator";
+import * as accountDeletionGen from "./generators/services/accountDeletion.generator";
 
 export async function generate(
     options: types.compilerOptions
@@ -213,6 +214,13 @@ export async function generate(
     // generate account-state guard — Authentication.middleware imports it unconditionally,
     // so it is emitted for every project (no-op when the identity document is not soft-deletable)
     await accountStateGuardGen.compile({
+        documents: documents.map(d => ({ path: d.path, schema: d.schema })),
+        serviceDir: dir.serviceDir,
+        compilerOptions: options,
+    });
+
+    // generate account-deletion service (identity domain; only when the feature is enabled)
+    await accountDeletionGen.compile({
         documents: documents.map(d => ({ path: d.path, schema: d.schema })),
         serviceDir: dir.serviceDir,
         compilerOptions: options,
