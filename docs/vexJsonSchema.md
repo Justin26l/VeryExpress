@@ -77,6 +77,16 @@ Each `.json` file defines one REST resource. Filename must match `x-documentConf
 | --- | --- |
 | `role` | Marks this field as the RBAC role field. Required for role-based access control to work. |
 | `userId` | Marks the field that holds the identity value. Declare it **exactly once**, on the account schema (`User._id`) — every `onXXUserId` audit field is filled from it. |
+| `softDelete` | Marks the boolean field carrying this document's soft-delete state. **At most one per document.** The repository then hides rows whose marker is set, and the field is removed from generated request bodies. Requires `{ "type": "boolean", "default": false }` and must be `required`, which yields a `boolean NOT NULL DEFAULT false` column. Full reference: [`docs/features/accountDeletion.md`](features/accountDeletion.md). |
+
+```jsonc
+"deleted": { "type": "boolean", "default": false, "x-vexData": "softDelete" }
+// and list it in the root "required" array
+```
+
+A nullable marker would break the hide-filter (`marker IS NOT TRUE` drops NULL rows), so generation
+rejects it. There is no separate `deletedAt` / `deletedBy`: the existing `updatedAt` / `updatedBy`
+audit fields record who deleted the row and when.
 
 ---
 
@@ -105,7 +115,7 @@ Works for both `sql` and `mongo` targets. Full reference:
 
 Generation fails early on a contradiction: an unknown `x-vexData` value, an `onXXUserId` field whose
 column type differs from the tagged identity field, a mismatched timestamp keyword, a missing identity
-field, or an audit field marked `required`.
+field, an audit field marked `required`, or a malformed soft-delete marker.
 
 Declaring a keyword also removes the field from the **request body**: the generator emits
 `export type Payload{Doc} = Omit<{Doc}, "createdAt" | … >;` into `src/system/_types/{Doc}.gen.ts` and the
