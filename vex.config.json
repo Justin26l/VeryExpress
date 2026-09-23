@@ -9,11 +9,13 @@
         "useUserSchema": true,
         "useObjectID": true,
         "allowApiCreateUpdate_id": false,
-        "useStatefulRedisAuth": false
+        "useStatefulRedisAuth": false,
+        "showSoftDeleted": false
     },
     "auth": {
         "localAuth": true,
         "useHttpOnlyCookieToken": true,
+        "deleteAccount": true,
         "oauthProviders": {
             "google": false,
             "github": false
