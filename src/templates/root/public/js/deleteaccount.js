@@ -4,7 +4,9 @@
 // and clears the stored tokens on success, because the account is gone the moment the tombstone
 // is written: keeping a token the server will now reject only produces confusing 401s.
 
-(function () {
+// The page loads this script from <head>, so it must wait for the DOM: at parse time the
+// button does not exist yet and getElementById would return null.
+document.addEventListener("DOMContentLoaded", function () {
     var button = document.getElementById("deleteAccountBtn");
     var input = document.getElementById("confirmInput");
     var result = document.getElementById("deleteResult");
@@ -41,7 +43,18 @@
             },
         })
             .then(function (response) {
-                return response.json().then(function (body) {
+                // read as text first: an error response may not be JSON (a proxy or the
+                // express error handler can return HTML), and response.json() would then
+                // reject and hide the real status behind a parse error
+                return response.text().then(function (text) {
+                    var body;
+                    try {
+                        body = text ? JSON.parse(text) : {};
+                    }
+                    catch (e) {
+                        body = { raw: text };
+                    }
+
                     return { ok: response.ok, status: response.status, body: body };
                 });
             })
@@ -64,4 +77,4 @@
                 button.disabled = false;
             });
     });
-})();
+});
