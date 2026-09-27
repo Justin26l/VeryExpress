@@ -172,19 +172,18 @@ export default class AccountDeletionService {
         if ((existing as unknown as Record<string, unknown>)[softDeleteField] === true) {
             return {
                 userId,
-                alreadyDeleted: true,
                 tombstonedAt: "",
                 deleted: { authProfiles: 0, userRoles: 0, sessions: 0 },
             };
         }
 
         const deleted = await this.removeCredentials(userId);
-        const tombstoned = await this.userRepo.softDelete(userId, TOMBSTONE);
-        if (!tombstoned) throw new VexResErr(500, undefined, "Account tombstone failed");
-
+        const tombstoned = await this.userRepo.softDelete(userId, TOMBSTONE)
+            .catch(e => {
+                throw new VexResErr(500, undefined, "Account tombstone failed");
+            })
         return {
             userId,
-            alreadyDeleted: false,
             tombstonedAt: String((tombstoned as unknown as Record<string, unknown>).updatedAt ?? ""),
             deleted,
         };

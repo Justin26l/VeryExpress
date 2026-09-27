@@ -175,18 +175,10 @@ export default class LoginUI {
         const nonce = this.nonce();
         res.setHeader("Content-Security-Policy", `script-src 'self' 'nonce-${nonce}'`);
         res.send(`
-            <script nonce="${nonce}" src="/js/deleteaccount.js"></script>
             <link rel="stylesheet" href="/css/style.css">
             <body>
                 <h1>Delete account</h1>
                 <p><strong>This cannot be undone.</strong></p>
-                <p>
-                    Your account, sign-in methods and personal details are removed and you are
-                    signed out. Content you posted — posts, quotes, reviews and conversations —
-                    is kept with the author shown as <strong>Deleted user</strong>, so other
-                    people's threads stay readable. Viewing appointments are kept but
-                    deactivated, with addresses and notes cleared. Chat attachments are deleted.
-                </p>
                 <p>
                     You will need to create a new account to use the service again; the same
                     sign-in provider will not restore this one.
@@ -199,6 +191,7 @@ export default class LoginUI {
                 <pre id="deleteResult"></pre>
                 <a href="/">back to home</a>
             </body>
+            <script nonce="${nonce}" src="/js/deleteaccount.js"></script>
         `);
     }
 }

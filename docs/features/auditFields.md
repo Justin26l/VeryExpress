@@ -237,36 +237,6 @@ Validation runs once, after every schema is loaded (`validateAuditFields()` in
 `src/preprocess/auditFields.ts`, called from the pipeline), because R1/R2 are cross-document. All problems
 are collected and reported together; `log.error` exits the generator, so a contradiction never reaches runtime.
 
-## 7. Backward compatibility
-
-- Schema with no reserved keyword and no tag → nothing changes; generation output is identical.
-- Schema with a literal `default` → unchanged.
-- Existing generated apps: re-run `vex`; entities gain `nullable` audit columns if they were declared.
-- Existing rows keep `createdBy = NULL`. This feature cannot backfill; a downstream app that needs
-  ownership on legacy rows must migrate data itself.
-- Tokens issued before the upgrade still work (the `?? _id` fallback on refresh).
-- The prototype branch's lowercase `x-format` values (`primary`, `uuid`, …) are **rejected** — this design
-  keeps the current capitalized values (`Primary`, `PrimaryUUID`, `UUID`, `UnixTimestamp`) and only adds
-  `Timestamp`.
-
-### Breaking since v0.8.2
-
-Three changes downstream apps must absorb when they re-run `vex`:
-
-1. **The context module was renamed.** `DataIsolationContext.gen.ts` is gone; `UserContext.gen.ts` replaces
-   it. `cleanupStaleFiles()` removes the old file on the next run, so anything importing it by name breaks.
-2. **A create without an identity now throws** where it previously wrote NULL. This affects
-   `onCreateUserId` only, and only a path that reaches `create()` with no authenticated request context
-   (seed scripts, background jobs, or a controller that does not mount `Authentication.middleware`).
-3. **Data isolation becomes effective for the first time.** It used to be mounted only on entities declaring
-   `dataIsolation`, which in practice meant it rarely ran at all. It now has a context on every
-   authenticating controller. Ownership still wins over the caller's filter, so an endpoint that queries
-   *another* user's row by id will silently act on the caller's own row instead. Audit those endpoints per
-   app.
-
-Downstream apps no longer need the `dataIsolation` config merely to get the ALS context mounted — that
-coupling is gone. Use `dataIsolation` only when ownership filtering is actually wanted.
-
 ## 8. Mongoose
 
 Implemented in parallel with TypeORM — same registry, same strip/inject phases, same values

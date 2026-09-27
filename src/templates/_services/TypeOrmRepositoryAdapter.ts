@@ -312,7 +312,9 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
         // the generic ObjectLiteral constraint makes TypeORM's own _QueryDeepPartialEntity
         // unresolvable here; `update` already accepts the same shape on the ordinary path
         await this.repo.update(where as FindOptionsWhere<T>, enriched as never);
-        return this.findOne({ _id: id } as unknown as Filter<T>);
+        return this.repo.findOne({
+            where: { _id: id } as unknown as T
+        });
     }
 
     /**
