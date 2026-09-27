@@ -40,318 +40,318 @@ JWT_SECRET0='my-secret-key0'
       "schemas": {
         "Session.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.3"
+          "lastWriteVersion": "0.8.4"
         },
         "User.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.3"
+          "lastWriteVersion": "0.8.4"
         },
         "UserAuthProfiles.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.3"
+          "lastWriteVersion": "0.8.4"
         },
         "UserRole.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.3"
+          "lastWriteVersion": "0.8.4"
         }
       },
       "vex.config.json": {
         "allowOverwrite": true,
-        "lastWriteVersion": "0.8.3"
+        "lastWriteVersion": "0.8.4"
       }
     },
     ".env": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.3"
+      "lastWriteVersion": "0.8.4"
     },
     "Dockerfile": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.3"
+      "lastWriteVersion": "0.8.4"
     },
     "package.json": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.3"
+      "lastWriteVersion": "0.8.4"
     },
     "public": {
       "css": {
         "style.css": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.3"
+          "lastWriteVersion": "0.8.4"
         }
       },
       "js": {
         "deleteaccount.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.3"
+          "lastWriteVersion": "0.8.4"
         },
         "login.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.3"
+          "lastWriteVersion": "0.8.4"
         },
         "logincallback.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.3"
+          "lastWriteVersion": "0.8.4"
         },
         "mytokens.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.3"
+          "lastWriteVersion": "0.8.4"
         },
         "refreshtokens.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.3"
+          "lastWriteVersion": "0.8.4"
         }
       }
     },
     "README.md": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.3"
+      "lastWriteVersion": "0.8.4"
     },
     "scripts": {
       "build.js": {
         "allowOverwrite": true,
-        "lastWriteVersion": "0.8.3"
+        "lastWriteVersion": "0.8.4"
       },
       "oacg-fix.js": {
         "allowOverwrite": true,
-        "lastWriteVersion": "0.8.3"
+        "lastWriteVersion": "0.8.4"
       }
     },
     "src": {
       "roles": {
         "member.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.3"
+          "lastWriteVersion": "0.8.4"
         }
       },
       "server.ts": {
         "allowOverwrite": true,
-        "lastWriteVersion": "0.8.3"
+        "lastWriteVersion": "0.8.4"
       },
       "system": {
         "_controllers": {
           "_ControllerFactory.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.3"
+            "lastWriteVersion": "0.8.4"
           },
           "UserController.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.3"
+            "lastWriteVersion": "0.8.4"
           }
         },
         "_middlewares": {
           "Authentication.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.3"
+            "lastWriteVersion": "0.8.4"
           },
           "DataIsolationRegistry.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.3"
+            "lastWriteVersion": "0.8.4"
           },
           "JoinWhitelistMiddleware.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.3"
+            "lastWriteVersion": "0.8.4"
           },
           "JoinWhitelistRegistry.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.3"
+            "lastWriteVersion": "0.8.4"
           },
           "RoleBaseAccessControl.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.3"
+            "lastWriteVersion": "0.8.4"
           },
           "tsoaAuthentication.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.3"
+            "lastWriteVersion": "0.8.4"
           },
           "UserContext.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.3"
+            "lastWriteVersion": "0.8.4"
           },
           "VexFieldRegistry.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.3"
+            "lastWriteVersion": "0.8.4"
           }
         },
         "_models": {
           "SessionModel.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.3"
+            "lastWriteVersion": "0.8.4"
           },
           "UserAuthProfilesModel.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.3"
+            "lastWriteVersion": "0.8.4"
           },
           "UserModel.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.3"
+            "lastWriteVersion": "0.8.4"
           },
           "UserRoleModel.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.3"
+            "lastWriteVersion": "0.8.4"
           }
         },
         "_roles": {
           "_RoleFactory.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.3"
+            "lastWriteVersion": "0.8.4"
           },
           "index.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.3"
+            "lastWriteVersion": "0.8.4"
           },
           "member.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.3"
+            "lastWriteVersion": "0.8.4"
           }
         },
         "_routes": {
           "LoginUI.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.3"
+            "lastWriteVersion": "0.8.4"
           },
           "oauth": {
             "OAuthRouteFactory.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.3"
+              "lastWriteVersion": "0.8.4"
             }
           },
           "SwaggerRouter.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.3"
+            "lastWriteVersion": "0.8.4"
           }
         },
         "_services": {
           "auth": {
             "AccountStateGuard.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.3"
+              "lastWriteVersion": "0.8.4"
             },
             "JWTKeyStore.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.3"
+              "lastWriteVersion": "0.8.4"
             },
             "JWTService.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.3"
+              "lastWriteVersion": "0.8.4"
             }
           },
           "MongooseRepositoryAdapter.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.3"
+            "lastWriteVersion": "0.8.4"
           },
           "oauth": {
             "OAuthProfileMap.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.3"
+              "lastWriteVersion": "0.8.4"
             },
             "OAuthStrategyService.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.3"
+              "lastWriteVersion": "0.8.4"
             }
           },
           "TypeOrmRepositoryAdapter.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.3"
+            "lastWriteVersion": "0.8.4"
           },
           "VexDb.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.3"
+            "lastWriteVersion": "0.8.4"
           },
           "VexDbConnector.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.3"
+            "lastWriteVersion": "0.8.4"
           },
           "VexSystem.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.3"
+            "lastWriteVersion": "0.8.4"
           }
         },
         "_types": {
           "auth.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.3"
+            "lastWriteVersion": "0.8.4"
           },
           "Session.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.3"
+            "lastWriteVersion": "0.8.4"
           },
           "User.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.3"
+            "lastWriteVersion": "0.8.4"
           },
           "UserAuthProfiles.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.3"
+            "lastWriteVersion": "0.8.4"
           },
           "UserRole.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.3"
+            "lastWriteVersion": "0.8.4"
           },
           "vex": {
             "index.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.3"
+              "lastWriteVersion": "0.8.4"
             },
             "VexRepository.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.3"
+              "lastWriteVersion": "0.8.4"
             },
             "VexRequest.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.3"
+              "lastWriteVersion": "0.8.4"
             },
             "VexResErr.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.3"
+              "lastWriteVersion": "0.8.4"
             },
             "VexResOk.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.3"
+              "lastWriteVersion": "0.8.4"
             },
             "VexResponse.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.3"
+              "lastWriteVersion": "0.8.4"
             }
           }
         },
         "_utils": {
           "hash.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.3"
+            "lastWriteVersion": "0.8.4"
           },
           "index.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.3"
+            "lastWriteVersion": "0.8.4"
           },
           "logger.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.3"
+            "lastWriteVersion": "0.8.4"
           },
           "processTimer.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.3"
+            "lastWriteVersion": "0.8.4"
           },
           "response.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.3"
+            "lastWriteVersion": "0.8.4"
           },
           "validator.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.3"
+            "lastWriteVersion": "0.8.4"
           }
         }
       }
     },
     "tsconfig.json": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.3"
+      "lastWriteVersion": "0.8.4"
     },
     "tsoa.json": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.3"
+      "lastWriteVersion": "0.8.4"
     }
   },
-  "lastGeneratedVersion": "0.8.3"
+  "lastGeneratedVersion": "0.8.4"
 }
 
 ===== out/Dockerfile =====
@@ -1768,10 +1768,10 @@ export default class LoginUI {
         const nonce = this.nonce();
         res.setHeader("Content-Security-Policy", `script-src 'self' 'nonce-${nonce}'`);
         res.send(`
-            <script nonce="${nonce}" src="/js/deleteaccount.js"></script>
             <link rel="stylesheet" href="/css/style.css">
             <body>
                 <h1>Delete account</h1>
+                <p><strong>This cannot be undone.</strong></p>
                 <p>
                     You will need to create a new account to use the service again; the same
                     sign-in provider will not restore this one.
@@ -1784,6 +1784,7 @@ export default class LoginUI {
                 <pre id="deleteResult"></pre>
                 <a href="/">back to home</a>
             </body>
+            <script nonce="${nonce}" src="/js/deleteaccount.js"></script>
         `);
     }
 }
@@ -2990,7 +2991,9 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
         // the generic ObjectLiteral constraint makes TypeORM's own _QueryDeepPartialEntity
         // unresolvable here; `update` already accepts the same shape on the ordinary path
         await this.repo.update(where as FindOptionsWhere<T>, enriched as never);
-        return this.findOne({ _id: id } as unknown as Filter<T>);
+        return this.repo.findOne({
+            where: { _id: id } as unknown as T
+        });
     }
 
     /**
@@ -3282,8 +3285,6 @@ export interface deleteAccountCounts {
 /** Result of a self-service account deletion. */
 export interface deleteAccountResponse {
     userId: string;
-    /** True when the account was already deleted and this call changed nothing. */
-    alreadyDeleted: boolean;
     /** When the tombstone was written (the row's updatedAt). Empty on a repeat call. */
     tombstonedAt: string;
     deleted: deleteAccountCounts;
