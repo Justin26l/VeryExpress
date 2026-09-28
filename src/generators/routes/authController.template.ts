@@ -141,13 +141,14 @@ ${localAuth ? `
         
         const user = await this.userRepo.create({ name: email.split("@")[0], email, active: true })
             .catch( e => { throw new VexResErr(500, null, "User creation failed."); });
-        ${useRBAC ? `
+
         await this.userAuthProfilesRepo.create({ userId: user._id, provider: "local", password: hashedPassword })
             .catch( async e => { 
                 await this.userRepo.delete(user._id);
                 await this.userAuthProfilesRepo.deleteWhere({ userId: user._id });
                 throw new VexResErr(500, null, "User Auth profile creation failed."); 
-            });` : ''}
+            });
+
         ${useRBAC ? `
         await this.userRoleRepo.create({ userId: user._id, role: RoleEnum.${compilerOptions.useRBAC!.default} })
             .catch( async e => { 
