@@ -135,6 +135,8 @@ describe("deleteaccount.js", () => {
 
     it("calls the deletion endpoint when the confirmation matches", async () => {
         const h = makeHarness();
+        h.store.accessToken = "a";
+        h.store.accessTokenIndex = "b";
         h.run();
         h.mountBody();
         h.fireDomReady();
@@ -167,6 +169,8 @@ describe("deleteaccount.js", () => {
 
     it("refuses to call the API when the confirmation text is wrong", async () => {
         const h = makeHarness();
+        h.store.accessToken = "a";
+        h.store.accessTokenIndex = "b";
         h.run();
         h.mountBody();
         h.fireDomReady();
@@ -207,7 +211,10 @@ describe("deleteaccount.js", () => {
         nextResponse = { ok: false, status: 401, body: { message: "Account is not active" } };
 
         const h = makeHarness();
+        // Both credentials, because the script now refuses to call the API with only one of them —
+        // this test is about what happens when the *server* rejects a full credential set.
         h.store.accessToken = "a";
+        h.store.accessTokenIndex = "b";
         h.run();
         h.mountBody();
         h.fireDomReady();
@@ -220,5 +227,62 @@ describe("deleteaccount.js", () => {
         expect(h.store.accessToken).toBe("a");
         expect(h.elements.deleteResult.textContent).toContain("401");
         expect(h.elements.deleteAccountBtn.disabled).toBe(false);
+    });
+
+    /**
+     * Deletion resolves the account from the token alone, so without one there is nothing to send.
+     * Firing the request anyway earns a bare 401 that reads like a server fault; the user needs to
+     * be told to sign in, not shown an error body.
+     */
+    it("does not call the API without a token, and points at the login page", async () => {
+        const h = makeHarness();
+        h.run();
+        h.mountBody();
+        h.fireDomReady();
+
+        h.elements.confirmInput.value = "DELETE";
+        h.click();
+        await settle();
+
+        expect(h.fetchCalls).toHaveLength(0);
+        expect(h.elements.deleteResult.textContent).toContain("sign in first");
+        expect(h.elements.deleteResult.textContent).toContain("/login");
+    });
+
+    /**
+     * `Authentication.middleware` treats Authorization + X-Auth-Index as one requirement, so a
+     * half-populated store is "not signed in" rather than a request worth sending.
+     */
+    it("does not call the API with only one of the two credentials", async () => {
+        const h = makeHarness();
+        h.store.accessToken = "a";        // no accessTokenIndex
+        h.run();
+        h.mountBody();
+        h.fireDomReady();
+
+        h.elements.confirmInput.value = "DELETE";
+        h.click();
+        await settle();
+
+        expect(h.fetchCalls).toHaveLength(0);
+        expect(h.elements.deleteResult.textContent).toContain("sign in first");
+    });
+
+    it("tells the user to sign in again when the server rejects the session", async () => {
+        nextResponse = { ok: false, status: 401, body: { message: "Account is not active" } };
+
+        const h = makeHarness();
+        h.store.accessToken = "a";
+        h.store.accessTokenIndex = "b";
+        h.run();
+        h.mountBody();
+        h.fireDomReady();
+
+        h.elements.confirmInput.value = "DELETE";
+        h.click();
+        await settle();
+
+        expect(h.elements.deleteResult.textContent).toContain("may have expired");
+        expect(h.elements.deleteResult.textContent).toContain("/login");
     });
 });

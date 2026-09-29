@@ -19,6 +19,19 @@ OAUTH_GITHUB_CLIENTSECRET=
 # OAUTH_APPLE_CLIENTID=
 # OAUTH_APPLE_CLIENTSECRET=
 
+# EXTERNAL IDENTITY (broker SSO) — see auth.externalIdentity in vex.config.json
+# These are the broker's *public* browser config values: they are served to the login page by design,
+# and are not secrets. There is no client secret here — the ID token is verified against the issuer's
+# published JWKS, so the backend holds no broker credential at all.
+# NOTE: .env is read once at process start; the dev watcher reloads on changes to this file. But
+# dotenv never overrides a variable that is ALREADY set in the environment — if a name here is also
+# exported by your shell, IDE launch config or container, that value wins and this file is ignored for
+# it. The server logs which values it could not resolve, and says when one is being shadowed.
+FIREBASE_API_KEY=
+FIREBASE_AUTH_DOMAIN=
+FIREBASE_PROJECT_ID=
+FIREBASE_APP_ID=
+
 # JWT token
 ACCESS_TOKEN_EXPIRE_TIME='1h'
 REFRESH_TOKEN_EXPIRE_TIME='24h'

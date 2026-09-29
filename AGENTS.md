@@ -78,6 +78,13 @@ Read from `vex.config.json → jsonSchemaDir` (this repo: `./output/jsonSchema`)
 | Template function | camelCase default export beside its generator | `controllerTemplate()` |
 | Role class | `Role{Name}` | `RoleAdmin` |
 
+## Release notes
+
+`docs/releaseNote/vX-Y-Z.md` is a **TL;DR index, not a document**: bullets, one screen, and only what a
+reader needs to *use* the change. Detail belongs in `docs/features/` — link it, do not inline it. If a
+release note has grown subsections, caveat blocks and rationale, that content is in the wrong file.
+Cover: what broke, what is new, how to turn it on, and the ordered upgrade steps.
+
 ## Code style
 
 - Prefer readability and maintainability.
@@ -110,7 +117,7 @@ This file covers only what every session needs. Deeper material lives in `docs/`
 | [`docs/ForeignKey.md`](docs/ForeignKey.md) | FK joins via the API `join` parameter |
 | [`docs/developmentNote.md`](docs/developmentNote.md) | Why no ts-node, esbuild/dist working dir, `FUNC{{ }}` intent |
 | [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) | Setup, branch/PR workflow, PR checklist |
-| [`docs/features/`](docs/features/) | rbac, dataIsolation, filterOperators, joinWhitelist, auditFields, accountDeletion |
+| [`docs/features/`](docs/features/) | rbac, dataIsolation, filterOperators, joinWhitelist, auditFields, accountDeletion, externalIdentity |
 | [`docs/appGenerated/auth.md`](docs/appGenerated/auth.md) | JWT rolling keys, OAuth2 providers |
 | [`docs/roadMap/`](docs/roadMap/) | Released features and version milestones |
 | [`docs/releaseNote/`](docs/releaseNote/) | Per-version release notes |

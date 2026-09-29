@@ -26,6 +26,19 @@ OAUTH_GITHUB_CLIENTSECRET=
 # OAUTH_APPLE_CLIENTID=
 # OAUTH_APPLE_CLIENTSECRET=
 
+# EXTERNAL IDENTITY (broker SSO) — see auth.externalIdentity in vex.config.json
+# These are the broker's *public* browser config values: they are served to the login page by design,
+# and are not secrets. There is no client secret here — the ID token is verified against the issuer's
+# published JWKS, so the backend holds no broker credential at all.
+# NOTE: .env is read once at process start; the dev watcher reloads on changes to this file. But
+# dotenv never overrides a variable that is ALREADY set in the environment — if a name here is also
+# exported by your shell, IDE launch config or container, that value wins and this file is ignored for
+# it. The server logs which values it could not resolve, and says when one is being shadowed.
+FIREBASE_API_KEY=
+FIREBASE_AUTH_DOMAIN=
+FIREBASE_PROJECT_ID=
+FIREBASE_APP_ID=
+
 # JWT token
 ACCESS_TOKEN_EXPIRE_TIME='1h'
 REFRESH_TOKEN_EXPIRE_TIME='24h'
@@ -40,344 +53,352 @@ JWT_SECRET0='my-secret-key0'
       "schemas": {
         "Session.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.4"
+          "lastWriteVersion": "0.9.0"
         },
         "User.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.4"
+          "lastWriteVersion": "0.9.0"
         },
         "UserAuthProfiles.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.4"
+          "lastWriteVersion": "0.9.0"
         },
         "UserRole.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.4"
+          "lastWriteVersion": "0.9.0"
         }
       },
       "vex.config.json": {
         "allowOverwrite": true,
-        "lastWriteVersion": "0.8.4"
+        "lastWriteVersion": "0.9.0"
       }
     },
     ".env": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.4"
+      "lastWriteVersion": "0.9.0"
     },
     "Dockerfile": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.4"
+      "lastWriteVersion": "0.9.0"
     },
     "package.json": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.4"
+      "lastWriteVersion": "0.9.0"
     },
     "public": {
       "css": {
         "style.css": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.4"
+          "lastWriteVersion": "0.9.0"
         }
       },
       "js": {
         "deleteaccount.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.4"
+          "lastWriteVersion": "0.9.0"
+        },
+        "externallogin.js": {
+          "allowOverwrite": true,
+          "lastWriteVersion": "0.9.0"
         },
         "login.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.4"
+          "lastWriteVersion": "0.9.0"
         },
         "logincallback.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.4"
+          "lastWriteVersion": "0.9.0"
         },
         "mytokens.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.4"
+          "lastWriteVersion": "0.9.0"
         },
         "refreshtokens.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.4"
+          "lastWriteVersion": "0.9.0"
         }
       }
     },
     "README.md": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.4"
+      "lastWriteVersion": "0.9.0"
     },
     "scripts": {
       "build.js": {
         "allowOverwrite": true,
-        "lastWriteVersion": "0.8.4"
+        "lastWriteVersion": "0.9.0"
       },
       "oacg-fix.js": {
         "allowOverwrite": true,
-        "lastWriteVersion": "0.8.4"
+        "lastWriteVersion": "0.9.0"
       }
     },
     "src": {
       "roles": {
         "admin.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.4"
+          "lastWriteVersion": "0.9.0"
         },
         "member.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.4"
+          "lastWriteVersion": "0.9.0"
         },
         "visitor.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.4"
+          "lastWriteVersion": "0.9.0"
         }
       },
       "server.ts": {
         "allowOverwrite": true,
-        "lastWriteVersion": "0.8.4"
+        "lastWriteVersion": "0.9.0"
       },
       "system": {
         "_controllers": {
           "_ControllerFactory.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.9.0"
           },
           "AuthController.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.9.0"
           },
           "UserController.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.9.0"
           }
         },
         "_middlewares": {
           "Authentication.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.9.0"
           },
           "DataIsolationRegistry.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.9.0"
           },
           "JoinWhitelistMiddleware.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.9.0"
           },
           "JoinWhitelistRegistry.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.9.0"
           },
           "RoleBaseAccessControl.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.9.0"
           },
           "tsoaAuthentication.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.9.0"
           },
           "UserContext.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.9.0"
           },
           "VexFieldRegistry.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.9.0"
           }
         },
         "_models": {
           "SessionModel.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.9.0"
           },
           "UserAuthProfilesModel.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.9.0"
           },
           "UserModel.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.9.0"
           },
           "UserRoleModel.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.9.0"
           }
         },
         "_roles": {
           "_RoleFactory.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.9.0"
           },
           "admin.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.9.0"
           },
           "index.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.9.0"
           },
           "member.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.9.0"
           },
           "visitor.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.9.0"
           }
         },
         "_routes": {
+          "ExternalIdentityUI.gen.ts": {
+            "allowOverwrite": true,
+            "lastWriteVersion": "0.9.0"
+          },
           "LoginUI.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.9.0"
           },
           "oauth": {
             "OAuthRouteFactory.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.4"
+              "lastWriteVersion": "0.9.0"
             }
           },
           "SwaggerRouter.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.9.0"
           }
         },
         "_services": {
           "account": {
             "AccountDeletionService.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.4"
+              "lastWriteVersion": "0.9.0"
             }
           },
           "auth": {
             "AccountStateGuard.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.4"
+              "lastWriteVersion": "0.9.0"
             },
             "JWTKeyStore.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.4"
+              "lastWriteVersion": "0.9.0"
             },
             "JWTService.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.4"
+              "lastWriteVersion": "0.9.0"
             }
           },
           "MongooseRepositoryAdapter.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.9.0"
           },
           "oauth": {
             "OAuthProfileMap.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.4"
+              "lastWriteVersion": "0.9.0"
             },
             "OAuthStrategyService.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.4"
+              "lastWriteVersion": "0.9.0"
             }
           },
           "TypeOrmRepositoryAdapter.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.9.0"
           },
           "VexDb.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.9.0"
           },
           "VexDbConnector.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.9.0"
           },
           "VexSystem.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.9.0"
           }
         },
         "_types": {
           "auth.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.9.0"
           },
           "Session.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.9.0"
           },
           "User.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.9.0"
           },
           "UserAuthProfiles.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.9.0"
           },
           "UserRole.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.9.0"
           },
           "vex": {
             "index.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.4"
+              "lastWriteVersion": "0.9.0"
             },
             "VexRepository.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.4"
+              "lastWriteVersion": "0.9.0"
             },
             "VexRequest.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.4"
+              "lastWriteVersion": "0.9.0"
             },
             "VexResErr.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.4"
+              "lastWriteVersion": "0.9.0"
             },
             "VexResOk.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.4"
+              "lastWriteVersion": "0.9.0"
             },
             "VexResponse.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.4"
+              "lastWriteVersion": "0.9.0"
             }
           }
         },
         "_utils": {
           "hash.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.9.0"
           },
           "index.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.9.0"
           },
           "logger.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.9.0"
           },
           "processTimer.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.9.0"
           },
           "response.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.9.0"
           },
           "validator.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.9.0"
           }
         }
       }
     },
     "tsconfig.json": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.4"
+      "lastWriteVersion": "0.9.0"
     },
     "tsoa.json": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.4"
+      "lastWriteVersion": "0.9.0"
     }
   },
-  "lastGeneratedVersion": "0.8.4"
+  "lastGeneratedVersion": "0.9.0"
 }
 
 ===== out/Dockerfile =====
@@ -408,7 +429,7 @@ CMD ["npm", "start"]
     "scripts": {
         "build": "npm run openapi && tsc -p . && node scripts/build.js",
         "start": "node dist/server.js",
-        "dev": "nodemon --watch src --ext ts --ignore src/system/_routes/tsoa_routes.ts --ignore src/openapi/ --exec \"tsoa spec-and-routes && ts-node src/server.ts\"",
+        "dev": "nodemon --watch src --watch .env --ext ts,env --ignore src/system/_routes/tsoa_routes.ts --ignore src/openapi/ --exec \"tsoa spec-and-routes && ts-node src/server.ts\"",
         "openapi": "tsoa spec-and-routes",
         "docker-build": "docker build -t very-express .",
         "docker-start": "docker run -p 3000:3000 very-express"
@@ -418,6 +439,7 @@ CMD ["npm", "start"]
         "cookie-parser": "^1.4.6",
         "dotenv": "^16.4.4",
         "express": "^4.18.2",
+        "firebase": "^12.19.0",
         "helmet": "^7.1.0",
         "js-yaml": "^4.1.0",
         "jsonwebtoken": "^9.0.2",
@@ -491,7 +513,52 @@ document.addEventListener("DOMContentLoaded", function () {
         result.textContent = JSON.stringify(data, null, 2);
     }
 
+    /**
+     * Deletion is self-service and the server resolves the account from the token alone, so with no
+     * token there is nothing to delete: sending an empty `Bearer ` would only earn a bare 401 that
+     * reads like a server fault. Point at the login page instead.
+     *
+     * Both credentials are required — `Authentication.middleware` treats them as one requirement — so
+     * a half-populated store counts as "not signed in" rather than as an API call.
+     *
+     * Note this file is copied into a project once and never overwritten, so a project generated
+     * before these checks existed keeps the old behaviour until it is updated by hand.
+     */
+    function signedIn() {
+        return !!localStorage.getItem("accessToken") && !!localStorage.getItem("accessTokenIndex");
+    }
+
+    function notSignedIn() {
+        render({
+            status: 401,
+            error: "You are not signed in. Deletion is self-service and the server takes the account " +
+                "from your access token, so sign in first.",
+            signIn: "/login",
+        });
+    }
+
+    /**
+     * A 401 from the server means the stored credential was not accepted — expired, or already
+     * tombstoned. Deliberately does NOT clear it: the request may equally have failed for a reason
+     * that has nothing to do with the token, and dropping the session on any failure would sign the
+     * user out of a working account. Sign in again and retry; the login flow overwrites both tokens.
+     */
+    function sessionRejected(outcome) {
+        render({
+            status: outcome.status,
+            error: "Your session was not accepted, so nothing was deleted. It may have expired — " +
+                "sign in again and retry.",
+            detail: outcome.body,
+            signIn: "/login",
+        });
+    }
+
     button.addEventListener("click", function () {
+        if (!signedIn()) {
+            notSignedIn();
+            return;
+        }
+
         if (input.value !== "DELETE") {
             render({ error: 'Type DELETE in the box to confirm.' });
             return;
@@ -527,6 +594,15 @@ document.addEventListener("DOMContentLoaded", function () {
             })
             .then(function (outcome) {
                 if (!outcome.ok) {
+                    // 401 means the credential was not accepted. Say what to do about it rather than
+                    // printing a raw error body the user cannot act on — see sessionRejected for why
+                    // the stored tokens are left alone.
+                    if (outcome.status === 401) {
+                        sessionRejected(outcome);
+                        button.disabled = false;
+                        return;
+                    }
+
                     render({ status: outcome.status, error: outcome.body });
                     button.disabled = false;
                     return;
@@ -544,6 +620,141 @@ document.addEventListener("DOMContentLoaded", function () {
                 button.disabled = false;
             });
     });
+});
+
+===== out/public/js/externallogin.js =====
+// External identity (broker SSO) sign-in glue.
+//
+// The login page renders one button per configured sign-in method, each carrying its provider id in a
+// `data-provider` attribute, and the broker's own init script defines a global that turns
+// `(providerId)` into a fresh ID token — for Firebase, `signInWithPopup` followed by `getIdToken()`.
+//
+// This file owns nothing vendor specific. It calls that global and hands the token to
+// POST /api/auth/external, the only endpoint in the system that accepts a non-vex credential. The
+// exchange consumes the token and answers with a vex session redirect; from that point on the client
+// holds only vex tokens and nothing here runs again.
+//
+// Configuration arrives as `window.__vexExternalLogin`, rendered inline by the login page:
+//   { getToken: "<global name>", resumeRedirect: "<global name>", signInMethod: "popup"|"redirect",
+//     config: { ...broker public config, from env... }, problems: [...] }
+//
+// Two entry points, and neither the page nor this file needs to know which mode is in use:
+//   - a button calls getToken(providerId); in "redirect" mode the page navigates away before that
+//     promise ever settles
+//   - on page load, resumeRedirect() completes a redirect sign-in, or resolves null
+
+document.addEventListener("DOMContentLoaded", function () {
+    var settings = window.__vexExternalLogin || {};
+    var getTokenName = settings.getToken;
+    var problems = settings.problems || [];
+
+    var buttons = document.querySelectorAll ? document.querySelectorAll(".externalLoginBtn") : [];
+
+    /**
+     * Broker SDKs report a misconfigured client with something generic — Firebase's
+     * `auth/internal-error` says nothing about the cause. The login page sends along what the server
+     * could determine, so a developer is not left reading a network trace.
+     */
+    function report(message) {
+        if (problems.length > 0) {
+            message += "\n\nServer-side configuration problems:\n- " + problems.join("\n- ");
+        }
+
+        // alert rather than a DOM node: the login page has no result container.
+        alert(message);
+    }
+
+    function exchange(idToken) {
+        return fetch("/api/auth/external", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ idToken: idToken }),
+        }).then(function (response) {
+            // read as text first: an error response may not be JSON (a proxy or the express error
+            // handler can return HTML), and response.json() would then reject and hide the real status
+            return response.text().then(function (text) {
+                var body;
+                try {
+                    body = text ? JSON.parse(text) : {};
+                }
+                catch (e) {
+                    body = { raw: text };
+                }
+
+                return { ok: response.ok, status: response.status, body: body };
+            });
+        });
+    }
+
+    /**
+     * Complete a redirect sign-in.
+     *
+     * A no-op in popup mode, so this runs unconditionally: the redirect path cannot be distinguished
+     * from an ordinary page load until the broker answers, and it must be asked on every load to catch
+     * the return.
+     */
+    function resume() {
+        var resumeName = settings.resumeRedirect;
+        var fn = resumeName ? window[resumeName] : undefined;
+        if (typeof fn !== "function") return;
+
+        Promise.resolve()
+            .then(function () { return fn(); })
+            .then(function (idToken) {
+                if (!idToken) return;   // not a return from a redirect sign-in
+                return exchange(idToken);
+            })
+            .then(function (outcome) {
+                if (!outcome) return;
+                if (outcome.ok && outcome.body && outcome.body.result && outcome.body.result.url) {
+                    window.location.href = outcome.body.result.url;
+                    return;
+                }
+                report("External sign-in failed (" + outcome.status + "): " + JSON.stringify(outcome.body));
+            })
+            .catch(function (err) {
+                report("External sign-in error: " + String(err));
+            });
+    }
+
+    Array.prototype.forEach.call(buttons, function (button) {
+        button.addEventListener("click", function () {
+            var getToken = getTokenName ? window[getTokenName] : undefined;
+            if (typeof getToken !== "function") {
+                report(
+                    "External sign-in is not configured: window." + getTokenName +
+                    " is missing. Check the broker's init script."
+                );
+                return;
+            }
+
+            button.disabled = true;
+
+            Promise.resolve()
+                .then(function () { return getToken(button.getAttribute("data-provider")); })
+                .then(function (idToken) {
+                    if (!idToken) throw new Error("the configured getToken() resolved with no ID token");
+                    return exchange(idToken);
+                })
+                .then(function (outcome) {
+                    // mirrors the local flow: the server answers with the session redirect, and the
+                    // /logincallback page performs the code-for-tokens exchange
+                    if (outcome.ok && outcome.body && outcome.body.result && outcome.body.result.url) {
+                        window.location.href = outcome.body.result.url;
+                        return;
+                    }
+
+                    button.disabled = false;
+                    report("External sign-in failed (" + outcome.status + "): " + JSON.stringify(outcome.body));
+                })
+                .catch(function (err) {
+                    button.disabled = false;
+                    report("External sign-in error: " + String(err));
+                });
+        });
+    });
+
+    resume();
 });
 
 ===== out/public/js/login.js =====
@@ -1035,7 +1246,7 @@ import VexDb from "../_services/VexDb.gen";
 import { SessionEntity, Session } from "../_models/SessionModel.gen";
 import { VexRepository, VexResponse, VexResErr, VexResOk, Filter } from "../_types/vex";
 import { vexUserIdField } from "../_middlewares/VexFieldRegistry.gen";
-import { tokenResponse, refreshTokenResponse, registerResponse, localLoginResponse, deleteAccountResponse } from "../_types/auth.gen";
+import { tokenResponse, refreshTokenResponse, registerResponse, loginRedirectResponse, deleteAccountResponse } from "../_types/auth.gen";
 
 import utils from "../_utils";
 import { UserEntity, User } from "../_models/UserModel.gen";
@@ -1078,8 +1289,16 @@ export class AuthController extends controllerFactory._ControllerFactory {
         if (!session) {
             throw new VexResErr(404, null, "invalid code");
         }
+
+        // Single-use: consume the code before anything else can fail, so a leaked or replayed code
+        // cannot be exchanged twice — and a failure further down does not leave it exchangeable.
+        // deleteWhere reports no affected-row count, so two concurrent requests bearing the same code
+        // can both get here; the window is bounded by the code's TTL (seconds) and still requires the
+        // code to be known already. Closing that residual race needs an atomic consume in the
+        // repository interface, not a change here.
+        await this.sessionRepo.deleteWhere({ sessionCode: code });
+
         if (session.expired < Date.now()) {
-            await this.sessionRepo.deleteWhere({ sessionCode: code });
             throw new VexResErr(401, null, "code expired");
         }
         
@@ -1138,13 +1357,14 @@ export class AuthController extends controllerFactory._ControllerFactory {
         
         const user = await this.userRepo.create({ name: email.split("@")[0], email, active: true })
             .catch( e => { throw new VexResErr(500, null, "User creation failed."); });
-        
+
         await this.userAuthProfilesRepo.create({ userId: user._id, provider: "local", password: hashedPassword })
             .catch( async e => { 
                 await this.userRepo.delete(user._id);
                 await this.userAuthProfilesRepo.deleteWhere({ userId: user._id });
                 throw new VexResErr(500, null, "User Auth profile creation failed."); 
             });
+
         
         await this.userRoleRepo.create({ userId: user._id, role: RoleEnum.admin })
             .catch( async e => { 
@@ -1163,7 +1383,7 @@ export class AuthController extends controllerFactory._ControllerFactory {
             email: string;
             password: string;
         }
-    ): Promise<VexResponse<localLoginResponse>> {
+    ): Promise<VexResponse<loginRedirectResponse>> {
         const { email, password } = body;
         
         const user = await this.userRepo.findOneWhere({ email }, ["userRole", "userAuthProfiles"]);
@@ -1175,6 +1395,7 @@ export class AuthController extends controllerFactory._ControllerFactory {
         const redirectUrl = await this.JWTService.assignTokens(user, "local");
         throw new VexResOk(302, { result: { url: redirectUrl } });
     }
+
 }
 
 ===== out/src/system/_controllers/UserController.gen.ts =====
@@ -1643,7 +1864,7 @@ export const UserAuthProfilesSchemaDefinition: SchemaDefinition = {
     }
   },
   provider: { type: String, index: true, required: false },
-  oauthId: { type: String, index: true, required: false },
+  providerUserId: { type: String, index: true, required: false },
   email: { type: String, index: false, required: false },
   username: { type: String, index: false, required: false },
   password: { type: String, index: false, required: false }
@@ -1906,6 +2127,18 @@ export default class Rolevisitor extends roleFactory._RoleFactory<accessActionvi
     }
 }
 
+===== out/src/system/_routes/ExternalIdentityUI.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+// Generated — do not edit.
+// No external identity is configured, so the login page renders no broker button.
+import { ExternalIdentityUI } from "./LoginUI.gen";
+
+export const externalIdentityUI: ExternalIdentityUI | undefined = undefined;
+
 ===== out/src/system/_routes/LoginUI.gen.ts =====
 /**
  * Generated by veryExpress@<version> 
@@ -1914,6 +2147,50 @@ export default class Rolevisitor extends roleFactory._RoleFactory<accessActionvi
 
 import { Router, Request, Response } from "express";
 import crypto from "crypto";
+import fs from "fs";
+import path from "path";
+import dotenv from "dotenv";
+
+import { externalIdentityUI } from "./ExternalIdentityUI.gen";
+
+/**
+ * Explain config values that `process.env` does not have.
+ *
+ * Two different situations produce the same symptom — the broker reports itself unconfigured — and they
+ * need different fixes, so they are separated here:
+ *
+ * - **present in `.env` but absent from `process.env`**: `dotenv` does not override a variable that is
+ *   already set in the environment, and it only runs once at startup. Either the process started before
+ *   the file was edited (the dev watcher used to watch TypeScript only, so a `.env` edit did not reload),
+ *   or the name is exported by the shell / IDE launch config / container with a different value.
+ * - **absent from both**: nothing has set it.
+ *
+ * Pure so the diagnosis can be tested without touching the filesystem.
+ */
+export function diagnoseMissingEnv(
+    names: string[],
+    envFile: Record<string, string | undefined>,
+): string[] {
+    const shadowed = names.filter((name) => envFile[name]);
+    const unset = names.filter((name) => !envFile[name]);
+    const problems: string[] = [];
+
+    if (shadowed.length > 0) {
+        problems.push(
+            `set in .env but NOT in process.env: ${shadowed.join(", ")}. dotenv does not override a ` +
+            "variable that is already present in the environment, and .env is read once at startup — so " +
+            "either the server started before .env was edited, or these are exported by the shell / IDE " +
+            `launch config / container. Check \`env | grep -E '^(${shadowed.join("|")})='\`` +
+            ", then unset them there or pass dotenv's `override` option in server.ts.",
+        );
+    }
+
+    if (unset.length > 0) {
+        problems.push(`not set in .env or process.env: ${unset.join(", ")}`);
+    }
+
+    return problems;
+}
 
 export interface LoginUIConfig {
     localAuth: boolean;
@@ -1925,9 +2202,92 @@ export interface LoginUIConfig {
      * constructs — its `server.ts` is generated once and is not overwritten on later runs.
      */
     deleteAccount?: boolean;
+
+    /**
+     * Override the external-identity (broker SSO) login wiring.
+     *
+     * Unnecessary in the normal case: `auth.externalIdentity` in `vex.config.json` makes the generator
+     * emit a complete default into `ExternalIdentityUI.gen.ts`, which this page falls back to. This
+     * field exists for the cases the generator cannot know — hand-editing the button label, pointing at
+     * a self-hosted SDK build, or wiring a broker that has no preset.
+     */
+    externalIdentity?: ExternalIdentityUI;
+}
+
+/**
+ * Everything the login page needs to drive a broker, as emitted into `ExternalIdentityUI.gen.ts`.
+ *
+ * vex owns the button, the nonce'd script tags and the POST to `/api/auth/external`; the broker's own
+ * browser code arrives as `initScript`, because how to call a vendor's JS SDK is the one thing that
+ * cannot be generalised. Nothing here is secret — `config` is the broker's *public* browser config,
+ * resolved from env at request time.
+ */
+export interface ExternalIdentityUI {
+    /** Button text template; `{provider}` is replaced by the provider's label. */
+    label: string;
+    /** Browser SDK scripts, pinned to a version, loaded in order before `initScript`. */
+    sdkScripts: string[];
+    /**
+     * Global the init script defines for starting a sign-in. `signIn(providerId)` resolves to an ID
+     * token; in `redirect` mode the page navigates away and the promise never settles, so the caller
+     * does not need to know the mode.
+     */
+    getToken: string;
+    /** Global that completes a redirect sign-in: `resume()` resolves to an ID token, or `null`. */
+    resumeRedirect: string;
+    /** Which mode the page is in; passed to the browser so the SDK can choose. */
+    signInMethod: "popup" | "redirect";
+    /** Sign-in methods rendered as buttons, each passed to `getToken` as its `id`. */
+    providers: { id: string; label: string }[];
+    /** Public config key → env var name. Resolved at render time; missing values stay absent. */
+    envKeys: Record<string, string>;
+    /** Browser JS that initialises the SDK and defines `getToken`. */
+    initScript: string;
+    /**
+     * Declarative checks on the resolved public config, applied server-side on each render.
+     *
+     * The broker's own errors for a misconfigured client are generic (Firebase's
+     * `auth/internal-error` being the canonical example), so a knowable mistake should be named here
+     * instead — in the server log, and in the message the browser shows.
+     */
+    configChecks?: externalIdentityConfigCheck[];
+    /**
+     * Extra CSP sources the broker's SDK needs on the login page.
+     *
+     * A nonce authorises the tags this page renders, but a broker SDK also injects scripts at runtime
+     * (Firebase Auth loads `apis.google.com/js/api.js` for the popup handshake) and those carry no
+     * nonce — so the hosts have to be allowed by name.
+     */
+    csp?: {
+        scriptSrc?: string[];
+    };
+    /**
+     * Where `sdkScripts` come from, when they are served from an installed npm package rather than a
+     * CDN. `files` is the allowlist for the route, so the route cannot be walked out of the package.
+     */
+    sdkFromPackage?: {
+        route: string;
+        package: string;
+        files: string[];
+    };
+}
+
+export interface externalIdentityConfigCheck {
+    /** Config key the check applies to. */
+    key: string;
+    warnIfMatches?: string;
+    warnUnlessMatches?: string;
+    /** What is wrong and what to do about it. */
+    message: string;
 }
 
 export default class LoginUI {
+
+    /** Last set of problems warned about, so a page render logs it once. */
+    private static warnedEnvSignature = "";
+
+    /** The parsed `.env`, read at most once per process. */
+    private static envFileCache: Record<string, string> | undefined;
 
     private router: Router = Router();
     private config: LoginUIConfig;
@@ -1955,14 +2315,125 @@ export default class LoginUI {
         if (this.deleteAccountEnabled) {
             this.router.get("/delete_account", this.deleteAccountPage.bind(this));
         }
+
+        const sdk = this.externalUI?.sdkFromPackage;
+        if (sdk) {
+            this.router.get(`${sdk.route}/:file`, this.brokerSdkFile.bind(this));
+        }
+    }
+
+    /**
+     * Serve the broker's SDK out of the installed npm package.
+     *
+     * Self-hosting it is what makes the SDK version npm's business and keeps the scripts same-origin —
+     * no CDN host needs a CSP allowance, and the page works offline. The package is read from
+     * `node_modules` at request time rather than copied at generation, because generation runs before
+     * `npm install`.
+     */
+    private brokerSdkFile(req: Request, res: Response): void {
+        const sdk = this.externalUI?.sdkFromPackage;
+        const file = typeof req.params?.file === "string" ? req.params.file : "";
+
+        res.setHeader("Content-Type", "text/plain; charset=utf-8");
+
+        // allowlist, not sanitising: a name that is not declared is rejected outright
+        if (!sdk || !sdk.files.includes(file)) {
+            res.status(404).send("Unknown broker SDK file.");
+            return;
+        }
+
+        const fullPath = path.join(process.cwd(), "node_modules", sdk.package, file);
+        let body: string;
+        try {
+            body = fs.readFileSync(fullPath, "utf8");
+        }
+        catch {
+            const message =
+                `Broker SDK not found at ${fullPath}. Run \`npm install\` — it is declared as a ` +
+                `dependency, so it is missing only because the install has not run.`;
+            console.warn(`[vex] ${message}`);
+            res.status(500).send(message);
+            return;
+        }
+
+        res.setHeader("Content-Type", "application/javascript; charset=utf-8");
+        res.send(body);
+    }
+
+    /**
+     * Is the vendored broker SDK actually present?
+     *
+     * Worth checking at render time: the dependency is added to an existing project's `package.json` by
+     * the generator, so the first run after upgrading has a page whose script tags 404 until `npm
+     * install` runs.
+     */
+    private sdkProblems(external: ExternalIdentityUI): string[] {
+        const sdk = external.sdkFromPackage;
+        if (!sdk) return [];
+
+        const missing = sdk.files.filter((file) =>
+            !fs.existsSync(path.join(process.cwd(), "node_modules", sdk.package, file)));
+
+        if (missing.length === 0) return [];
+
+        return [
+            `broker SDK not installed: ${missing.join(", ")}. It is declared as a dependency of ` +
+            `"${sdk.package}" — run \`npm install\`.`,
+        ];
     }
 
     private nonce(): string {
         return crypto.randomBytes(16).toString("base64");
     }
 
+    /**
+     * `script-src` for the login page: the page's own scripts plus whatever the broker's SDK needs.
+     *
+     * The extra hosts are not optional decoration — a broker SDK that injects a script without a nonce
+     * fails silently behind this policy, and the only symptom is a generic authentication error. See
+     * `ExternalIdentityUI.csp`.
+     */
+    private loginPageCsp(nonce: string): string {
+        const extra = this.externalUI?.csp?.scriptSrc ?? [];
+        const sources = ["'self'", `'nonce-${nonce}'`, ...extra.filter((host, i) => extra.indexOf(host) === i)];
+
+        return `script-src ${sources.join(" ")}`;
+    }
+
+    /** Escape for HTML text/attribute context. The label comes from the app's own server.ts. */
+    private escapeHtml(value: string): string {
+        return value
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+    }
+
+    /**
+     * The external-identity wiring in force: an explicit app override, else the generated default.
+     *
+     * The fallback is why `auth.externalIdentity` needs no `server.ts` edit — `server.ts` is written
+     * once and never overwritten, so anything only reachable through it would not apply to an existing
+     * project. This file and `ExternalIdentityUI.gen.ts` are both regenerated.
+     */
+    private get externalUI(): ExternalIdentityUI | undefined {
+        return this.config.externalIdentity ?? externalIdentityUI;
+    }
+
+    /**
+     * Auth is on when *any* sign-in path exists. `externalIdentity` counts: an app with
+     * `localAuth: false` and no passport provider is not auth-less if a broker is configured, and
+     * leaving it out of this test would hide the login link for exactly that app.
+     */
+    private get authEnabled(): boolean {
+        return this.config.localAuth
+            || this.config.oauthProviders.length > 0
+            || !!this.externalUI;
+    }
+
     private homePage(_req: Request, res: Response): void {
-        const authLinks = this.config.localAuth || this.config.oauthProviders.length > 0
+        const authLinks = this.authEnabled
             ? `<li><a href="/login">Login</a></li>
                     <li><a href="/mytokens">myTokens</a></li>
                     <li><a href="/refreshtoken">RefreshToken</a></li>
@@ -1991,7 +2462,7 @@ export default class LoginUI {
 
     private loginPage(_req: Request, res: Response): void {
         const nonce = this.nonce();
-        res.setHeader("Content-Security-Policy", `script-src 'self' 'nonce-${nonce}'`);
+        res.setHeader("Content-Security-Policy", this.loginPageCsp(nonce));
 
         let formHtml = "";
         if (this.config.localAuth) {
@@ -2007,20 +2478,151 @@ export default class LoginUI {
         }
 
         formHtml += "                <p>Login with SSO:</p>\n";
-        if (this.config.oauthProviders.length === 0) {
+        const external = this.externalUI;
+        if (this.config.oauthProviders.length === 0 && !external) {
             formHtml += "                <p>No OAuth provider configured.</p>\n";
         }
         else {
+            // passport providers: server-driven redirect flows
             this.config.oauthProviders.forEach((provider) => {
                 formHtml += `                <a href="/api/auth/${provider}">${provider}</a><br/>\n`;
             });
+
+            // external identity: client-driven. One button per configured sign-in method; the
+            // provider id travels to the glue as a data attribute, and on to getToken().
+            if (external) {
+                external.providers.forEach((provider) => {
+                    const text = external.label.replace("{provider}", provider.label);
+                    formHtml += `                <button class="externalLoginBtn" data-provider="${this.escapeHtml(provider.id)}">${this.escapeHtml(text)}</button><br/>\n`;
+                });
+            }
         }
 
-        const scriptTag = this.config.localAuth
+        const scripts = this.externalIdentityScripts(nonce);
+        const localAuthScript = this.config.localAuth
             ? `<script nonce="${nonce}" src="/js/login.js?d=${Date.now()}"></script>`
             : "";
 
-        res.send(`${scriptTag}<body>${formHtml}</body>`);
+        res.send(`${localAuthScript}${scripts}<body>${formHtml}</body>`);
+    }
+
+    /**
+     * Script tags for the external-identity login page, in load order: the broker's SDK, an inline
+     * carrier holding the token getter's name and the broker's public browser config, the broker's
+     * init script, and finally the glue.
+     *
+     * Every tag carries the page nonce, which is what permits a CDN URL under `script-src 'self'
+     * 'nonce-…'`. They are blocking tags on purpose: `initScript` runs immediately and defines the
+     * global the button calls, so it must not race the SDK.
+     *
+     * The public config is read from `process.env` at render time rather than baked in, so a value
+     * rotated in the environment takes effect without regenerating.
+     */
+    private externalIdentityScripts(nonce: string): string {
+        const external = this.externalUI;
+        if (!external) return "";
+
+        const config: Record<string, string> = {};
+        const missing: string[] = [];
+        for (const [key, envName] of Object.entries(external.envKeys)) {
+            const value = process.env[envName];
+            if (value) config[key] = value;
+            else missing.push(envName);
+        }
+        const problems = [...diagnoseMissingEnv(missing, this.envFileValues()),
+            ...this.sdkProblems(external),
+            ...this.checkConfig(external, config)];
+        this.warnIfUnconfigured(problems);
+
+        const sdkScripts = external.sdkScripts
+            .map((src) => `<script nonce="${nonce}" src="${this.escapeHtml(src)}"></script>`)
+            .join("\n                ");
+
+        // `problems` travels to the browser so a failed sign-in can say what is actually wrong: the
+        // broker's own errors for a misconfigured client are generic by design.
+        const carrier = JSON.stringify({
+            getToken: external.getToken,
+            resumeRedirect: external.resumeRedirect,
+            signInMethod: external.signInMethod,
+            config,
+            problems,
+        }).replace(/</g, "\\u003c");
+
+        // The init script is preset-authored, not user input, but it is still interpolated into an
+        // inline <script>: break any literal closing tag so a comment in it cannot end the block early.
+        const initScript = external.initScript.replace(/<\/script/gi, "<\\/script");
+
+        return `
+                ${sdkScripts}
+                <script nonce="${nonce}">window.__vexExternalLogin = ${carrier};</script>
+                <script nonce="${nonce}">${initScript}</script>
+                <script nonce="${nonce}" src="/js/externallogin.js"></script>`;
+    }
+
+    /**
+     * The env file's own values, read once.
+     *
+     * Only used to tell a shadowed variable from an unset one; nothing here changes what the app reads.
+     * A missing or unparseable file is not an error — plenty of deployments have no `.env` at all.
+     */
+    private envFileValues(): Record<string, string> {
+        if (LoginUI.envFileCache) return LoginUI.envFileCache;
+
+        let values: Record<string, string> = {};
+        try {
+            values = dotenv.parse(fs.readFileSync(path.join(process.cwd(), ".env")));
+        }
+        catch {
+            // no .env, or unreadable: every missing name is then simply unset
+        }
+
+        LoginUI.envFileCache = values;
+        return values;
+    }
+
+    /**
+     * Apply the preset's declarative config checks.
+     *
+     * These catch mistakes that are knowable here but surface in the browser as something generic — a
+     * Firebase API key/appId from a *mobile* app registration being the motivating example.
+     */
+    private checkConfig(external: ExternalIdentityUI, config: Record<string, string>): string[] {
+        const problems: string[] = [];
+
+        for (const check of external.configChecks ?? []) {
+            const value = config[check.key];
+            if (value === undefined) continue;   // already reported as missing
+
+            const matched = check.warnIfMatches ? new RegExp(check.warnIfMatches).test(value) : false;
+            const unmatched = check.warnUnlessMatches ? !new RegExp(check.warnUnlessMatches).test(value) : false;
+            if (matched || unmatched) problems.push(check.message);
+        }
+
+        return problems;
+    }
+
+    /**
+     * Say so on the server when the broker's public config is missing or looks wrong.
+     *
+     * Without this the only signal is a browser alert from the button — which for a missing value reads
+     * as "you forgot to set the variables" even when they *are* set in `.env` (the actual cause is
+     * usually that the process started before they were, and `.env` is read once at startup), and for a
+     * wrong value is something generic from the broker.
+     *
+     * Logged once per distinct set of problems, not per request: this runs on a page render.
+     */
+    private warnIfUnconfigured(problems: string[]): void {
+        if (problems.length === 0) return;
+
+        const signature = problems.join("|");
+        if (LoginUI.warnedEnvSignature === signature) return;
+        LoginUI.warnedEnvSignature = signature;
+
+        console.warn(
+            `[vex] external identity is enabled but its public browser config is not usable:\n  - ` +
+            problems.join("\n  - ") +
+            "\nIf a value is already in .env, restart the server — .env is read once at startup."
+        );
     }
 
     private logoutPage(_req: Request, res: Response): void {
@@ -2083,10 +2685,20 @@ export default class LoginUI {
      *
      * The copy is deliberately explicit about what survives: this is a tombstone, not an erasure of
      * everything. Claiming otherwise would contradict both the implementation and the store listing.
+     *
+     * The sign-in prerequisite is stated in the page rather than left to the script, because the
+     * server picks the account from the verified token only: with no token there is nothing to
+     * delete, and a visitor arriving here directly would otherwise get a bare `401`. This page is
+     * regenerated on every run, so the guidance reaches existing projects; `deleteaccount.js` is not
+     * overwritten, which is why the check is not the only line of defence.
      */
     private deleteAccountPage(_req: Request, res: Response): void {
         const nonce = this.nonce();
         res.setHeader("Content-Security-Policy", `script-src 'self' 'nonce-${nonce}'`);
+        const signInHint = this.authEnabled
+            ? `<strong>You must be signed in.</strong> Deletion is self-service and the server takes the
+                    account from your access token, so <a href="/login">sign in first</a> if you are not.`
+            : "<strong>You must be signed in.</strong> Deletion is self-service and the server takes the account from your access token.";
         res.send(`
             <link rel="stylesheet" href="/css/style.css">
             <body>
@@ -2096,6 +2708,7 @@ export default class LoginUI {
                     You will need to create a new account to use the service again; the same
                     sign-in provider will not restore this one.
                 </p>
+                <p id="signInRequired">${signInHint}</p>
                 <p>Type <code>DELETE</code> to confirm:</p>
                 <input type="text" id="confirmInput" autocomplete="off"/>
                 <br/><br/>
@@ -2278,7 +2891,7 @@ const TOMBSTONE: Partial<User> = {
  *
  * Ordering matters: credentials are removed BEFORE the tombstone is written. Tombstoning first
  * would leave the OAuth path able to resolve the account through
- * UserAuthProfiles.provider / oauthId — which is exactly how a deleted user would still be
+ * UserAuthProfiles.provider / providerUserId — which is exactly how a deleted user would still be
  * able to log back into their own tombstone. Doing the marker last also means a mid-flight failure
  * leaves a still-live account the caller can simply delete again.
  */
@@ -2959,7 +3572,7 @@ export default class OAuthProfileMap {
             active: true,
             userAuthProfiles: [{
                 provider: oauthProfile.provider,
-                oauthId: oauthProfile.id,
+                providerUserId: oauthProfile.id,
                 username: oauthProfile.username || oauthProfile.displayName
             }],
             name: oauthProfile.username || oauthProfile.displayName,
@@ -2975,7 +3588,7 @@ export default class OAuthProfileMap {
             active: true,
             userAuthProfiles: [{
                 provider: oauthProfile.provider,
-                oauthId: oauthProfile.id,
+                providerUserId: oauthProfile.id,
                 username: oauthProfile.username || oauthProfile.displayName
             }],
             name: oauthProfile.username || oauthProfile.displayName,
@@ -3023,11 +3636,11 @@ export default class OAuthStrategyService {
             const authUser = new OAuthProfileMap().map(profile);
             const authProfile = authUser.userAuthProfiles?.[0];
 
-            // find user by oauthId + provider, or fall back to email
+            // find user by providerUserId + provider, or fall back to email
             let existingUser: UserWithRelations | null = null;
-            if (authProfile?.oauthId && authProfile?.provider) {
+            if (authProfile?.providerUserId && authProfile?.provider) {
                 const matchedProfile = await this.uapRepo.findOneWhere(
-                    { oauthId: authProfile.oauthId, provider: authProfile.provider },
+                    { providerUserId: authProfile.providerUserId, provider: authProfile.provider },
                 );
                 if (matchedProfile?.userId) {
                     existingUser = await this.userRepo.findOne({ _id: matchedProfile.userId });
@@ -3081,9 +3694,9 @@ export default class OAuthStrategyService {
             throw new Error("Invalid OAuth Callback \"authProfile\"");
         }
 
-        // check if this provider/oauthId already tracked
+        // check if this provider/providerUserId already tracked
         const existing = await this.uapRepo.findOneWhere(
-            { userId: existingUser._id, provider: incomingProfile.provider, oauthId: incomingProfile.oauthId },
+            { userId: existingUser._id, provider: incomingProfile.provider, providerUserId: incomingProfile.providerUserId },
         );
 
         if (!existing) {
@@ -3703,7 +4316,15 @@ export interface registerResponse {
     message: string
 }
 
-export interface localLoginResponse {
+/**
+ * A redirect back to the client carrying a single-use `sessionCode`, which the client exchanges at
+ * `POST /auth/token` for the token pair.
+ *
+ * Neutral name on purpose: `/auth/local` and `/auth/external` both answer with this shape, and the two
+ * are independently enabled (`localAuth` vs `auth.externalIdentity`), so the type cannot live behind
+ * either flag.
+ */
+export interface loginRedirectResponse {
     url: string;
 }
 
@@ -3819,8 +4440,14 @@ import { UserWithRelations } from "./User.gen";
 export interface UserAuthProfiles {
     _id?: string;
     userId?: string;
+    /**
+     * Namespace label of the identity source: an upstream IdP ("google"), a broker ("firebase"), or vex's own password path ("local"). The value "local" is reserved.
+     */
     provider?: string;
-    oauthId?: string;
+    /**
+     * External subject within `provider`'s namespace. With `provider` it forms the account-linking key and the composite unique index. NULL for provider="local". This is the subject (an OIDC `sub` or a broker user id), never a token.
+     */
+    providerUserId?: string;
     email?: string;
     username?: string;
     password?: string;

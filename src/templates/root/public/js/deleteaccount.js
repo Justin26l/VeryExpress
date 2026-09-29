@@ -24,7 +24,52 @@ document.addEventListener("DOMContentLoaded", function () {
         result.textContent = JSON.stringify(data, null, 2);
     }
 
+    /**
+     * Deletion is self-service and the server resolves the account from the token alone, so with no
+     * token there is nothing to delete: sending an empty `Bearer ` would only earn a bare 401 that
+     * reads like a server fault. Point at the login page instead.
+     *
+     * Both credentials are required — `Authentication.middleware` treats them as one requirement — so
+     * a half-populated store counts as "not signed in" rather than as an API call.
+     *
+     * Note this file is copied into a project once and never overwritten, so a project generated
+     * before these checks existed keeps the old behaviour until it is updated by hand.
+     */
+    function signedIn() {
+        return !!localStorage.getItem("accessToken") && !!localStorage.getItem("accessTokenIndex");
+    }
+
+    function notSignedIn() {
+        render({
+            status: 401,
+            error: "You are not signed in. Deletion is self-service and the server takes the account " +
+                "from your access token, so sign in first.",
+            signIn: "/login",
+        });
+    }
+
+    /**
+     * A 401 from the server means the stored credential was not accepted — expired, or already
+     * tombstoned. Deliberately does NOT clear it: the request may equally have failed for a reason
+     * that has nothing to do with the token, and dropping the session on any failure would sign the
+     * user out of a working account. Sign in again and retry; the login flow overwrites both tokens.
+     */
+    function sessionRejected(outcome) {
+        render({
+            status: outcome.status,
+            error: "Your session was not accepted, so nothing was deleted. It may have expired — " +
+                "sign in again and retry.",
+            detail: outcome.body,
+            signIn: "/login",
+        });
+    }
+
     button.addEventListener("click", function () {
+        if (!signedIn()) {
+            notSignedIn();
+            return;
+        }
+
         if (input.value !== "DELETE") {
             render({ error: 'Type DELETE in the box to confirm.' });
             return;
@@ -60,6 +105,15 @@ document.addEventListener("DOMContentLoaded", function () {
             })
             .then(function (outcome) {
                 if (!outcome.ok) {
+                    // 401 means the credential was not accepted. Say what to do about it rather than
+                    // printing a raw error body the user cannot act on — see sessionRejected for why
+                    // the stored tokens are left alone.
+                    if (outcome.status === 401) {
+                        sessionRejected(outcome);
+                        button.disabled = false;
+                        return;
+                    }
+
                     render({ status: outcome.status, error: outcome.body });
                     button.disabled = false;
                     return;

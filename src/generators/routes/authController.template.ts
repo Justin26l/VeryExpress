@@ -5,6 +5,7 @@ export default function authControllerTemplate(compilerOptions: types.compilerOp
     const localAuth = compilerOptions.auth.localAuth;
     const useRBAC = utilsGenerator.isRbacEnabled(compilerOptions);
     const deleteAccount = utilsGenerator.isAccountDeletionEnabled(compilerOptions);
+    const externalIdentity = utilsGenerator.isExternalIdentityEnabled(compilerOptions);
 
     const localAuthImports = localAuth
         ? "import { UserEntity, User } from \"../_models/UserModel.gen\";\nimport { UserAuthProfilesEntity, UserAuthProfiles } from \"../_models/UserAuthProfilesModel.gen\";"
@@ -44,6 +45,31 @@ export default function authControllerTemplate(compilerOptions: types.compilerOp
     }
 ` : "";
 
+    // ── external identity ───────────────────────────────────────────────────────
+    // Client-driven SSO: the client talks to the broker and hands vex the resulting ID token. The
+    // redirect-response type is shared with /auth/local, so it must be imported when *either* path is on.
+    const redirectImports = localAuth || externalIdentity ? ", loginRedirectResponse" : "";
+    const externalIdentityImports = externalIdentity
+        ? "\nimport ExternalIdentityService from \"../_services/auth/ExternalIdentityService.gen\";"
+        : "";
+    const externalIdentityService = externalIdentity
+        ? "\n    private externalIdentityService = new ExternalIdentityService();\n"
+        : "";
+    const externalIdentityRoute = externalIdentity ? `
+    @Post("external")
+    @SuccessResponse(302, "Redirect")
+    async externalIdentity(
+        @Body() body: { idToken: string }
+    ): Promise<VexResponse<loginRedirectResponse>> {
+        const { user, identity } = await this.externalIdentityService.authenticate(body.idToken);
+
+        // Same session-code flow as /auth/local: the client exchanges the code at /auth/token, so the
+        // token pair is minted in exactly one place regardless of how the caller signed in.
+        const redirectUrl = await this.JWTService.assignTokens(user, identity.provider);
+        throw new VexResOk(302, { result: { url: redirectUrl } });
+    }
+` : "";
+
     // OAuth
     const oauthProviders: string[] = utilsGenerator.OAuthProviders(compilerOptions);
     const OAuthNote = oauthProviders.length > 0 ? "    // OAuth flows (Google, GitHub, etc.) are handled by AuthRouter — see /auth/<provider>": ""
@@ -56,18 +82,18 @@ import VexDb from "../_services/VexDb.gen";
 import { SessionEntity, Session } from "../_models/SessionModel.gen";
 import { VexRepository, VexResponse, VexResErr, VexResOk, Filter } from "../_types/vex";
 import { vexUserIdField } from "../_middlewares/VexFieldRegistry.gen";
-import { tokenResponse, refreshTokenResponse${localAuth ? ', registerResponse, localLoginResponse' : '' }${deleteAccount ? ', deleteAccountResponse' : ''} } from "../_types/auth.gen";
+import { tokenResponse, refreshTokenResponse${localAuth ? ', registerResponse' : '' }${redirectImports}${deleteAccount ? ', deleteAccountResponse' : ''} } from "../_types/auth.gen";
 
 import utils from "../_utils";
 ${localAuthImports}
-${RbacImports}${deleteAccountImports}
+${RbacImports}${deleteAccountImports}${externalIdentityImports}
 
 @Route("auth")
 @Tags("Auth")
 export class AuthController extends controllerFactory._ControllerFactory {
     private JWTService = new JWTService();
     private get sessionRepo(): VexRepository<Session> { return VexDb.getRepository(SessionEntity); }
-${localAuthRepos}${deleteAccountService}
+${localAuthRepos}${deleteAccountService}${externalIdentityService}
 ${OAuthNote}
 
 ${deleteAccountRoute}
@@ -81,8 +107,16 @@ ${deleteAccountRoute}
         if (!session) {
             throw new VexResErr(404, null, "invalid code");
         }
+
+        // Single-use: consume the code before anything else can fail, so a leaked or replayed code
+        // cannot be exchanged twice — and a failure further down does not leave it exchangeable.
+        // deleteWhere reports no affected-row count, so two concurrent requests bearing the same code
+        // can both get here; the window is bounded by the code's TTL (seconds) and still requires the
+        // code to be known already. Closing that residual race needs an atomic consume in the
+        // repository interface, not a change here.
+        await this.sessionRepo.deleteWhere({ sessionCode: code });
+
         if (session.expired < Date.now()) {
-            await this.sessionRepo.deleteWhere({ sessionCode: code });
             throw new VexResErr(401, null, "code expired");
         }
         
@@ -168,7 +202,7 @@ ${localAuth ? `
             email: string;
             password: string;
         }
-    ): Promise<VexResponse<localLoginResponse>> {
+    ): Promise<VexResponse<loginRedirectResponse>> {
         const { email, password } = body;
         
         const user = await this.userRepo.findOneWhere({ email }${useRBAC ? ', ["userRole", "userAuthProfiles"]' : ', ["userAuthProfiles"]'});
@@ -180,6 +214,7 @@ ${localAuth ? `
         const redirectUrl = await this.JWTService.assignTokens(user, "local");
         throw new VexResOk(302, { result: { url: redirectUrl } });
     }` : ""}
+${externalIdentityRoute}
 }
 `;
 }

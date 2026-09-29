@@ -11,6 +11,11 @@ const importLoginUI = "import LoginUI from \"./system/_routes/LoginUI.gen\";";
 // configure
 const ConfigSwaggerRouter = "const SwaggerRoute = new SwaggerRouter();";
 const ConfigAuthRouter = "const AuthRoute = new AuthRouter();";
+// Broker SSO (externalIdentity) is client-driven: this app owns the broker's SDK script and a global
+// that resolves a fresh ID token. `server.ts` is generated once and never overwritten, so wire it up
+// here — the login page renders the button and the glue that posts the token to /api/auth/external:
+//   const loginUI = new LoginUI({ localAuth: true, oauthProviders: [], externalIdentity: {
+//       label: "Sign in with Firebase", scripts: ["/js/firebase-sdk.js"], getToken: "getFirebaseIdToken" } });
 const ConfigLoginUiRouter = (localAuth: boolean, providers: string[], deleteAccount: boolean) =>
     `const loginUI = new LoginUI({ localAuth: ${localAuth}, oauthProviders: ${JSON.stringify(providers)}, deleteAccount: ${deleteAccount} });`;
 

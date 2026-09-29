@@ -329,7 +329,7 @@ const TOMBSTONE: Partial<User> = {
 > what lets the same email register a fresh account immediately (spec §7).
 
 Ordering rationale: credentials first, tombstone last. Tombstoning first would leave OAuth login by
-`UserAuthProfiles.provider` / `oauthId` resolvable, i.e. a deleted account could still log into its
+`UserAuthProfiles.provider` / `providerUserId` resolvable, i.e. a deleted account could still log into its
 own tombstone. Doing the marker last also means a mid-flight failure leaves a still-live account the
 caller can delete again.
 

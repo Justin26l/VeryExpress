@@ -130,6 +130,25 @@ describeE2E("generated app — end-to-end contract", () => {
     });
 
     /**
+     * The `sessionCode` is a one-shot credential: the exchange consumes it, so a leaked or replayed
+     * code cannot mint a second token pair. Regression guard for delete-on-exchange.
+     */
+    it("refuses a session code that was already exchanged", async () => {
+        const login = await fetch(`${app.baseUrl}/api/auth/local`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+        });
+        const code = new URL(`http://localhost${(await login.json()).result.url}`).searchParams.get("code");
+
+        const first = await fetch(`${app.baseUrl}/api/auth/token?code=${code}`, { method: "POST" });
+        expect(first.status).toBe(200);
+
+        const replay = await fetch(`${app.baseUrl}/api/auth/token?code=${code}`, { method: "POST" });
+        expect(replay.status).toBe(404);
+    });
+
+    /**
      * The auth service resolves the identity through the token claim, not through a hardcoded
      * `_id` — that is what lets the audit fields follow the schema's `x-vexData: "userId"` field.
      */
@@ -272,5 +291,21 @@ describeE2E("generated app — end-to-end contract", () => {
             headers: { "X-Auth-Index": accessTokenIndex },
         });
         expect(indexOnly.status, "X-Auth-Index alone must not be accepted").toBe(401);
+    });
+
+    /**
+     * The delete page states its sign-in prerequisite server-side.
+     *
+     * Covered over real HTTP as well as in a unit test, because `LoginUI.gen.ts` is regenerated on
+     * every run while `/js/deleteaccount.js` is copied once and never overwritten — so the server-side
+     * hint is the half of this guidance that actually reaches an existing project.
+     */
+    it("serves the delete page with its sign-in prerequisite stated", async () => {
+        const res = await fetch(`${app.baseUrl}/delete_account`);
+        expect(res.status).toBe(200);
+
+        const html = await res.text();
+        expect(html).toContain("You must be signed in");
+        expect(html).toContain('href="/login"');
     });
 });

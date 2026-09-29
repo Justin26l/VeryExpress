@@ -12,6 +12,7 @@ import path from "path";
 import fs from "fs";
 import log from "~/utils/logger";
 import * as v0_6_14_alpha from "~/migrations/v0.6.14-alpha";
+import * as v0_9_0 from "~/migrations/v0.9.0";
 
 interface MigrationEntry {
     version: string;
@@ -25,6 +26,15 @@ const migrations: MigrationEntry[] = [
         version: "0.6.14-alpha",
         order: [0, 6, 14, 0],
         run: v0_6_14_alpha.run,
+    },
+    {
+        // UserAuthProfiles.oauthId → providerUserId (+ uniqueIndex column rename).
+        // Must stay in step with package.json: the runner compares this order against
+        // .vex/meta.json's lastGeneratedVersion, which is the package version — a lower
+        // label here would re-run the migration on every generation.
+        version: "0.9.0",
+        order: [0, 9, 0, 999],
+        run: v0_9_0.run,
     },
 ];
 

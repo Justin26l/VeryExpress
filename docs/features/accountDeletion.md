@@ -112,7 +112,7 @@ returns `alreadyDeleted` without re-stamping the row.
 Order is load-bearing:
 
 1. **Credentials first** — auth profiles, roles, sessions. Tombstoning first would leave the OAuth
-   path able to resolve the account through `provider` / `oauthId`, i.e. a deleted user could log
+   path able to resolve the account through `provider` / `providerUserId`, i.e. a deleted user could log
    back into their own tombstone.
 2. **Tombstone last** — `softDelete(userId, TOMBSTONE)`. A mid-flight failure therefore leaves a
    live account that can simply be retried.

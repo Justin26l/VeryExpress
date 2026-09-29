@@ -28,6 +28,7 @@ import * as dataIsolationRegistryGen from "./generators/middlewares/dataIsolatio
 import * as vexFieldRegistryGen from "./generators/middlewares/vexFieldRegistry.generator";
 import * as accountStateGuardGen from "./generators/services/accountStateGuard.generator";
 import * as accountDeletionGen from "./generators/services/accountDeletion.generator";
+import * as externalIdentityGen from "./generators/services/externalIdentity.generator";
 
 export async function generate(
     options: types.compilerOptions
@@ -223,6 +224,13 @@ export async function generate(
     await accountDeletionGen.compile({
         documents: documents.map(d => ({ path: d.path, schema: d.schema })),
         serviceDir: dir.serviceDir,
+        compilerOptions: options,
+    });
+
+    // generate external-identity runtime (verifier + login-page wiring; only when enabled)
+    await externalIdentityGen.compile({
+        serviceDir: dir.serviceDir,
+        routeDir: dir.routeDir,
         compilerOptions: options,
     });
 

@@ -32,8 +32,32 @@ export function OAuthProviders(compilerOptions: types.compilerOptions): string[]
     });
 }
 
+/**
+ * Is any sign-in path configured?
+ *
+ * All three count. `externalIdentity` in particular is easy to miss: a broker-only app
+ * (`localAuth: false`, no passport provider) is not auth-less, and treating it as such would drop the
+ * whole `AuthController` — including the `/auth/external` endpoint it exists to serve.
+ *
+ * Reads the RAW flag rather than `isExternalIdentityEnabled()`, which calls this function; using the
+ * gated helper here would recurse.
+ */
 export function isAuthEnabled(compilerOptions: types.compilerOptions): boolean {
-    return compilerOptions.auth.localAuth || OAuthProviders(compilerOptions).length > 0;
+    return compilerOptions.auth.localAuth
+        || OAuthProviders(compilerOptions).length > 0
+        || (compilerOptions.auth.externalIdentity?.enabled ?? false);
+}
+
+/**
+ * Single gate for external identity: the `/auth/external` endpoint, the verifier service and the
+ * login-page wiring.
+ *
+ * Opt-in (`?? false`), unlike account deletion: it is the one feature that pulls an outside identity
+ * provider into the system, and a project that has not configured one must not get an endpoint that
+ * accepts third-party tokens.
+ */
+export function isExternalIdentityEnabled(compilerOptions: types.compilerOptions): boolean {
+    return isAuthEnabled(compilerOptions) && (compilerOptions.auth.externalIdentity?.enabled ?? false);
 }
 
 /**
@@ -114,6 +138,10 @@ export const defaultCompilerOptions: types.compilerOptions = {
         localAuth: true,
         useHttpOnlyCookieToken: false,
         deleteAccount: true,
+        // Opt-in, and the default is emitted so the knob is discoverable in a written vex.config.json.
+        externalIdentity: {
+            enabled: false,
+        },
         oauthProviders: {
             google: false,
             microsoft: false,
@@ -136,6 +164,7 @@ export default {
     getSimpleStaticHeaderComment,
     OAuthProviders,
     isAuthEnabled,
+    isExternalIdentityEnabled,
     isRbacEnabled,
     isAccountDeletionEnabled,
     isShowSoftDeleted,

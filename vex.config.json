@@ -19,6 +19,12 @@
         "oauthProviders": {
             "google": false,
             "github": false
+        },
+        "externalIdentity": {
+            "enabled": true,
+            "preset": "firebase",
+            "projectId": "renomaster-c36d6",
+            "signInMethod": "redirect"
         }
     },
     "useRBAC": {
