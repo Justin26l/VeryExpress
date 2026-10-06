@@ -188,7 +188,11 @@ export function copyDir(source: string, destination: string, compilerOptions: ty
 
     for (let i = 0; i < files.length; i++) {
         const fileName = files[i];
-        const outputFileName = fileName == "index.ts" ? fileName : fileName.replace(".ts", ".gen.ts");
+        // `index.ts` stays `index.ts`; a template already named `*.gen.ts` keeps its name (it is
+        // emitted verbatim, e.g. a generated-config stand-in) — otherwise it would become `.gen.gen.ts`.
+        const outputFileName = fileName == "index.ts" || fileName.endsWith(".gen.ts")
+            ? fileName
+            : fileName.replace(".ts", ".gen.ts");
 
         const sourcePath = path.posix.join(source,fileName);
         const destinationPath = path.posix.join(destination, outputFileName);            

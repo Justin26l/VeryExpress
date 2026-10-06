@@ -144,7 +144,7 @@ ${redactions}
  *
  * Ordering matters: credentials are removed BEFORE the tombstone is written. Tombstoning first
  * would leave the OAuth path able to resolve the account through
- * ${docName}AuthProfiles.provider / oauthId — which is exactly how a deleted user would still be
+ * ${docName}AuthProfiles.provider / providerUserId — which is exactly how a deleted user would still be
  * able to log back into their own tombstone. Doing the marker last also means a mid-flight failure
  * leaves a still-live account the caller can simply delete again.
  */

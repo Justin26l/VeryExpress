@@ -12,6 +12,7 @@ import path from "path";
 import fs from "fs";
 import log from "~/utils/logger";
 import * as v0_6_14_alpha from "~/migrations/v0.6.14-alpha";
+import * as v0_8_5 from "~/migrations/v0.8.5";
 
 interface MigrationEntry {
     version: string;
@@ -25,6 +26,18 @@ const migrations: MigrationEntry[] = [
         version: "0.6.14-alpha",
         order: [0, 6, 14, 0],
         run: v0_6_14_alpha.run,
+    },
+    {
+        // UserAuthProfiles.oauthId → providerUserId (+ the uniqueIndex column rename). This is the
+        // account-linking key `(provider, providerUserId)` that lets the Firebase and passport doors
+        // resolve to one row; without the unique index two concurrent first logins could create two.
+        //
+        // Must stay in step with package.json: the runner compares this order against
+        // .vex/meta.json's lastGeneratedVersion, which is the package version — a lower label here
+        // would re-run the migration on every generation.
+        version: "0.8.5",
+        order: [0, 8, 5, 999],
+        run: v0_8_5.run,
     },
 ];
 

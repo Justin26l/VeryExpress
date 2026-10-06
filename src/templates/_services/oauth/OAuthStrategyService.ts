@@ -26,11 +26,11 @@ export default class OAuthStrategyService {
             const authUser = new OAuthProfileMap().map(profile);
             const authProfile = authUser.userAuthProfiles?.[0];
 
-            // find user by oauthId + provider, or fall back to email
+            // find user by providerUserId + provider, or fall back to email
             let existingUser: UserWithRelations | null = null;
-            if (authProfile?.oauthId && authProfile?.provider) {
+            if (authProfile?.providerUserId && authProfile?.provider) {
                 const matchedProfile = await this.uapRepo.findOneWhere(
-                    { oauthId: authProfile.oauthId, provider: authProfile.provider },
+                    { providerUserId: authProfile.providerUserId, provider: authProfile.provider },
                 );
                 if (matchedProfile?.userId) {
                     existingUser = await this.userRepo.findOne({ _id: matchedProfile.userId });
@@ -84,9 +84,9 @@ export default class OAuthStrategyService {
             throw new Error("Invalid OAuth Callback \"authProfile\"");
         }
 
-        // check if this provider/oauthId already tracked
+        // check if this provider/providerUserId already tracked
         const existing = await this.uapRepo.findOneWhere(
-            { userId: existingUser._id, provider: incomingProfile.provider, oauthId: incomingProfile.oauthId },
+            { userId: existingUser._id, provider: incomingProfile.provider, providerUserId: incomingProfile.providerUserId },
         );
 
         if (!existing) {

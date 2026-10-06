@@ -40,318 +40,318 @@ JWT_SECRET0='my-secret-key0'
       "schemas": {
         "Session.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.4"
+          "lastWriteVersion": "0.8.5"
         },
         "User.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.4"
+          "lastWriteVersion": "0.8.5"
         },
         "UserAuthProfiles.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.4"
+          "lastWriteVersion": "0.8.5"
         },
         "UserRole.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.4"
+          "lastWriteVersion": "0.8.5"
         }
       },
       "vex.config.json": {
         "allowOverwrite": true,
-        "lastWriteVersion": "0.8.4"
+        "lastWriteVersion": "0.8.5"
       }
     },
     ".env": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.4"
+      "lastWriteVersion": "0.8.5"
     },
     "Dockerfile": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.4"
+      "lastWriteVersion": "0.8.5"
     },
     "package.json": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.4"
+      "lastWriteVersion": "0.8.5"
     },
     "public": {
       "css": {
         "style.css": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.4"
+          "lastWriteVersion": "0.8.5"
         }
       },
       "js": {
         "deleteaccount.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.4"
+          "lastWriteVersion": "0.8.5"
         },
         "login.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.4"
+          "lastWriteVersion": "0.8.5"
         },
         "logincallback.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.4"
+          "lastWriteVersion": "0.8.5"
         },
         "mytokens.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.4"
+          "lastWriteVersion": "0.8.5"
         },
         "refreshtokens.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.4"
+          "lastWriteVersion": "0.8.5"
         }
       }
     },
     "README.md": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.4"
+      "lastWriteVersion": "0.8.5"
     },
     "scripts": {
       "build.js": {
         "allowOverwrite": true,
-        "lastWriteVersion": "0.8.4"
+        "lastWriteVersion": "0.8.5"
       },
       "oacg-fix.js": {
         "allowOverwrite": true,
-        "lastWriteVersion": "0.8.4"
+        "lastWriteVersion": "0.8.5"
       }
     },
     "src": {
       "roles": {
         "member.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.4"
+          "lastWriteVersion": "0.8.5"
         }
       },
       "server.ts": {
         "allowOverwrite": true,
-        "lastWriteVersion": "0.8.4"
+        "lastWriteVersion": "0.8.5"
       },
       "system": {
         "_controllers": {
           "_ControllerFactory.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.8.5"
           },
           "UserController.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.8.5"
           }
         },
         "_middlewares": {
           "Authentication.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.8.5"
           },
           "DataIsolationRegistry.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.8.5"
           },
           "JoinWhitelistMiddleware.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.8.5"
           },
           "JoinWhitelistRegistry.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.8.5"
           },
           "RoleBaseAccessControl.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.8.5"
           },
           "tsoaAuthentication.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.8.5"
           },
           "UserContext.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.8.5"
           },
           "VexFieldRegistry.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.8.5"
           }
         },
         "_models": {
           "SessionModel.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.8.5"
           },
           "UserAuthProfilesModel.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.8.5"
           },
           "UserModel.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.8.5"
           },
           "UserRoleModel.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.8.5"
           }
         },
         "_roles": {
           "_RoleFactory.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.8.5"
           },
           "index.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.8.5"
           },
           "member.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.8.5"
           }
         },
         "_routes": {
           "LoginUI.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.8.5"
           },
           "oauth": {
             "OAuthRouteFactory.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.4"
+              "lastWriteVersion": "0.8.5"
             }
           },
           "SwaggerRouter.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.8.5"
           }
         },
         "_services": {
           "auth": {
             "AccountStateGuard.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.4"
+              "lastWriteVersion": "0.8.5"
             },
             "JWTKeyStore.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.4"
+              "lastWriteVersion": "0.8.5"
             },
             "JWTService.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.4"
+              "lastWriteVersion": "0.8.5"
             }
           },
           "MongooseRepositoryAdapter.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.8.5"
           },
           "oauth": {
             "OAuthProfileMap.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.4"
+              "lastWriteVersion": "0.8.5"
             },
             "OAuthStrategyService.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.4"
+              "lastWriteVersion": "0.8.5"
             }
           },
           "TypeOrmRepositoryAdapter.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.8.5"
           },
           "VexDb.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.8.5"
           },
           "VexDbConnector.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.8.5"
           },
           "VexSystem.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.8.5"
           }
         },
         "_types": {
           "auth.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.8.5"
           },
           "Session.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.8.5"
           },
           "User.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.8.5"
           },
           "UserAuthProfiles.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.8.5"
           },
           "UserRole.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.8.5"
           },
           "vex": {
             "index.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.4"
+              "lastWriteVersion": "0.8.5"
             },
             "VexRepository.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.4"
+              "lastWriteVersion": "0.8.5"
             },
             "VexRequest.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.4"
+              "lastWriteVersion": "0.8.5"
             },
             "VexResErr.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.4"
+              "lastWriteVersion": "0.8.5"
             },
             "VexResOk.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.4"
+              "lastWriteVersion": "0.8.5"
             },
             "VexResponse.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.4"
+              "lastWriteVersion": "0.8.5"
             }
           }
         },
         "_utils": {
           "hash.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.8.5"
           },
           "index.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.8.5"
           },
           "logger.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.8.5"
           },
           "processTimer.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.8.5"
           },
           "response.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.8.5"
           },
           "validator.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.4"
+            "lastWriteVersion": "0.8.5"
           }
         }
       }
     },
     "tsconfig.json": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.4"
+      "lastWriteVersion": "0.8.5"
     },
     "tsoa.json": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.4"
+      "lastWriteVersion": "0.8.5"
     }
   },
-  "lastGeneratedVersion": "0.8.4"
+  "lastGeneratedVersion": "0.8.5"
 }
 
 ===== out/Dockerfile =====
@@ -1377,13 +1377,14 @@ export class SessionEntity implements Partial<Session> {
  * https://github.com/Justin26l/VeryExpress
  */
 
-import { Entity, Column, PrimaryGeneratedColumn, Index, Relation, JoinColumn, ManyToOne } from "typeorm";
+import { Entity, Column, PrimaryGeneratedColumn, Unique, Index, Relation, JoinColumn, ManyToOne } from "typeorm";
 import { UserAuthProfiles } from "./../_types/UserAuthProfiles.gen";
 import { UserEntity, User } from "./UserModel.gen";
 
 export * from "./../_types/UserAuthProfiles.gen";
 
 @Entity("userauthprofiles")
+@Unique('unique_provider_providerUserId', ['provider', 'providerUserId'])
 export class UserAuthProfilesEntity implements Partial<UserAuthProfiles> {
     @PrimaryGeneratedColumn("uuid")
     _id!: string;
@@ -1393,12 +1394,12 @@ export class UserAuthProfilesEntity implements Partial<UserAuthProfiles> {
     userId?: string;
 
     @Index()
-    @Column({type: "text", nullable: true})
+    @Column({type: "text", nullable: true, comment: "Namespace label of the identity source: an upstream IdP (\"google\"), a broker (\"firebase\"), or vex's own password path (\"local\"). The value \"local\" is reserved."})
     provider?: string;
 
     @Index()
-    @Column({type: "text", nullable: true})
-    oauthId?: string;
+    @Column({type: "text", nullable: true, comment: "External subject within `provider`'s namespace. With `provider` it forms the account-linking key and the composite unique index. NULL for provider=\"local\". This is the subject (an OIDC `sub` or a broker user id), never a token."})
+    providerUserId?: string;
 
     @Column({type: "text", nullable: true})
     email?: string;
@@ -2527,7 +2528,7 @@ export default class OAuthProfileMap {
             active: true,
             userAuthProfiles: [{
                 provider: oauthProfile.provider,
-                oauthId: oauthProfile.id,
+                providerUserId: oauthProfile.id,
                 username: oauthProfile.username || oauthProfile.displayName
             }],
             name: oauthProfile.username || oauthProfile.displayName,
@@ -2543,7 +2544,7 @@ export default class OAuthProfileMap {
             active: true,
             userAuthProfiles: [{
                 provider: oauthProfile.provider,
-                oauthId: oauthProfile.id,
+                providerUserId: oauthProfile.id,
                 username: oauthProfile.username || oauthProfile.displayName
             }],
             name: oauthProfile.username || oauthProfile.displayName,
@@ -2591,11 +2592,11 @@ export default class OAuthStrategyService {
             const authUser = new OAuthProfileMap().map(profile);
             const authProfile = authUser.userAuthProfiles?.[0];
 
-            // find user by oauthId + provider, or fall back to email
+            // find user by providerUserId + provider, or fall back to email
             let existingUser: UserWithRelations | null = null;
-            if (authProfile?.oauthId && authProfile?.provider) {
+            if (authProfile?.providerUserId && authProfile?.provider) {
                 const matchedProfile = await this.uapRepo.findOneWhere(
-                    { oauthId: authProfile.oauthId, provider: authProfile.provider },
+                    { providerUserId: authProfile.providerUserId, provider: authProfile.provider },
                 );
                 if (matchedProfile?.userId) {
                     existingUser = await this.userRepo.findOne({ _id: matchedProfile.userId });
@@ -2649,9 +2650,9 @@ export default class OAuthStrategyService {
             throw new Error("Invalid OAuth Callback \"authProfile\"");
         }
 
-        // check if this provider/oauthId already tracked
+        // check if this provider/providerUserId already tracked
         const existing = await this.uapRepo.findOneWhere(
-            { userId: existingUser._id, provider: incomingProfile.provider, oauthId: incomingProfile.oauthId },
+            { userId: existingUser._id, provider: incomingProfile.provider, providerUserId: incomingProfile.providerUserId },
         );
 
         if (!existing) {
@@ -3387,8 +3388,14 @@ import { UserWithRelations } from "./User.gen";
 export interface UserAuthProfiles {
     _id?: string;
     userId?: string;
+    /**
+     * Namespace label of the identity source: an upstream IdP ("google"), a broker ("firebase"), or vex's own password path ("local"). The value "local" is reserved.
+     */
     provider?: string;
-    oauthId?: string;
+    /**
+     * External subject within `provider`'s namespace. With `provider` it forms the account-linking key and the composite unique index. NULL for provider="local". This is the subject (an OIDC `sub` or a broker user id), never a token.
+     */
+    providerUserId?: string;
     email?: string;
     username?: string;
     password?: string;
