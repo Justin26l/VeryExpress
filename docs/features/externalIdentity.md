@@ -92,6 +92,29 @@ account linking — without that gate, any provider that does not verify address
 account-takeover path. And the issuer is pinned in configuration, never taken from the token: a verifier
 that fetched the JWKS URL named by an unvalidated `iss` claim would be an SSRF gadget.
 
+## Upgrading from 0.8.x
+
+The unique account-linking key is `(provider, providerUserId)`; before 0.9.0 the property was named
+`oauthId` and nothing enforced uniqueness.
+
+1. **`npm install`** — `firebase` is a new dependency of the generated app.
+2. **Re-run `vex`** — the schema migration renames the property.
+3. **Rename the column and add the constraint** (SQL; `SQL_SYNCHRONIZE=true` covers development):
+   ```sql
+   ALTER TABLE "userauthprofiles" RENAME COLUMN "oauthId" TO "providerUserId";
+   ALTER TABLE "userauthprofiles" ADD CONSTRAINT "unique_provider_providerUserId"
+       UNIQUE ("provider", "providerUserId");
+   ```
+   If the old code let two rows claim one identity, find them first:
+   ```sql
+   SELECT provider, "providerUserId", COUNT(*) FROM "userauthprofiles"
+   GROUP BY 1,2 HAVING COUNT(*) > 1;
+   ```
+4. **Update app code** that reads `oauthId`.
+5. **Keep the app's `package.json` at `0.9.0` or later** — the migration runner compares the migration's
+   label with `.vex/meta.json`'s last generated version, so a lower version re-runs it on every
+   generation.
+
 ## The login page
 
 The generated page renders one button per configured provider. The **preset** supplies the vendor

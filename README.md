@@ -47,7 +47,6 @@ Notes:
 ## Docs
 - Schema reference: [docs/vexJsonSchema.md](docs/vexJsonSchema.md)
 - Contributing: [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)
-- Usage & CLI: [docs/USAGE.md](docs/USAGE.md)
-- Changelog: [docs/CHANGELOG.md](docs/CHANGELOG.md)
+- Usage & CLI: [AGENTS.md](AGENTS.md) (Build / run)
 - Release notes: [docs/releaseNote/](docs/releaseNote/)
 

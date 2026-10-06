@@ -93,7 +93,7 @@ the repository hides soft-deleted rows; unset means hidden. See
 
 ## Auth internals
 
-JWT rolling keys and OAuth2 provider setup are documented in [`docs/appGenerated/auth.md`](../appGenerated/auth.md).
+JWT rolling keys and OAuth2 provider setup are documented in [`docs/features/auth.md`](../features/auth.md).
 
 ## Client-facing API behaviour
 

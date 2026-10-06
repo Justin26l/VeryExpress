@@ -28,6 +28,9 @@ npm start        # run dist/index.js directly
 Bundled to a single `dist/index.js` (esbuild, platform: node, target: es2016). `scripts/copyTsTemplates.js` then copies `src/templates/` → `dist/templates/`; the runtime reads templates from `__dirname/templates`.
 
 **Editing `src/` changes nothing until you `npm run compile`** — `vex` executes `dist/index.js`.
+A *failed* compile leaves the previous `dist/index.js` in place, so `node dist/index.js` keeps
+working and silently applies the old generator. **Check the compile exit code**; piping it to
+`tail` hides the failure and turns the next verification into a false pass.
 
 ### Tests
 
@@ -60,6 +63,8 @@ Read from `vex.config.json → jsonSchemaDir` (this repo: `./output/jsonSchema`)
 - **Never hand-edit `*.gen.ts`.** Regenerated on the next `vex` run. If a generated file genuinely needs a manual change, prefer fixing the generator or template.
 - **`x-documentConfig.documentName` must match the JSON filename** — `User.json` → `"documentName": "User"`.
 - **Never hand-place files under `sysDir`.** `cleanupStaleFiles()` deletes every file there not written during the current run.
+- **Where a fix belongs decides whether existing projects get it.** `templates/root/**` (`server.ts`, `public/**`, `scripts/**`) is copied **once** and never overwritten, so a change there reaches *new* projects only. `_projectSettings/package.json` **scripts are re-synced on every run**, and missing dependencies are added, so those do reach existing projects. Put a fix in `templates/_routes/**` or a generator when it must apply to a project that already exists.
+- **A migration's version must not be lower than `package.json`'s.** The runner compares the migration label against `.vex/meta.json`'s `lastGeneratedVersion`, which *is* the package version — a lower label re-runs the migration on every generation. Bump the package version in the same change that adds a migration.
 - **`required` in source schemas uses the root array form.** Per-prop `required: true` is normalized into `required: string[]` by the preprocessor — do not write it that way.
 - **`src/` is ESM-style TypeScript with `~/*` → `src/*` aliasing.** Use `~/generators/...`, `~/utils/...`, `~/types/...` for intra-repo imports.
 - **Only `one-to-one` and `many-to-one` are declared in `x-foreignKey`.** `one-to-many` is derived from the other side and must not be hand-written.
@@ -80,10 +85,11 @@ Read from `vex.config.json → jsonSchemaDir` (this repo: `./output/jsonSchema`)
 
 ## Release notes
 
-`docs/releaseNote/vX-Y-Z.md` is a **TL;DR index, not a document**: bullets, one screen, and only what a
-reader needs to *use* the change. Detail belongs in `docs/features/` — link it, do not inline it. If a
-release note has grown subsections, caveat blocks and rationale, that content is in the wrong file.
-Cover: what broke, what is new, how to turn it on, and the ordered upgrade steps.
+`docs/releaseNote/vX-Y-Z.md` is a **catalog, not a document**: bullets, one screen, only what a reader
+needs to *use* the change. Short beats complete. If the note needs subsections, caveat blocks, rationale
+or reference material (SQL, env tables, troubleshooting), that content belongs in `docs/features/` —
+link it, never inline it. Cover, in this order: what broke and how to migrate, what is new, how to turn
+it on, the ordered upgrade steps.
 
 ## Code style
 
@@ -117,8 +123,7 @@ This file covers only what every session needs. Deeper material lives in `docs/`
 | [`docs/ForeignKey.md`](docs/ForeignKey.md) | FK joins via the API `join` parameter |
 | [`docs/developmentNote.md`](docs/developmentNote.md) | Why no ts-node, esbuild/dist working dir, `FUNC{{ }}` intent |
 | [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) | Setup, branch/PR workflow, PR checklist |
-| [`docs/features/`](docs/features/) | rbac, dataIsolation, filterOperators, joinWhitelist, auditFields, accountDeletion, externalIdentity |
-| [`docs/appGenerated/auth.md`](docs/appGenerated/auth.md) | JWT rolling keys, OAuth2 providers |
+| [`docs/features/`](docs/features/) | auth, rbac, dataIsolation, filterOperators, joinWhitelist, auditFields, accountDeletion, externalIdentity |
 | [`docs/roadMap/`](docs/roadMap/) | Released features and version milestones |
 | [`docs/releaseNote/`](docs/releaseNote/) | Per-version release notes |
 
