@@ -1,40 +1,21 @@
 /**
- * Source builders for the Firebase sign-in runtime.
+ * Source builders for the Firebase sign-in runtime: 
+ * 
+ *   _services/auth/FirebaseAdmin.gen.ts        - the project credential, read from the environment
+ *   _services/auth/FirebaseAuthService.gen.ts  - verify, resolve the upstream identity, provision the user
+ *   _routes/FirebaseAuthUI.gen.ts              - what the login page needs to drive the browser SDK
  *
- * Three files, emitted only when `auth.firebase` is true — except the login-page wiring module, which
- * is written **always** (as `undefined`) because `LoginUI.gen.ts` imports it unconditionally. That is
- * the same no-op contract `accountStateGuard.generator.ts` keeps for `Authentication.middleware`.
- *
- *   _services/auth/FirebaseAdmin.gen.ts      the project credential, read from the environment
- *   _services/auth/FirebaseAuthService.gen.ts verify, resolve the upstream identity, provision the user
- *   _routes/FirebaseAuthUI.gen.ts            what the login page needs to drive the browser SDK
- *
- * The pair written to `UserAuthProfiles` is the **upstream** IdP's: `("google", <Google sub>)` for a
- * Google sign-in.
+ * Emitted source must avoid backticks and `${` — it is interpolated into template literals here.
  */
 
-/**
- * `_services/auth/FirebaseAdmin.gen.ts` — the service account, loaded once at module scope.
- *
- * Emitted source deliberately avoids backticks and `${`: it is itself interpolated into a TypeScript
- * template literal here, and the repo has been broken by a stray one before.
- */
+/** `_services/auth/FirebaseAdmin.gen.ts` — the service account, read once at module scope. */
 export function adminModule(): string {
     return `// {{headerComment}}
 import { initializeApp, cert, getApps, type ServiceAccount } from "firebase-admin/app";
 import { getAuth, type Auth } from "firebase-admin/auth";
 import utils from "../../_utils";
 
-/**
- * The Firebase project credential.
- *
- * Firebase ID tokens are verified with the vendor's own verifier (firebase-admin), which needs a
- * service account. That is the one secret this feature adds, and it is read from
- * FIREBASE_SERVICE_ACCOUNT_JSON - the JSON itself, kept as a secret.
- *
- * An absent or unusable credential is not a crash: the app starts and POST /api/auth/firebase answers
- * 503 with the reason. A missing secret must not take the whole API down.
- */
+/** The project credential, from FIREBASE_SERVICE_ACCOUNT_JSON. Absent or unusable -> 503, not a crash. */
 function readServiceAccountField(source: object, camel: string, snake: string): string | undefined {
     const camelValue: unknown = Reflect.get(source, camel);
     if (typeof camelValue === "string" && camelValue.length > 0) return camelValue;
@@ -109,14 +90,8 @@ export const firebaseAuth: Auth | null = isFirebaseAvailable ? getAuth() : null;
 /**
  * `_services/auth/FirebaseAuthService.gen.ts` — verify, resolve the identity, find or create the user.
  *
- * The write path mirrors `OAuthStrategyService` deliberately: the same `(provider, providerUserId)`
- * lookup, the same composite unique index, the same soft-delete marker seed. That is what makes a
- * Google sign-in through Firebase and a Google sign-in through passport resolve to one row.
- *
- * The one deliberate difference from the passport path: a new user is also given the configured RBAC
- * default role, the same as `POST /api/auth/register` does. The passport path does not, which leaves
- * its users role-less; this one matches the registration flow and the hand-written controller this
- * replaces.
+ * Writes the same `(provider, providerUserId)` pair as `OAuthStrategyService`, plus the RBAC default
+ * role when RBAC is on.
  */
 export function serviceModule(options: { rbac: boolean; defaultRole: string }): string {
     const rbacImports = options.rbac
@@ -157,9 +132,7 @@ export interface firebaseLoginResult {
     isNewUser: boolean;
 }
 
-/**
- * Firebase's sign_in_provider
- */
+/** firebase.sign_in_provider -> the provider label the passport strategies write. */
 const providerMap: Record<string, string> = {
     "google.com": "google",
     "github.com": "github",
@@ -171,13 +144,7 @@ function messageOf(err: unknown): string {
     return err instanceof Error ? err.message : String(err);
 }
 
-/**
- * The upstream subject for a sign-in provider, read without letting firebase-admin's typing leak.
- *
- * firebase-admin declares identities as an index signature of any. 
- * Assigning it to unknown erases that before anything reads it, and Reflect.get avoids an index-access assertion
- * neither any nor as appears below.
- */
+/** The upstream subject; identities is typed any, so it is erased to unknown before reading. */
 function readUpstreamSubject(decoded: DecodedIdToken, signInProvider: string): string | undefined {
     const identities: unknown = decoded.firebase.identities;
     if (typeof identities !== "object" || identities === null) return undefined;
@@ -199,12 +166,7 @@ export default class FirebaseAuthService {
         return VexDb.getRepository<UserAuthProfiles>(UserAuthProfilesEntity);
     }${userRoleRepo}
 
-    /**
-     * Verify the ID token and resolve the caller to a vex user.
-     *
-     * Every failure is a VexResErr with a status the controller can pass through. The messages never
-     * echo a claim, so a caller cannot use them to probe which part of a token was accepted.
-     */
+    /** Verify the ID token, then find or create the user it names. */
     public async authenticate(idToken: string): Promise<firebaseLoginResult> {
         const decoded = await this.verify(idToken);
         const identity = this.resolveIdentity(decoded);
@@ -221,10 +183,7 @@ export default class FirebaseAuthService {
         return { user: await this.createUser(identity, username, email), identity, isNewUser: true };
     }
 
-    /**
-     * Signature, issuer, audience and expiry, checked by firebase-admin against the project named by
-     * the service account - no issuer is taken from the token itself.
-     */
+    /** firebase-admin checks signature, issuer, audience and expiry. */
     public async verify(idToken: string): Promise<DecodedIdToken> {
         if (!isFirebaseAvailable || !firebaseAuth) {
             throw new VexResErr(503, null, "Firebase authentication is not configured");
@@ -239,16 +198,7 @@ export default class FirebaseAuthService {
         }
     }
 
-    /**
-     * The single identity this sign-in writes: the upstream IdP's pair, never the broker's.
-     *
-     * Two refusals, both deliberate:
-     *
-     * - no upstream provider at all (password, phone, anonymous, custom) - there is no namespace to
-     *   file the login under that anything else could reach;
-     * - a known provider whose subject is missing - that is a broken token, and falling back to the
-     *   broker here would store a wrong-but-plausible key that nothing ever flags.
-     */
+    /** The identity this sign-in writes; throws without an upstream provider, or without its subject. */
     public resolveIdentity(decoded: DecodedIdToken): resolvedIdentity {
         const signInProvider = decoded.firebase.sign_in_provider;
         const provider = providerMap[signInProvider];
@@ -266,12 +216,7 @@ export default class FirebaseAuthService {
         return { provider, providerUserId };
     }
 
-    /**
-     * Exact key match first; the email fallback only when the token says the address is verified.
-     *
-     * Without that gate any provider that does not verify addresses becomes an account-takeover path:
-     * claim someone else's email and inherit their account.
-     */
+    /** Key match first; the email fallback only when the provider verified the address. */
     private async findExisting(
         identity: resolvedIdentity,
         email: string | undefined,
@@ -338,8 +283,7 @@ export default class FirebaseAuthService {
             profileErrors: "",
         } as unknown as UserWithRelations;
 
-        // The soft-delete marker is a required column in projects that declare one, so a brand-new row
-        // must seed it. Its name is only known at runtime.
+        // Required column in projects that declare a soft-delete marker; its name is runtime.
         const marker = entitySoftDeleteFields["UserEntity"];
         if (marker) (user as unknown as Record<string, unknown>)[marker] = false;
 
@@ -347,8 +291,6 @@ export default class FirebaseAuthService {
             throw new VexResErr(500, null, "User creation failed.");
         });
 
-        // Narrowed rather than dereferenced: the relation is optional on the generated type, so
-        // userAuthProfiles[0] is a compile error under strict.
         const authProfile = user.userAuthProfiles?.[0];
         if (!authProfile) {
             await this.userRepo.delete(created._id);

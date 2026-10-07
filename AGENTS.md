@@ -72,6 +72,7 @@ Read from `vex.config.json → jsonSchemaDir` (this repo: `./output/jsonSchema`)
   uncommitted. Reading (`status`, `diff`, `log`, `show`, `grep`) is fine.
 - **Read-only mode means troubleshoot.** When the file policy is read-only, diagnose and report. Do not
   attempt the edit, and do not request a wider mode — the user grants it when they want the change.
+- **Write less or shorter js-doc as possible.** interface structure and name tell what it is, no need essay to tell same things again. A comment earns its place only for what the code cannot say: a non-obvious rule, a workaround, a failure mode. One line where you would write five - no rationale, no history, no restating the signature. Applies double to **emitted** code: generated files get the header comment and nothing else unless a line is genuinely surprising to a reader who is about to change it. If a comment would have to be edited together with the line below it, delete the comment.
 
 ## Conventions
 
@@ -104,23 +105,12 @@ Smart caveman. Drop articles, filler, pleasantries, hedging. Fragments fine. Kee
 A document describes **what is true now**, for a reader who has only this repo. Write the thing, not
 the argument for it.
 
-- **State what it does, not what it avoids.** Not "`provider: "firebase"` is never written" — instead
-  "the identity stored is the upstream provider's: `provider: "google"`, `providerUserId: <Google sub>`".
-  A negative earns its place only when a reader can hit it and the behaviour *is* the point, and then it
-  is written as behaviour: "a sign-in with no upstream provider is answered with `400`".
-- **Present tense, current code.** No "will", "we decided", "earlier drafts", "on purpose",
-  "deliberately", "was rejected". What the code does is visible in the code; reasoning belongs in
-  `docs/plan/`, and what changed belongs in `docs/releaseNote/`.
-- **Lead with the thing.** A reference doc opens with what the feature is and does, then how to
-  configure it, then how it fails. Rationale goes last, or to `docs/plan/`.
-- **Cut the comparison.** "unlike X", "instead of Y", "no longer Z" — describe what the code does, not
-  the road not taken.
-- **No private context.** No other repositories, projects, deployments, customers or issue ids. A
-  reader cannot open them, so naming one is noise. Anything learned out there is restated as a fact
-  checkable from here.
+- **State current state, not what it avoids.** purpose docs is to tell behaviour, not history. 
+- **Present tense, current code.** No "will", "we decided", "earlier drafts", "on purpose", "deliberately", "was rejected". What the code does is visible in the code;  what changed belongs in `docs/releaseNote/`.
+- **Cut the comparison.** "unlike X", "instead of Y", "no longer Z" — describe what the code does, not the road not taken.
+- **No private context.** No other repositories, projects or issue ids. A reader cannot open them, so naming one is noise. Anything learned out there is restated as a fact checkable from here.
 
-Only `docs/plan/` (design records) and `docs/releaseNote/` (what changed, and how to migrate) narrate
-time. Every other document is present tense.
+Only `docs/plan/` (design records) and `docs/releaseNote/` (what changed, and how to migrate) narrate time. Every other document is present tense.
 
 ## Documentation map
 
@@ -134,11 +124,9 @@ This file covers only what every session needs. Deeper material lives in `docs/`
 | [`docs/architecture/databaseTargets.md`](docs/architecture/databaseTargets.md) | mongo vs sql, repository adapter, data isolation, join whitelist |
 | [`docs/architecture/authAndRouting.md`](docs/architecture/authAndRouting.md) | tsoa, auth routes, swagger, RBAC |
 | [`docs/vexJsonSchema.md`](docs/vexJsonSchema.md) | Full JSON Schema reference — `x-documentConfig`, `x-foreignKey`, `x-format`, `x-vexData` |
-| [`docs/apiUsage.md`](docs/apiUsage.md) | API client guide — pagination, search, response format |
-| [`docs/ForeignKey.md`](docs/ForeignKey.md) | FK joins via the API `join` parameter |
 | [`docs/developmentNote.md`](docs/developmentNote.md) | Why no ts-node, esbuild/dist working dir, `FUNC{{ }}` intent |
 | [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) | Setup, branch/PR workflow, PR checklist |
-| [`docs/features/`](docs/features/) | rbac, dataIsolation, filterOperators, joinWhitelist, auditFields, accountDeletion |
+| [`docs/features/`](docs/features/) | foreignKey, apiUsage, rbac, dataIsolation, filterOperators, joinWhitelist, auditFields, accountDeletion |
 | [`docs/appGenerated/auth.md`](docs/appGenerated/auth.md) | JWT rolling keys, OAuth2 providers |
 | [`docs/plan/`](docs/plan/) | Design records and implementation plans — the one place that narrates decisions and rejected alternatives |
 | [`docs/roadMap/`](docs/roadMap/) | Released features and version milestones |

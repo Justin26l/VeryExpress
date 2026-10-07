@@ -279,18 +279,8 @@ export default class LoginUI {
     }
 
     /**
-     * The inline carrier and the inline glue, in that order.
-     *
-     * The carrier holds the public config, the SDK base URL and the problems the server could
-     * determine; the glue does the sign-in. Both tags carry the page nonce.
-     *
-     * The glue is **inlined rather than served from `public/js/`** on purpose: `public/**` is a
-     * copy-once template, so a project that already had an older glue would keep it while this page
-     * moved on — which is exactly how a carrier/glue mismatch shipped once. Inlined, the two are the
-     * same generated artifact and cannot diverge.
-     *
-     * The public config is read from `process.env` at render time rather than baked in, so a value
-     * rotated in the environment takes effect without regenerating.
+     * The inline carrier and the glue. Inlined so the page and its glue cannot be different
+     * generations; the public config is read from `process.env` at render time.
      */
     private firebaseScripts(nonce: string, providerProblems: string[]): string {
         const ui = this.firebaseUI;
@@ -459,17 +449,10 @@ export default class LoginUI {
 }
 
 /**
- * The browser half: start a Firebase sign-in for a provider id and hand the ID token to
- * `POST /api/auth/firebase`.
+ * The glue the login page runs inline: preload the modular SDK, popup sign-in, POST the ID token to
+ * `POST /api/auth/firebase`, store the token pair.
  *
- * Inlined into the login page rather than shipped as a `public/js/` file, so the page and its glue are
- * one generated artifact. Kept free of backticks and `${`, because it is interpolated into the
- * template literal above — a stray one breaks the build, not just the page (there is a test).
- *
- * It uses the **modular** SDK, the same API the app's own web sign-in uses: ES modules from gstatic at
- * a pinned version, `getAuth` / `signInWithPopup` / `GoogleAuthProvider`, then `user.getIdToken()`.
- * The modules are preloaded on page load on purpose — importing them inside the click handler opens
- * the popup after a network wait, which Chrome treats as a non-user-initiated popup and blocks.
+ * Kept free of backticks and `${` — it is interpolated into a template literal above (there is a test).
  */
 const firebaseGlueScript = `
 document.addEventListener("DOMContentLoaded", function () {
@@ -525,7 +508,6 @@ document.addEventListener("DOMContentLoaded", function () {
             message += "\\n\\nServer-side configuration problems:\\n- " + problems.join("\\n- ");
         }
 
-        // alert rather than a DOM node: the login page has no result container.
         alert(message);
     }
 
@@ -579,8 +561,7 @@ document.addEventListener("DOMContentLoaded", function () {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ idToken: idToken }),
         }).then(function (response) {
-            // read as text first: an error response may not be JSON (a proxy or the express error
-            // handler can return HTML), and response.json() would then reject and hide the real status
+            // text() first: an error body may be HTML, and json() would hide the status
             return response.text().then(function (text) {
                 var body;
                 try {
@@ -609,8 +590,7 @@ document.addEventListener("DOMContentLoaded", function () {
             "(.env is read only at startup). The server log names the missing variables.";
     }
 
-    // Warm the modules so the first click does not pay for the download. A failure here is reported
-    // when a button is used, not twice.
+    // Warm the modules so the first click does not pay for the download.
     if (base) loadSdk().catch(function () { /* reported on click */ });
 
     Array.prototype.forEach.call(buttons, function (button) {

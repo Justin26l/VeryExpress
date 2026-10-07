@@ -91,7 +91,7 @@ Guide: [`docs/features/auditFields.md`](../features/auditFields.md).
 
 `src/generators/middlewares/joinWhitelistRegistry.generator.ts` emits a static entity → allowed-joins map consumed by `JoinWhitelistMiddleware.ts`. Populated from `x-documentConfig.restApi.joinWhitelist`; auto-filled by `jsonSchemaForeignKeys.ts` when unset. Controllers with a whitelist get `@Middlewares(JoinWhitelistMiddleware.middleware("<DocName>"))`.
 
-See [`docs/features/joinWhitelist.md`](../features/joinWhitelist.md) and [`docs/ForeignKey.md`](../ForeignKey.md).
+See [`docs/features/joinWhitelist.md`](../features/joinWhitelist.md) and [`docs/features/ForeignKey.md`](../features/ForeignKey.md).
 
 ## RBAC
 

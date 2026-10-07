@@ -5,12 +5,8 @@ import log from "~/utils/logger";
 import * as template from "./firebaseAuth.template";
 
 /**
- * Emits the Firebase sign-in runtime: the service-account loader, the verifier/provisioner service, and
- * the login-page wiring.
- *
- * The first two exist only when `auth.firebase` is on. The login-page module is written **always**,
- * exporting `undefined` when the feature is off, because `LoginUI.gen.ts` imports it unconditionally —
- * the same no-op contract `accountStateGuard.generator.ts` keeps for `Authentication.middleware`.
+ * Emits the Firebase sign-in runtime. `FirebaseAuthUI.gen.ts` is written for every project, as
+ * `undefined` when `auth.firebase` is off — `LoginUI.gen.ts` imports it unconditionally.
  */
 export async function compile(options: {
     serviceDir: string;

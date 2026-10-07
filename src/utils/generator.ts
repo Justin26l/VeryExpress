@@ -32,52 +32,20 @@ export function OAuthProviders(compilerOptions: types.compilerOptions): string[]
     });
 }
 
-/**
- * Is any sign-in path configured?
- *
- * All three count. `firebase` in particular is easy to miss: a Firebase-only app (`localAuth: false`,
- * no passport provider) is not auth-less, and treating it as such would drop the whole
- * `AuthController` — including the `/auth/firebase` endpoint it exists to serve.
- */
 export function isAuthEnabled(compilerOptions: types.compilerOptions): boolean {
     return compilerOptions.auth.localAuth
         || OAuthProviders(compilerOptions).length > 0
         || compilerOptions.auth.firebase === true;
 }
 
-/**
- * Single gate for the Firebase sign-in option: the `/auth/firebase` endpoint, the verifier service and
- * the login-page button.
- *
- * Opt-in (`=== true`), unlike account deletion: it is the one feature that lets an outside identity
- * provider mint a vex session, so a project that has not configured one must not get an endpoint that
- * accepts third-party ID tokens.
- */
 export function isFirebaseAuthEnabled(compilerOptions: types.compilerOptions): boolean {
     return isAuthEnabled(compilerOptions) && compilerOptions.auth.firebase === true;
 }
 
-/**
- * Single gate for the account-deletion feature (API endpoint, service and the `/delete_account`
- * page). Enabled by default — `app.showSoftDeleted`-style opt-out, never opt-in.
- *
- * Auth is a hard requirement: a deletion endpoint with no way to authenticate could only ever
- * delete the wrong account, so an auth-less project gets the feature switched off regardless of
- * what `auth.deleteAccount` says.
- *
- * `?? true` rather than `|| true`: the latter swallows an explicit `false`.
- */
 export function isAccountDeletionEnabled(compilerOptions: types.compilerOptions): boolean {
     return isAuthEnabled(compilerOptions) && (compilerOptions.auth.deleteAccount ?? true);
 }
 
-/**
- * Adapter-layer visibility policy for soft-deleted rows.
- *
- * Defaults to false, i.e. hide them. `true` turns the filter off app-wide — a deliberately blunt
- * lever, so every generation run says out loud that it is on. The value is baked into the generated
- * registry, which is what keeps it out of reach of any client.
- */
 export function isShowSoftDeleted(compilerOptions: types.compilerOptions): boolean {
     const enabled = compilerOptions.app?.showSoftDeleted ?? false;
 
@@ -93,25 +61,12 @@ export function isShowSoftDeleted(compilerOptions: types.compilerOptions): boole
     return enabled;
 }
 
-/**
- * Single gate for every RBAC code path.
- *
- * RBAC is opt-in: it is enabled only when `useRBAC` is present AND declares at
- * least one role. An absent `useRBAC`, or an empty `roles` list, means "RBAC
- * off" — not "RBAC with zero roles".
- *
- * The distinction matters: an empty role list used to propagate into
- * `UserRole.role` as an empty JSON Schema enum, which
- * `json-schema-to-typescript` renders as the invalid type `role: ()` and which
- * aborted the whole generation. See docs/architecture/generatorPipeline.md.
- */
 export function isRbacEnabled(compilerOptions: types.compilerOptions): boolean {
     const roles = compilerOptions.useRBAC?.roles;
     return Array.isArray(roles) && roles.length > 0;
 }
 
 export const defaultCompilerOptions: types.compilerOptions = {
-
     rootDir: ".",
     srcDir: "./src",
     sysDir: "./src/system",
@@ -135,7 +90,6 @@ export const defaultCompilerOptions: types.compilerOptions = {
         localAuth: true,
         useHttpOnlyCookieToken: false,
         deleteAccount: true,
-        // Opt-in, and the default is emitted so the switch is discoverable in a written vex.config.json.
         firebase: false,
         oauthProviders: {
             google: false,
@@ -145,7 +99,6 @@ export const defaultCompilerOptions: types.compilerOptions = {
         },
     },
     _:{
-        // headerComment: "",
         writtedDir: [],
     },
     dbType: "sql",
