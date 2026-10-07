@@ -106,6 +106,39 @@ describeE2E("generated app — end-to-end contract", () => {
         expect(body.result.url).toMatch(/[?&]code=/);
     });
 
+    it("answers 503 for a Firebase sign-in when no service account is configured", async () => {
+        const res = await fetch(`${app.baseUrl}/api/auth/firebase`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ idToken: "not.a.token" }),
+        });
+
+        // The credential is checked before the token, so a misconfigured deployment says so instead of
+        // blaming the caller's token. 401 is what a configured project would answer here.
+        expect(res.status).toBe(503);
+        expect((await res.json()).ret_msg).toMatch(/Firebase authentication is not configured/);
+    });
+
+    it("serves a login page wired for the modular Firebase SDK", async () => {
+        const res = await fetch(`${app.baseUrl}/login`);
+        expect(res.status).toBe(200);
+
+        const html = await res.text();
+        expect(html).toContain("https://www.gstatic.com/firebasejs/12.19.0/");
+        // the glue is inlined, so it is always the same generation as the carrier above it
+        expect(html).toContain("signInWithPopup");
+        expect(html).toContain("/api/auth/firebase");
+
+        // the page sets its own policy, so an app-wide helmet CSP does not have to change
+        const csp = res.headers.get("content-security-policy") ?? "";
+        expect(csp).toContain("https://www.gstatic.com");
+        expect(csp).toContain("connect-src");
+        expect(csp).toContain("frame-src");
+
+        // helmet's default COOP would null window.opener in the popup and break the handshake
+        expect(res.headers.get("cross-origin-opener-policy")).toBe("same-origin-allow-popups");
+    });
+
     it("exchanges the code for tokens", async () => {
         const login = await fetch(`${app.baseUrl}/api/auth/local`, {
             method: "POST",

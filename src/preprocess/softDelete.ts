@@ -3,18 +3,6 @@ import log from "../utils/logger";
 
 /**
  * Soft delete — the schema-declared tombstone marker.
- *
- * An entity opts in by tagging one boolean property with `"x-vexData": "softDelete"`. The marker
- * is then owned by the framework:
- *
- * - stripped from generated request bodies (`collectRequestManagedFields`), so a client can never
- *   soft-delete, resurrect or pre-tombstone a row through the CRUD API;
- * - used by the repository adapters to hide marked rows from every ordinary read and write;
- * - read directly by the account-state guard so a deleted user's live token stops working.
- *
- * There is no separate `deletedAt` / `deletedBy`: the existing audit fields (`updatedAt` /
- * `updatedBy`, declared with reserved `default` keywords) record who tombstoned the row and when.
- *
  * See docs/features/accountDeletion.md.
  */
 
@@ -24,7 +12,6 @@ export interface softDeleteDefinition {
     prop: types.jsonSchemaPropsItem;
 }
 
-/** The `x-vexData: "softDelete"` field of a document, if it declares one. */
 export function findSoftDeleteField(schema: types.jsonSchema): softDeleteDefinition | undefined {
     for (const [key, prop] of Object.entries(schema.properties ?? {})) {
         if (prop?.["x-vexData"] === types.xVexDataType.SoftDelete) {
@@ -34,7 +21,6 @@ export function findSoftDeleteField(schema: types.jsonSchema): softDeleteDefinit
     return undefined;
 }
 
-/** Every document that declares a marker, in the order they were loaded. */
 export function collectSoftDeleteEntities(
     documents: { path: string, schema: types.jsonSchema }[],
 ): { documentName: string, schemaPath: string, field: string }[] {
@@ -58,7 +44,6 @@ function describeField(schemaPath: string, documentName: string, field: string):
     return `${documentName}.${field} (${schemaPath})`;
 }
 
-/** A marker that is not a required, defaulted boolean would make the hide-filter drop live rows. */
 function checkMarkerShape(
     problems: string[],
     doc: { path: string, schema: types.jsonSchema },

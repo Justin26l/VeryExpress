@@ -48,7 +48,7 @@ export default class OAuthProfileMap {
             active: true,
             userAuthProfiles: [{
                 provider: oauthProfile.provider,
-                oauthId: oauthProfile.id,
+                providerUserId: oauthProfile.id,
                 username: oauthProfile.username || oauthProfile.displayName
             }],
             name: oauthProfile.username || oauthProfile.displayName,
@@ -64,7 +64,7 @@ export default class OAuthProfileMap {
             active: true,
             userAuthProfiles: [{
                 provider: oauthProfile.provider,
-                oauthId: oauthProfile.id,
+                providerUserId: oauthProfile.id,
                 username: oauthProfile.username || oauthProfile.displayName
             }],
             name: oauthProfile.username || oauthProfile.displayName,

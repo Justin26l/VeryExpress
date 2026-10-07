@@ -9,7 +9,7 @@ Generated apps declare `createdBy` / `createdAt` / `updatedBy` / `updatedAt` in 
 but nothing ever writes them — `grep -rn "createdBy\|updatedBy" src/` in the generator is empty.
 The columns exist in the entities and stay NULL forever.
 
-Consequences seen in the wild (RenoMaster):
+Consequences seen in a production deployment:
 
 - A custom controller checking `findOne({ _id, createdBy: request.user._id })` never matches → `404` on `DELETE /api/job/{id}`.
 - Timeline ordering bugs, because `createdAt` is also never written.
@@ -251,7 +251,7 @@ schema — a keyword would otherwise become a literal string default.
 
 - Soft delete.
 - Backfilling existing NULL rows.
-- RenoMaster's own job-ownership check (its owner is the `Client` profile, not the `User`).
+- An app whose ownership column points at a profile row rather than at `User`.
 - Extending `useUserSchema: false` into a fully custom account model. Today `User.json` is copied from the
   templates unconditionally and `localAuth` requires `useUserSchema: true`, so a custom identity schema is
   not reachable yet; `x-vexData: "userId"` is the forward-compatible hook for it.

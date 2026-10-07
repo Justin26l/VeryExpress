@@ -5,7 +5,13 @@
             "methods": [],
             "joinWhitelist": []
         },
-        "documentName": "UserAuthProfiles"
+        "documentName": "UserAuthProfiles",
+        "uniqueIndex": [
+            [
+                "provider",
+                "providerUserId"
+            ]
+        ]
     },
     "properties": {
         "_id": {
@@ -25,11 +31,13 @@
         },
         "provider": {
             "type": "string",
-            "index": true
+            "index": true,
+            "description": "Namespace label of the identity source: an upstream IdP (\"google\"), a broker (\"firebase\"), or vex's own password path (\"local\"). The value \"local\" is reserved."
         },
-        "oauthId": {
+        "providerUserId": {
             "type": "string",
-            "index": true
+            "index": true,
+            "description": "External subject within `provider`'s namespace. With `provider` it forms the account-linking key and the composite unique index. NULL for provider=\"local\". This is the subject (an OIDC `sub` or a broker user id), never a token."
         },
         "email": {
             "type": "string"

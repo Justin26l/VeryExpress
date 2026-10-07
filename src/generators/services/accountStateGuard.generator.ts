@@ -83,8 +83,6 @@ export async function isActiveIdentity(userId: string | undefined): Promise<bool
 
     if (row === null) return false;
 
-    // \`!== true\` rather than \`!marker\`: a row written before the column existed has no marker
-    // value at all and is still live, which is how the adapters treat it too ("marker IS NOT TRUE").
     return (row as unknown as Record<string, unknown>)[softDeleteField] !== true;
 }
 `);

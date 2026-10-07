@@ -16,6 +16,7 @@
         "localAuth": true,
         "useHttpOnlyCookieToken": true,
         "deleteAccount": true,
+        "firebase": true,
         "oauthProviders": {
             "google": false,
             "github": false

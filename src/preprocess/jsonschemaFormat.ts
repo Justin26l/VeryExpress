@@ -107,7 +107,6 @@ function checkForeignKeyConfig(schema: types.jsonSchema, jsonSchemaPath: string)
     return true;
 }
 
-/** Valid JSON Schema types for each x-format value */
 const X_FORMAT_VALID_TYPES: Record<string, string[]> = {
     [types.xFormatType.Primary]:       ["string"],
     [types.xFormatType.PrimaryUUID]:   ["string"],

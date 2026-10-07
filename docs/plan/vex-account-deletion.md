@@ -1,20 +1,21 @@
 # Implementation plan — vex-side account deletion (tombstone)
 
-Input spec: `RenoMaster/docs/plan/spec-account-deletion.md` §2 (vex = identity domain), §4 (call order), §7 (DoD), §8.
+Scope: the identity domain only. Business rows, uploaded objects, third-party identities (Firebase,
+etc.) and legal copy belong to the application.
 
-Decisions taken from the spec:
+Decisions:
 
 | ID | Requirement | Source |
 |---|---|---|
-| R1 | `User` is **soft-deleted** — row survives, `_id` stays FK-resolvable | spec §2, user directive |
-| R2 | `UserAuthProfiles` / `UserRole` / `Session` are **hard-deleted** | spec §2, user directive |
-| R3 | Delete-account is an **API** | user directive |
-| R4 | `/delete_account` **HTML page** | user directive |
-| R5 | Gate in `vex.config.json`, **default enabled** | user directive |
-| R6 | Self-only, idempotent, structured result | spec §2 promises 1–5 |
-| R7 | Business domain, R2 objects, Firebase, legal pages | **out of scope** — renomaster |
-| R8 | ~~Grace period~~ **WITHDRAWN** | user directive (superseded) |
-| R9 | Deleting logs the client out; **auth must re-check the token's user against the soft-delete state** | user directive |
+| R1 | `User` is **soft-deleted** — row survives, `_id` stays FK-resolvable | requirement |
+| R2 | `UserAuthProfiles` / `UserRole` / `Session` are **hard-deleted** | requirement |
+| R3 | Delete-account is an **API** | requirement |
+| R4 | `/delete_account` **HTML page** | requirement |
+| R5 | Gate in `vex.config.json`, **default enabled** | requirement |
+| R6 | Self-only, idempotent, structured result | requirement |
+| R7 | Business domain, object storage, Firebase, legal pages | **out of scope** — the application |
+| R8 | ~~Grace period~~ **WITHDRAWN** | superseded |
+| R9 | Deleting logs the client out; **auth must re-check the token's user against the soft-delete state** | requirement |
 
 Revisions applied after review:
 
@@ -75,7 +76,7 @@ export function isAccountDeletionEnabled(compilerOptions: types.compilerOptions)
   `showSoftDeleted: false` to `defaultCompilerOptions.app` for discoverability.
 - **Decided (review): keep the global switch.** Per-controller / per-table granularity was rejected as
   the wrong layer — a `Filter`-level flag is client-forgeable, and a per-controller generator config
-  does not constrain renomaster's hand-written controllers. See §10.2.
+  does not constrain an application's hand-written controllers. See §10.2.
 - Two mitigations are part of the work, because the switch is intentionally a big red lever:
   - **Loud at generation time**: `isShowSoftDeleted()` emits `log.warn` listing every entity that
     declares a marker, so an enabled switch shows up in every generation log instead of being a
@@ -150,7 +151,7 @@ also tolerates documents written before the field existed.
   with no call-site changes. A tombstoned user's live access token therefore cannot PATCH itself back
   to life — the write matches zero rows and the controller 404s.
 - **Not** applied to TypeORM `relations:` loading, so `ChatMessage.senderId` → `User` still resolves
-  the tombstone and renders "Deleted user" (spec §3.3). That is precisely why the marker is a plain
+  the tombstone and renders "Deleted user" . That is precisely why the marker is a plain
   `@Column` and **not** `@DeleteDateColumn` — the soft-delete decorator nulls relation loads and would
   break the retained conversations.
 - This is also what makes the token check in §3 cheap to express: the tombstone is simply not there.
@@ -298,8 +299,9 @@ Touched: `src/templates/_middlewares/Authentication.ts`, `src/generators/service
 
 One generated service, `src/system/_services/account/AccountDeletionService.gen.ts`
 (generator `src/generators/services/accountDeletion.generator.ts`). Why a service and not just a
-controller method: the spec §4 order puts vex's identity erasure at step 4 of a flow renomaster must
-drive (business tables → R2 → identity). Same process, so the reusable unit is an importable service.
+controller method: the intended order puts vex's identity erasure at step 4 of a flow the application
+must drive (business tables → stored objects → identity). Same process, so the reusable unit is an
+importable service.
 
 `deleteSelf()` — single phase, immediate and irreversible:
 
@@ -326,7 +328,7 @@ const TOMBSTONE: Partial<User> = {
 
 > `email` MUST be `NULL`, not `""`. `User.json` declares `uniqueIndex: [["email"]]`; the second
 > deletion would collide on `""`. Postgres allows unlimited `NULL`s in a unique index. It is also
-> what lets the same email register a fresh account immediately (spec §7).
+> what lets the same email register a fresh account immediately .
 
 Ordering rationale: credentials first, tombstone last. Tombstoning first would leave OAuth login by
 `UserAuthProfiles.provider` / `oauthId` resolvable, i.e. a deleted account could still log into its
@@ -362,7 +364,7 @@ async deleteAccount(): Promise<VexResponse<deleteAccountResponse>> {
 
 Why `AuthController`:
 
-- Identity domain (spec §2), and the only generated controller that already injects the
+- The identity domain, and the only generated controller that already injects the
   `User` / `UserAuthProfiles` / `UserRole` / `Session` repositories.
 - Same credential contract as the rest of `/api/auth/*` — one Bearer token + `X-Auth-Index`.
 - `@Security({ BearerAuth: [], AuthIndex: [] })` as a single object, matching `controller.template.ts`:
@@ -374,10 +376,10 @@ Rejected alternatives:
 
 | Option | Why not |
 |---|---|
-| New generated `AccountController` @ `account` | Collides with renomaster's hand-written `src/controllers/AccountController.ts` (same `@Route('account')`, same class name) — tsoa route/name clash. |
-| `UserController` (`PATCH`/`DELETE /api/user/{id}`) | Generic CRUD controller; identity erasure would ride the `dataIsolation` "silently retarget to caller" path the spec §8.6 warns about, and `DELETE /user/{id}` invites a caller-supplied id. |
+| New generated `AccountController` @ `account` | Collides with an application's hand-written `AccountController` (same `@Route('account')`, same class name) — tsoa route/name clash. |
+| `UserController` (`PATCH`/`DELETE /api/user/{id}`) | Generic CRUD controller; identity erasure would ride the `dataIsolation` "silently retarget to caller" path the data-isolation caveat warns about, and `DELETE /user/{id}` invites a caller-supplied id. |
 | `DELETE /api/auth/account` | Verb is fine but returns no useful body and some proxies strip bodies on DELETE; `POST` keeps the structured result and is safely retryable. |
-| renomaster-only endpoint | Splits the identity domain out of vex and breaks standalone vex apps. |
+| An application-only endpoint | Splits the identity domain out of vex and breaks standalone vex apps. |
 
 `AuthController` changes in `src/generators/routes/authController.template.ts`: conditional imports
 (`Middlewares`, `Security`, `Authentication`, `UserContext`, the service) and the method emitted only
@@ -393,12 +395,12 @@ static file, because `express.static("public")` would serve `public/delete_accou
 
 1. `src/templates/_routes/LoginUI.ts`
    - `LoginUIConfig` gains `deleteAccount?: boolean` — **optional**, defaulting to `true`
-     (`this.config.deleteAccount ?? true`). Renomaster's `src/server.ts` has `allowOverwrite: false`
+     (`this.config.deleteAccount ?? true`). An application's `server.ts` is pinned with `allowOverwrite: false`
      and will not be regenerated, so a required ctor field would be a compile break there.
    - `registerRoutes()`: `if (deleteAccountEnabled) router.get("/delete_account", ...)`.
    - `deleteAccountPage()`: nonce + CSP header, warning text (**irreversible** — no undo window), the
      "type `DELETE` to confirm" input, a button, a `<pre>` result area, back-to-home link. Copy must
-     match spec §6 in substance: content kept (posts/quotes/reviews/**conversations**), author shown
+     match in substance: content kept (posts/quotes/reviews/**conversations**), author shown
      as "Deleted user", **viewing appointments kept but deactivated with address and notes cleared**,
      **chat attachments removed**. Never "delete all your data".
    - Home page: add the `/delete_account` link only when enabled.
@@ -457,42 +459,39 @@ Generator (vex):
   both fail → register the same email again succeeds as a new account. This is the only layer that
   proves the SQL and the guard actually run.
 
-Verification per spec §7 (vex half): `User` row still present with `name = "Deleted user"`, `email`
+Verification (vex half): `User` row still present with `name = "Deleted user"`, `email`
 NULL, `deleted = true`; `UserAuthProfiles` / `UserRole` / `Session` rows gone; re-login with the same
 Google account yields a **new** account; repeat delete call idempotent; caller-A cannot affect
 caller-B; a deleted user's live access token is rejected.
 
 ---
 
-## 9. Rollout notes for RenoMaster (not vex code, but blocks it)
+## 9. Rollout notes for a consuming application (not vex code, but blocks it)
 
-1. **Schema reaches the project automatically.** `deleted` is a missing *property* in
-   `api/jsonSchema/User.json`, and `userSchema.generator` merges missing properties from the template
-   — no hand edit needed.
-2. **`allowOverwrite: false` files with stale content.** From `api/.vex/meta.json`:
-   `src/system/_models/UserModel.gen.ts`, `src/system/_types/User.gen.ts`,
-   `src/system/_controllers/UserController.gen.ts`, `_controllers/MediaAssetController.gen.ts`,
-   `_models/UserReportModel.gen.ts`, `src/server.ts`, `tsoa.json`, `package.json`. The `UserModel` /
-   `User.gen.ts` pair must gain the `deleted` column by hand (or clear the meta entry). `server.ts`
-   needs no edit as long as the LoginUI field stays optional.
-   `_middlewares/Authentication.gen.ts`, `_services/auth/AccountStateGuard.gen.ts`,
-   `_services/VexFieldRegistry.gen.ts` and `_services/*RepositoryAdapter.gen.ts` are
-   overwrite-enabled and pick up the guard and the new registry exports automatically.
+1. **Schema reaches the project automatically.** `deleted` is a missing *property* in the project's
+   `jsonSchema/User.json`, and `userSchema.generator` merges missing properties from the template — no
+   hand edit needed.
+2. **`allowOverwrite: false` files with stale content.** Check `.vex/meta.json`: a pinned
+   `UserModel.gen.ts` / `newUser.gen.ts` pair must gain the `deleted` column by hand, or its meta entry
+   cleared. `server.ts` needs no edit as long as the LoginUI field stays optional.
+   `Authentication.gen.ts`, `AccountStateGuard.gen.ts`, `VexFieldRegistry.gen.ts` and
+   `*RepositoryAdapter.gen.ts` are overwrite-enabled and pick up the guard and the new registry exports
+   automatically.
 3. **DB column**: dev is `SQL_SYNCHRONIZE=true`; production needs a real migration —
    `ALTER TABLE "user" ADD COLUMN "deleted" boolean NOT NULL DEFAULT false`.
-4. **Firebase** (`api/src/firebaseAdmin.ts`) — vex cannot do it. Capture `firebaseUid` before calling
-   the service, then delete the Firebase account as the last step of renomaster's flow with retry: if
-   the DB erasure succeeded and Firebase failed, re-login must not re-bind to the tombstone (it cannot:
-   the profile rows are gone and `email` is NULL, so the next Google login creates a new account), but
-   the orphaned Firebase account is a compliance item until the retry lands.
-5. **Business + R2** (spec §3–§4) stay in renomaster. Recommended shape: renomaster's own
+4. **Firebase account deletion is the application's job** — vex cannot do it. Capture the provider uid
+   before calling the service, then delete the Firebase account as the last step of the application's
+   flow, with retry: if the DB erasure succeeded and Firebase failed, re-login must not re-bind to the
+   tombstone (it cannot: the profile rows are gone and `email` is NULL, so the next Google login creates
+   a new account), but the orphaned Firebase account is a compliance item until the retry lands.
+5. **The business domain stays in the application.** Recommended shape: the application's own
    `AccountController` calls `AccountDeletionService.deleteSelf()` (same process, import from
-   `src/system/_services/account/...`) after its own steps, instead of round-tripping HTTP. The
-   generated endpoint remains for standalone vex apps.
-6. **Per-request cost**: every authenticated request in renomaster now costs one extra indexed read
-   of `user` (the §3 guard). Measure before roll-out to production traffic.
-7. **Legal/Play copy** (`/legal/account-deletion.en.html`, privacy §10, Play Data safety) is
-   renomaster's; the `/delete_account` page copy must match it. There is no undo window to describe.
+   `src/system/_services/account/...`) after its own steps, instead of round-tripping over HTTP. The
+   generated endpoint remains for standalone apps.
+6. **Per-request cost**: every authenticated request now costs one extra indexed read of `user` (the §3
+   guard). Measure before rolling out to production traffic.
+7. **Legal and store copy is the application's**, and the `/delete_account` page copy must match what
+   the service actually does. There is no undo window to describe.
 
 ---
 
@@ -510,7 +509,7 @@ caller-B; a deleted user's live access token is rejected.
    (`email`/`name`/`locale`/`profileErrors`/`active`). If custom `User` properties also carry PII,
    promote the wipe to `x-vexData` markers (`tombstoneName` / `tombstoneRedact` /
    `tombstoneDeactivate`) with validation in `validateAuditFields`.
-4. **Vex-side sign-off document** (spec §8.10): this plan is the candidate content for
+4. **Vex-side sign-off document** : this plan is the candidate content for
    `docs/superpowers/specs/2026-xx-account-deletion-scope.md`.
 
 ---

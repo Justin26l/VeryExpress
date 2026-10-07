@@ -1,4 +1,4 @@
-# Golden output — scenario "sql-noswagger"
+# Golden output — scenario "sql-auth-firebase-only"
 #
 # Regenerate with:  npm run test:update
 # Not hand-edited. Content is normalized: generator version pinned to
@@ -252,6 +252,10 @@ JWT_SECRET0='my-secret-key0'
               "allowOverwrite": true,
               "lastWriteVersion": "0.8.5"
             }
+          },
+          "SwaggerRouter.gen.ts": {
+            "allowOverwrite": true,
+            "lastWriteVersion": "0.8.5"
           }
         },
         "_services": {
@@ -263,6 +267,14 @@ JWT_SECRET0='my-secret-key0'
           },
           "auth": {
             "AccountStateGuard.gen.ts": {
+              "allowOverwrite": true,
+              "lastWriteVersion": "0.8.5"
+            },
+            "FirebaseAdmin.gen.ts": {
+              "allowOverwrite": true,
+              "lastWriteVersion": "0.8.5"
+            },
+            "FirebaseAuthService.gen.ts": {
               "allowOverwrite": true,
               "lastWriteVersion": "0.8.5"
             },
@@ -962,6 +974,7 @@ import vexDB from "./system/_services/VexDb.gen";
 
 import { RegisterRoutes } from "./system/_routes/tsoa_routes";
 import VexSystem from "./system/_services/VexSystem.gen";
+import SwaggerRouter from "./system/_routes/SwaggerRouter.gen";
 import cookieParser from "cookie-parser";
 import LoginUI from "./system/_routes/LoginUI.gen";
 
@@ -975,7 +988,8 @@ const helmetConfig = {
     xDnsPrefetchControl: { allow: false },
 };
 
-const loginUI = new LoginUI({ localAuth: true, oauthProviders: [], deleteAccount: true });
+const SwaggerRoute = new SwaggerRouter();
+const loginUI = new LoginUI({ localAuth: false, oauthProviders: [], deleteAccount: true });
 
 /** 
  * App
@@ -998,6 +1012,7 @@ async function main(): Promise<void> {
     // Routes
     RegisterRoutes(app);
     app.use(VexSystem.responseHandler);
+    app.use("/swagger", SwaggerRoute.getRouter());
     app.use("/", loginUI.getRouter());
 
     // ping
@@ -1047,15 +1062,16 @@ import VexDb from "../_services/VexDb.gen";
 import { SessionEntity, Session } from "../_models/SessionModel.gen";
 import { VexRepository, VexResponse, VexResErr, VexResOk, Filter } from "../_types/vex";
 import { vexUserIdField } from "../_middlewares/VexFieldRegistry.gen";
-import { tokenResponse, refreshTokenResponse, registerResponse, localLoginResponse, deleteAccountResponse } from "../_types/auth.gen";
+import { tokenResponse, refreshTokenResponse, deleteAccountResponse, firebaseLoginResponse } from "../_types/auth.gen";
 
 import utils from "../_utils";
 import { UserEntity, User } from "../_models/UserModel.gen";
-import { UserAuthProfilesEntity, UserAuthProfiles } from "../_models/UserAuthProfilesModel.gen";
+
 import { UserRoleEntity, UserRole } from "../_models/UserRoleModel.gen";
 import { RoleEnum } from "../_types/UserRole.gen";
 import Authentication from "../_middlewares/Authentication.gen";
 import AccountDeletionService from "../_services/account/AccountDeletionService.gen";
+import FirebaseAuthService from "../_services/auth/FirebaseAuthService.gen";
 
 @Route("auth")
 @Tags("Auth")
@@ -1064,9 +1080,9 @@ export class AuthController extends controllerFactory._ControllerFactory {
     private get sessionRepo(): VexRepository<Session> { return VexDb.getRepository(SessionEntity); }
 
     private get userRepo(): VexRepository<User> { return VexDb.getRepository(UserEntity); }
-    private get userAuthProfilesRepo(): VexRepository<UserAuthProfiles> { return VexDb.getRepository(UserAuthProfilesEntity); }
-    private get userRoleRepo(): VexRepository<UserRole> { return VexDb.getRepository(UserRoleEntity); }
     private accountDeletionService = new AccountDeletionService();
+
+    private firebaseAuthService = new FirebaseAuthService();
 
 
 
@@ -1078,6 +1094,25 @@ export class AuthController extends controllerFactory._ControllerFactory {
     async deleteAccount(): Promise<VexResponse<deleteAccountResponse>> {
         const result = await this.accountDeletionService.deleteSelf();
         throw new VexResOk(200, { result });
+    }
+
+    @Post("firebase")
+    @SuccessResponse(200, "OK")
+    async firebaseLogin(
+        @Body() body: { idToken: string }
+    ): Promise<VexResponse<firebaseLoginResponse>> {
+        const { user, isNewUser } = await this.firebaseAuthService.authenticate(body.idToken);
+
+        const accessToken = await this.JWTService.generateAccessToken(user);
+        const refreshToken = this.JWTService.generateRefreshToken({ vexUserId: this.JWTService.userIdOf(user) });
+
+        throw new VexResOk(200, { result: {
+            accessToken: accessToken.token,
+            accessTokenIndex: accessToken.clientIndex,
+            refreshToken: refreshToken.token,
+            refreshTokenIndex: refreshToken.clientIndex,
+            isNewUser,
+        }});
     }
 
     @Post("token")
@@ -1134,60 +1169,7 @@ export class AuthController extends controllerFactory._ControllerFactory {
         }});
     }
 
-    @Post("register")
-    @SuccessResponse(201, "Created")
-    async register(
-        @Body() body: {
-            email: string; 
-            password: string;
-        }
-    ): Promise<VexResponse<registerResponse>> {
-        const { email, password } = body;
-        const existing = await this.userRepo.findOneWhere({ email });
-        if (existing) throw new VexResErr(409, null, "Email already registered.");
-        
-        const hashedPassword = utils.hash.hashPassword(password, email);
-        
-        const user = await this.userRepo.create({ name: email.split("@")[0], email, active: true })
-            .catch( e => { throw new VexResErr(500, null, "User creation failed."); });
 
-        await this.userAuthProfilesRepo.create({ userId: user._id, provider: "local", password: hashedPassword })
-            .catch( async e => { 
-                await this.userRepo.delete(user._id);
-                await this.userAuthProfilesRepo.deleteWhere({ userId: user._id });
-                throw new VexResErr(500, null, "User Auth profile creation failed."); 
-            });
-
-        
-        await this.userRoleRepo.create({ userId: user._id, role: RoleEnum.admin })
-            .catch( async e => { 
-                await this.userRepo.delete(user._id);
-                await this.userAuthProfilesRepo.deleteWhere({ userId: user._id });
-                throw new VexResErr(500, null, "User role assignment failed."); 
-            });
-
-        throw new VexResOk(201, { result: { message: "Registration successful." } });
-    }
-
-    @Post("local")
-    @SuccessResponse(302, "Redirect")
-    async localLogin(
-        @Body() body: {
-            email: string;
-            password: string;
-        }
-    ): Promise<VexResponse<localLoginResponse>> {
-        const { email, password } = body;
-        
-        const user = await this.userRepo.findOneWhere({ email }, ["userRole", "userAuthProfiles"]);
-        if (!user) throw new VexResErr(400, null, "incorrect email or password.");
-        
-        const isMatch = utils.hash.verifyPassword(user, password);
-        if (!isMatch) throw new VexResErr(400, null, "incorrect email or password.");
-
-        const redirectUrl = await this.JWTService.assignTokens(user, "local");
-        throw new VexResOk(302, { result: { url: redirectUrl } });
-    }
 }
 
 ===== out/src/system/_controllers/UserController.gen.ts =====
@@ -1196,13 +1178,12 @@ export class AuthController extends controllerFactory._ControllerFactory {
  * https://github.com/Justin26l/VeryExpress
  */
 
-import { Route, Tags, Body, Path, Query, SuccessResponse, Middlewares, Security, Get, Patch } from "tsoa";
+import { Route, Tags, Body, Path, Query, SuccessResponse, Middlewares, Get, Patch } from "tsoa";
 import * as controllerFactory from "./_ControllerFactory.gen";
 import { VexRepository, VexResponse, VexResErr, VexResOk, Filter, FieldFilter } from "../_types/vex";
 import VexDb from "../_services/VexDb.gen";
 
 import RoleBaseAccessControl from "../_middlewares/RoleBaseAccessControl.gen";
-import Authentication from "../_middlewares/Authentication.gen";
 import JoinWhitelistMiddleware from "../_middlewares/JoinWhitelistMiddleware.gen";
 
 import { UserEntity } from "../_models/UserModel.gen";
@@ -1215,8 +1196,6 @@ export type FilterUser = { [K in keyof User]?: FieldFilter<User[K]> } & Filter<U
 @Route("user")
 @Tags("User")
 @Middlewares(RoleBaseAccessControl.middleware("User"))
-@Middlewares(Authentication.middleware)
-@Security({ BearerAuth: [], AuthIndex: [] })
 export class UserController extends controllerFactory._ControllerFactory {
     private get repo(): VexRepository<User> {
         return VexDb.getRepository(UserEntity);
@@ -1957,11 +1936,58 @@ export default class Rolevisitor extends roleFactory._RoleFactory<accessActionvi
  * https://github.com/Justin26l/VeryExpress
  */
 
-// Generated - do not edit.
-// auth.firebase is off, so the login page renders no Firebase button.
+// Generated from auth.firebase - do not edit.
+// The app may still override any of this from its own server.ts; a value passed to new LoginUI({...})
+// wins over this default.
 import { FirebaseAuthUI } from "./LoginUI.gen";
 
-export const firebaseAuthUI: FirebaseAuthUI | undefined = undefined;
+export const firebaseAuthUI: FirebaseAuthUI | undefined = {
+    "label": "Sign in with {provider}",
+    "sdkBaseUrl": "https://www.gstatic.com/firebasejs/12.19.0/",
+    "providers": [
+        {
+            "id": "google",
+            "label": "Google"
+        },
+        {
+            "id": "github",
+            "label": "GitHub"
+        },
+        {
+            "id": "apple",
+            "label": "Apple"
+        },
+        {
+            "id": "microsoft",
+            "label": "Microsoft"
+        }
+    ],
+    "defaultProviders": [
+        "google"
+    ],
+    "providersEnvKey": "FIREBASE_PROVIDERS",
+    "envKeys": {
+        "apiKey": "FIREBASE_WEB_API_KEY",
+        "authDomain": "FIREBASE_WEB_AUTH_DOMAIN",
+        "projectId": "FIREBASE_WEB_PROJECT_ID"
+    },
+    "csp": {
+        "scriptSrc": [
+            "https://www.gstatic.com",
+            "https://apis.google.com",
+            "https://www.google.com"
+        ],
+        "connectSrc": [
+            "https://identitytoolkit.googleapis.com",
+            "https://securetoken.googleapis.com",
+            "https://www.googleapis.com"
+        ],
+        "frameSrc": [
+            "https://accounts.google.com",
+            "https://apis.google.com"
+        ]
+    }
+};
 
 ===== out/src/system/_routes/LoginUI.gen.ts =====
 /**
@@ -2687,6 +2713,40 @@ export default class OAuthRouteFactory {
     }
 }
 
+===== out/src/system/_routes/SwaggerRouter.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import path from "path";
+import fs from "fs";
+import { Router } from "express";
+import swaggerUi from "swagger-ui-express";
+
+export default class SwaggerRouter {
+
+    private router: Router = Router();
+
+    constructor() {
+        const specPath = path.join(__dirname, "../../openapi/swagger.json");
+        try {
+            const spec = JSON.parse(fs.readFileSync(specPath, "utf-8"));
+            this.router.get("/openapi.json", (_req, res) => res.json(spec));
+            this.router.use("/", swaggerUi.serve, swaggerUi.setup(spec));
+        } catch {
+            this.router.get("/", (_req, res) =>
+                res.status(503).json({ error: "Run 'tsoa spec-and-routes' to generate the OAS spec first." })
+            );
+        }
+    }
+
+    public getRouter() {
+        return this.router;
+    }
+
+}
+
 ===== out/src/system/_services/account/AccountDeletionService.gen.ts =====
 /**
  * Generated by veryExpress@<version> 
@@ -2836,6 +2896,300 @@ export async function isActiveIdentity(userId: string | undefined): Promise<bool
     if (row === null) return false;
 
     return (row as unknown as Record<string, unknown>)[softDeleteField] !== true;
+}
+
+===== out/src/system/_services/auth/FirebaseAdmin.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import { initializeApp, cert, getApps, type ServiceAccount } from "firebase-admin/app";
+import { getAuth, type Auth } from "firebase-admin/auth";
+import utils from "../../_utils";
+
+/** The project credential, from FIREBASE_SERVICE_ACCOUNT_JSON. Absent or unusable -> 503, not a crash. */
+function readServiceAccountField(source: object, camel: string, snake: string): string | undefined {
+    const camelValue: unknown = Reflect.get(source, camel);
+    if (typeof camelValue === "string" && camelValue.length > 0) return camelValue;
+
+    const snakeValue: unknown = Reflect.get(source, snake);
+    return typeof snakeValue === "string" && snakeValue.length > 0 ? snakeValue : undefined;
+}
+
+/** Normalise a parsed blob to the shape cert() expects, or null when it is not a service account. */
+function toServiceAccount(value: unknown): ServiceAccount | null {
+    if (typeof value !== "object" || value === null) return null;
+
+    const projectId = readServiceAccountField(value, "projectId", "project_id");
+    const privateKey = readServiceAccountField(value, "privateKey", "private_key");
+    const clientEmail = readServiceAccountField(value, "clientEmail", "client_email");
+    if (!projectId || !privateKey || !clientEmail) return null;
+
+    return { projectId, privateKey, clientEmail };
+}
+
+function loadServiceAccount(): ServiceAccount | null {
+    const source = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+    if (!source) {
+        utils.log.warn(
+            "Firebase: FIREBASE_SERVICE_ACCOUNT_JSON is not set. POST /api/auth/firebase will answer " +
+            "503. Paste the service account JSON (Firebase console: Project settings > Service " +
+            "accounts > Generate new private key) as the value."
+        );
+        return null;
+    }
+
+    let parsed: unknown;
+    try {
+        parsed = JSON.parse(source);
+    }
+    catch {
+        utils.log.warn("Firebase: FIREBASE_SERVICE_ACCOUNT_JSON is not valid JSON.");
+        return null;
+    }
+
+    const account = toServiceAccount(parsed);
+    if (!account) {
+        utils.log.warn(
+            "Firebase: FIREBASE_SERVICE_ACCOUNT_JSON is not a service account - project_id, " +
+            "private_key and client_email are all required. Generate one in the Firebase console: " +
+            "Project settings > Service accounts > Generate new private key."
+        );
+        return null;
+    }
+
+    return account;
+}
+
+/**
+ * Initialised once, at module load.
+ *
+ * Reading the credential here rather than per request means a bad secret is reported immediately
+ * instead of on the first sign-in attempt. Changing it therefore needs a process restart.
+ */
+if (!getApps().length) {
+    const serviceAccount = loadServiceAccount();
+    if (serviceAccount) initializeApp({ credential: cert(serviceAccount) });
+}
+
+export const isFirebaseAvailable: boolean = getApps().length > 0;
+
+/** null when no usable credential was found; the endpoint reports 503 rather than guessing. */
+export const firebaseAuth: Auth | null = isFirebaseAvailable ? getAuth() : null;
+
+===== out/src/system/_services/auth/FirebaseAuthService.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import { DecodedIdToken } from "firebase-admin/auth";
+import { UserEntity, UserWithRelations } from "../../_models/UserModel.gen";
+import { UserAuthProfilesEntity, UserAuthProfiles } from "../../_models/UserAuthProfilesModel.gen";
+import { VexRepository, VexResErr } from "../../_types/vex";
+import { entitySoftDeleteFields } from "../../_middlewares/VexFieldRegistry.gen";
+import { firebaseAuth, isFirebaseAvailable } from "./FirebaseAdmin.gen";
+import VexDb from "../VexDb.gen";
+import utils from "../../_utils";
+import { UserRoleEntity, UserRole } from "../../_models/UserRoleModel.gen";
+import { RoleEnum } from "../../_types/UserRole.gen";
+
+export interface resolvedIdentity {
+    provider: string;
+    providerUserId: string;
+}
+
+export interface firebaseLoginResult {
+    user: UserWithRelations;
+    identity: resolvedIdentity;
+    isNewUser: boolean;
+}
+
+/** firebase.sign_in_provider -> the provider label the passport strategies write. */
+const providerMap: Record<string, string> = {
+    "google.com": "google",
+    "github.com": "github",
+    "apple.com": "apple",
+    "microsoft.com": "microsoft",
+};
+
+function messageOf(err: unknown): string {
+    return err instanceof Error ? err.message : String(err);
+}
+
+/** The upstream subject; identities is typed any, so it is erased to unknown before reading. */
+function readUpstreamSubject(decoded: DecodedIdToken, signInProvider: string): string | undefined {
+    const identities: unknown = decoded.firebase.identities;
+    if (typeof identities !== "object" || identities === null) return undefined;
+
+    const subjects: unknown = Reflect.get(identities, signInProvider);
+    if (!Array.isArray(subjects)) return undefined;
+
+    const first: unknown = subjects[0];
+    return typeof first === "string" && first.length > 0 ? first : undefined;
+}
+
+export default class FirebaseAuthService {
+
+    private get userRepo(): VexRepository<UserWithRelations> {
+        return VexDb.getRepository<UserWithRelations>(UserEntity);
+    }
+
+    private get uapRepo(): VexRepository<UserAuthProfiles> {
+        return VexDb.getRepository<UserAuthProfiles>(UserAuthProfilesEntity);
+    }
+    private get userRoleRepo(): VexRepository<UserRole> { return VexDb.getRepository(UserRoleEntity); }
+
+    /** Verify the ID token, then find or create the user it names. */
+    public async authenticate(idToken: string): Promise<firebaseLoginResult> {
+        const decoded = await this.verify(idToken);
+        const identity = this.resolveIdentity(decoded);
+
+        const email = decoded.email;
+        const username = decoded.name ?? email ?? identity.providerUserId;
+
+        const existing = await this.findExisting(identity, email, decoded.email_verified === true);
+        if (existing) {
+            await this.attachProfile(existing, identity, username);
+            return { user: existing, identity, isNewUser: false };
+        }
+
+        return { user: await this.createUser(identity, username, email), identity, isNewUser: true };
+    }
+
+    /** firebase-admin checks signature, issuer, audience and expiry. */
+    public async verify(idToken: string): Promise<DecodedIdToken> {
+        if (!isFirebaseAvailable || !firebaseAuth) {
+            throw new VexResErr(503, null, "Firebase authentication is not configured");
+        }
+
+        try {
+            return await firebaseAuth.verifyIdToken(idToken);
+        }
+        catch (err) {
+            utils.log.warn("FirebaseAuth: verifyIdToken failed - " + messageOf(err));
+            throw new VexResErr(401, null, "Invalid or expired Firebase ID token");
+        }
+    }
+
+    /** The identity this sign-in writes; throws without an upstream provider, or without its subject. */
+    public resolveIdentity(decoded: DecodedIdToken): resolvedIdentity {
+        const signInProvider = decoded.firebase.sign_in_provider;
+        const provider = providerMap[signInProvider];
+
+        if (!provider) {
+            throw new VexResErr(400, null, "This sign-in method has no upstream identity provider");
+        }
+
+        const providerUserId = readUpstreamSubject(decoded, signInProvider);
+        if (!providerUserId) {
+            utils.log.error("FirebaseAuth: no upstream subject for sign_in_provider " + signInProvider);
+            throw new VexResErr(400, null, "Invalid Firebase ID token: the upstream identity is missing");
+        }
+
+        return { provider, providerUserId };
+    }
+
+    /** Key match first; the email fallback only when the provider verified the address. */
+    private async findExisting(
+        identity: resolvedIdentity,
+        email: string | undefined,
+        emailVerified: boolean,
+    ): Promise<UserWithRelations | null> {
+        const matched = await this.uapRepo.findOneWhere({
+            provider: identity.provider,
+            providerUserId: identity.providerUserId,
+        });
+        if (matched?.userId) return this.userRepo.findOne({ _id: matched.userId });
+
+        if (email && emailVerified) {
+            return this.userRepo.findOneWhere({ email });
+        }
+
+        return null;
+    }
+
+    /** Add this provider to an existing account, or refresh the stored username. */
+    private async attachProfile(
+        user: UserWithRelations,
+        identity: resolvedIdentity,
+        username: string,
+    ): Promise<void> {
+        const existing = await this.uapRepo.findOneWhere({
+            userId: user._id,
+            provider: identity.provider,
+            providerUserId: identity.providerUserId,
+        });
+
+        if (!existing) {
+            await this.uapRepo.create({
+                userId: user._id,
+                provider: identity.provider,
+                providerUserId: identity.providerUserId,
+                username,
+            } as Partial<UserAuthProfiles>);
+            return;
+        }
+
+        if (existing.username !== username) {
+            await this.uapRepo.update(existing._id, { username } as Partial<UserAuthProfiles>);
+        }
+    }
+
+    private async createUser(
+        identity: resolvedIdentity,
+        username: string,
+        email: string | undefined,
+    ): Promise<UserWithRelations> {
+        if (!email) {
+            throw new VexResErr(409, null, "This sign-in method does not provide an email address");
+        }
+
+        const user = {
+            active: true,
+            name: username,
+            email,
+            userAuthProfiles: [{
+                provider: identity.provider,
+                providerUserId: identity.providerUserId,
+                username,
+            }],
+            profileErrors: "",
+        } as unknown as UserWithRelations;
+
+        // Required column in projects that declare a soft-delete marker; its name is runtime.
+        const marker = entitySoftDeleteFields["UserEntity"];
+        if (marker) (user as unknown as Record<string, unknown>)[marker] = false;
+
+        const created = await this.userRepo.create(user).catch(() => {
+            throw new VexResErr(500, null, "User creation failed.");
+        });
+
+        const authProfile = user.userAuthProfiles?.[0];
+        if (!authProfile) {
+            await this.userRepo.delete(created._id);
+            throw new VexResErr(500, null, "User auth profile creation failed.");
+        }
+
+        await this.uapRepo.create({
+            ...authProfile,
+            userId: created._id,
+        } as Partial<UserAuthProfiles>).catch(async () => {
+            await this.userRepo.delete(created._id);
+            throw new VexResErr(500, null, "User auth profile creation failed.");
+        });
+
+        await this.userRoleRepo.create({ userId: created._id, role: RoleEnum.admin })
+            .catch(async () => {
+                await this.userRepo.delete(created._id);
+                await this.uapRepo.deleteWhere({ userId: created._id });
+                throw new VexResErr(500, null, "User role assignment failed.");
+            });
+
+        utils.log.info("FirebaseAuth: created user", identity.provider);
+        return created;
+    }
 }
 
 ===== out/src/system/_services/auth/JWTKeyStore.gen.ts =====

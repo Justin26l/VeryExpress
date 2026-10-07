@@ -60,6 +60,21 @@ export interface compilerOptions {
          * enabled. See docs/features/accountDeletion.md.
          */
         deleteAccount?: boolean,
+        /**
+         * Firebase as a sign-in option: `POST /api/auth/firebase`, and the button that drives it on the
+         * generated `/login` page. Defaults to false — it is the one feature that lets an outside
+         * identity provider mint a vex session.
+         *
+         * This boolean is the **only** switch. Everything else is a deployment concern and lives in the
+         * environment: the service account (`FIREBASE_SERVICE_ACCOUNT_JSON`), Firebase's public web
+         * config (`FIREBASE_WEB_API_KEY`, `_AUTH_DOMAIN`, `_PROJECT_ID`) and, optionally, which
+         * providers the page offers (`FIREBASE_PROVIDERS`). There is no `appId`: Firebase Auth does
+         * not read one.
+         *
+         * The identity written is the **upstream** IdP's: `("google", <Google sub>)` for a Google
+         * sign-in. See docs/plan/spec-firebase-auth.md.
+         */
+        firebase?: boolean,
     },
 
     _: {

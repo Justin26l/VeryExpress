@@ -97,6 +97,6 @@ JWT rolling keys and OAuth2 provider setup are documented in [`docs/appGenerated
 
 ## Client-facing API behaviour
 
-Pagination, search and the response envelope: [`docs/apiUsage.md`](../apiUsage.md).
+Pagination, search and the response envelope: [`docs/features/apiUsage.md`](../features/apiUsage.md).
 
 Filter DSL for `find` / `count`: [`docs/features/filterOperators.md`](../features/filterOperators.md).

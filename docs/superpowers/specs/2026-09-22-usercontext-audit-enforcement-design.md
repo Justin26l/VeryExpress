@@ -8,7 +8,7 @@ Branch: TBD
 
 `createdBy` / `createdAt` 这类审计字段在生成的应用里**静默留下 NULL**，且没有任何信号。
 
-RenoMaster 的实测现场：
+生产项目的实测现场：
 
 - 23/24 个 schema 声明了 `createdBy` / `updatedBy`（`onCreateUserId` / `onUpdateUserId`）
 - 只有 `User` 一个声明了 `dataIsolation`
@@ -67,7 +67,7 @@ if (useAuth) {
 
 改为 fail-loud 即推翻此契约，文档必须同步。
 
-### 2.4 触发路径证明（RenoMaster）
+### 2.4 触发路径证明（生产项目实测）
 
 ```
 $ grep -rln "DataIsolationContext.middleware" src/system/_controllers/ | wc -l
@@ -211,7 +211,7 @@ UserContext.run(tokenData, () => next());
 - `:55` 的 `DataIsolationContext` 可选 import 删除
 - 不再生成独立的上下文中间件 —— `UserContext` 从 middleware 降级为 helper 模块（只剩 `run()` / `getStore()` / `userId`）
 
-**为什么这是从构造上消除挂载门**：`Authentication.middleware` 本来就挂在每个 `useAuth` 的 controller 上（生成 18 个 + RenoMaster 手写 17 个里的 14 个）。没有第二处需要记得挂的装饰器，就没有「忘了挂」这一态。
+**为什么这是从构造上消除挂载门**：`Authentication.middleware` 本来就挂在每个 `useAuth` 的 controller 上（生成 18 个 + 应用手写 17 个里的 14 个）。没有第二处需要记得挂的装饰器，就没有「忘了挂」这一态。
 
 ### 4.4 Adapter 强制规则
 
@@ -338,9 +338,9 @@ Mongoose `replace` 与其余三者行为不一致。本 spec 接受，但要求�
 
 **代价（明确接受）**：**没有逃生口**。任何处于请求链之外的写（seed、后台 job、tsoa 注册路径）都无法声明身份，只能硬失败或静默 NULL。
 
-**影响面（RenoMaster 实测）**：`VexDb.getRepository(...)` 构造点 79 处，其中写路径 19 处（4 处直连写 + 15 处 `this.repo`）。选 ALS 路线意味着这 79 处**零改动**。
+**影响面（生产项目实测）**：`VexDb.getRepository(...)` 构造点 79 处，其中写路径 19 处（4 处直连写 + 15 处 `this.repo`）。选 ALS 路线意味着这 79 处**零改动**。
 
-**已识别的硬冲突**：RenoMaster 的注册路径在**无 auth** 的 controller 里 create `User`：
+**已识别的硬冲突**：某应用的注册路径在**无 auth** 的 controller 里 create `User`：
 
 | 位置 | 装饰器 |
 |---|---|
@@ -391,11 +391,11 @@ const user = await this.userRepo.create({ name: email.split("@")[0], email, acti
 
 ### 6.1 注册路径（高）
 
-见 D2。当前 RenoMaster 安全，但依赖「`User` 没有 `createdBy`」这一巧合。必须在 D2 的 A/B/C 中做出选择后才能认为风险闭环。
+见 D2。当前该应用安全，但依赖「`User` 没有 `createdBy`」这一巧合。必须在 D2 的 A/B/C 中做出选择后才能认为风险闭环。
 
 ### 6.2 请求链外的写入（中）
 
-`src/services/*` 中的写路径无请求上下文。RenoMaster 实测：
+`src/services/*` 中的写路径无请求上下文。实测：
 
 | 位置 | 写入 | 该实体是否有 `onCreateUserId` |
 |---|---|---|
@@ -445,9 +445,9 @@ const user = await this.userRepo.create({ name: email.split("@")[0], email, acti
 | 删除生成的 `@Middlewares(DataIsolationContext.middleware)` | 破坏性（生成物） | 下游需重新 `vex`；旧的 `DataIsolationContext.gen.ts` 会被 `cleanupStaleFiles()` 清理 |
 | `pipeline` 生成 `UserContext.gen.ts` | 新增 | — |
 | 数据隔离功能 | 无变化 | 覆盖面顺带扩大（所有 authed controller） |
-| **数据隔离第一次真正生效** | **破坏性（下游可见）** | `entityIsolation` 里的实体，此前若其 controller 没挂中间件就不过滤；改后任何 authed controller 访问它都会过滤。`mergeFilter` 是 `{ ...mapped, ...ownership }`，**ownership 覆盖调用方 filter 的 `_id`** → 按 id 查/改的接口会静默变成「操作自己那一行」。**这是各 app 自己的接口问题，修复不在本卡范围** —— RenoMaster 的实例见其项目卡片 `t-mucc8ot0-9s8rfc` |
+| **数据隔离第一次真正生效** | **破坏性（下游可见）** | `entityIsolation` 里的实体，此前若其 controller 没挂中间件就不过滤；改后任何 authed controller 访问它都会过滤。`mergeFilter` 是 `{ ...mapped, ...ownership }`，**ownership 覆盖调用方 filter 的 `_id`** → 按 id 查/改的接口会静默变成「操作自己那一行」。**这是各 app 自己的接口问题，修复不在本卡范围** |
 
-**迁移**：下游跑一次 `vex`。历史 NULL 行**不会**被回填 —— 需要各应用自行决定值（`createdBy` 有些可由关系推导，RenoMaster 的 owner 是 `Client` 而 `createdBy` 语义是 `User`，推不出来）。
+**迁移**：下游跑一次 `vex`。历史 NULL 行**不会**被回填 —— 需要各应用自行决定值（`createdBy` 有些可由关系推导，有些应用的 owner 是 profile 行而 `createdBy` 语义是 `User`，推不出来）。
 
 ## 8. 测试计划
 

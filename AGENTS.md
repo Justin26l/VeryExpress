@@ -67,6 +67,12 @@ Read from `vex.config.json → jsonSchemaDir` (this repo: `./output/jsonSchema`)
 - **Auth is the only identity gate.** `UserContext` is established by `Authentication.middleware` from the verified token — there is no separate context middleware, and no generated decorator decides it. Never gate identity on `dataIsolation`: audit fields and ownership filtering are independent features. Use `utils.generator.isAuthEnabled()` when a code path depends on auth being on.
 - **A create that declares `onCreateUserId` with no identity in `UserContext` throws.** Both repository adapters enforce it; `onUpdateUserId` is deliberately not enforced. `dataIsolation` no longer has anything to do with whether the context exists.
 - **Boolean config defaults use `??`, not `||`.** `x || true` swallows an explicit `false`.
+- **Never write to git.** No `git add`, `commit`, `push`, `reset`, `checkout`, `stash`, `rm`, `mv`. The
+  working tree is the deliverable and the user reads it with git; changes stay unstaged and
+  uncommitted. Reading (`status`, `diff`, `log`, `show`, `grep`) is fine.
+- **Read-only mode means troubleshoot.** When the file policy is read-only, diagnose and report. Do not
+  attempt the edit, and do not request a wider mode — the user grants it when they want the change.
+- **Only write js-doc/comment when need.** only leave js-doc/comment when things is complex and name does not tell what it does, only write short and clean comment. A comment earns its place only for what the code cannot say: a non-obvious rule, a workaround, a failure mode. If a comment would have to be edited together with the line below it, delete the comment. no history, no restating the signature.
 
 ## Conventions
 
@@ -94,6 +100,18 @@ Smart caveman. Drop articles, filler, pleasantries, hedging. Fragments fine. Kee
 - Code blocks unchanged. Caveman around code, not in code.
 - Error messages quoted exact.
 
+## Writing docs
+
+A document describes **what is true now**, for a reader who has only this repo. Write the thing, not
+the argument for it.
+
+- **State current state, not what it avoids.** purpose docs is to tell behaviour, not history. 
+- **Present tense, current code.** No "will", "we decided", "earlier drafts", "on purpose", "deliberately", "was rejected". What the code does is visible in the code;  what changed belongs in `docs/releaseNote/`.
+- **Cut the comparison.** "unlike X", "instead of Y", "no longer Z" — describe what the code does, not the road not taken.
+- **No private context.** No other repositories, projects or issue ids. A reader cannot open them, so naming one is noise. Anything learned out there is restated as a fact checkable from here.
+
+Only `docs/plan/` (design records) and `docs/releaseNote/` (what changed, and how to migrate) narrate time. Every other document is present tense.
+
 ## Documentation map
 
 This file covers only what every session needs. Deeper material lives in `docs/`:
@@ -106,12 +124,11 @@ This file covers only what every session needs. Deeper material lives in `docs/`
 | [`docs/architecture/databaseTargets.md`](docs/architecture/databaseTargets.md) | mongo vs sql, repository adapter, data isolation, join whitelist |
 | [`docs/architecture/authAndRouting.md`](docs/architecture/authAndRouting.md) | tsoa, auth routes, swagger, RBAC |
 | [`docs/vexJsonSchema.md`](docs/vexJsonSchema.md) | Full JSON Schema reference — `x-documentConfig`, `x-foreignKey`, `x-format`, `x-vexData` |
-| [`docs/apiUsage.md`](docs/apiUsage.md) | API client guide — pagination, search, response format |
-| [`docs/ForeignKey.md`](docs/ForeignKey.md) | FK joins via the API `join` parameter |
 | [`docs/developmentNote.md`](docs/developmentNote.md) | Why no ts-node, esbuild/dist working dir, `FUNC{{ }}` intent |
 | [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) | Setup, branch/PR workflow, PR checklist |
-| [`docs/features/`](docs/features/) | rbac, dataIsolation, filterOperators, joinWhitelist, auditFields, accountDeletion |
+| [`docs/features/`](docs/features/) | foreignKey, apiUsage, rbac, dataIsolation, filterOperators, joinWhitelist, auditFields, accountDeletion |
 | [`docs/appGenerated/auth.md`](docs/appGenerated/auth.md) | JWT rolling keys, OAuth2 providers |
+| [`docs/plan/`](docs/plan/) | Design records and implementation plans — the one place that narrates decisions and rejected alternatives |
 | [`docs/roadMap/`](docs/roadMap/) | Released features and version milestones |
 | [`docs/releaseNote/`](docs/releaseNote/) | Per-version release notes |
 

@@ -5,8 +5,7 @@ Self-service account deletion for generated apps: `POST /api/auth/delete-account
 keep their required foreign keys — and its credentials and personal data are erased.
 
 This covers the identity domain only. Business rows, uploaded objects and third-party identities
-(Firebase, etc.) belong to the application. See the Renomaster spec for the full table-by-table
-split.
+(Firebase, etc.) belong to the application.
 
 ## Configuration
 

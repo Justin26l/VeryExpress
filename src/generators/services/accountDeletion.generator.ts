@@ -8,9 +8,9 @@ import { findSoftDeleteField } from "~/preprocess/softDelete";
 /**
  * Generates AccountDeletionService.gen.ts — the identity-domain half of account deletion.
  *
- * It is a service rather than a controller method because the Renomaster spec puts identity
- * erasure at the end of a flow the app itself drives (business rows → storage objects → identity).
- * Same process, so the reusable unit is an importable service, not an HTTP hop.
+ * It is a service rather than a controller method because identity erasure belongs at the end of a
+ * flow the app itself drives (business rows → storage objects → identity). Same process, so the
+ * reusable unit is an importable service, not an HTTP hop.
  *
  * The tombstone payload is derived from the project's own User schema: fields that are absent are
  * never emitted, so a project that renamed or dropped `locale` still gets a service that compiles.
@@ -144,7 +144,7 @@ ${redactions}
  *
  * Ordering matters: credentials are removed BEFORE the tombstone is written. Tombstoning first
  * would leave the OAuth path able to resolve the account through
- * ${docName}AuthProfiles.provider / oauthId — which is exactly how a deleted user would still be
+ * ${docName}AuthProfiles.provider / providerUserId — which is exactly how a deleted user would still be
  * able to log back into their own tombstone. Doing the marker last also means a mid-flight failure
  * leaves a still-live account the caller can simply delete again.
  */

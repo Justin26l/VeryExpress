@@ -39,6 +39,9 @@ const E2E_CONFIG = {
         localAuth: true,
         useHttpOnlyCookieToken: true,
         oauthProviders: { google: false, github: false },
+        // On for the suite, with no service account in the environment: the endpoint is exercised
+        // through its 503 path, the only one that needs no live Firebase project.
+        firebase: true,
     },
     useRBAC: { roles: ["visitor", "member", "admin"], default: "admin" },
     generator: { commitBeforeGenerate: false },

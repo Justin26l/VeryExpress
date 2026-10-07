@@ -19,6 +19,20 @@ OAUTH_GITHUB_CLIENTSECRET=
 # OAUTH_APPLE_CLIENTID=
 # OAUTH_APPLE_CLIENTSECRET=
 
+# FIREBASE (auth.firebase in vex.config.json) — see docs/appGenerated/auth.md
+# Server credential: firebase-admin verifies ID tokens, so the project's service account is required.
+# The JSON itself, as one value — generate it in the Firebase console:
+# Project settings > Service accounts > Generate new private key.
+FIREBASE_SERVICE_ACCOUNT_JSON=
+# Browser config: Firebase's *public* web app values, served to the login page by design. There is no
+# secret among them, and no appId — Firebase Auth does not read one.
+FIREBASE_WEB_API_KEY=
+FIREBASE_WEB_AUTH_DOMAIN=
+FIREBASE_WEB_PROJECT_ID=
+# Optional: which sign-in methods the login page renders a button for, comma separated. Defaults to
+# google. The server accepts any provider it knows regardless of this list.
+# FIREBASE_PROVIDERS=google
+
 # JWT token
 ACCESS_TOKEN_EXPIRE_TIME='1h'
 REFRESH_TOKEN_EXPIRE_TIME='24h'
