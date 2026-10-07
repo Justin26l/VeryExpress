@@ -1744,13 +1744,7 @@ export default class LoginUI {
         }
     }
 
-    /**
-     * The Firebase wiring in force: an explicit app override, else the generated default.
-     *
-     * The fallback is why `auth.firebase` needs no `server.ts` edit — `server.ts` is written once and
-     * never overwritten, so anything reachable only through it would not apply to an existing project.
-     * This file and `FirebaseAuthUI.gen.ts` are both regenerated.
-     */
+    /** The Firebase wiring in force: an explicit app override, else the generated default. */
     private get firebaseUI(): FirebaseAuthUI | undefined {
         return this.config.firebase ?? firebaseAuthUI;
     }

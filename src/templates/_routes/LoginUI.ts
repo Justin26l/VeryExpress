@@ -119,13 +119,7 @@ export default class LoginUI {
         }
     }
 
-    /**
-     * The Firebase wiring in force: an explicit app override, else the generated default.
-     *
-     * The fallback is why `auth.firebase` needs no `server.ts` edit — `server.ts` is written once and
-     * never overwritten, so anything reachable only through it would not apply to an existing project.
-     * This file and `FirebaseAuthUI.gen.ts` are both regenerated.
-     */
+    /** The Firebase wiring in force: an explicit app override, else the generated default. */
     private get firebaseUI(): FirebaseAuthUI | undefined {
         return this.config.firebase ?? firebaseAuthUI;
     }
@@ -144,14 +138,7 @@ export default class LoginUI {
         return process.env[ui.envKeys.authDomain] || undefined;
     }
 
-    /**
-     * CSP for the login page: the page's own scripts plus the hosts Firebase's sign-in needs.
-     *
-     * The hosts are not optional decoration. The SDK is loaded as an ES module from gstatic, it injects
-     * `apis.google.com/js/api.js` at sign-in time without a nonce, it calls the token endpoints
-     * directly, and the popup it opens frames the project's auth domain — a host missing here fails
-     * silently, and the only symptom is a generic authentication error.
-     */
+    /** CSP for the login page: the page's own scripts plus the hosts Firebase's sign-in needs. */
     private loginPageCsp(nonce: string): string {
         const ui = this.firebaseUI;
         if (!ui) return `script-src 'self' 'nonce-${nonce}'`;
@@ -176,13 +163,7 @@ export default class LoginUI {
             .replace(/'/g, "&#39;");
     }
 
-    /**
-     * Which providers to render a button for, and what is wrong with the names that were asked for.
-     *
-     * The list is read from the environment at render time rather than generated, because which Firebase
-     * sign-in methods exist is a deployment fact. A name the wiring cannot start is reported instead of
-     * producing a button that fails inside the SDK with something generic.
-     */
+    /** Which providers to render a button for, and what is wrong with the names that were asked for. */
     private firebaseProviderSelection(ui: FirebaseAuthUI): { providers: firebaseProvider[]; problems: string[] } {
         const configured = process.env[ui.providersEnvKey];
         const requested = (configured ? configured.split(",") : ui.defaultProviders)
@@ -249,17 +230,6 @@ export default class LoginUI {
         const nonce = this.nonce();
         res.setHeader("Content-Security-Policy", this.loginPageCsp(nonce));
 
-        // helmet sets `Cross-Origin-Opener-Policy: same-origin` app-wide by default, which puts a
-        // cross-origin popup in its own browsing context group and nulls `window.opener` inside it. The
-        // Firebase sign-in handler runs on the project's auth domain and reports the result back through
-        // exactly that channel — and the SDK also watches `popup.closed`, which the policy blocks — so
-        // the flow dies at the handshake and the SDK reports `auth/popup-closed-by-user`, seconds after
-        // a popup the user never touched, with nothing in the server log to explain it.
-        //
-        // `same-origin-allow-popups` keeps the relationship for popups this page opens while still
-        // isolating every other cross-origin window, so it is only set where there is a popup to open.
-        // It has to be set here rather than in the app's helmetConfig: server.ts is a copy-once
-        // template, so a change there would never reach a project that already exists.
         if (this.firebaseUI) {
             res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
         }

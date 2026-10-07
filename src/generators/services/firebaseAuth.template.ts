@@ -146,7 +146,6 @@ import { firebaseAuth, isFirebaseAvailable } from "./FirebaseAdmin.gen";
 import VexDb from "../VexDb.gen";
 import utils from "../../_utils";${rbacImports}
 
-
 export interface resolvedIdentity {
     provider: string;
     providerUserId: string;
