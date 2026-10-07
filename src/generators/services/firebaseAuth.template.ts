@@ -314,37 +314,14 @@ ${assignRole}
 
 /**
  * Everything the login page needs to drive Firebase, as emitted into `FirebaseAuthUI.gen.ts`.
- *
- * Static on purpose: the only thing a project configures is `auth.firebase`, so everything else is
- * either a vendor fact (the SDK base URL, the CSP hosts) or a deployment concern read from the
- * environment at render time (`envKeys`, and the provider list in `providersEnvKey`).
- *
- * The SDK is the **modular** build, loaded as ES modules from gstatic at `sdkBaseUrl` — the same
- * delivery the surrounding app uses for its own Firebase web sign-in. It cannot be served from
- * `node_modules` instead: `firebase-auth.js` there imports `firebase-app.js` from a hardcoded gstatic
- * URL, so a same-origin copy of the two would be two distinct module instances and `getAuth()` would
- * not see the app this page initialized.
  */
 export interface firebaseAuthUI {
-    /** Button text; `{provider}` is replaced by the provider's label. */
     label: string;
-    /** gstatic ESM directory for the pinned SDK version, trailing slash included. */
     sdkBaseUrl: string;
-    /** Every provider the page can start, and the label to render. */
     providers: { id: string; label: string }[];
-    /** Rendered when `providersEnvKey` is unset. */
     defaultProviders: string[];
-    /** env var holding the comma-separated list of providers to render buttons for. */
     providersEnvKey: string;
-    /** Public config key -> env var name, resolved at render time. */
     envKeys: Record<string, string>;
-    /**
-     * Hosts the sign-in needs, per directive.
-     *
-     * `scriptSrc` carries gstatic (the ES modules) and `apis.google.com` (the loader Auth injects for
-     * the popup, which carries no nonce). `connectSrc` carries the token endpoints the SDK calls
-     * directly. `frameSrc` gains the project's auth domain at render time.
-     */
     csp: {
         scriptSrc: string[];
         connectSrc: string[];
