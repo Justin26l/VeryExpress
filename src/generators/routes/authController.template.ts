@@ -72,8 +72,6 @@ export default function authControllerTemplate(compilerOptions: types.compilerOp
     ): Promise<VexResponse<firebaseLoginResponse>> {
         const { user, isNewUser } = await this.firebaseAuthService.authenticate(body.idToken);
 
-        // Minted here rather than through a sessionCode: this endpoint's contract is the one existing
-        // clients already speak, and it answers with the token pair directly.
         const accessToken = await this.JWTService.generateAccessToken(user);
         const refreshToken = this.JWTService.generateRefreshToken({ vexUserId: this.JWTService.userIdOf(user) });
 

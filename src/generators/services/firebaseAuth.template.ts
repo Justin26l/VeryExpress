@@ -35,16 +35,6 @@ import utils from "../../_utils";
  * An absent or unusable credential is not a crash: the app starts and POST /api/auth/firebase answers
  * 503 with the reason. A missing secret must not take the whole API down.
  */
-
-/**
- * One of the three fields cert() reads, in either spelling.
- *
- * Google's downloaded key file spells them snake_case (project_id, private_key, client_email) while
- * firebase-admin's ServiceAccount type spells them camelCase — and the SDK accepts both
- * (copyAttr(this, json, "projectId", "project_id") in credential-internal.js). Reading only the
- * camelCase spelling rejects every genuine key file, which surfaces as a 503 on the endpoint and
- * nothing else.
- */
 function readServiceAccountField(source: object, camel: string, snake: string): string | undefined {
     const camelValue: unknown = Reflect.get(source, camel);
     if (typeof camelValue === "string" && camelValue.length > 0) return camelValue;
@@ -156,13 +146,12 @@ import { firebaseAuth, isFirebaseAvailable } from "./FirebaseAdmin.gen";
 import VexDb from "../VexDb.gen";
 import utils from "../../_utils";${rbacImports}
 
-/** A stored identity: the pair UserAuthProfiles keys on. */
+
 export interface resolvedIdentity {
     provider: string;
     providerUserId: string;
 }
 
-/** What one sign-in resolved to. */
 export interface firebaseLoginResult {
     user: UserWithRelations;
     identity: resolvedIdentity;
@@ -170,11 +159,7 @@ export interface firebaseLoginResult {
 }
 
 /**
- * Firebase's sign_in_provider -> the vex provider label stored in UserAuthProfiles.provider.
- *
- * These labels are not invented here: they are the same strings the passport strategies write, which is
- * the whole point. "facebook.com" and friends are absent because vex has no passport door for them, and
- * a label nothing else writes would recreate exactly the split this feature exists to close.
+ * Firebase's sign_in_provider
  */
 const providerMap: Record<string, string> = {
     "google.com": "google",
@@ -190,9 +175,9 @@ function messageOf(err: unknown): string {
 /**
  * The upstream subject for a sign-in provider, read without letting firebase-admin's typing leak.
  *
- * firebase-admin declares identities as an index signature of any. Assigning it to unknown erases that
- * before anything reads it, and Reflect.get avoids an index-access assertion - neither any nor as
- * appears below.
+ * firebase-admin declares identities as an index signature of any. 
+ * Assigning it to unknown erases that before anything reads it, and Reflect.get avoids an index-access assertion
+ * neither any nor as appears below.
  */
 function readUpstreamSubject(decoded: DecodedIdToken, signInProvider: string): string | undefined {
     const identities: unknown = decoded.firebase.identities;

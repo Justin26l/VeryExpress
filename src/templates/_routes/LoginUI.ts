@@ -49,41 +49,17 @@ export function diagnoseMissingEnv(
 export interface LoginUIConfig {
     localAuth: boolean;
     oauthProviders: string[];
-    /**
-     * Serve the self-service deletion page at `/delete_account`.
-     *
-     * Optional and defaulting to true so an app generated before this feature existed still
-     * constructs — its `server.ts` is generated once and is not overwritten on later runs.
-     */
+    /** Serve the self-service deletion page at `/delete_account`. */
     deleteAccount?: boolean;
-    /**
-     * Override the Firebase sign-in wiring.
-     *
-     * Unnecessary in the normal case: `auth.firebase` in `vex.config.json` makes the generator emit a
-     * complete default into `FirebaseAuthUI.gen.ts`, which this page falls back to. This field exists
-     * for the cases the generator cannot know — hand-editing a button label, or pointing at a
-     * self-hosted SDK build.
-     */
+    /** Override the Firebase sign-in wiring. */
     firebase?: FirebaseAuthUI;
 }
 
-/**
- * Everything the login page needs to drive Firebase, as emitted into `FirebaseAuthUI.gen.ts`.
- *
- * vex owns the buttons, the nonce'd script tags and the POST to `/api/auth/firebase`; the vendor's
- * browser code is loaded by the glue as ES modules from `sdkBaseUrl`. Nothing here is secret —
- * `config` is Firebase's *public* browser config, resolved from the environment at request time.
- */
+/** Everything the login page needs to drive Firebase, as emitted into `FirebaseAuthUI.gen.ts`. */
 export interface FirebaseAuthUI {
     /** Button text template; `{provider}` is replaced by the provider's label. */
     label: string;
-    /**
-     * gstatic ESM directory for the pinned SDK version, trailing slash included.
-     *
-     * The modular build is loaded from here rather than from `node_modules`: `firebase-auth.js` in the
-     * package imports `firebase-app.js` from a hardcoded gstatic URL, so serving the two same-origin
-     * would create two module instances and `getAuth()` would not see the initialized app.
-     */
+    /** gstatic ESM directory for the pinned SDK version, trailing slash included. */
     sdkBaseUrl: string;
     /** Every provider the page can start. */
     providers: { id: string; label: string }[];
@@ -93,13 +69,7 @@ export interface FirebaseAuthUI {
     providersEnvKey: string;
     /** Public config key → env var name. Resolved at render time; missing values stay absent. */
     envKeys: Record<string, string>;
-    /**
-     * Hosts Firebase's sign-in needs, per directive.
-     *
-     * A nonce authorises the tags this page renders, but the SDK also **injects scripts at runtime**
-     * (`apis.google.com/js/api.js`, to synchronise the popup) and those carry no nonce — so the hosts
-     * have to be allowed by name. `frameSrc` gains the project's auth domain at render time.
-     */
+    /** Hosts Firebase's sign-in needs, per directive. */
     csp: {
         scriptSrc: string[];
         connectSrc: string[];
