@@ -1,5 +1,6 @@
 import * as types from "../types/types";
 import log from "../utils/logger";
+import { isAuthEnabled } from "../utils/generator";
 
 /**
  * Auto-written audit / ownership fields.
@@ -93,6 +94,8 @@ export function hasReservedDefaults(schema: types.jsonSchema): boolean {
  * Fields the client must not supply, i.e. what the generated request body type omits:
  *
  * - every field declared with a reserved `default` keyword (the adapter strips and fills them)
+ * - the soft-delete marker (`x-vexData: "softDelete"`) — a client must never be able to
+ *   soft-delete, resurrect or pre-tombstone a row through the CRUD API
  * - the primary key (`x-format: Primary` / `PrimaryUUID`), unless the app opted into
  *   letting clients set `_id` via `app.allowApiCreateUpdate_id`
  *
@@ -104,6 +107,12 @@ export function collectRequestManagedFields(
     allowApiCreateUpdateId: boolean,
 ): string[] {
     const fields = collectVexFields(schema).map(field => field.field);
+
+    for (const [key, prop] of Object.entries(schema.properties ?? {})) {
+        if (prop?.["x-vexData"] === types.xVexDataType.SoftDelete && !fields.includes(key)) {
+            fields.push(key);
+        }
+    }
 
     if (!allowApiCreateUpdateId) {
         for (const [key, prop] of Object.entries(schema.properties ?? {})) {
@@ -251,11 +260,38 @@ function checkIdentityField(ctx: validationContext): void {
 }
 
 /**
+ * `onCreateUserId` can only ever be filled if the app has a way to authenticate: with auth
+ * off, no controller mounts `Authentication.middleware`, so no request can carry an identity.
+ * Declaring the keyword anyway is a self-contradictory config — the create write path would
+ * throw on every call. Catch it at generation time.
+ *
+ * Scope is `onCreateUserId` ONLY, deliberately mirroring the runtime guard in the repository
+ * adapters (`assertCreateIdentity`). `onUpdateUserId` is a weaker contract: the update path
+ * does not throw when the identity is absent, so an auth-less app may declare it and simply
+ * never fill it. Being stricter here than the runtime mechanism it protects would reject
+ * configs that cannot actually fail.
+ */
+function checkCreateIdentityIsReachable(ctx: validationContext, compilerOptions: types.compilerOptions): void {
+    const usesCreateUserIdKeyword = ctx.documents.some(doc => collectVexFields(doc.schema).some(
+        f => f.type === types.vexDefaultKeyword.OnCreateUserId
+    ));
+    if (!usesCreateUserIdKeyword) return;
+    if (isAuthEnabled(compilerOptions)) return;
+
+    ctx.problems.push(
+        `Schema declares "onCreateUserId" but the app enables no authentication ` +
+        `(auth.localAuth is false and no oauth provider is on) — no request can ever carry an identity, ` +
+        `so every create of that entity would fail. Enable an auth method or remove the keyword.`
+    );
+}
+
+/**
  * Cross-document validation of the audit / ownership declarations.
  * Called once after every schema has been loaded and formatted.
  */
 export function validateAuditFields(
     documents: { path: string, schema: types.jsonSchema }[],
+    compilerOptions: types.compilerOptions,
 ): auditIdentity | undefined {
     const taggedFields: auditIdentity[] = [];
     for (const doc of documents) {
@@ -286,6 +322,7 @@ export function validateAuditFields(
     }
 
     checkIdentityField(ctx);
+    checkCreateIdentityIsReachable(ctx, compilerOptions);
     for (const doc of documents) {
         checkVexDataValues(ctx, doc);
         checkKeywordFieldsAreNotRequired(ctx, doc);

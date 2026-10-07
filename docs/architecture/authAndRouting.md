@@ -65,10 +65,11 @@ Conditional emission:
 
 ```jsonc
 {
-  "app": { "enableSwagger": true },
+  "app": { "enableSwagger": true, "showSoftDeleted": false },
   "auth": {
     "localAuth": true,
     "useHttpOnlyCookieToken": true,
+    "deleteAccount": true,
     "oauthProviders": { "google": false, "github": false }
   },
   "useRBAC": { "roles": ["visitor", "member", "admin"], "default": "admin" }
@@ -83,6 +84,12 @@ least one role (`utils.generator.isRbacEnabled`). Omitting the key, or passing
 
 When RBAC is on, `src/templates/jsonSchemaRBAC/` is copied over the sample schemas and
 `UserRole.role`'s enum is synced from `useRBAC.roles`.
+
+Account deletion is the opposite — **opt-out**. `auth.deleteAccount` defaults to true, so
+`AuthController` gains `POST /api/auth/delete-account` and the UI gains `/delete_account` unless the
+project explicitly disables it (auth must also be enabled). `app.showSoftDeleted` controls whether
+the repository hides soft-deleted rows; unset means hidden. See
+[`docs/features/accountDeletion.md`](../features/accountDeletion.md).
 
 ## Auth internals
 

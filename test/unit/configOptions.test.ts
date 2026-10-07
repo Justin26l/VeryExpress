@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { isAuthEnabled, isRbacEnabled, OAuthProviders } from "../../src/utils/generator";
+import { isAccountDeletionEnabled, isAuthEnabled, isRbacEnabled, isShowSoftDeleted, OAuthProviders } from "../../src/utils/generator";
 import type { compilerOptions } from "../../src/types/types";
 
 function options(auth: compilerOptions["auth"]): compilerOptions {
@@ -74,5 +74,60 @@ describe("isRbacEnabled", () => {
 
     it("is false when roles is missing entirely", () => {
         expect(isRbacEnabled(rbacOptions({ default: "user" } as compilerOptions["useRBAC"]))).toBe(false);
+    });
+});
+
+/**
+ * Account deletion is opt-out: absent config means on. The two ways it can be off are an explicit
+ * `deleteAccount: false` and an auth-less app — a deletion endpoint that cannot authenticate the
+ * caller could only ever delete the wrong account.
+ */
+describe("isAccountDeletionEnabled", () => {
+    const authOn = { localAuth: true, oauthProviders: {} } as compilerOptions["auth"];
+
+    it("defaults to true when deleteAccount is unset and auth is on", () => {
+        expect(isAccountDeletionEnabled({ auth: authOn } as compilerOptions)).toBe(true);
+    });
+
+    it("honours an explicit false", () => {
+        expect(
+            isAccountDeletionEnabled(
+                { auth: { ...authOn, deleteAccount: false } } as compilerOptions,
+            ),
+        ).toBe(false);
+    });
+
+    it("honours an explicit true", () => {
+        expect(
+            isAccountDeletionEnabled(
+                { auth: { ...authOn, deleteAccount: true } } as compilerOptions,
+            ),
+        ).toBe(true);
+    });
+
+    it("is false when auth is disabled, even if deleteAccount is true", () => {
+        expect(
+            isAccountDeletionEnabled({
+                auth: { localAuth: false, oauthProviders: {}, deleteAccount: true },
+            } as compilerOptions),
+        ).toBe(false);
+    });
+});
+
+/**
+ * `app.showSoftDeleted` is the adapter visibility switch. Absent means "hide soft-deleted rows"
+ * (the safe default); only an explicit true lifts the filter.
+ */
+describe("isShowSoftDeleted", () => {
+    it("is false when app.showSoftDeleted is unset", () => {
+        expect(isShowSoftDeleted({ app: {} } as compilerOptions)).toBe(false);
+    });
+
+    it("is false when explicitly false", () => {
+        expect(isShowSoftDeleted({ app: { showSoftDeleted: false } } as compilerOptions)).toBe(false);
+    });
+
+    it("is true only when explicitly true", () => {
+        expect(isShowSoftDeleted({ app: { showSoftDeleted: true } } as compilerOptions)).toBe(true);
     });
 });

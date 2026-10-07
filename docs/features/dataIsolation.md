@@ -6,8 +6,9 @@ Available from v0.6.x. Provides transparent per-entity ownership: all queries ar
 
 1. Declare `dataIsolation` in `x-documentConfig` of your JSON Schema
 2. Generator produces `DataIsolationRegistry.gen.ts` mapping entity → ownership field
-3. `DataIsolationContext` middleware runs before request handlers, storing the current user's identity
-   (`vexUserId` token claim, `_id` as fallback) in `AsyncLocalStorage`
+3. `Authentication.middleware` establishes a `UserContext` (an `AsyncLocalStorage` store) from the
+   verified access token — `vexUserId`, `_id` as fallback. There is no separate context middleware: any
+   authenticating controller sets it up for the whole downstream chain.
 4. `TypeOrmRepositoryAdapter` reads the registry and injects `{ [field]: userId }` into every query
 
 ## Configuration

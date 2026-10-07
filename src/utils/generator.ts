@@ -1,5 +1,6 @@
 import * as types from "../types/types";
 import pkg from "../../package.json";
+import log from "./logger";
 
 export function getDefaultHeaderComment(version?:string): string {
     return `/**
@@ -36,6 +37,42 @@ export function isAuthEnabled(compilerOptions: types.compilerOptions): boolean {
 }
 
 /**
+ * Single gate for the account-deletion feature (API endpoint, service and the `/delete_account`
+ * page). Enabled by default — `app.showSoftDeleted`-style opt-out, never opt-in.
+ *
+ * Auth is a hard requirement: a deletion endpoint with no way to authenticate could only ever
+ * delete the wrong account, so an auth-less project gets the feature switched off regardless of
+ * what `auth.deleteAccount` says.
+ *
+ * `?? true` rather than `|| true`: the latter swallows an explicit `false`.
+ */
+export function isAccountDeletionEnabled(compilerOptions: types.compilerOptions): boolean {
+    return isAuthEnabled(compilerOptions) && (compilerOptions.auth.deleteAccount ?? true);
+}
+
+/**
+ * Adapter-layer visibility policy for soft-deleted rows.
+ *
+ * Defaults to false, i.e. hide them. `true` turns the filter off app-wide — a deliberately blunt
+ * lever, so every generation run says out loud that it is on. The value is baked into the generated
+ * registry, which is what keeps it out of reach of any client.
+ */
+export function isShowSoftDeleted(compilerOptions: types.compilerOptions): boolean {
+    const enabled = compilerOptions.app?.showSoftDeleted ?? false;
+
+    if (enabled) {
+        log.warn(
+            `app.showSoftDeleted is ON — soft-deleted rows are visible to every query, are writable ` +
+            `again through the ordinary CRUD path, and the account-state guard in ` +
+            `Authentication.middleware will keep rejecting tombstones. ` +
+            `Unset app.showSoftDeleted to restore the default (hidden).`
+        );
+    }
+
+    return enabled;
+}
+
+/**
  * Single gate for every RBAC code path.
  *
  * RBAC is opt-in: it is enabled only when `useRBAC` is present AND declares at
@@ -67,6 +104,7 @@ export const defaultCompilerOptions: types.compilerOptions = {
         useUserSchema: true,
         useStatefulRedisAuth: false,
         allowApiCreateUpdate_id: false,
+        showSoftDeleted: false,
     },
     useRBAC: {
         roles: ["user"],
@@ -75,6 +113,7 @@ export const defaultCompilerOptions: types.compilerOptions = {
     auth: {
         localAuth: true,
         useHttpOnlyCookieToken: false,
+        deleteAccount: true,
         oauthProviders: {
             google: false,
             microsoft: false,
@@ -98,4 +137,6 @@ export default {
     OAuthProviders,
     isAuthEnabled,
     isRbacEnabled,
+    isAccountDeletionEnabled,
+    isShowSoftDeleted,
 };

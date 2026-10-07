@@ -40,330 +40,344 @@ JWT_SECRET0='my-secret-key0'
       "schemas": {
         "Session.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.7.9"
+          "lastWriteVersion": "0.8.4"
         },
         "User.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.7.9"
+          "lastWriteVersion": "0.8.4"
         },
         "UserAuthProfiles.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.7.9"
+          "lastWriteVersion": "0.8.4"
         },
         "UserRole.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.7.9"
+          "lastWriteVersion": "0.8.4"
         }
       },
       "vex.config.json": {
         "allowOverwrite": true,
-        "lastWriteVersion": "0.7.9"
+        "lastWriteVersion": "0.8.4"
       }
     },
     ".env": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.7.9"
+      "lastWriteVersion": "0.8.4"
     },
     "Dockerfile": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.7.9"
+      "lastWriteVersion": "0.8.4"
     },
     "package.json": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.7.9"
+      "lastWriteVersion": "0.8.4"
     },
     "public": {
       "css": {
         "style.css": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.7.9"
+          "lastWriteVersion": "0.8.4"
         }
       },
       "js": {
+        "deleteaccount.js": {
+          "allowOverwrite": true,
+          "lastWriteVersion": "0.8.4"
+        },
         "login.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.7.9"
+          "lastWriteVersion": "0.8.4"
         },
         "logincallback.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.7.9"
+          "lastWriteVersion": "0.8.4"
         },
         "mytokens.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.7.9"
+          "lastWriteVersion": "0.8.4"
         },
         "refreshtokens.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.7.9"
+          "lastWriteVersion": "0.8.4"
         }
       }
     },
     "README.md": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.7.9"
+      "lastWriteVersion": "0.8.4"
     },
     "scripts": {
       "build.js": {
         "allowOverwrite": true,
-        "lastWriteVersion": "0.7.9"
+        "lastWriteVersion": "0.8.4"
       },
       "oacg-fix.js": {
         "allowOverwrite": true,
-        "lastWriteVersion": "0.7.9"
+        "lastWriteVersion": "0.8.4"
       }
     },
     "src": {
       "roles": {
         "admin.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.7.9"
+          "lastWriteVersion": "0.8.4"
         },
         "member.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.7.9"
+          "lastWriteVersion": "0.8.4"
         },
         "visitor.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.7.9"
+          "lastWriteVersion": "0.8.4"
         }
       },
       "server.ts": {
         "allowOverwrite": true,
-        "lastWriteVersion": "0.7.9"
+        "lastWriteVersion": "0.8.4"
       },
       "system": {
         "_controllers": {
           "_ControllerFactory.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.4"
           },
           "AuthController.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.4"
           },
           "UserController.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.4"
           }
         },
         "_middlewares": {
           "Authentication.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
-          },
-          "DataIsolationContext.gen.ts": {
-            "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.4"
           },
           "DataIsolationRegistry.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.4"
           },
           "JoinWhitelistMiddleware.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.4"
           },
           "JoinWhitelistRegistry.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.4"
           },
           "RoleBaseAccessControl.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.4"
           },
           "tsoaAuthentication.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.4"
+          },
+          "UserContext.gen.ts": {
+            "allowOverwrite": true,
+            "lastWriteVersion": "0.8.4"
           },
           "VexFieldRegistry.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.4"
           }
         },
         "_models": {
           "SessionModel.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.4"
           },
           "UserAuthProfilesModel.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.4"
           },
           "UserModel.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.4"
           },
           "UserRoleModel.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.4"
           }
         },
         "_roles": {
           "_RoleFactory.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.4"
           },
           "admin.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.4"
           },
           "index.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.4"
           },
           "member.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.4"
           },
           "visitor.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.4"
           }
         },
         "_routes": {
           "LoginUI.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.4"
           },
           "oauth": {
             "OAuthRouteFactory.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.7.9"
+              "lastWriteVersion": "0.8.4"
             }
           },
           "SwaggerRouter.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.4"
           }
         },
         "_services": {
+          "account": {
+            "AccountDeletionService.gen.ts": {
+              "allowOverwrite": true,
+              "lastWriteVersion": "0.8.4"
+            }
+          },
           "auth": {
+            "AccountStateGuard.gen.ts": {
+              "allowOverwrite": true,
+              "lastWriteVersion": "0.8.4"
+            },
             "JWTKeyStore.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.7.9"
+              "lastWriteVersion": "0.8.4"
             },
             "JWTService.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.7.9"
+              "lastWriteVersion": "0.8.4"
             }
           },
           "MongooseRepositoryAdapter.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.4"
           },
           "oauth": {
             "OAuthProfileMap.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.7.9"
+              "lastWriteVersion": "0.8.4"
             },
             "OAuthStrategyService.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.7.9"
+              "lastWriteVersion": "0.8.4"
             }
           },
           "TypeOrmRepositoryAdapter.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.4"
           },
           "VexDb.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.4"
           },
           "VexDbConnector.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.4"
           },
           "VexSystem.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.4"
           }
         },
         "_types": {
           "auth.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.4"
           },
           "Session.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.4"
           },
           "User.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.4"
           },
           "UserAuthProfiles.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.4"
           },
           "UserRole.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.4"
           },
           "vex": {
             "index.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.7.9"
+              "lastWriteVersion": "0.8.4"
             },
             "VexRepository.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.7.9"
+              "lastWriteVersion": "0.8.4"
             },
             "VexRequest.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.7.9"
+              "lastWriteVersion": "0.8.4"
             },
             "VexResErr.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.7.9"
+              "lastWriteVersion": "0.8.4"
             },
             "VexResOk.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.7.9"
+              "lastWriteVersion": "0.8.4"
             },
             "VexResponse.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.7.9"
+              "lastWriteVersion": "0.8.4"
             }
           }
         },
         "_utils": {
           "hash.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.4"
           },
           "index.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.4"
           },
           "logger.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.4"
           },
           "processTimer.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.4"
           },
           "response.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.4"
           },
           "validator.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.7.9"
+            "lastWriteVersion": "0.8.4"
           }
         }
       }
     },
     "tsconfig.json": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.7.9"
+      "lastWriteVersion": "0.8.4"
     },
     "tsoa.json": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.7.9"
+      "lastWriteVersion": "0.8.4"
     }
   },
-  "lastGeneratedVersion": "0.7.9"
+  "lastGeneratedVersion": "0.8.4"
 }
 
 ===== out/Dockerfile =====
@@ -449,6 +463,88 @@ pre {
   border: 1px solid #ccc;
   white-space: pre-wrap;
 }
+
+===== out/public/js/deleteaccount.js =====
+// Self-service account deletion page.
+//
+// Sends the access token the same way the rest of the app does — Authorization + X-Auth-Index —
+// and clears the stored tokens on success, because the account is gone the moment the tombstone
+// is written: keeping a token the server will now reject only produces confusing 401s.
+
+// The page loads this script from <head>, so it must wait for the DOM: at parse time the
+// button does not exist yet and getElementById would return null.
+document.addEventListener("DOMContentLoaded", function () {
+    var button = document.getElementById("deleteAccountBtn");
+    var input = document.getElementById("confirmInput");
+    var result = document.getElementById("deleteResult");
+
+    if (!button || !input || !result) return;
+
+    function clearTokens() {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("accessTokenIndex");
+        localStorage.removeItem("refreshToken");
+        localStorage.removeItem("refreshTokenIndex");
+    }
+
+    function render(data) {
+        result.textContent = JSON.stringify(data, null, 2);
+    }
+
+    button.addEventListener("click", function () {
+        if (input.value !== "DELETE") {
+            render({ error: 'Type DELETE in the box to confirm.' });
+            return;
+        }
+
+        button.disabled = true;
+        render({ status: "Deleting…" });
+
+        fetch("/api/auth/delete-account", {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + (localStorage.getItem("accessToken") || ""),
+                "X-Auth-Index": localStorage.getItem("accessTokenIndex") || "",
+            },
+        })
+            .then(function (response) {
+                // read as text first: an error response may not be JSON (a proxy or the
+                // express error handler can return HTML), and response.json() would then
+                // reject and hide the real status behind a parse error
+                return response.text().then(function (text) {
+                    var body;
+                    try {
+                        body = text ? JSON.parse(text) : {};
+                    }
+                    catch (e) {
+                        body = { raw: text };
+                    }
+
+                    return { ok: response.ok, status: response.status, body: body };
+                });
+            })
+            .then(function (outcome) {
+                if (!outcome.ok) {
+                    render({ status: outcome.status, error: outcome.body });
+                    button.disabled = false;
+                    return;
+                }
+
+                clearTokens();
+                render({
+                    status: "Account deleted. You have been signed out.",
+                    result: outcome.body,
+                });
+                input.value = "";
+            })
+            .catch(function (err) {
+                render({ error: String(err) });
+                button.disabled = false;
+            });
+    });
+});
 
 ===== out/public/js/login.js =====
 
@@ -866,7 +962,7 @@ const helmetConfig = {
 };
 
 const SwaggerRoute = new SwaggerRouter();
-const loginUI = new LoginUI({ localAuth: true, oauthProviders: [] });
+const loginUI = new LoginUI({ localAuth: true, oauthProviders: [], deleteAccount: true });
 
 /** 
  * App
@@ -932,20 +1028,22 @@ export class _ControllerFactory extends Controller {
  * https://github.com/Justin26l/VeryExpress
  */
 
-import { Route, Tags, Post, Body, Query, SuccessResponse } from "tsoa";
+import { Route, Tags, Post, Body, Query, SuccessResponse, Middlewares, Security } from "tsoa";
 import * as controllerFactory from "./_ControllerFactory.gen";
 import JWTService from "../_services/auth/JWTService.gen";
 import VexDb from "../_services/VexDb.gen";
 import { SessionEntity, Session } from "../_models/SessionModel.gen";
 import { VexRepository, VexResponse, VexResErr, VexResOk, Filter } from "../_types/vex";
 import { vexUserIdField } from "../_middlewares/VexFieldRegistry.gen";
-import { tokenResponse, refreshTokenResponse, registerResponse, localLoginResponse } from "../_types/auth.gen";
+import { tokenResponse, refreshTokenResponse, registerResponse, localLoginResponse, deleteAccountResponse } from "../_types/auth.gen";
 
 import utils from "../_utils";
 import { UserEntity, User } from "../_models/UserModel.gen";
 import { UserAuthProfilesEntity, UserAuthProfiles } from "../_models/UserAuthProfilesModel.gen";
 import { UserRoleEntity, UserRole } from "../_models/UserRoleModel.gen";
 import { RoleEnum } from "../_types/UserRole.gen";
+import Authentication from "../_middlewares/Authentication.gen";
+import AccountDeletionService from "../_services/account/AccountDeletionService.gen";
 
 @Route("auth")
 @Tags("Auth")
@@ -956,7 +1054,19 @@ export class AuthController extends controllerFactory._ControllerFactory {
     private get userRepo(): VexRepository<User> { return VexDb.getRepository(UserEntity); }
     private get userAuthProfilesRepo(): VexRepository<UserAuthProfiles> { return VexDb.getRepository(UserAuthProfilesEntity); }
     private get userRoleRepo(): VexRepository<UserRole> { return VexDb.getRepository(UserRoleEntity); }
+    private accountDeletionService = new AccountDeletionService();
 
+
+
+
+    @Post("delete-account")
+    @SuccessResponse(200, "OK")
+    @Middlewares(Authentication.middleware)
+    @Security({ BearerAuth: [], AuthIndex: [] })
+    async deleteAccount(): Promise<VexResponse<deleteAccountResponse>> {
+        const result = await this.accountDeletionService.deleteSelf();
+        throw new VexResOk(200, { result });
+    }
 
     @Post("token")
     @SuccessResponse(200, "OK")
@@ -1081,10 +1191,9 @@ import VexDb from "../_services/VexDb.gen";
 import RoleBaseAccessControl from "../_middlewares/RoleBaseAccessControl.gen";
 import Authentication from "../_middlewares/Authentication.gen";
 import JoinWhitelistMiddleware from "../_middlewares/JoinWhitelistMiddleware.gen";
-import DataIsolationContext from "../_middlewares/DataIsolationContext.gen";
 
 import { UserEntity } from "../_models/UserModel.gen";
-import { User, UserWithApiRelations, CreateUser } from "../_types/User.gen";
+import { User, UserWithApiRelations, PayloadUser } from "../_types/User.gen";
 
 // extra type defined due to tsoa cannot capture runtime generic types,
 // this will make OAS have complete input parameters & correct validation
@@ -1093,7 +1202,6 @@ export type FilterUser = { [K in keyof User]?: FieldFilter<User[K]> } & Filter<U
 @Route("user")
 @Tags("User")
 @Middlewares(RoleBaseAccessControl.middleware("User"))
-@Middlewares(DataIsolationContext.middleware)
 @Middlewares(Authentication.middleware)
 @Security({ BearerAuth: [], AuthIndex: [] })
 export class UserController extends controllerFactory._ControllerFactory {
@@ -1118,7 +1226,7 @@ export class UserController extends controllerFactory._ControllerFactory {
 
     @Patch("{id}")
     @SuccessResponse(200, "Success")
-    public async updateUser(@Path() id: string, @Body() body: Partial<CreateUser>): Promise<VexResponse<User>> {
+    public async updateUser(@Path() id: string, @Body() body: Partial<PayloadUser>): Promise<VexResponse<User>> {
         if ((body as any)._id) delete (body as any)._id;
         const result = await this.repo.update(id, body);
         if (!result) throw new VexResErr(404);
@@ -1137,6 +1245,8 @@ export class UserController extends controllerFactory._ControllerFactory {
 import { Request, Response, NextFunction } from "express";
 import { JsonWebTokenError } from "jsonwebtoken";
 import JWTService from "../_services/auth/JWTService.gen";
+import { isActiveIdentity } from "../_services/auth/AccountStateGuard.gen";
+import UserContext, { userIdOfToken } from "./UserContext.gen";
 import log from "../_utils/logger.gen";
 import { VexResErr } from "../_types/vex";
 
@@ -1144,84 +1254,57 @@ class Authentication {
 
     private JWTService = new JWTService();
 
-    public middleware = (req: Request, res: Response, next: NextFunction) => {
-        try {
-            // gate keeper
-            // log.info("Authentication.middleware", req.headers["x-auth-index"], req.headers.authorization);
-            const token = req.headers.authorization?.split(" ")[1];
-            const accessTokenIndex = req.headers["x-auth-index"]?.toString();
-            
-            if (!token || !accessTokenIndex) {
-                log.warn("invalid header", {
-                    "X-Auth-Index": req.headers["x-auth-index"], 
-                    "Authorization": req.headers.authorization
-                });
-                throw 401;
-            }
-
-            // verify token
-            const tokenData = this.JWTService.verifyToken(token, accessTokenIndex);
-            req.user = tokenData;
-            next();
-        }
-        catch (e: any) {
-            if (typeof e === "number") {
-                throw new VexResErr(e, undefined);
-            }
-            else if (e instanceof JsonWebTokenError) {
-                throw new VexResErr(400, undefined, e?.message);
-            }
-            else {
-                throw new VexResErr(500, undefined, e?.message);
-            }
-        }
+    /**
+     * Express request handler.
+     *
+     * Deliberately NOT `async`: both call sites are express chains — `@Middlewares(...)`, which the
+     * tsoa route file spreads as a plain RequestHandler, and `router.use(...)`. Express 4 does not
+     * catch a rejected promise, so an async handler would turn every failure into an unhandled
+     * rejection instead of a response. The asynchronous part lives in `handle()` and every outcome
+     * is routed to `next()`.
+     */
+    public middleware = (req: Request, res: Response, next: NextFunction): void => {
+        this.handle(req, next).catch((e: unknown) => next(this.toVexErr(e)));
     };
+
+    private async handle(req: Request, next: NextFunction): Promise<void> {
+        // gate keeper
+        // log.info("Authentication.middleware", req.headers["x-auth-index"], req.headers.authorization);
+        const token = req.headers.authorization?.split(" ")[1];
+        const accessTokenIndex = req.headers["x-auth-index"]?.toString();
+
+        if (!token || !accessTokenIndex) {
+            log.warn("invalid header", {
+                "X-Auth-Index": req.headers["x-auth-index"], 
+                "Authorization": req.headers.authorization
+            });
+            throw 401;
+        }
+
+        // verify token
+        const tokenData = this.JWTService.verifyToken(token, accessTokenIndex);
+
+        // The signature only proves the token was issued; it says nothing about the account still
+        // being there. A deleted account is soft-deleted, so this check is what stops its token
+        // from working for the rest of its lifetime.
+        if (!(await isActiveIdentity(userIdOfToken(tokenData)))) {
+            throw new VexResErr(401, undefined, "Account is not active");
+        }
+
+        req.user = tokenData;
+        UserContext.run(tokenData, () => next());
+    }
+
+    private toVexErr(e: unknown): VexResErr {
+        if (typeof e === "number") return new VexResErr(e, undefined);
+        if (e instanceof VexResErr) return e;
+        if (e instanceof JsonWebTokenError) return new VexResErr(400, undefined, e?.message);
+
+        return new VexResErr(500, undefined, e instanceof Error ? e.message : undefined);
+    }
 }
 
 export default new Authentication();
-
-===== out/src/system/_middlewares/DataIsolationContext.gen.ts =====
-/**
- * Generated by veryExpress@<version> 
- * https://github.com/Justin26l/VeryExpress
- */
-
-import { AsyncLocalStorage } from "async_hooks";
-import { Request, Response, NextFunction } from "express";
-
-export interface DataIsolationStore {
-  userId: string;
-}
-
-const als = new AsyncLocalStorage<DataIsolationStore>();
-
-class DataIsolationContext {
-    /**
-   * Express middleware — creates ALS context with the authenticated user's identity value.
-   * Must run AFTER Authentication.middleware (which sets req.user).
-   *
-   * The identity is the `vexUserId` token claim, which the auth service fills from the field
-   * tagged `x-vexData: "userId"` in the schemas. `_id` is the fallback for tokens issued
-   * before that claim existed.
-   */
-    middleware(req: Request, _res: Response, next: NextFunction): void {
-        const user = (req as Request & { user?: { vexUserId?: string, _id?: string } }).user;
-        const userId = user?.vexUserId ?? user?._id;
-
-        if (userId) {
-            als.run({ userId }, () => next());
-        } else {
-            next();
-        }
-    }
-
-    /** Get current store from per-request ALS context. */
-    getStore(): DataIsolationStore | undefined {
-        return als.getStore();
-    }
-}
-
-export default new DataIsolationContext();
 
 ===== out/src/system/_middlewares/DataIsolationRegistry.gen.ts =====
 /**
@@ -1399,6 +1482,66 @@ export async function expressAuthentication(
     return {};
 }
 
+===== out/src/system/_middlewares/UserContext.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import { AsyncLocalStorage } from "async_hooks";
+
+/** Identity-bearing claims carried from the verified access token. */
+export interface UserContextData {
+    tokenData: Record<string, unknown>;
+}
+
+/**
+ * Pure: identity value carried by a verified access token.
+ *
+ * `vexUserId` is the schema-declared identity (the field tagged `x-vexData: "userId"`,
+ * which JWTService copies into the token); `_id` keeps tokens issued before that claim
+ * existed working.
+ */
+export function userIdOfToken(tokenData: Record<string, unknown> | undefined): string | undefined {
+    return (tokenData?.vexUserId as string | undefined) ?? (tokenData?._id as string | undefined);
+}
+
+const als = new AsyncLocalStorage<UserContextData>();
+
+class UserContext {
+    /**
+     * Enter the per-request identity context.
+     *
+     * Called ONLY by Authentication.middleware, after token verification succeeded — at
+     * that point a verified token always exists, so this runs unconditionally. The store
+     * is the request's context; whether it carries a usable identity is decided when it
+     * is read (`userId`), not when it is created.
+     *
+     * Never use `enterWith()`: it mutates the current execution context instead of
+     * scoping a new one, and leaks into whatever runs next on the same tick.
+     */
+    run<T>(tokenData: Record<string, unknown>, fn: () => T): T {
+        return als.run({ tokenData }, fn);
+    }
+
+    /** Current store from the per-request async context. */
+    getStore(): UserContextData | undefined {
+        return als.getStore();
+    }
+
+    /**
+     * Normalized identity of the authenticated caller.
+     *
+     * The data layer MUST read the identity through this accessor and never inspect the
+     * token shape itself — that keeps the token → identity mapping in exactly one place.
+     */
+    get userId(): string | undefined {
+        return userIdOfToken(als.getStore()?.tokenData);
+    }
+}
+
+export default new UserContext();
+
 ===== out/src/system/_middlewares/VexFieldRegistry.gen.ts =====
 /**
  * Generated by veryExpress@<version> 
@@ -1435,6 +1578,17 @@ export const entityVexFields: Record<string, VexFieldEntry[]> = {
  * Falls back to "_id" when no schema tags one.
  */
 export const vexUserIdField = "_id";
+
+/**
+ * Entity class name → the boolean field carrying its soft-delete marker
+ * (`x-vexData: "softDelete"`). Empty when no schema declares one.
+ */
+export const entitySoftDeleteFields: Record<string, string> = {
+    "UserEntity": "deleted"
+};
+
+// app.showSoftDeleted is off (default) — the repository hides soft-deleted rows.
+export const showSoftDeleted = false;
 
 ===== out/src/system/_models/SessionModel.gen.ts =====
 
@@ -1522,7 +1676,8 @@ export const UserSchemaDefinition: SchemaDefinition = {
   profileErrors: { type: String, index: false, required: false },
   createdAt: { type: String, index: false, required: false },
   updatedAt: { type: String, index: false, required: false },
-  updatedBy: { type: String, index: false, required: false }
+  updatedBy: { type: String, index: false, required: false },
+  deleted: { type: Boolean, index: false, required: true }
 };
 
 export interface UserDocument extends Omit<User, '_id'>, Document {  };
@@ -1763,6 +1918,13 @@ import crypto from "crypto";
 export interface LoginUIConfig {
     localAuth: boolean;
     oauthProviders: string[];
+    /**
+     * Serve the self-service deletion page at `/delete_account`.
+     *
+     * Optional and defaulting to true so an app generated before this feature existed still
+     * constructs — its `server.ts` is generated once and is not overwritten on later runs.
+     */
+    deleteAccount?: boolean;
 }
 
 export default class LoginUI {
@@ -1779,6 +1941,10 @@ export default class LoginUI {
         return this.router;
     }
 
+    private get deleteAccountEnabled(): boolean {
+        return this.config.deleteAccount ?? true;
+    }
+
     private registerRoutes(): void {
         this.router.get("/", this.homePage.bind(this));
         this.router.get("/login", this.loginPage.bind(this));
@@ -1786,6 +1952,9 @@ export default class LoginUI {
         this.router.get("/mytokens", this.myTokensPage.bind(this));
         this.router.get("/refreshtoken", this.refreshTokenPage.bind(this));
         this.router.get("/logincallback", this.loginCallbackPage.bind(this));
+        if (this.deleteAccountEnabled) {
+            this.router.get("/delete_account", this.deleteAccountPage.bind(this));
+        }
     }
 
     private nonce(): string {
@@ -1800,11 +1969,16 @@ export default class LoginUI {
                     <li><a href="/logout">LogOut</a></li>`
             : "";
 
+        const deleteAccountLink = this.deleteAccountEnabled
+            ? `<li><a href="/delete_account">Delete account</a></li>`
+            : "";
+
         res.send(`
             <div>
                 <h1>Hello World</h1>
                 <ul>
                     ${authLinks}
+                    ${deleteAccountLink}
                     <li><a href="/swagger">Swagger UI</a></li>
                 </ul>
                 <h1>Others</h1>
@@ -1901,6 +2075,36 @@ export default class LoginUI {
                 <pre id="tokenData"></pre>
                 <a href="/">back to home</a>
             </body>
+        `);
+    }
+
+    /**
+     * Self-service account deletion.
+     *
+     * The copy is deliberately explicit about what survives: this is a tombstone, not an erasure of
+     * everything. Claiming otherwise would contradict both the implementation and the store listing.
+     */
+    private deleteAccountPage(_req: Request, res: Response): void {
+        const nonce = this.nonce();
+        res.setHeader("Content-Security-Policy", `script-src 'self' 'nonce-${nonce}'`);
+        res.send(`
+            <link rel="stylesheet" href="/css/style.css">
+            <body>
+                <h1>Delete account</h1>
+                <p><strong>This cannot be undone.</strong></p>
+                <p>
+                    You will need to create a new account to use the service again; the same
+                    sign-in provider will not restore this one.
+                </p>
+                <p>Type <code>DELETE</code> to confirm:</p>
+                <input type="text" id="confirmInput" autocomplete="off"/>
+                <br/><br/>
+                <button id="deleteAccountBtn">Delete my account</button>
+                <br/><br/>
+                <pre id="deleteResult"></pre>
+                <a href="/">back to home</a>
+            </body>
+            <script nonce="${nonce}" src="/js/deleteaccount.js"></script>
         `);
     }
 }
@@ -2027,6 +2231,159 @@ export default class SwaggerRouter {
         return this.router;
     }
 
+}
+
+===== out/src/system/_services/account/AccountDeletionService.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import { VexRepository, Filter, VexResErr } from "../../_types/vex";
+import VexDb from "../VexDb.gen";
+import UserContext from "../../_middlewares/UserContext.gen";
+import { deleteAccountResponse } from "../../_types/auth.gen";
+import { UserEntity, User } from "../../_models/UserModel.gen";
+import { SessionEntity, Session } from "../../_models/SessionModel.gen";
+import { UserAuthProfilesEntity, UserAuthProfiles } from "../../_models/UserAuthProfilesModel.gen";
+import { UserRoleEntity, UserRole } from "../../_models/UserRoleModel.gen";
+
+/** The soft-delete marker this service tombstones with. */
+const softDeleteField = "deleted";
+/** The identity field — the tombstone keeps it, so business foreign keys stay resolvable. */
+const identityField = "_id";
+
+/**
+ * Fields wiped in the same write as the tombstone.
+ *
+ * Deliberately NOT a hard delete: business rows hold required foreign keys to this row, so the
+ * row must survive for them to stay resolvable. It is redacted instead — see the spec's
+ * tombstone decision.
+ */
+const TOMBSTONE: Partial<User> = {
+        // required column — placeholder, not null
+        name: "Deleted user",
+        // unique-indexed; must be NULL, never ""
+        email: null as unknown as string,
+        // personal data
+        locale: null as unknown as string,
+        // may quote provider error text
+        profileErrors: null as unknown as string,
+        // deactivated account
+        active: false,
+};
+
+/**
+ * Identity-domain account deletion.
+ *
+ * Ordering matters: credentials are removed BEFORE the tombstone is written. Tombstoning first
+ * would leave the OAuth path able to resolve the account through
+ * UserAuthProfiles.provider / oauthId — which is exactly how a deleted user would still be
+ * able to log back into their own tombstone. Doing the marker last also means a mid-flight failure
+ * leaves a still-live account the caller can simply delete again.
+ */
+export default class AccountDeletionService {
+
+    private get userRepo(): VexRepository<User> { return VexDb.getRepository(UserEntity); }
+    private get sessionRepo(): VexRepository<Session> { return VexDb.getRepository(SessionEntity); }
+    private get userAuthProfilesRepo(): VexRepository<UserAuthProfiles> { return VexDb.getRepository(UserAuthProfilesEntity); }
+    private get userRoleRepo(): VexRepository<UserRole> { return VexDb.getRepository(UserRoleEntity); }
+
+    /**
+     * Delete the calling account.
+     *
+     * The identity comes from the verified token only — no id is ever accepted from a path or a
+     * body, so one account cannot delete another.
+     */
+    public async deleteSelf(): Promise<deleteAccountResponse> {
+        const userId = UserContext.userId;
+        if (!userId) throw new VexResErr(401);
+
+        const existing = await this.userRepo.findOneWithDeleted(
+            { [identityField]: userId } as unknown as Filter<User>,
+        );
+        if (!existing) throw new VexResErr(404);
+
+        // idempotent: a repeat call must not re-stamp the row's audit fields
+        if ((existing as unknown as Record<string, unknown>)[softDeleteField] === true) {
+            return {
+                userId,
+                tombstonedAt: "",
+                deleted: { authProfiles: 0, userRoles: 0, sessions: 0 },
+            };
+        }
+
+        const deleted = await this.removeCredentials(userId);
+        const tombstoned = await this.userRepo.softDelete(userId, TOMBSTONE)
+            .catch(e => {
+                throw new VexResErr(500, undefined, "Account tombstone failed");
+            })
+        return {
+            userId,
+            tombstonedAt: String((tombstoned as unknown as Record<string, unknown>).updatedAt ?? ""),
+            deleted,
+        };
+    }
+
+    /** Count first, then delete, so the response can report how much was removed. */
+    private async removeCredentials(userId: string): Promise<deleteAccountResponse["deleted"]> {
+        const filter = { userId } as unknown as Filter<Session>;
+
+        const authProfiles = await this.userAuthProfilesRepo.count({ userId } as unknown as Filter<UserAuthProfiles>);
+        await this.userAuthProfilesRepo.deleteWhere({ userId } as unknown as Filter<UserAuthProfiles>);
+
+        const userRoles = await this.userRoleRepo.count({ userId } as unknown as Filter<UserRole>);
+        await this.userRoleRepo.deleteWhere({ userId } as unknown as Filter<UserRole>);
+        const sessions = await this.sessionRepo.count(filter);
+        await this.sessionRepo.deleteWhere(filter);
+
+        return {
+            authProfiles,
+            userRoles: userRoles,
+            sessions,
+        };
+    }
+}
+
+===== out/src/system/_services/auth/AccountStateGuard.gen.ts =====
+/**
+ * Generated by veryExpress@<version> 
+ * https://github.com/Justin26l/VeryExpress
+ */
+
+import { VexRepository, Filter } from "../../_types/vex";
+import VexDb from "../VexDb.gen";
+import { UserEntity, User } from "../../_models/UserModel.gen";
+
+/** The identity field (`x-vexData: "userId"`) and the soft-delete marker of that same document. */
+const identityField = "_id";
+const softDeleteField = "deleted";
+
+/**
+ * Whether the identity carried by a verified token still maps to a live account.
+ *
+ * Deliberately a direct read of the marker off the identity row rather than an ordinary
+ * repository read: the answer must depend on the marker's value alone, never on
+ * `app.showSoftDeleted`, which governs adapter *visibility*. Under a normal read the tombstone
+ * would simply be filtered out and every deleted account would look alive.
+ *
+ * `findOneWithDeleted` skips only the soft-delete term — the ownership filter still applies.
+ */
+export async function isActiveIdentity(userId: string | undefined): Promise<boolean> {
+    if (!userId) return false;
+
+    const row = await VexDb.getRepository<UserEntity>(UserEntity)
+        .findOneWithDeleted(
+            { [identityField]: userId } as unknown as Filter<User>,
+            undefined,
+            [identityField, softDeleteField] as unknown as string[],
+        );
+
+    if (row === null) return false;
+
+    // `!== true` rather than `!marker`: a row written before the column existed has no marker
+    // value at all and is still live, which is how the adapters treat it too ("marker IS NOT TRUE").
+    return (row as unknown as Record<string, unknown>)[softDeleteField] !== true;
 }
 
 ===== out/src/system/_services/auth/JWTKeyStore.gen.ts =====
@@ -2341,9 +2698,9 @@ export default class JWTService {
  */
 
 import { Model, Document } from "mongoose";
-import { VexRepository, Select, Filter, Join, VexPagination } from "../_types/vex";
-import DataIsolationContext from "../_middlewares/DataIsolationContext.gen";
-import { entityVexFields, VexFieldEntry } from "../_middlewares/VexFieldRegistry.gen";
+import { VexRepository, Select, Filter, Join, VexPagination, VexResErr } from "../_types/vex";
+import UserContext from "../_middlewares/UserContext.gen";
+import { entityVexFields, entitySoftDeleteFields, showSoftDeleted, VexFieldEntry } from "../_middlewares/VexFieldRegistry.gen";
 import utils from "../_utils";
 
 /** When a framework-managed field is written. */
@@ -2380,6 +2737,21 @@ export class MongooseRepositoryAdapter<T extends Document> implements VexReposit
     constructor(private model: Model<T>) {}
 
     /**
+     * Fail loud when an entity declares a create-phase user field but no identity is in
+     * scope — a silent NULL is exactly the failure this enforcement exists to kill.
+     *
+     * `onUpdateUserId` is deliberately NOT enforced: `updatedBy` is allowed to stay absent,
+     * and refusing a context-less update would also break pre-auth writes that don't touch it.
+     */
+    private assertCreateIdentity(fields: VexFieldEntry[]): void {
+        if (!fields.some(f => f.type === "onCreateUserId")) return;
+        if (UserContext.userId) return;
+
+        throw new VexResErr(500, undefined,
+            `${this.model.modelName} declares onCreateUserId but UserContext carries no user identity`);
+    }
+
+    /**
      * Framework-managed audit fields: strip the caller's values first — a client must never
      * forge createdBy / updatedAt — then fill the ones owned by this write phase.
      * Fields of the other phase are stripped without being written, which is what keeps
@@ -2389,7 +2761,9 @@ export class MongooseRepositoryAdapter<T extends Document> implements VexReposit
         const fields = entityVexFields[this.model.modelName + "Entity"] ?? [];
         if (fields.length === 0) return;
 
-        const userId = DataIsolationContext.getStore()?.userId;
+        if (phase === "create") this.assertCreateIdentity(fields);
+
+        const userId = UserContext.userId;
         const values: Record<string, unknown> = {};
 
         for (const entry of fields) {
@@ -2408,9 +2782,34 @@ export class MongooseRepositoryAdapter<T extends Document> implements VexReposit
         return this.model;
     }
 
+    /** Entity class name — the key used by the generated registries. */
+    private getEntityName(): string {
+        return this.model.modelName + "Entity";
+    }
+
+    /**
+     * Soft-delete term for this model, or null when it declares no marker.
+     *
+     * `$ne: true` (not `$eq: false`) so documents written before the field existed still count as
+     * live — the same leniency the SQL side gets from NOT NULL DEFAULT false.
+     */
+    private getSoftDeleteFilter(): Record<string, unknown> | null {
+        if (showSoftDeleted) return null;
+
+        const field = entitySoftDeleteFields[this.getEntityName()];
+        if (!field) return null;
+
+        return { [field]: { $ne: true } };
+    }
+
+    private mergeFilter(filter: Filter, options?: { includeSoftDeleted?: boolean }): Record<string, unknown> {
+        const softDelete = options?.includeSoftDeleted ? null : this.getSoftDeleteFilter();
+        return { ...((filter || {}) as Record<string, unknown>), ...softDelete };
+    }
+
     find(filter: Filter, join?: Join, select?: Select, pagination?: VexPagination): Promise<T[]> {
         // TODO: complete mongoose support, handle join, select, and pagination
-        return this.model.find((filter || {}) as any).exec();
+        return this.model.find(this.mergeFilter(filter) as any).exec();
     }
 
     async count(filter: Filter): Promise<number> {
@@ -2420,12 +2819,12 @@ export class MongooseRepositoryAdapter<T extends Document> implements VexReposit
 
     findOne(filter: Filter, join?: Join, select?: Select): Promise<T | null> {
         // TODO: complete mongoose support, handle join and select
-        return this.model.findOne(filter as any).exec();
+        return this.model.findOne(this.mergeFilter(filter) as any).exec();
     }
 
     findOneWhere(filter: Filter, join?: Join, select?: Select): Promise<T | null> {
         // TODO: complete mongoose support, handle join and select
-        return this.model.findOne(filter as any).exec();
+        return this.model.findOne(this.mergeFilter(filter) as any).exec();
     }
 
     async create(data: Partial<T>): Promise<T> {
@@ -2464,7 +2863,44 @@ export class MongooseRepositoryAdapter<T extends Document> implements VexReposit
     }
 
     async deleteWhere(filter: Record<string, unknown>): Promise<void> {
-        await this.model.deleteOne(filter as any).exec();
+        await this.model.deleteOne(this.mergeFilter(filter as Filter) as any).exec();
+    }
+
+    /**
+     * Tombstone the document: run the normal update-phase field machinery (so `updatedAt` /
+     * `updatedBy` record who deleted it and when), then write the marker plus any redaction
+     * the caller merged in.
+     */
+    async softDelete(id: string | undefined, data?: Partial<T>): Promise<T | null> {
+        if (!id) {
+            utils.log.error("MongooseRepositoryAdapter.softDelete called without id — refuse update document");
+            return null;
+        }
+
+        const field = entitySoftDeleteFields[this.getEntityName()];
+        if (!field) {
+            utils.log.error(
+                `MongooseRepositoryAdapter.softDelete on ${this.getEntityName()} — entity declares no ` +
+                `x-vexData "softDelete" field, refuse update document`
+            );
+            return null;
+        }
+
+        const enriched: Record<string, unknown> = { ...((data ?? {}) as Record<string, unknown>) };
+        this.applyVexFields(enriched as Partial<T>, "update");
+        enriched[field] = true;
+
+        const filter = this.mergeFilter({ _id: id } as Filter);
+        return this.model.findOneAndUpdate(filter as any, { $set: enriched }, { new: true }).exec();
+    }
+
+    /**
+     * Read a document that may be soft-deleted: skips the soft-delete term only.
+     * Framework-internal — see VexRepository.
+     */
+    findOneWithDeleted(filter: Filter, join?: Join, select?: Select): Promise<T | null> {
+        // TODO: complete mongoose support, handle join and select
+        return this.model.findOne(this.mergeFilter(filter, { includeSoftDeleted: true }) as any).exec();
     }
 }
 
@@ -2476,6 +2912,7 @@ export class MongooseRepositoryAdapter<T extends Document> implements VexReposit
 
 import { Profile } from "passport";
 import { UserWithRelations } from "./../../_types/User.gen";
+import { entitySoftDeleteFields } from "./../../_middlewares/VexFieldRegistry.gen";
 
 export interface IProfile extends Profile {
     [key: string]: any;
@@ -2499,8 +2936,26 @@ export default class OAuthProfileMap {
         return authProfile;
     }
 
+    /**
+     * Seed the soft-delete marker on a brand-new OAuth user.
+     *
+     * `User` is only soft-deletable in projects that tag a marker, and when they do the field is
+     * required — so the profile built here must carry it. Reusing the registry keeps this template
+     * correct for both kinds of project, including one whose marker is not named "deleted".
+     *
+     * The marker is assigned onto the finished profile rather than spread into its literal: the
+     * field name is only known at runtime, and a spread of a `Record<string, boolean>` widens the
+     * property to `boolean | undefined`, which the required `User` field rejects.
+     */
+    private applyNewUserMarker(user: UserWithRelations): UserWithRelations {
+        const field = entitySoftDeleteFields["UserEntity"];
+        if (field) (user as unknown as Record<string, unknown>)[field] = false;
+
+        return user;
+    }
+
     private GithubProfileMapping(oauthProfile: IProfile): UserWithRelations {
-        const user: UserWithRelations = {
+        const user = {
             active: true,
             userAuthProfiles: [{
                 provider: oauthProfile.provider,
@@ -2511,12 +2966,12 @@ export default class OAuthProfileMap {
             email: oauthProfile._json.email || oauthProfile._json.notification_email || undefined,
             locale: undefined,
             profileErrors: ""
-        };
+        } as unknown as UserWithRelations;
 
-        return user;
+        return this.applyNewUserMarker(user);
     }
     private GoogleProfileMapping(oauthProfile: IProfile): UserWithRelations {
-        const user: UserWithRelations = {
+        const user = {
             active: true,
             userAuthProfiles: [{
                 provider: oauthProfile.provider,
@@ -2528,9 +2983,9 @@ export default class OAuthProfileMap {
             email: oauthProfile._json.email || oauthProfile._json.notification_email || undefined,
             locale: oauthProfile._json.locale || undefined,
             profileErrors: ""
-        };
+        } as unknown as UserWithRelations;
 
-        return user;
+        return this.applyNewUserMarker(user);
     }
 
 }
@@ -2656,10 +3111,10 @@ export default class OAuthStrategyService {
  */
 
 import { Repository, ObjectLiteral, FindOptionsWhere, DeepPartial, In, Not, Like, MoreThan, LessThan, MoreThanOrEqual, LessThanOrEqual, FindManyOptions } from "typeorm";
-import { VexRepository, Select, Filter, Join, FieldOperators, VexPagination } from "../_types/vex";
-import DataIsolationContext from "../_middlewares/DataIsolationContext.gen";
+import { VexRepository, Select, Filter, Join, FieldOperators, VexPagination, VexResErr } from "../_types/vex";
+import UserContext from "../_middlewares/UserContext.gen";
 import { entityIsolation } from "../_middlewares/DataIsolationRegistry.gen";
-import { entityVexFields, VexFieldEntry } from "../_middlewares/VexFieldRegistry.gen";
+import { entityVexFields, entitySoftDeleteFields, showSoftDeleted, VexFieldEntry } from "../_middlewares/VexFieldRegistry.gen";
 import utils from "../_utils";
 
 /** When a framework-managed field is written. */
@@ -2702,6 +3157,21 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
     }
 
     /**
+     * Fail loud when an entity declares a create-phase user field but no identity is in
+     * scope — a silent NULL is exactly the failure this enforcement exists to kill.
+     *
+     * `onUpdateUserId` is deliberately NOT enforced: `updatedBy` is allowed to stay absent,
+     * and refusing a context-less update would also break pre-auth writes that don't touch it.
+     */
+    private assertCreateIdentity(fields: VexFieldEntry[]): void {
+        if (!fields.some(f => f.type === "onCreateUserId")) return;
+        if (UserContext.userId) return;
+
+        throw new VexResErr(500, undefined,
+            `${this.getEntityName()} declares onCreateUserId but UserContext carries no user identity`);
+    }
+
+    /**
      * Framework-managed audit fields: strip the caller's values first — a client must never
      * forge createdBy / updatedAt — then fill the ones owned by this write phase.
      * Fields of the other phase are stripped without being written, which is what keeps
@@ -2711,7 +3181,9 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
         const fields = entityVexFields[this.getEntityName()] ?? [];
         if (fields.length === 0) return;
 
-        const userId = DataIsolationContext.getStore()?.userId;
+        if (phase === "create") this.assertCreateIdentity(fields);
+
+        const userId = UserContext.userId;
         const values: Record<string, unknown> = {};
 
         for (const entry of fields) {
@@ -2728,25 +3200,45 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
 
     /** Build ownership filter from current request context, or null. */
     private getOwnershipFilter(): Record<string, unknown> | null {
-        const store = DataIsolationContext.getStore();
-        if (!store?.userId) return null;
+        const userId = UserContext.userId;
+        if (!userId) return null;
 
         const config = entityIsolation[this.getEntityName()];
         if (!config) return null;
 
-        return { [config.field]: store.userId };
+        return { [config.field]: userId };
+    }
+
+    /**
+     * Soft-delete term for this entity, or null when it declares no marker.
+     *
+     * `Not(true)` rather than `deleted: false`: the generated column is NOT NULL DEFAULT false, so
+     * the two are equivalent for rows written by this schema, and `Not(true)` stays correct for a
+     * row that predates the column (NULL) on a target where that can happen.
+     */
+    private getSoftDeleteFilter(): Record<string, unknown> | null {
+        if (showSoftDeleted) return null;
+
+        const field = entitySoftDeleteFields[this.getEntityName()];
+        if (!field) return null;
+
+        return { [field]: Not(true) };
     }
 
     /** Merge caller filter with ownership filter. Ownership always wins. */
-    private mergeFilter(callerFilter: Filter<T>): Record<string, unknown> | Array<Record<string, unknown>> {
+    private mergeFilter(
+        callerFilter: Filter<T>,
+        options?: { includeSoftDeleted?: boolean },
+    ): Record<string, unknown> | Array<Record<string, unknown>> {
         const mapped = this.mapOperators(callerFilter);
         const ownership = this.getOwnershipFilter();
+        const softDelete = options?.includeSoftDeleted ? null : this.getSoftDeleteFilter();
 
         if (mapped instanceof Array) {
-            return mapped.map(branch => ({ ...branch, ...ownership }));
+            return mapped.map(branch => ({ ...branch, ...softDelete, ...ownership }));
         } 
         else {
-            return { ...mapped, ...ownership };
+            return { ...mapped, ...softDelete, ...ownership };
         }
     }
 
@@ -2854,11 +3346,11 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
 
     async create(data: Partial<T>): Promise<T> {
         const enriched = { ...data };
-        const store = DataIsolationContext.getStore();
-        if (store?.userId) {
+        const userId = UserContext.userId;
+        if (userId) {
             const config = entityIsolation[this.getEntityName()];
             if (config && config.field !== "_id") {
-                (enriched as Record<string, unknown>)[config.field] = store.userId;
+                (enriched as Record<string, unknown>)[config.field] = userId;
             }
         }
         this.applyVexFields(enriched, "create");
@@ -2901,6 +3393,52 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
     async deleteWhere(filter: Record<string, unknown>): Promise<void> {
         const where = this.mergeFilter(filter as unknown as Filter<T>);
         await this.repo.delete(where as FindOptionsWhere<T>);
+    }
+
+    /**
+     * Tombstone the row: run the normal update-phase field machinery (so `updatedAt` /
+     * `updatedBy` record who deleted it and when), then write the marker plus any redaction
+     * the caller merged in.
+     */
+    async softDelete(id: string | undefined, data?: Partial<T>): Promise<T | null> {
+        if (!id) {
+            utils.log.error("TypeOrmRepositoryAdapter.softDelete called without id — refuse update entity");
+            return null;
+        }
+
+        const field = entitySoftDeleteFields[this.getEntityName()];
+        if (!field) {
+            utils.log.error(
+                `TypeOrmRepositoryAdapter.softDelete on ${this.getEntityName()} — entity declares no ` +
+                `x-vexData "softDelete" field, refuse update entity`
+            );
+            return null;
+        }
+
+        const enriched = { ...(data ?? {}) } as Record<string, unknown>;
+        this.applyVexFields(enriched as Partial<T>, "update");
+        enriched[field] = true;
+
+        const where = this.mergeFilter({ _id: id } as unknown as Filter<T>);
+        // the generic ObjectLiteral constraint makes TypeORM's own _QueryDeepPartialEntity
+        // unresolvable here; `update` already accepts the same shape on the ordinary path
+        await this.repo.update(where as FindOptionsWhere<T>, enriched as never);
+        return this.repo.findOne({
+            where: { _id: id } as unknown as T
+        });
+    }
+
+    /**
+     * Read a row that may be soft-deleted: skips the soft-delete term only, so the ownership
+     * filter still applies. Framework-internal — see VexRepository.
+     */
+    findOneWithDeleted(filter: Filter<T>, join?: Join, select?: Select): Promise<T | null> {
+        const where = this.mergeFilter(filter, { includeSoftDeleted: true }) as FindOptionsWhere<T>;
+        return this.repo.findOne({
+            select,
+            where,
+            relations: join
+        });
     }
 }
 
@@ -3169,6 +3707,21 @@ export interface localLoginResponse {
     url: string;
 }
 
+/** Row counts removed alongside the tombstone, so the caller can log and retry. */
+export interface deleteAccountCounts {
+    authProfiles: number;
+    userRoles: number;
+    sessions: number;
+}
+
+/** Result of a self-service account deletion. */
+export interface deleteAccountResponse {
+    userId: string;
+    /** When the tombstone was written (the row's updatedAt). Empty on a repeat call. */
+    tombstonedAt: string;
+    deleted: deleteAccountCounts;
+}
+
 ===== out/src/system/_types/Session.gen.ts =====
 /**
  * Generated by veryExpress@<version> 
@@ -3204,7 +3757,7 @@ export interface SessionApiRelations {
 export type SessionWithApiRelations = Session & SessionApiRelations;
 
 /** Request body for create / put / patch — server-managed fields are not accepted from the client */
-export type CreateSession = Omit<Session, "_id">;
+export type PayloadSession = Omit<Session, "_id">;
 
 ===== out/src/system/_types/User.gen.ts =====
 /**
@@ -3225,6 +3778,10 @@ export interface User {
     createdAt?: string;
     updatedAt?: string;
     updatedBy?: string;
+    /**
+     * Soft-delete marker. Framework-managed; never client-writable. Hides the row from every ordinary query unless app.showSoftDeleted is on.
+     */
+    deleted: boolean;
 }
 
 /** Full DB relations — internal use only, no whitelist restriction */
@@ -3250,7 +3807,7 @@ export interface UserApiRelations {
 export type UserWithApiRelations = User & UserApiRelations;
 
 /** Request body for create / put / patch — server-managed fields are not accepted from the client */
-export type CreateUser = Omit<User, "createdAt" | "updatedAt" | "updatedBy" | "_id">;
+export type PayloadUser = Omit<User, "createdAt" | "updatedAt" | "updatedBy" | "deleted" | "_id">;
 
 ===== out/src/system/_types/UserAuthProfiles.gen.ts =====
 /**
@@ -3286,7 +3843,7 @@ export interface UserAuthProfilesApiRelations {
 export type UserAuthProfilesWithApiRelations = UserAuthProfiles & UserAuthProfilesApiRelations;
 
 /** Request body for create / put / patch — server-managed fields are not accepted from the client */
-export type CreateUserAuthProfiles = Omit<UserAuthProfiles, "_id">;
+export type PayloadUserAuthProfiles = Omit<UserAuthProfiles, "_id">;
 
 ===== out/src/system/_types/UserRole.gen.ts =====
 /**
@@ -3324,7 +3881,7 @@ export enum RoleEnum {
 }
 
 /** Request body for create / put / patch — server-managed fields are not accepted from the client */
-export type CreateUserRole = Omit<UserRole, "_id">;
+export type PayloadUserRole = Omit<UserRole, "_id">;
 
 ===== out/src/system/_types/vex/index.ts =====
 export * from "./VexRepository.gen";
@@ -3356,6 +3913,27 @@ export interface VexRepository<T, U=undefined> {
     update(id: string | undefined, data: Partial<T>): Promise<T | null>;
     delete(id: string | undefined): Promise<void>;
     deleteWhere(filter: Filter<T>): Promise<void>;
+
+    /**
+     * Mark an entity soft-deleted, optionally merging app-level redaction into the same write.
+     *
+     * Runs the normal update-phase machinery, so `updatedAt` / `updatedBy` record who tombstoned
+     * the row and when. No-op returning null when the entity declares no marker.
+     *
+     * Only for framework-internal callers: the marker is deliberately not part of `Filter`, and
+     * it is stripped from every generated request body, so no client can reach this through the API.
+     */
+    softDelete(id: string | undefined, data?: Partial<T>): Promise<[U] extends [undefined] ? T | null : U | null>;
+
+    /**
+     * Read a row that may be soft-deleted.
+     *
+     * Skips ONLY the adapter's soft-delete term — the ownership filter still applies, so this is
+     * not a way around `dataIsolation`. Exists for internal state checks (account-deletion
+     * idempotency, the account-state guard); a `Filter`-level escape hatch would have been part of
+     * every HTTP filter body, which is exactly what must not be possible.
+     */
+    findOneWithDeleted(filter: Filter<T>, join?: Join, select?: Select): Promise<[U] extends [undefined] ? T | null : U | null>;
 }
 
 ===== out/src/system/_types/vex/VexRequest.gen.ts =====

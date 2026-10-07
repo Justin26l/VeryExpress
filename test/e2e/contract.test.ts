@@ -227,7 +227,7 @@ describeE2E("generated app — end-to-end contract", () => {
     });
 
     /**
-     * Server-managed fields are not part of the request body type (`CreateX`), and the generated
+     * Server-managed fields are not part of the request body type (`PayloadX`), and the generated
      * tsoa config is `throw-on-extras`: a caller that tries to set an audit field is rejected
      * outright rather than having the value silently dropped.
      */

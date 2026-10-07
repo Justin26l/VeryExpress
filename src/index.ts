@@ -8,6 +8,7 @@ import log from "./utils/logger";
 import { applyFkMetadata } from "./preprocess/jsonSchemaForeignKeys";
 import { formatJsonSchema, formatJsonSchemaRoleDefinition } from "./preprocess/jsonschemaFormat";
 import { validateAuditFields } from "./preprocess/auditFields";
+import { validateSoftDeleteFields } from "./preprocess/softDelete";
 
 import * as types from "./types/types";
 import * as userSchemaGen from "./generators/projectSettings/userSchema.generator";
@@ -25,6 +26,8 @@ import * as interfaceGen from "./generators/interface/generator";
 import * as joinWhitelistRegistryGen from "./generators/middlewares/joinWhitelistRegistry.generator";
 import * as dataIsolationRegistryGen from "./generators/middlewares/dataIsolationRegistry.generator";
 import * as vexFieldRegistryGen from "./generators/middlewares/vexFieldRegistry.generator";
+import * as accountStateGuardGen from "./generators/services/accountStateGuard.generator";
+import * as accountDeletionGen from "./generators/services/accountDeletion.generator";
 
 export async function generate(
     options: types.compilerOptions
@@ -118,7 +121,11 @@ export async function generate(
     applyFkMetadata(documents);
 
     // audit / ownership declarations are cross-document (one identity source) — validate once
-    validateAuditFields(documents);
+    validateAuditFields(documents, options);
+
+    // soft-delete markers are per-document, but validated in the same pass so every schema
+    // contradiction is reported together, before anything is generated
+    validateSoftDeleteFields(documents);
 
     // ===== Start Generations ===== //
 
@@ -193,6 +200,7 @@ export async function generate(
         allSchemas: documents.map(d => d.schema),
         documents: documents.map(d => ({ path: d.path, schema: d.schema })),
         middlewareDir: dir.middlewareDir,
+        compilerOptions: options,
     });
 
     // generate sql migrations
@@ -202,6 +210,21 @@ export async function generate(
     //         outDir: dir.modelDir,
     //     });
     // }
+
+    // generate account-state guard — Authentication.middleware imports it unconditionally,
+    // so it is emitted for every project (no-op when the identity document is not soft-deletable)
+    await accountStateGuardGen.compile({
+        documents: documents.map(d => ({ path: d.path, schema: d.schema })),
+        serviceDir: dir.serviceDir,
+        compilerOptions: options,
+    });
+
+    // generate account-deletion service (identity domain; only when the feature is enabled)
+    await accountDeletionGen.compile({
+        documents: documents.map(d => ({ path: d.path, schema: d.schema })),
+        serviceDir: dir.serviceDir,
+        compilerOptions: options,
+    });
 
     // generate route from routeData
     await routeGen.compile({

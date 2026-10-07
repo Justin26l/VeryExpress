@@ -71,7 +71,7 @@ Declared per entity in `x-documentConfig → dataIsolation: { field: "ownerId" }
 Generation produces three pieces:
 
 1. `DataIsolationRegistry.gen.ts` (`src/generators/middlewares/dataIsolationRegistry.generator.ts`) — entity → ownership-field map
-2. `DataIsolationContext.ts` middleware — `AsyncLocalStorage` carrying the current user through the request pipeline
+2. `UserContext.ts` — `AsyncLocalStorage` carrying the current user through the request pipeline; filled by `Authentication.middleware` from the verified token, not by a dedicated middleware
 3. The TypeORM adapter reads the user ID from that context and injects `{ [field]: userId }` into every query — transparent row-level ownership, no per-controller code
 
 Full guide: [`docs/features/dataIsolation.md`](../features/dataIsolation.md).
@@ -82,7 +82,8 @@ Columns declared with a reserved `default` keyword (`onCreateTimestamp`, `onUpda
 the repository adapters on `create` / `update` / `replace` — a shared helper strips client-supplied values
 first, then injects per write phase. Both targets implement it; the entity → field map comes from
 `VexFieldRegistry.gen.ts` (`src/generators/middlewares/vexFieldRegistry.generator.ts`), which also exports the
-`x-vexData: "userId"` identity field the token pipeline reads.
+`x-vexData: "userId"` identity field the token pipeline reads. A `create` that declares `onCreateUserId` but
+finds no identity in `UserContext` throws rather than writing NULL.
 
 Guide: [`docs/features/auditFields.md`](../features/auditFields.md).
 

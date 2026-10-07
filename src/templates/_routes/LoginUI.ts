@@ -5,6 +5,13 @@ import crypto from "crypto";
 export interface LoginUIConfig {
     localAuth: boolean;
     oauthProviders: string[];
+    /**
+     * Serve the self-service deletion page at `/delete_account`.
+     *
+     * Optional and defaulting to true so an app generated before this feature existed still
+     * constructs — its `server.ts` is generated once and is not overwritten on later runs.
+     */
+    deleteAccount?: boolean;
 }
 
 export default class LoginUI {
@@ -21,6 +28,10 @@ export default class LoginUI {
         return this.router;
     }
 
+    private get deleteAccountEnabled(): boolean {
+        return this.config.deleteAccount ?? true;
+    }
+
     private registerRoutes(): void {
         this.router.get("/", this.homePage.bind(this));
         this.router.get("/login", this.loginPage.bind(this));
@@ -28,6 +39,9 @@ export default class LoginUI {
         this.router.get("/mytokens", this.myTokensPage.bind(this));
         this.router.get("/refreshtoken", this.refreshTokenPage.bind(this));
         this.router.get("/logincallback", this.loginCallbackPage.bind(this));
+        if (this.deleteAccountEnabled) {
+            this.router.get("/delete_account", this.deleteAccountPage.bind(this));
+        }
     }
 
     private nonce(): string {
@@ -42,11 +56,16 @@ export default class LoginUI {
                     <li><a href="/logout">LogOut</a></li>`
             : "";
 
+        const deleteAccountLink = this.deleteAccountEnabled
+            ? `<li><a href="/delete_account">Delete account</a></li>`
+            : "";
+
         res.send(`
             <div>
                 <h1>Hello World</h1>
                 <ul>
                     ${authLinks}
+                    ${deleteAccountLink}
                     <li><a href="/swagger">Swagger UI</a></li>
                 </ul>
                 <h1>Others</h1>
@@ -143,6 +162,36 @@ export default class LoginUI {
                 <pre id="tokenData"></pre>
                 <a href="/">back to home</a>
             </body>
+        `);
+    }
+
+    /**
+     * Self-service account deletion.
+     *
+     * The copy is deliberately explicit about what survives: this is a tombstone, not an erasure of
+     * everything. Claiming otherwise would contradict both the implementation and the store listing.
+     */
+    private deleteAccountPage(_req: Request, res: Response): void {
+        const nonce = this.nonce();
+        res.setHeader("Content-Security-Policy", `script-src 'self' 'nonce-${nonce}'`);
+        res.send(`
+            <link rel="stylesheet" href="/css/style.css">
+            <body>
+                <h1>Delete account</h1>
+                <p><strong>This cannot be undone.</strong></p>
+                <p>
+                    You will need to create a new account to use the service again; the same
+                    sign-in provider will not restore this one.
+                </p>
+                <p>Type <code>DELETE</code> to confirm:</p>
+                <input type="text" id="confirmInput" autocomplete="off"/>
+                <br/><br/>
+                <button id="deleteAccountBtn">Delete my account</button>
+                <br/><br/>
+                <pre id="deleteResult"></pre>
+                <a href="/">back to home</a>
+            </body>
+            <script nonce="${nonce}" src="/js/deleteaccount.js"></script>
         `);
     }
 }

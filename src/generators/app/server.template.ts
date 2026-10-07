@@ -11,7 +11,8 @@ const importLoginUI = "import LoginUI from \"./system/_routes/LoginUI.gen\";";
 // configure
 const ConfigSwaggerRouter = "const SwaggerRoute = new SwaggerRouter();";
 const ConfigAuthRouter = "const AuthRoute = new AuthRouter();";
-const ConfigLoginUiRouter = (localAuth: boolean, providers: string[]) =>`const loginUI = new LoginUI({ localAuth: ${localAuth}, oauthProviders: ${JSON.stringify(providers)} });`;
+const ConfigLoginUiRouter = (localAuth: boolean, providers: string[], deleteAccount: boolean) =>
+    `const loginUI = new LoginUI({ localAuth: ${localAuth}, oauthProviders: ${JSON.stringify(providers)}, deleteAccount: ${deleteAccount} });`;
 
 
 // use
@@ -116,7 +117,11 @@ main();
     }
 
     Import.push(importLoginUI);
-    Config.push(ConfigLoginUiRouter(options.compilerOptions.auth.localAuth, OAuthProviders));
+    Config.push(ConfigLoginUiRouter(
+        options.compilerOptions.auth.localAuth,
+        OAuthProviders,
+        utils.generator.isAccountDeletionEnabled(options.compilerOptions),
+    ));
     AppRoute.push(UseLoginUI);
 
     template = template.replace(/{{Import}}/g, Import.join("\n"));

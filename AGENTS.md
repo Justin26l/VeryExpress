@@ -64,6 +64,8 @@ Read from `vex.config.json → jsonSchemaDir` (this repo: `./output/jsonSchema`)
 - **`src/` is ESM-style TypeScript with `~/*` → `src/*` aliasing.** Use `~/generators/...`, `~/utils/...`, `~/types/...` for intra-repo imports.
 - **Only `one-to-one` and `many-to-one` are declared in `x-foreignKey`.** `one-to-many` is derived from the other side and must not be hand-written.
 - **RBAC is opt-in.** `utils.generator.isRbacEnabled()` is the single gate for every RBAC code path. Absent `useRBAC`, or `roles: []`, means RBAC off — never "RBAC with zero roles". Never branch on `compilerOptions.useRBAC` directly.
+- **Auth is the only identity gate.** `UserContext` is established by `Authentication.middleware` from the verified token — there is no separate context middleware, and no generated decorator decides it. Never gate identity on `dataIsolation`: audit fields and ownership filtering are independent features. Use `utils.generator.isAuthEnabled()` when a code path depends on auth being on.
+- **A create that declares `onCreateUserId` with no identity in `UserContext` throws.** Both repository adapters enforce it; `onUpdateUserId` is deliberately not enforced. `dataIsolation` no longer has anything to do with whether the context exists.
 - **Boolean config defaults use `??`, not `||`.** `x || true` swallows an explicit `false`.
 
 ## Conventions
@@ -108,7 +110,7 @@ This file covers only what every session needs. Deeper material lives in `docs/`
 | [`docs/ForeignKey.md`](docs/ForeignKey.md) | FK joins via the API `join` parameter |
 | [`docs/developmentNote.md`](docs/developmentNote.md) | Why no ts-node, esbuild/dist working dir, `FUNC{{ }}` intent |
 | [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) | Setup, branch/PR workflow, PR checklist |
-| [`docs/features/`](docs/features/) | rbac, dataIsolation, filterOperators, joinWhitelist, auditFields |
+| [`docs/features/`](docs/features/) | rbac, dataIsolation, filterOperators, joinWhitelist, auditFields, accountDeletion |
 | [`docs/appGenerated/auth.md`](docs/appGenerated/auth.md) | JWT rolling keys, OAuth2 providers |
 | [`docs/roadMap/`](docs/roadMap/) | Released features and version milestones |
 | [`docs/releaseNote/`](docs/releaseNote/) | Per-version release notes |

@@ -121,27 +121,39 @@ adapters. Both adapters apply the same two-step rule:
 Stripping-without-injecting on the opposite phase is what keeps `createdBy` / `createdAt` immutable:
 a PATCH never overwrites them.
 
+### Where the identity comes from
+
+`UserContext` (`src/system/_middlewares/UserContext.gen.ts`) is an `AsyncLocalStorage` store that
+`Authentication.middleware` fills from the **verified access token** — `vexUserId` (the value of the
+field tagged `x-vexData: "userId"`), with `_id` as the fallback for tokens issued before that claim
+existed.
+
+There is no separate context middleware to mount. Authentication *is* the mount point, so any
+controller that authenticates establishes the context for the whole downstream chain — the repository
+adapters included. The data layer never inspects the token shape; it reads the normalized
+`UserContext.userId`.
+
 Values written:
 
 | keyword kind | value |
 | --- | --- |
 | `onXXTimestamp` | `new Date().toISOString()` — an ISO-8601 string the `timestamptz` column accepts directly |
 | `onXXUnixTimestamp` | `Math.floor(Date.now() / 1000)` — epoch seconds |
-| `onXXUserId` | the request context identity (`vexUserId`); **skipped** when there is none |
+| `onXXUserId` | the request context identity (`UserContext.userId`); **skipped** when there is none — except on create, which raises instead (see §5) |
 
 The registry generator is the only place that knows the mapping: adapters import
 `entityVexFields` at runtime rather than re-deriving it from the schema.
 
-### Request body type — `Create{Doc}`
+### Request body type — `Payload{Doc}`
 
 Server-owned fields must not appear in the API *input*. The interface generator therefore emits, into
 `src/system/_types/{Doc}.gen.ts`:
 
 ```ts
-export type CreateJob = Omit<Job, "createdAt" | "createdBy" | "updatedAt" | "updatedBy" | "_id">;
+export type PayloadJob = Omit<Job, "createdAt" | "createdBy" | "updatedAt" | "updatedBy" | "_id">;
 ```
 
-and the controllers accept `Create{Doc}` (create, put) / `Partial<Create{Doc}>` (patch). The omission is
+and the controllers accept `Payload{Doc}` (create, put) / `Partial<Payload{Doc}>` (patch). The omission is
 **declaration-based, never name-based**: a field is dropped when it carries a reserved `default` keyword,
 or when it is the primary key (`x-format: Primary` / `PrimaryUUID`) and `app.allowApiCreateUpdate_id` is
 false. A column literally named `createdAt` without a keyword stays client-writable — the declaration is
@@ -181,12 +193,22 @@ raw SQL bypasses the audit fields — same as any ORM-level convention. Document
 
 ## 5. No authenticated context
 
-Public / anonymous / internal calls have no ALS store (`DataIsolationContext` does not run one when
-`req.user` is absent):
+Public / anonymous / internal calls have no `UserContext` store at all — `Authentication.middleware`
+is what creates one, so a route that does not authenticate never has an identity to offer.
 
 - Timestamp keywords are context-free → **still injected**.
-- `onXXUserId` keywords → **skipped**, field left unset (NULL column). Never `"undefined"`, never a throw.
-- Nothing in the write path raises because the context is missing.
+- `onUpdateUserId` → **skipped**, field left absent. Never `"undefined"`, never a throw. On an update
+  the column keeps whatever value it already had (the field is stripped from the payload either way),
+  so a context-less update silently preserves a stale `updatedBy` rather than blanking it.
+- `onCreateUserId` → **throws**. A create that cannot record who created the row is a broken invariant,
+  not a value that may be "missing": the whole point of the keyword is that the column is trustworthy.
+  This is the regression that left `createdBy` NULL in every generated app — see the release note.
+- Nothing else in the write path raises because the context is missing.
+
+The check lives in the repository adapters (`assertCreateIdentity`) and is deliberately scoped to
+`onCreateUserId`: it fires for the phase that declares the keyword, so an entity that only declares
+`onUpdateUserId` is unaffected. R8 (§6) rejects the config earlier, at generation time, when the app has
+no auth at all and therefore *no* create could ever succeed.
 
 ## 6. Validation (`formatJsonSchema` / checkSchema stage — fail at generation, not at runtime)
 
@@ -199,26 +221,21 @@ Public / anonymous / internal calls have no ALS store (`DataIsolationContext` do
 | R5 | `onXXTimestamp` must be `string` + `x-format: "Timestamp"`; `onXXUnixTimestamp` must be `integer` + `x-format: "UnixTimestamp"` | error |
 | R6 | `x-vexData` value must be a known one (`role`, `userId`) — catches typos | error |
 | R7 | an audit field must not be `required` — its value is stripped from the client body anyway | error |
+| R8 | `onCreateUserId` present but the app enables no authentication (`auth.localAuth` false and every oauth provider off) | error |
 
 R4 compares the **resolved** family, not the raw string: `Primary`, `PrimaryUUID` and `UUID` all resolve to
 `uuid`, so tagging `_id` as `PrimaryUUID` and declaring `createdBy` as `UUID` is consistent and does not
 raise. The error message names both offending paths (the tagged field and the audit field).
 
+R8 mirrors the runtime guard rather than the declaration surface: it fires on `onCreateUserId` only, because
+that is the only keyword the adapters refuse to skip. A schema that declares just `onUpdateUserId` in an
+auth-less app is accepted — nothing will ever throw, the column simply stays unset. Being stricter here would
+reject configs that cannot actually fail, and would break the default `User.json` template (which declares
+`updatedBy` and is copied into every app, auth or not).
+
 Validation runs once, after every schema is loaded (`validateAuditFields()` in
 `src/preprocess/auditFields.ts`, called from the pipeline), because R1/R2 are cross-document. All problems
 are collected and reported together; `log.error` exits the generator, so a contradiction never reaches runtime.
-
-## 7. Backward compatibility
-
-- Schema with no reserved keyword and no tag → nothing changes; generation output is identical.
-- Schema with a literal `default` → unchanged.
-- Existing generated apps: re-run `vex`; entities gain `nullable` audit columns if they were declared.
-- Existing rows keep `createdBy = NULL`. This feature cannot backfill; a downstream app that needs
-  ownership on legacy rows must migrate data itself.
-- Tokens issued before the upgrade still work (the `?? _id` fallback on refresh).
-- The prototype branch's lowercase `x-format` values (`primary`, `uuid`, …) are **rejected** — this design
-  keeps the current capitalized values (`Primary`, `PrimaryUUID`, `UUID`, `UnixTimestamp`) and only adds
-  `Timestamp`.
 
 ## 8. Mongoose
 

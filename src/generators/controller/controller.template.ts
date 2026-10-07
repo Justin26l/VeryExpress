@@ -17,11 +17,10 @@ export default function controllerTemplate(templateOptions: {
     restApiNoRelations?: boolean;
     restApiJoinWhitelist?: boolean;
     compilerOptions: types.compilerOptions;
-    dataIsolation?: types.DataIsolationConfig;
     /** fields the server owns — the request body type omits them */
     requestManagedFields?: string[];
 }): string {
-    const { documentName, idType, restApiMethods, restApiNoRelations, restApiJoinWhitelist, compilerOptions, modelPath, typePath, dataIsolation, requestManagedFields = [] } = templateOptions;
+    const { documentName, idType, restApiMethods, restApiNoRelations, restApiJoinWhitelist, compilerOptions, modelPath, typePath, requestManagedFields = [] } = templateOptions;
     const useRBAC = utils.generator.isRbacEnabled(compilerOptions);
     const useAuth = compilerOptions.auth.localAuth || utils.generator.OAuthProviders(compilerOptions).length > 0;
     const cleanId = compilerOptions.app.allowApiCreateUpdate_id
@@ -30,9 +29,9 @@ export default function controllerTemplate(templateOptions: {
     const routePath = documentName.toLowerCase();
 
     // Request body type. When the schema declares server-managed fields (reserved `default`
-    // keywords, primary key), the interface generator emits `Create{Doc}` without them, so the
+    // keywords, primary key), the interface generator emits `Payload{Doc}` without them, so the
     // OpenAPI request schema stops advertising fields the server strips or overwrites.
-    const requestBodyType = requestManagedFields.length > 0 ? `Create${documentName}` : documentName;
+    const requestBodyType = requestManagedFields.length > 0 ? `Payload${documentName}` : documentName;
 
     // body fields — exclude _id (auto-generated primary key)
     // const bodyFields = fields.filter(f => f.name !== "_id");
@@ -40,7 +39,7 @@ export default function controllerTemplate(templateOptions: {
     // ── tsoa decorator imports ──────────────────────────────────────────────────
     const decoratorNames: string[] = [];
     decoratorNames.push("Route", "Tags", "Body", "Path", "Query", "SuccessResponse");
-    if (useRBAC || restApiJoinWhitelist || dataIsolation) decoratorNames.push("Middlewares");
+    if (useRBAC || restApiJoinWhitelist) decoratorNames.push("Middlewares");
     if (useAuth) decoratorNames.push("Security");
     if (restApiMethods.includes("get"))                                decoratorNames.push("Get");
     if (restApiMethods.includes("post") || restApiMethods.includes("getList")) decoratorNames.push("Post");
@@ -52,7 +51,6 @@ export default function controllerTemplate(templateOptions: {
         useRBAC ? "import RoleBaseAccessControl from \"../_middlewares/RoleBaseAccessControl.gen\";" : "",
         useAuth ? "import Authentication from \"../_middlewares/Authentication.gen\";" : "",
         restApiJoinWhitelist ? "import JoinWhitelistMiddleware from \"../_middlewares/JoinWhitelistMiddleware.gen\";" : "",
-        dataIsolation ? "import DataIsolationContext from \"../_middlewares/DataIsolationContext.gen\";" : "",
     ].filter(Boolean).join("\n");
 
     // ── Class decorators ────────────────────────────────────────────────────────
@@ -61,7 +59,6 @@ export default function controllerTemplate(templateOptions: {
     classDecoratorLines.push(`@Tags("${documentName}")`);
     if (useRBAC) classDecoratorLines.push(`@Middlewares(RoleBaseAccessControl.middleware("${documentName}"))`);
     if (useAuth) {
-        if (dataIsolation) classDecoratorLines.push("@Middlewares(DataIsolationContext.middleware)");
         classDecoratorLines.push("@Middlewares(Authentication.middleware)");
         // One security requirement object holds BOTH schemes, which OpenAPI reads as
         // AND: every listed scheme must be satisfied. Two separate `@Security(...)`

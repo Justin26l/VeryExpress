@@ -57,7 +57,6 @@ export async function compile(options: {
         restApiJoinWhitelist: schemaConfig.restApi.joinWhitelist !== undefined,
         restApiNoRelations: Boolean(schemaConfig.restApi.noRelations),
         compilerOptions: options.compilerOptions,
-        dataIsolation: schemaConfig.dataIsolation,
         // server-managed fields: the request body type omits them (see the interface generator)
         requestManagedFields: collectRequestManagedFields(
             schema,

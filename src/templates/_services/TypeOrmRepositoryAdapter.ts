@@ -1,9 +1,9 @@
 // {{headerComment}}
 import { Repository, ObjectLiteral, FindOptionsWhere, DeepPartial, In, Not, Like, MoreThan, LessThan, MoreThanOrEqual, LessThanOrEqual, FindManyOptions } from "typeorm";
-import { VexRepository, Select, Filter, Join, FieldOperators, VexPagination } from "../_types/vex";
-import DataIsolationContext from "../_middlewares/DataIsolationContext.gen";
+import { VexRepository, Select, Filter, Join, FieldOperators, VexPagination, VexResErr } from "../_types/vex";
+import UserContext from "../_middlewares/UserContext.gen";
 import { entityIsolation } from "../_middlewares/DataIsolationRegistry.gen";
-import { entityVexFields, VexFieldEntry } from "../_middlewares/VexFieldRegistry.gen";
+import { entityVexFields, entitySoftDeleteFields, showSoftDeleted, VexFieldEntry } from "../_middlewares/VexFieldRegistry.gen";
 import utils from "../_utils";
 
 /** When a framework-managed field is written. */
@@ -46,6 +46,21 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
     }
 
     /**
+     * Fail loud when an entity declares a create-phase user field but no identity is in
+     * scope — a silent NULL is exactly the failure this enforcement exists to kill.
+     *
+     * `onUpdateUserId` is deliberately NOT enforced: `updatedBy` is allowed to stay absent,
+     * and refusing a context-less update would also break pre-auth writes that don't touch it.
+     */
+    private assertCreateIdentity(fields: VexFieldEntry[]): void {
+        if (!fields.some(f => f.type === "onCreateUserId")) return;
+        if (UserContext.userId) return;
+
+        throw new VexResErr(500, undefined,
+            `${this.getEntityName()} declares onCreateUserId but UserContext carries no user identity`);
+    }
+
+    /**
      * Framework-managed audit fields: strip the caller's values first — a client must never
      * forge createdBy / updatedAt — then fill the ones owned by this write phase.
      * Fields of the other phase are stripped without being written, which is what keeps
@@ -55,7 +70,9 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
         const fields = entityVexFields[this.getEntityName()] ?? [];
         if (fields.length === 0) return;
 
-        const userId = DataIsolationContext.getStore()?.userId;
+        if (phase === "create") this.assertCreateIdentity(fields);
+
+        const userId = UserContext.userId;
         const values: Record<string, unknown> = {};
 
         for (const entry of fields) {
@@ -72,25 +89,45 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
 
     /** Build ownership filter from current request context, or null. */
     private getOwnershipFilter(): Record<string, unknown> | null {
-        const store = DataIsolationContext.getStore();
-        if (!store?.userId) return null;
+        const userId = UserContext.userId;
+        if (!userId) return null;
 
         const config = entityIsolation[this.getEntityName()];
         if (!config) return null;
 
-        return { [config.field]: store.userId };
+        return { [config.field]: userId };
+    }
+
+    /**
+     * Soft-delete term for this entity, or null when it declares no marker.
+     *
+     * `Not(true)` rather than `deleted: false`: the generated column is NOT NULL DEFAULT false, so
+     * the two are equivalent for rows written by this schema, and `Not(true)` stays correct for a
+     * row that predates the column (NULL) on a target where that can happen.
+     */
+    private getSoftDeleteFilter(): Record<string, unknown> | null {
+        if (showSoftDeleted) return null;
+
+        const field = entitySoftDeleteFields[this.getEntityName()];
+        if (!field) return null;
+
+        return { [field]: Not(true) };
     }
 
     /** Merge caller filter with ownership filter. Ownership always wins. */
-    private mergeFilter(callerFilter: Filter<T>): Record<string, unknown> | Array<Record<string, unknown>> {
+    private mergeFilter(
+        callerFilter: Filter<T>,
+        options?: { includeSoftDeleted?: boolean },
+    ): Record<string, unknown> | Array<Record<string, unknown>> {
         const mapped = this.mapOperators(callerFilter);
         const ownership = this.getOwnershipFilter();
+        const softDelete = options?.includeSoftDeleted ? null : this.getSoftDeleteFilter();
 
         if (mapped instanceof Array) {
-            return mapped.map(branch => ({ ...branch, ...ownership }));
+            return mapped.map(branch => ({ ...branch, ...softDelete, ...ownership }));
         } 
         else {
-            return { ...mapped, ...ownership };
+            return { ...mapped, ...softDelete, ...ownership };
         }
     }
 
@@ -198,11 +235,11 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
 
     async create(data: Partial<T>): Promise<T> {
         const enriched = { ...data };
-        const store = DataIsolationContext.getStore();
-        if (store?.userId) {
+        const userId = UserContext.userId;
+        if (userId) {
             const config = entityIsolation[this.getEntityName()];
             if (config && config.field !== "_id") {
-                (enriched as Record<string, unknown>)[config.field] = store.userId;
+                (enriched as Record<string, unknown>)[config.field] = userId;
             }
         }
         this.applyVexFields(enriched, "create");
@@ -245,5 +282,51 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
     async deleteWhere(filter: Record<string, unknown>): Promise<void> {
         const where = this.mergeFilter(filter as unknown as Filter<T>);
         await this.repo.delete(where as FindOptionsWhere<T>);
+    }
+
+    /**
+     * Tombstone the row: run the normal update-phase field machinery (so `updatedAt` /
+     * `updatedBy` record who deleted it and when), then write the marker plus any redaction
+     * the caller merged in.
+     */
+    async softDelete(id: string | undefined, data?: Partial<T>): Promise<T | null> {
+        if (!id) {
+            utils.log.error("TypeOrmRepositoryAdapter.softDelete called without id — refuse update entity");
+            return null;
+        }
+
+        const field = entitySoftDeleteFields[this.getEntityName()];
+        if (!field) {
+            utils.log.error(
+                `TypeOrmRepositoryAdapter.softDelete on ${this.getEntityName()} — entity declares no ` +
+                `x-vexData "softDelete" field, refuse update entity`
+            );
+            return null;
+        }
+
+        const enriched = { ...(data ?? {}) } as Record<string, unknown>;
+        this.applyVexFields(enriched as Partial<T>, "update");
+        enriched[field] = true;
+
+        const where = this.mergeFilter({ _id: id } as unknown as Filter<T>);
+        // the generic ObjectLiteral constraint makes TypeORM's own _QueryDeepPartialEntity
+        // unresolvable here; `update` already accepts the same shape on the ordinary path
+        await this.repo.update(where as FindOptionsWhere<T>, enriched as never);
+        return this.repo.findOne({
+            where: { _id: id } as unknown as T
+        });
+    }
+
+    /**
+     * Read a row that may be soft-deleted: skips the soft-delete term only, so the ownership
+     * filter still applies. Framework-internal — see VexRepository.
+     */
+    findOneWithDeleted(filter: Filter<T>, join?: Join, select?: Select): Promise<T | null> {
+        const where = this.mergeFilter(filter, { includeSoftDeleted: true }) as FindOptionsWhere<T>;
+        return this.repo.findOne({
+            select,
+            where,
+            relations: join
+        });
     }
 }

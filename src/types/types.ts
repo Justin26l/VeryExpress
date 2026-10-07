@@ -26,6 +26,17 @@ export interface compilerOptions {
         useUserSchema: boolean,
         allowApiCreateUpdate_id: boolean,
         useStatefulRedisAuth: boolean,
+        /**
+         * Adapter-layer visibility policy for soft-deleted rows.
+         *
+         * Unset/false → the repository hides rows whose soft-delete marker is set
+         * (`x-vexData: "softDelete"`). `true` disables that filter app-wide, making tombstones
+         * visible — and therefore writable — through ordinary queries again.
+         *
+         * Generation-time constant: it is baked into `VexFieldRegistry.gen.ts`, so no request can
+         * flip it. See docs/features/accountDeletion.md.
+         */
+        showSoftDeleted?: boolean,
     },
 
     useRBAC?: {
@@ -43,6 +54,12 @@ export interface compilerOptions {
             github?: boolean,
             [key: string]: boolean | undefined;
         };
+        /**
+         * Self-service account deletion (`POST /api/auth/delete-account`) and the
+         * `/delete_account` page. Defaults to true; the feature additionally requires auth to be
+         * enabled. See docs/features/accountDeletion.md.
+         */
+        deleteAccount?: boolean,
     },
 
     _: {
@@ -64,6 +81,11 @@ export enum xVexDataType {
     Role = "role",
     /** marks the field that holds the identity value stored in audit fields (createdBy / updatedBy) */
     UserId = "userId",
+    /**
+     * Marks the boolean field that carries an entity's soft-delete state. One per document.
+     * The repository hides rows whose marker is set unless `app.showSoftDeleted` is on.
+     */
+    SoftDelete = "softDelete",
 }
 
 export enum xFormatType {
