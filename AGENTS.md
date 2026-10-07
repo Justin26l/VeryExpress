@@ -67,6 +67,11 @@ Read from `vex.config.json → jsonSchemaDir` (this repo: `./output/jsonSchema`)
 - **Auth is the only identity gate.** `UserContext` is established by `Authentication.middleware` from the verified token — there is no separate context middleware, and no generated decorator decides it. Never gate identity on `dataIsolation`: audit fields and ownership filtering are independent features. Use `utils.generator.isAuthEnabled()` when a code path depends on auth being on.
 - **A create that declares `onCreateUserId` with no identity in `UserContext` throws.** Both repository adapters enforce it; `onUpdateUserId` is deliberately not enforced. `dataIsolation` no longer has anything to do with whether the context exists.
 - **Boolean config defaults use `??`, not `||`.** `x || true` swallows an explicit `false`.
+- **Never write to git.** No `git add`, `commit`, `push`, `reset`, `checkout`, `stash`, `rm`, `mv`. The
+  working tree is the deliverable and the user reads it with git; changes stay unstaged and
+  uncommitted. Reading (`status`, `diff`, `log`, `show`, `grep`) is fine.
+- **Read-only mode means troubleshoot.** When the file policy is read-only, diagnose and report. Do not
+  attempt the edit, and do not request a wider mode — the user grants it when they want the change.
 
 ## Conventions
 
@@ -94,6 +99,29 @@ Smart caveman. Drop articles, filler, pleasantries, hedging. Fragments fine. Kee
 - Code blocks unchanged. Caveman around code, not in code.
 - Error messages quoted exact.
 
+## Writing docs
+
+A document describes **what is true now**, for a reader who has only this repo. Write the thing, not
+the argument for it.
+
+- **State what it does, not what it avoids.** Not "`provider: "firebase"` is never written" — instead
+  "the identity stored is the upstream provider's: `provider: "google"`, `providerUserId: <Google sub>`".
+  A negative earns its place only when a reader can hit it and the behaviour *is* the point, and then it
+  is written as behaviour: "a sign-in with no upstream provider is answered with `400`".
+- **Present tense, current code.** No "will", "we decided", "earlier drafts", "on purpose",
+  "deliberately", "was rejected". What the code does is visible in the code; reasoning belongs in
+  `docs/plan/`, and what changed belongs in `docs/releaseNote/`.
+- **Lead with the thing.** A reference doc opens with what the feature is and does, then how to
+  configure it, then how it fails. Rationale goes last, or to `docs/plan/`.
+- **Cut the comparison.** "unlike X", "instead of Y", "no longer Z" — describe what the code does, not
+  the road not taken.
+- **No private context.** No other repositories, projects, deployments, customers or issue ids. A
+  reader cannot open them, so naming one is noise. Anything learned out there is restated as a fact
+  checkable from here.
+
+Only `docs/plan/` (design records) and `docs/releaseNote/` (what changed, and how to migrate) narrate
+time. Every other document is present tense.
+
 ## Documentation map
 
 This file covers only what every session needs. Deeper material lives in `docs/`:
@@ -112,6 +140,7 @@ This file covers only what every session needs. Deeper material lives in `docs/`
 | [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) | Setup, branch/PR workflow, PR checklist |
 | [`docs/features/`](docs/features/) | rbac, dataIsolation, filterOperators, joinWhitelist, auditFields, accountDeletion |
 | [`docs/appGenerated/auth.md`](docs/appGenerated/auth.md) | JWT rolling keys, OAuth2 providers |
+| [`docs/plan/`](docs/plan/) | Design records and implementation plans — the one place that narrates decisions and rejected alternatives |
 | [`docs/roadMap/`](docs/roadMap/) | Released features and version milestones |
 | [`docs/releaseNote/`](docs/releaseNote/) | Per-version release notes |
 

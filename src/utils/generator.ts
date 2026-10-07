@@ -32,8 +32,29 @@ export function OAuthProviders(compilerOptions: types.compilerOptions): string[]
     });
 }
 
+/**
+ * Is any sign-in path configured?
+ *
+ * All three count. `firebase` in particular is easy to miss: a Firebase-only app (`localAuth: false`,
+ * no passport provider) is not auth-less, and treating it as such would drop the whole
+ * `AuthController` — including the `/auth/firebase` endpoint it exists to serve.
+ */
 export function isAuthEnabled(compilerOptions: types.compilerOptions): boolean {
-    return compilerOptions.auth.localAuth || OAuthProviders(compilerOptions).length > 0;
+    return compilerOptions.auth.localAuth
+        || OAuthProviders(compilerOptions).length > 0
+        || compilerOptions.auth.firebase === true;
+}
+
+/**
+ * Single gate for the Firebase sign-in option: the `/auth/firebase` endpoint, the verifier service and
+ * the login-page button.
+ *
+ * Opt-in (`=== true`), unlike account deletion: it is the one feature that lets an outside identity
+ * provider mint a vex session, so a project that has not configured one must not get an endpoint that
+ * accepts third-party ID tokens.
+ */
+export function isFirebaseAuthEnabled(compilerOptions: types.compilerOptions): boolean {
+    return isAuthEnabled(compilerOptions) && compilerOptions.auth.firebase === true;
 }
 
 /**
@@ -114,6 +135,8 @@ export const defaultCompilerOptions: types.compilerOptions = {
         localAuth: true,
         useHttpOnlyCookieToken: false,
         deleteAccount: true,
+        // Opt-in, and the default is emitted so the switch is discoverable in a written vex.config.json.
+        firebase: false,
         oauthProviders: {
             google: false,
             microsoft: false,
@@ -136,6 +159,7 @@ export default {
     getSimpleStaticHeaderComment,
     OAuthProviders,
     isAuthEnabled,
+    isFirebaseAuthEnabled,
     isRbacEnabled,
     isAccountDeletionEnabled,
     isShowSoftDeleted,

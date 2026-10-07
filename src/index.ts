@@ -28,6 +28,7 @@ import * as dataIsolationRegistryGen from "./generators/middlewares/dataIsolatio
 import * as vexFieldRegistryGen from "./generators/middlewares/vexFieldRegistry.generator";
 import * as accountStateGuardGen from "./generators/services/accountStateGuard.generator";
 import * as accountDeletionGen from "./generators/services/accountDeletion.generator";
+import * as firebaseAuthGen from "./generators/services/firebaseAuth.generator";
 
 export async function generate(
     options: types.compilerOptions
@@ -223,6 +224,14 @@ export async function generate(
     await accountDeletionGen.compile({
         documents: documents.map(d => ({ path: d.path, schema: d.schema })),
         serviceDir: dir.serviceDir,
+        compilerOptions: options,
+    });
+
+    // generate the Firebase sign-in runtime (service account loader + verifier/provisioner service).
+    // The login-page wiring module is written for every project, as a no-op when the switch is off.
+    await firebaseAuthGen.compile({
+        serviceDir: dir.serviceDir,
+        routeDir: dir.routeDir,
         compilerOptions: options,
     });
 

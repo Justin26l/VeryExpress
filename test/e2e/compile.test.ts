@@ -54,6 +54,28 @@ const variants: Record<string, Record<string, unknown>> = {
         app: baseApp,
         auth: auth(false),
     },
+    "firebase-auth-on": {
+        dbType: "sql",
+        app: baseApp,
+        auth: { ...auth(true), firebase: true },
+        useRBAC: { roles: ["visitor", "member", "admin"], default: "admin" },
+    },
+    /**
+     * Firebase as the *only* sign-in path. That shape was reachable before this feature — with
+     * `oauthProviders` alone — and generated a controller calling `this.userRepo` without declaring it,
+     * so this variant guards the fix as much as the Firebase code.
+     */
+    "firebase-only": {
+        dbType: "sql",
+        app: baseApp,
+        auth: {
+            localAuth: false,
+            useHttpOnlyCookieToken: true,
+            oauthProviders: { google: false, github: false },
+            firebase: true,
+        },
+        useRBAC: { roles: ["member"], default: "member" },
+    },
 };
 
 function configFor(config: Record<string, unknown>): Record<string, unknown> {

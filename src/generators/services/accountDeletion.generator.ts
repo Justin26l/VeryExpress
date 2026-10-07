@@ -8,9 +8,9 @@ import { findSoftDeleteField } from "~/preprocess/softDelete";
 /**
  * Generates AccountDeletionService.gen.ts — the identity-domain half of account deletion.
  *
- * It is a service rather than a controller method because the Renomaster spec puts identity
- * erasure at the end of a flow the app itself drives (business rows → storage objects → identity).
- * Same process, so the reusable unit is an importable service, not an HTTP hop.
+ * It is a service rather than a controller method because identity erasure belongs at the end of a
+ * flow the app itself drives (business rows → storage objects → identity). Same process, so the
+ * reusable unit is an importable service, not an HTTP hop.
  *
  * The tombstone payload is derived from the project's own User schema: fields that are absent are
  * never emitted, so a project that renamed or dropped `locale` still gets a service that compiles.

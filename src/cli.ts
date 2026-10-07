@@ -62,6 +62,7 @@ async function main() {
     // oauth
     config.auth = config.auth ?? {};
     config.auth.localAuth = config.auth.localAuth ?? false;
+    config.auth.firebase = config.auth.firebase ?? false;
     config.auth.oauthProviders = config.auth.oauthProviders ?? {};
     config.auth.oauthProviders.google = config.auth.oauthProviders.google ?? false;
     config.auth.oauthProviders.github = config.auth.oauthProviders.github ?? false;
