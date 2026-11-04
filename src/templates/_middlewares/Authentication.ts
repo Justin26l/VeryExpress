@@ -25,8 +25,6 @@ class Authentication {
     };
 
     private async handle(req: Request, next: NextFunction): Promise<void> {
-        // gate keeper
-        // log.info("Authentication.middleware", req.headers["x-auth-index"], req.headers.authorization);
         const token = req.headers.authorization?.split(" ")[1];
         const accessTokenIndex = req.headers["x-auth-index"]?.toString();
 
@@ -38,7 +36,6 @@ class Authentication {
             throw 401;
         }
 
-        // verify token
         const tokenData = this.JWTService.verifyToken(token, accessTokenIndex);
 
         // The signature only proves the token was issued; it says nothing about the account still

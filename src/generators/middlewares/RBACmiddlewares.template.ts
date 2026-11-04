@@ -27,7 +27,6 @@ class RoleBaseAccessControl {
 
     public middleware(collection: string) {
         return (req: Request, res: Response, next: NextFunction) => {
-            // log.info("RBAC.middleware", req.method, req.path, req.user);
             if ( !req.user ) {
                 throw new VexResErr(401);
             }

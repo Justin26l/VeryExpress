@@ -2,11 +2,8 @@
 import { Request, Response, NextFunction } from "express";
 import { DataSource, EntityTarget, ObjectLiteral } from "typeorm";
 import mongoose from "mongoose";
-// import { Document } from "mongoose";
-// import { sqlMigrations } from "../_models/sqlMigration.gen";
 import { VexRepository } from "../_types/vex";
 import { TypeOrmRepositoryAdapter } from "./TypeOrmRepositoryAdapter.gen";
-// import { MongooseRepositoryAdapter } from "./MongooseRepositoryAdapter.gen";
 import utils from "./../_utils";
 
 export class VexDbConnector {
@@ -73,7 +70,6 @@ export class VexDbConnector {
                 .then(() => {
                     this.dataSource = ds;
                     utils.log.infoSql("TypeORM DataSource initialized");
-                    // this.runSqlMigrations(ds);
                 })
                 .catch((err) => {
                     utils.log.errorSql(`Failed to initialize TypeORM, retrying in ${retryTime}s`, err);
@@ -84,23 +80,6 @@ export class VexDbConnector {
         connectWithRetry(10);
     }
 
-    // private async runSqlMigrations(ds: DataSource): Promise<void> {
-    //     if (!sqlMigrations.length) return;
-    //     const runner = ds.createQueryRunner();
-    //     await runner.connect();
-    //     try {
-    //         for (const sql of sqlMigrations) {
-    //             utils.log.infoSql(`Applying migration: ${sql}`);
-    //             await runner.query(sql);
-    //         }
-    //         utils.log.infoSql(`${sqlMigrations.length} migrations applied`);
-    //     } catch (err) {
-    //         utils.log.errorSql("SQL migration failed", err);
-    //     } finally {
-    //         await runner.release();
-    //     }
-    // }
-
     closeSql(): void {
         if (this.dataSource?.isInitialized) {
             this.dataSource.destroy()
@@ -109,7 +88,7 @@ export class VexDbConnector {
         }
     }
 
-    // TODO: complete mongoose support, handle join and select
+    // TODO: complete mongoose support
     connectMongo(): void {
         console.warn("VeryExpress unified db adapter (MongooseRepositoryAdapter) for Mongodb are under development, use with caution. Contribute to \"https://github.com/Justin26l/VeryExpress\"");
         utils.log.infoMongo("Connecting to MongoDB (Driver: Mongoose)...");
@@ -124,7 +103,6 @@ export class VexDbConnector {
         connectWithRetry(10);
     }
 
-    // TODO: complete mongoose support, handle join and select
     closeMongo(): void {
         console.warn("VeryExpress unified db adapter (MongooseRepositoryAdapter) for Mongodb are under development, use with caution. Contribute to \"https://github.com/Justin26l/VeryExpress\"");
         mongoose.disconnect()
@@ -132,13 +110,10 @@ export class VexDbConnector {
             .catch((err) => utils.log.errorMongo("Error disconnecting Mongoose", err));
     }
 
-    // getRepository<T extends Document>(target: { schema: unknown; modelName: string }): VexRepository<T>;
     getRepository<T extends ObjectLiteral>(target: EntityTarget<T>): VexRepository<T>;
     getRepository<T>(target: EntityTarget<ObjectLiteral> | any): VexRepository<T> {
-        // TODO: complete mongoose support, handle join and select
         if (target?.schema && target?.modelName) {
             console.warn("VeryExpress unified db adapter (MongooseRepositoryAdapter) for Mongodb are under development, use with caution. Contribute to \"https://github.com/Justin26l/VeryExpress\"");
-            // return new MongooseRepositoryAdapter<T & Document>(target);
         }
         if (!this.dataSource) throw new Error("SQL DataSource not initialized");
         return new TypeOrmRepositoryAdapter<T & ObjectLiteral>(this.dataSource.getRepository(target));

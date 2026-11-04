@@ -11,16 +11,12 @@ export function compile(compilerOptions: types.compilerOptions): void {
     const packageOutPath = path.posix.join(compilerOptions.rootDir, "package.json");
     const envOutPath = path.posix.join(compilerOptions.rootDir, ".env");
 
-    // process package.json
     buildScripts.compile(compilerOptions);
 
-    // process package.json
     packageJson.compile(packageOutPath, compilerOptions);
 
-    // process .env
     environment.compile(envOutPath);
 
-    // generate tsoa.json for output app
     tsoaConfig.compile(compilerOptions);
 
 }

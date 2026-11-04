@@ -2,7 +2,6 @@
 import jwt from "jsonwebtoken";
 import ms from "ms";
 import path from "path";
-// import express, { CookieOptions } from "express";
 
 import JWTKeyStore from "./JWTKeyStore.gen";
 
@@ -36,13 +35,6 @@ export default class JWTService {
 
     constructor() {}
 
-    /**
-     * Verifies a JSON Web Token (JWT) using the provided token and key index.
-     *
-     * @param {string} token - The JSON Web Token to be verified.
-     * @param {number} index - The index of the key used to verify the token.
-     * @return {jwt.JwtPayload } The decoded token payload, an error message, or false if verification fails.
-     */
     public verifyToken(token: string, index?: number | string): jwt.JwtPayload {
 
         if (token.startsWith("Bearer ")) {
@@ -67,9 +59,6 @@ export default class JWTService {
         }
     }
 
-    /**
-     * Process of login user, assign tokens and create session.
-     */
     public async assignTokens(user: UserWithRelations, provider: string): Promise<string> {
         if(!user._id) {
             throw new VexResErr(500, null, "User Data Error, User._id missing.");
@@ -77,7 +66,6 @@ export default class JWTService {
 
         const sessionCode = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
-        // insert new unique session for user
         await this.sessionRepo.deleteWhere({ userId: user._id });
         await this.sessionRepo.create({
             sessionCode,
@@ -86,7 +74,6 @@ export default class JWTService {
             expired: Date.now() + 5000,
         });
 
-        // return appAuthCode to client
         const redirectPath = `${path.posix.join("/", process.env.LOGIN_SUCCESS_REDIRECT_PATH || "/logincallback")}?code=${sessionCode}`;
         
         return redirectPath;
@@ -105,8 +92,6 @@ export default class JWTService {
             refreshToken: refreshToken.token
         };
     }
-
-    /** utils */
 
     /**
      * Identity value of a user record: the field tagged `x-vexData: "userId"` in the schemas,
