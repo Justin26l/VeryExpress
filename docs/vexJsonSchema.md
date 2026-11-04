@@ -69,7 +69,24 @@ Each `.json` file defines one REST resource. Filename must match `x-documentConf
 | `ObjectId` | MongoDB ObjectId (mongo mode) |
 | `UnixTimestamp` | Integer epoch **seconds** (SQL: `bigint`) |
 | `Timestamp` | ISO-8601 datetime (SQL: `timestamptz`, mapped back to an ISO string) |
+| `Binary` | Binary payload (SQL: `bytea`). The API reads and writes a **base64 string**. |
 | `enum` | Enum field — pair with `enum` array |
+
+#### Binary fields (`x-format: "Binary"`)
+
+```jsonc
+"data": { "type": "string", "x-format": "Binary", "description": "base64-encoded payload" }
+```
+
+The column is `bytea`; the entity property and the generated API types stay `string`. A TypeORM
+transformer converts `string → Buffer` on write and `Buffer → base64 string` on read, so JSON
+responses and request bodies always carry base64 text. Requirements:
+
+- `type` must be `string` — any other type is rejected at generation time.
+- The transformer does not validate the text, and the generator emits no `pattern` check; `Buffer.from(v, "base64")` ignores invalid characters. Validate base64 in the client, or in a hand-written check.
+- `maxLength` has no effect on a binary column — the delivered size is checked by the app, not the generator.
+- Set `express.json({ limit })` in the app when uploads exceed the 100 kB body-parser default.
+- In mongo mode the field is a plain `String` column holding the same base64 text.
 
 ### `x-vexData` values
 

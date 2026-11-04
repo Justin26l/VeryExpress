@@ -111,6 +111,8 @@ export enum xFormatType {
     UnixTimestamp = "UnixTimestamp",
     /** ISO-8601 datetime column (SQL: timestamptz) */
     Timestamp = "Timestamp",
+    /** Binary payload (SQL: bytea). The API contract is a base64 string. */
+    Binary = "Binary",
 }
 
 /**

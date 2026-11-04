@@ -73,6 +73,10 @@ Read from `vex.config.json → jsonSchemaDir` (this repo: `./output/jsonSchema`)
 - **Read-only mode means troubleshoot.** When the file policy is read-only, diagnose and report. Do not
   attempt the edit, and do not request a wider mode — the user grants it when they want the change.
 - **Only write js-doc/comment when need.** only leave js-doc/comment when things is complex and name does not tell what it does, only write short and clean comment. A comment earns its place only for what the code cannot say: a non-obvious rule, a workaround, a failure mode. If a comment would have to be edited together with the line below it, delete the comment. no history, no restating the signature.
+- **Bump the version with `npm version`, never by hand.** `npm version <patch|minor|major>` runs the
+  `preversion` / `postversion` hooks; editing `version` in `package.json` / `package-lock.json`
+  yourself skips them. The `postversion` hook runs the build and pushes, so a bump is a publish
+  action — do it only when the user asks.
 
 ## Conventions
 

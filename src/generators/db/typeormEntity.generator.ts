@@ -38,6 +38,7 @@ const X_FORMAT_DB_TYPE: Record<string, string> = {
     ObjectId:      "varchar",   // MongoDB ObjectId stored as varchar(24)
     UnixTimestamp: "bigint",    // epoch seconds — needs bigint transformer
     Timestamp:     "timestamptz", // ISO-8601 datetime — needs timestamp transformer
+    Binary:        "bytea",     // base64 string in the API — needs base64 transformer
 };
 
 /** JSON Schema `format` hints that map to PostgreSQL column types */
@@ -113,6 +114,7 @@ function mapPropToColumnDef(
         isArray:  prop.type === "array",
         needsBigintTransformer: dbType === "bigint",
         needsTimestampTransformer: dbType === "timestamptz",
+        needsBase64Transformer: dbType === "bytea",
         unsigned: isNumeric && prop.minimum !== undefined && prop.minimum >= 0 ? true : undefined,
         nullable,
         comment:        prop.description,
@@ -169,9 +171,6 @@ function buildForeignRelations(documentName: string, allSchemas: types.jsonSchem
     return relations;
 }
 
-/**
- * Compile JSON Schema → TypeORM entity source code
- */
 export async function compile(options: {
     jsonSchema: types.jsonSchema,
     outDir: string,
@@ -192,7 +191,6 @@ export async function compile(options: {
     );
     const columns: typeormModel.ColumnDef[] = Object.keys(props).map(key => mapPropToColumnDef(key, props[key], requiredFields, singleFieldUniques));
 
-    // ensure _id primary column exists
     if (!columns.find(c => c.isPrimary)) {
         columns.unshift({ name: "_id", tsType: "string", dbType: "uuid", isPrimary: true, isGenerated: true, nullable: false, isIndex: false, isNested: false, isArray: false });
     }   

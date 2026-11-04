@@ -9,7 +9,9 @@
 | `"mongo"` | `src/generators/db/mongooseModel.generator.ts` |
 | `"sql"` | `src/generators/db/typeormEntity.generator.ts` |
 
-The generated app's DB target is fixed at generation time.
+The generated app's DB target is fixed at generation time. `"sql"` means PostgreSQL: the connector
+pins `type: "postgres"` and the app depends on `pg` only, so column types in the entity generator
+(`uuid`, `timestamptz`, `bytea`, `jsonb`) must be PostgreSQL types.
 
 ### SQL schema creation
 

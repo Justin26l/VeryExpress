@@ -29,13 +29,10 @@ export async function compile(options: {
 
     log.process(`Controller : ${schemaConfig.documentName}`);
 
-    // Determine id type
     const idProps = options.jsonSchema.properties["_id"]
     const idXFormat = idProps?.["x-format"] || "";
     const idType = [types.xFormatType.Primary, types.xFormatType.ObjectId].includes(idXFormat as types.xFormatType) ? "string" : idProps?.type;
 
-    // Session is an internal document — skip tsoa @Route decorator
-    // Build TsoaFieldDef[] from schema properties
     const fields: TsoaFieldDef[] = [];
     if (schema.type === "object") {
         for (const [key, prop] of Object.entries(schema.properties ?? {})) {

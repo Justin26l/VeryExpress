@@ -33,9 +33,6 @@ export default function controllerTemplate(templateOptions: {
     // OpenAPI request schema stops advertising fields the server strips or overwrites.
     const requestBodyType = requestManagedFields.length > 0 ? `Payload${documentName}` : documentName;
 
-    // body fields — exclude _id (auto-generated primary key)
-    // const bodyFields = fields.filter(f => f.name !== "_id");
-
     // ── tsoa decorator imports ──────────────────────────────────────────────────
     const decoratorNames: string[] = [];
     decoratorNames.push("Route", "Tags", "Body", "Path", "Query", "SuccessResponse");
@@ -99,7 +96,6 @@ export default function controllerTemplate(templateOptions: {
         return `${decorators.join("\n    ")}\n    ${signature} {\n        ${body}\n    }`;
     }
 
-    // Join whitelist decorator — only applied to routes that accept join params
     const joinWhitelistDecorator = restApiJoinWhitelist
         ? `@Middlewares(JoinWhitelistMiddleware.middleware("${documentName}"))`
         : null;

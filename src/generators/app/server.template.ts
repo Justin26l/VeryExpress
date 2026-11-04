@@ -74,7 +74,7 @@ async function main(): Promise<void> {
     // Routes
     {{AppRouter}}
 
-    // ping
+    // health check
     app.get("/hello", (req, res) => {
         res.send("Hello");
     });

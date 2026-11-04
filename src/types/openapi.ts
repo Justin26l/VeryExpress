@@ -12,7 +12,7 @@ export interface openapi {
 
 export interface paths {
     [key: string]: {
-        "x-documentName"?: string, // 'x-documentName' is a custom field for specify documentName
+        "x-documentName"?: string,
         summary?: string,
         get?: method,
         post?: method,
@@ -22,7 +22,6 @@ export interface paths {
         options?: method,
         head?: method,
         trace?: method,
-        // [key:string]: method | string | undefined,
     }
 }
 
@@ -57,8 +56,8 @@ export interface parameter {
         maximum?: number;
         enum?: string[];
     };
-    example?: any; // This could be any type depending on your example structure
-    examples?: any; // This could be any type depending on your examples structure
+    example?: any;
+    examples?: any;
 }
 
 export interface requestBody {
@@ -94,9 +93,6 @@ export interface responseItem {
     };
 }
 
-/**
- * OpenAPI 3.0 Components
- */
 export interface components {
     securitySchemes: {
         BearerAuth?: {

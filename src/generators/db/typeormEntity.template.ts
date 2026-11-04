@@ -15,10 +15,6 @@ function serializeArgs(obj: Record<string, unknown>, rawArgs?: Record<string, st
     return `{${[...entries, ...rawEntries].join(", ")}}`;
 }
 
-/**
- * Build the complete @Column({...}) argument string for a non-primary column.
- * Maps all relevant ColumnDef flags to TypeORM ColumnOptions fields.
- */
 function buildColumnArgs(col: typeormModel.ColumnDef): string {
     const args: Record<string, unknown> = {
         type:      col.dbType,
@@ -51,6 +47,10 @@ function buildColumnArgs(col: typeormModel.ColumnDef): string {
     if (col.needsTimestampTransformer) {
         transformers.push("{ to: (v: string) => v, from: (v: Date) => (v instanceof Date ? v.toISOString() : v) }");
     }
+    // bytea: the API contract is a base64 string, the column holds raw bytes
+    if (col.needsBase64Transformer) {
+        transformers.push("{ to: (v: string | null) => (v == null ? v : Buffer.from(v, \"base64\")), from: (v: Buffer | null) => (v == null ? v : v.toString(\"base64\")) }");
+    }
     const rawArgs = transformers.length > 0
         ? { transformer: transformers.length === 1 ? transformers[0] : `[${transformers.join(", ")}]` }
         : undefined;
@@ -76,7 +76,6 @@ export default function typeormEntityTemplate(options: {
     const oneToOne = options.oneToOneRelations ?? [];
     const hasRelations = manyToOne.length > 0 || oneToMany.length > 0 || oneToOne.length > 0;
 
-    // build dynamic typeorm import
     const typeormImports = ["Entity", "Column", "PrimaryGeneratedColumn"];
     const hasUniqueIndexes = options.uniqueIndexes && options.uniqueIndexes.length > 0;
     const hasIndexDecorator = options.columns.some(c => c.isIndex && !c.isNested);

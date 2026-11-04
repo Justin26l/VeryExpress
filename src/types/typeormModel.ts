@@ -30,6 +30,8 @@ export interface ColumnDef {
     defaultValue?: unknown;
     /** timestamptz columns: the driver returns a Date, transformer keeps the ISO-8601 string contract */
     needsTimestampTransformer?: boolean;
+    /** bytea columns: the driver returns a Buffer, transformer keeps the base64 string contract */
+    needsBase64Transformer?: boolean;
 }
 
 

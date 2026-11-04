@@ -87,7 +87,6 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
         Object.assign(data, values);
     }
 
-    /** Build ownership filter from current request context, or null. */
     private getOwnershipFilter(): Record<string, unknown> | null {
         const userId = UserContext.userId;
         if (!userId) return null;
@@ -133,7 +132,6 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
 
     private mapOperators(filter: Filter<T>): Record<string, unknown> | Array<Record<string, unknown>> {
         if (!filter || typeof filter !== "object") return {};
-        // if (Array.isArray(filter)) return filter.map(f => this.mapOperators(f));
 
         let out: Record<string, unknown> | Array<Record<string, unknown>> = {};
 
@@ -177,10 +175,6 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
                     out[key] = Like(oval.$like as string);
                     continue;
                 }
-                // if (val?.$raw) {
-                //     out[key] = Raw(val.$raw as string);
-                //     continue;
-                // }
             } else {
                 out[key] = val;
             }

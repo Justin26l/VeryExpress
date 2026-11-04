@@ -26,7 +26,6 @@ export async function compile(
                 $refOptions: {},
                 additionalProperties: false, // TODO: default to empty schema (as per spec) instead
                 bannerComment: "",
-                // cwd: process.cwd(),
                 declareExternallyReferenced: true,
                 enableConstEnums: true,
                 format: true,
@@ -155,9 +154,6 @@ function applyFkToInterface(interfaceString: string, jsonSchema: types.jsonSchem
     return updatedInterface;
 }
 
-/**
- * Append enum declarations for fields with enum values, replacing union string types with the enum type.
- */
 function appendEnumDeclarations(interfaceString: string, jsonSchema: types.jsonSchema): string {
     let updatedInterface = interfaceString;
 
@@ -169,11 +165,9 @@ function appendEnumDeclarations(interfaceString: string, jsonSchema: types.jsonS
         const enumBody = prop.enum.map((v: string) => `    ${v} = "${v}"`).join(",\n");
         const enumDeclaration = `export enum ${enumName} {\n${enumBody}\n}`;
 
-        // replace the generated union type with the enum type in the interface
         const unionType = prop.enum.map((v: string) => `"${v}"`).join(" | ");
         updatedInterface = updatedInterface.replace(new RegExp(`(\\s+${key}\\??: )${unionType.replace(/[|"]/g, "\\$&")};`), `$1${enumName};`);
 
-        // append enum declaration after the interface block
         if (!updatedInterface.includes(`export enum ${enumName}`)) {
             updatedInterface = updatedInterface.replace(/\s+$/, "") + "\n\n" + enumDeclaration + "\n";
         }
@@ -182,12 +176,6 @@ function appendEnumDeclarations(interfaceString: string, jsonSchema: types.jsonS
     return updatedInterface;
 }
 
-/**
- * Prepend import statement to the interface string if not exist
- * @param interfaceString 
- * @param importName 
- * @returns 
- */
 function prependImports(interfaceString: string, imports: string[], importFile: string): string {
     const importLine = `import { ${imports.join(", ")} } from "./${importFile}.gen";`;
     if (interfaceString.includes(importLine)) {

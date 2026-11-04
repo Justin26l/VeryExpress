@@ -7,8 +7,6 @@
  * pre-replacement text, so all but the first block were skipped.
  *
  * `[\s\S]` (rather than `.`) so multi-line bodies match too.
- *
- * @param content generated source
  */
 export function format(content:string){
     return content.replace(/'FUNC{{([\s\S]*?)}}'/g, "$1");
