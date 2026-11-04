@@ -54,308 +54,308 @@ JWT_SECRET0='my-secret-key0'
       "schemas": {
         "Session.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.5"
+          "lastWriteVersion": "<version>"
         },
         "User.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.5"
+          "lastWriteVersion": "<version>"
         },
         "UserAuthProfiles.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.5"
+          "lastWriteVersion": "<version>"
         }
       },
       "vex.config.json": {
         "allowOverwrite": true,
-        "lastWriteVersion": "0.8.5"
+        "lastWriteVersion": "<version>"
       }
     },
     ".env": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.5"
+      "lastWriteVersion": "<version>"
     },
     "Dockerfile": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.5"
+      "lastWriteVersion": "<version>"
     },
     "package.json": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.5"
+      "lastWriteVersion": "<version>"
     },
     "public": {
       "css": {
         "style.css": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.5"
+          "lastWriteVersion": "<version>"
         }
       },
       "js": {
         "deleteaccount.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.5"
+          "lastWriteVersion": "<version>"
         },
         "login.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.5"
+          "lastWriteVersion": "<version>"
         },
         "logincallback.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.5"
+          "lastWriteVersion": "<version>"
         },
         "mytokens.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.5"
+          "lastWriteVersion": "<version>"
         },
         "refreshtokens.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.5"
+          "lastWriteVersion": "<version>"
         }
       }
     },
     "README.md": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.5"
+      "lastWriteVersion": "<version>"
     },
     "scripts": {
       "build.js": {
         "allowOverwrite": true,
-        "lastWriteVersion": "0.8.5"
+        "lastWriteVersion": "<version>"
       },
       "oacg-fix.js": {
         "allowOverwrite": true,
-        "lastWriteVersion": "0.8.5"
+        "lastWriteVersion": "<version>"
       }
     },
     "src": {
       "server.ts": {
         "allowOverwrite": true,
-        "lastWriteVersion": "0.8.5"
+        "lastWriteVersion": "<version>"
       },
       "system": {
         "_controllers": {
           "_ControllerFactory.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "AssetController.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "AuthController.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "UserController.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           }
         },
         "_middlewares": {
           "Authentication.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "DataIsolationRegistry.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "JoinWhitelistMiddleware.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "JoinWhitelistRegistry.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "tsoaAuthentication.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "UserContext.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "VexFieldRegistry.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           }
         },
         "_models": {
           "AssetModel.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "SessionModel.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "UserAuthProfilesModel.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "UserModel.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           }
         },
         "_routes": {
           "FirebaseAuthUI.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "LoginUI.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "oauth": {
             "OAuthRouteFactory.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.5"
+              "lastWriteVersion": "<version>"
             }
           },
           "SwaggerRouter.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           }
         },
         "_services": {
           "account": {
             "AccountDeletionService.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.5"
+              "lastWriteVersion": "<version>"
             }
           },
           "auth": {
             "AccountStateGuard.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.5"
+              "lastWriteVersion": "<version>"
             },
             "JWTKeyStore.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.5"
+              "lastWriteVersion": "<version>"
             },
             "JWTService.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.5"
+              "lastWriteVersion": "<version>"
             }
           },
           "MongooseRepositoryAdapter.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "oauth": {
             "OAuthProfileMap.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.5"
+              "lastWriteVersion": "<version>"
             },
             "OAuthStrategyService.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.5"
+              "lastWriteVersion": "<version>"
             }
           },
           "TypeOrmRepositoryAdapter.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "VexDb.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "VexDbConnector.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "VexSystem.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           }
         },
         "_types": {
           "Asset.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "auth.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "Session.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "User.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "UserAuthProfiles.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "vex": {
             "index.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.5"
+              "lastWriteVersion": "<version>"
             },
             "VexRepository.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.5"
+              "lastWriteVersion": "<version>"
             },
             "VexRequest.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.5"
+              "lastWriteVersion": "<version>"
             },
             "VexResErr.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.5"
+              "lastWriteVersion": "<version>"
             },
             "VexResOk.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.5"
+              "lastWriteVersion": "<version>"
             },
             "VexResponse.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.5"
+              "lastWriteVersion": "<version>"
             }
           }
         },
         "_utils": {
           "hash.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "index.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "logger.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "processTimer.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "response.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "validator.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           }
         }
       }
     },
     "tsconfig.json": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.5"
+      "lastWriteVersion": "<version>"
     },
     "tsoa.json": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.5"
+      "lastWriteVersion": "<version>"
     }
   },
-  "lastGeneratedVersion": "0.8.5"
+  "lastGeneratedVersion": "<version>"
 }
 
 ===== out/Dockerfile =====
@@ -834,6 +834,9 @@ import SwaggerRouter from "./system/_routes/SwaggerRouter.gen";
 import cookieParser from "cookie-parser";
 import LoginUI from "./system/_routes/LoginUI.gen";
 
+/** 
+ * Configure
+ */
 dotenv.config();
 
 const helmetConfig = {
@@ -844,24 +847,31 @@ const helmetConfig = {
 const SwaggerRoute = new SwaggerRouter();
 const loginUI = new LoginUI({ localAuth: true, oauthProviders: [], deleteAccount: true });
 
+/** 
+ * App
+ */
 async function main(): Promise<void> {
 
     const app = express();
     app.disable("x-powered-by");
 
+    // UseMiddleware
     app.use(express.json());
     app.use(express.static("public"));
     app.use(helmet(helmetConfig));
     app.use(processTimer);
     app.use(vexDB.middleware);
 
+    // UsePlugins
     app.use(cookieParser());
 
+    // Routes
     RegisterRoutes(app);
     app.use(VexSystem.responseHandler);
     app.use("/swagger", SwaggerRoute.getRouter());
     app.use("/", loginUI.getRouter());
 
+    // health check
     app.get("/hello", (req, res) => {
         res.send("Hello");
     });
@@ -1745,6 +1755,7 @@ export interface FirebaseAuthUI {
     };
 }
 
+/** A sign-in method to render a button for. */
 interface firebaseProvider {
     id: string;
     label: string;
@@ -2178,6 +2189,7 @@ document.addEventListener("DOMContentLoaded", function () {
         alert(message);
     }
 
+    /** The SDK modules, preloaded on page load. See the note on firebaseGlueScript. */
     var sdk = null;
     var preload = null;
 
@@ -2314,6 +2326,7 @@ export interface passportFactoryConfig {
     authenticateOptions?: any,
 }
 
+/** Provides a router and passport instance for Google OAuth */
 export default class OAuthRouteFactory {
 
     private config: passportFactoryConfig;
@@ -2348,10 +2361,13 @@ export default class OAuthRouteFactory {
     
 
     private initRoutes(){
+        // redirect to provider's login page
         this.router.get("/",
             this.passport.authenticate(this.config.strategyName, this.config.authenticateOptions)
         );
 
+        // back from provider's login page
+        // insert temporary sessionCode to database
         this.router.get("/callback", 
             this.passport.authenticate(this.config.strategyName, this.config.authenticateOptions), 
             async (req, res) => {
@@ -2367,6 +2383,7 @@ export default class OAuthRouteFactory {
                     return res.redirect(`${this.loginFailedRedirectPath}?error=invalid user`);
                 }
 
+                // return appAuthCode to client
                 const redirectUrl = await this.JWTService.assignTokens(req.user as User, this.config.strategyName);
                 return res.redirect(redirectUrl);
                 
@@ -2603,6 +2620,7 @@ export class JWTKeyStore{
      * - client index (index with random string)
      */
     public getRandomKey(): keyObj {
+        // get leng of secrets and return random key
         const len = this.secrets.length;
         const tokenInfo = {
             index: 0,
@@ -2619,6 +2637,9 @@ export class JWTKeyStore{
         return tokenInfo;
     }
 
+    /**
+     * retrive key by index or client index
+     */
     public getSecret(index:number|string): string {
         if (typeof index === "string") {
             index = parseInt(index.replace(/\D/g, ""));
@@ -2627,6 +2648,9 @@ export class JWTKeyStore{
         return this.secrets[index];
     }
 
+    /**
+     * retrive key by index or client index
+     */
     public getSecretObj(index:number|string): keyObj {
         if (typeof index === "string") {
             index = parseInt(index.replace(/\D/g, ""));
@@ -2647,6 +2671,11 @@ export class JWTKeyStore{
         return result;
     }
 
+    /**
+     * Type guard to check if a string is a valid Algorithm.
+     * @param str - The string to check.
+     * @returns True if the string is a valid Algorithm, false otherwise.
+     */
     private getAlgorithm(str: string | undefined): Algorithm {
         const algorithms: Algorithm[] = [
             "HS256", "HS384", "HS512",
@@ -2959,14 +2988,17 @@ export class MongooseRepositoryAdapter<T extends Document> implements VexReposit
     }
 
     async count(filter: Filter): Promise<number> {
+        // TODO: complete mongoose support, handle filter
         return 0;
     }
 
     findOne(filter: Filter, join?: Join, select?: Select): Promise<T | null> {
+        // TODO: complete mongoose support, handle join and select
         return this.model.findOne(this.mergeFilter(filter) as any).exec();
     }
 
     findOneWhere(filter: Filter, join?: Join, select?: Select): Promise<T | null> {
+        // TODO: complete mongoose support, handle join and select
         return this.model.findOne(this.mergeFilter(filter) as any).exec();
     }
 
@@ -3042,6 +3074,7 @@ export class MongooseRepositoryAdapter<T extends Document> implements VexReposit
      * Framework-internal — see VexRepository.
      */
     findOneWithDeleted(filter: Filter, join?: Join, select?: Select): Promise<T | null> {
+        // TODO: complete mongoose support, handle join and select
         return this.model.findOne(this.mergeFilter(filter, { includeSoftDeleted: true }) as any).exec();
     }
 }
@@ -3165,6 +3198,7 @@ export default class OAuthStrategyService {
             const authUser = new OAuthProfileMap().map(profile);
             const authProfile = authUser.userAuthProfiles?.[0];
 
+            // find user by providerUserId + provider, or fall back to email
             let existingUser: UserWithRelations | null = null;
             if (authProfile?.providerUserId && authProfile?.provider) {
                 const matchedProfile = await this.uapRepo.findOneWhere(
@@ -3178,14 +3212,17 @@ export default class OAuthStrategyService {
                 existingUser = await this.userRepo.findOneWhere({ email: authUser.email });
             }
 
+            // 1. create new user
             if (!existingUser) {
                 user = await this.createNewUser(authUser);
             }
+            // 2. update existing user
             else {
                 console.log("OAuthVerify UpdateUser");
                 user = await this.processExistingUser(authProfile, existingUser);
             }
 
+            // set req.user
             done(null, {
                 provider: profile.provider,
                 profile: new JWTService().sanitizeUser(user),
@@ -3200,6 +3237,7 @@ export default class OAuthStrategyService {
         utils.log.info("OAuthVerify > createNewUser");
         const user = await this.userRepo.create(authProfile);
 
+        // create auth profile row linked to the new user
         if (authProfile.userAuthProfiles?.[0]) {
             await this.uapRepo.create({
                 ...authProfile.userAuthProfiles[0],
@@ -3218,11 +3256,13 @@ export default class OAuthStrategyService {
             throw new Error("Invalid OAuth Callback \"authProfile\"");
         }
 
+        // check if this provider/providerUserId already tracked
         const existing = await this.uapRepo.findOneWhere(
             { userId: existingUser._id, provider: incomingProfile.provider, providerUserId: incomingProfile.providerUserId },
         );
 
         if (!existing) {
+            // B.2. add new provider
             utils.log.info("OAuthVerify > add new provider", incomingProfile.provider);
             await this.uapRepo.create({
                 ...incomingProfile,
@@ -3230,6 +3270,7 @@ export default class OAuthStrategyService {
             } as Partial<UserAuthProfiles>);
         }
         else if (existing.username !== incomingProfile.username) {
+            // B.3. update username if changed
             utils.log.info("OAuthVerify > update username", incomingProfile.provider);
             await this.uapRepo.update(existing._id, { username: incomingProfile.username });
         }
@@ -4260,6 +4301,7 @@ export function errorExit(msg: any, ...optionalParams: any[]): never {
     process.exit(1);
 }
 
+// wrapper 
 export function infoMongo(msg: any, ...optionalParams: any[]): void {
     info("[MONGO]", msg, ...optionalParams);
 }
@@ -4311,6 +4353,14 @@ export default function processTimer(req: Request, res: Response, next: NextFunc
 
 import { Response } from "express";
 
+/**
+ * @param res express response object
+ * @param status http response code
+ * @param code response code
+ * @param message response message, default is response message by response code
+ * @param result response data
+ * @returns express response object
+ */
 export function send<T = undefined>(
     res: Response,
     status: number = 200,

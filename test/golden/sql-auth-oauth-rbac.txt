@@ -54,352 +54,352 @@ JWT_SECRET0='my-secret-key0'
       "schemas": {
         "Session.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.5"
+          "lastWriteVersion": "<version>"
         },
         "User.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.5"
+          "lastWriteVersion": "<version>"
         },
         "UserAuthProfiles.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.5"
+          "lastWriteVersion": "<version>"
         },
         "UserRole.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.5"
+          "lastWriteVersion": "<version>"
         }
       },
       "vex.config.json": {
         "allowOverwrite": true,
-        "lastWriteVersion": "0.8.5"
+        "lastWriteVersion": "<version>"
       }
     },
     ".env": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.5"
+      "lastWriteVersion": "<version>"
     },
     "Dockerfile": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.5"
+      "lastWriteVersion": "<version>"
     },
     "package.json": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.5"
+      "lastWriteVersion": "<version>"
     },
     "public": {
       "css": {
         "style.css": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.5"
+          "lastWriteVersion": "<version>"
         }
       },
       "js": {
         "deleteaccount.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.5"
+          "lastWriteVersion": "<version>"
         },
         "login.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.5"
+          "lastWriteVersion": "<version>"
         },
         "logincallback.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.5"
+          "lastWriteVersion": "<version>"
         },
         "mytokens.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.5"
+          "lastWriteVersion": "<version>"
         },
         "refreshtokens.js": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.5"
+          "lastWriteVersion": "<version>"
         }
       }
     },
     "README.md": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.5"
+      "lastWriteVersion": "<version>"
     },
     "scripts": {
       "build.js": {
         "allowOverwrite": true,
-        "lastWriteVersion": "0.8.5"
+        "lastWriteVersion": "<version>"
       },
       "oacg-fix.js": {
         "allowOverwrite": true,
-        "lastWriteVersion": "0.8.5"
+        "lastWriteVersion": "<version>"
       }
     },
     "src": {
       "roles": {
         "admin.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.5"
+          "lastWriteVersion": "<version>"
         },
         "member.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.5"
+          "lastWriteVersion": "<version>"
         },
         "visitor.json": {
           "allowOverwrite": true,
-          "lastWriteVersion": "0.8.5"
+          "lastWriteVersion": "<version>"
         }
       },
       "server.ts": {
         "allowOverwrite": true,
-        "lastWriteVersion": "0.8.5"
+        "lastWriteVersion": "<version>"
       },
       "system": {
         "_controllers": {
           "_ControllerFactory.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "AuthController.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "UserController.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           }
         },
         "_middlewares": {
           "Authentication.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "DataIsolationRegistry.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "JoinWhitelistMiddleware.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "JoinWhitelistRegistry.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "RoleBaseAccessControl.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "tsoaAuthentication.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "UserContext.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "VexFieldRegistry.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           }
         },
         "_models": {
           "SessionModel.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "UserAuthProfilesModel.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "UserModel.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "UserRoleModel.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           }
         },
         "_roles": {
           "_RoleFactory.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "admin.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "index.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "member.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "visitor.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           }
         },
         "_routes": {
           "AuthRouter.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "FirebaseAuthUI.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "LoginUI.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "oauth": {
             "OAuthRouteFactory.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.5"
+              "lastWriteVersion": "<version>"
             }
           },
           "SwaggerRouter.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           }
         },
         "_services": {
           "account": {
             "AccountDeletionService.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.5"
+              "lastWriteVersion": "<version>"
             }
           },
           "auth": {
             "AccountStateGuard.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.5"
+              "lastWriteVersion": "<version>"
             },
             "JWTKeyStore.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.5"
+              "lastWriteVersion": "<version>"
             },
             "JWTService.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.5"
+              "lastWriteVersion": "<version>"
             }
           },
           "MongooseRepositoryAdapter.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "oauth": {
             "OAuthProfileMap.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.5"
+              "lastWriteVersion": "<version>"
             },
             "OAuthStrategyService.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.5"
+              "lastWriteVersion": "<version>"
             }
           },
           "TypeOrmRepositoryAdapter.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "VexDb.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "VexDbConnector.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "VexSystem.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           }
         },
         "_types": {
           "auth.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "Session.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "User.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "UserAuthProfiles.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "UserRole.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "vex": {
             "index.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.5"
+              "lastWriteVersion": "<version>"
             },
             "VexRepository.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.5"
+              "lastWriteVersion": "<version>"
             },
             "VexRequest.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.5"
+              "lastWriteVersion": "<version>"
             },
             "VexResErr.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.5"
+              "lastWriteVersion": "<version>"
             },
             "VexResOk.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.5"
+              "lastWriteVersion": "<version>"
             },
             "VexResponse.gen.ts": {
               "allowOverwrite": true,
-              "lastWriteVersion": "0.8.5"
+              "lastWriteVersion": "<version>"
             }
           }
         },
         "_utils": {
           "hash.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "index.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "logger.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "processTimer.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "response.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           },
           "validator.gen.ts": {
             "allowOverwrite": true,
-            "lastWriteVersion": "0.8.5"
+            "lastWriteVersion": "<version>"
           }
         }
       }
     },
     "tsconfig.json": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.5"
+      "lastWriteVersion": "<version>"
     },
     "tsoa.json": {
       "allowOverwrite": true,
-      "lastWriteVersion": "0.8.5"
+      "lastWriteVersion": "<version>"
     }
   },
-  "lastGeneratedVersion": "0.8.5"
+  "lastGeneratedVersion": "<version>"
 }
 
 ===== out/Dockerfile =====
@@ -1014,7 +1014,7 @@ async function main(): Promise<void> {
     app.use("/api/auth", AuthRoute.getRouter());
     app.use("/", loginUI.getRouter());
 
-    // ping
+    // health check
     app.get("/hello", (req, res) => {
         res.send("Hello");
     });
@@ -1295,8 +1295,6 @@ class Authentication {
     };
 
     private async handle(req: Request, next: NextFunction): Promise<void> {
-        // gate keeper
-        // log.info("Authentication.middleware", req.headers["x-auth-index"], req.headers.authorization);
         const token = req.headers.authorization?.split(" ")[1];
         const accessTokenIndex = req.headers["x-auth-index"]?.toString();
 
@@ -1308,7 +1306,6 @@ class Authentication {
             throw 401;
         }
 
-        // verify token
         const tokenData = this.JWTService.verifyToken(token, accessTokenIndex);
 
         // The signature only proves the token was issued; it says nothing about the account still
@@ -1454,7 +1451,6 @@ class RoleBaseAccessControl {
 
     public middleware(collection: string) {
         return (req: Request, res: Response, next: NextFunction) => {
-            // log.info("RBAC.middleware", req.method, req.path, req.user);
             if ( !req.user ) {
                 throw new VexResErr(401);
             }
@@ -1536,32 +1532,15 @@ export function userIdOfToken(tokenData: Record<string, unknown> | undefined): s
 const als = new AsyncLocalStorage<UserContextData>();
 
 class UserContext {
-    /**
-     * Enter the per-request identity context.
-     *
-     * Called ONLY by Authentication.middleware, after token verification succeeded — at
-     * that point a verified token always exists, so this runs unconditionally. The store
-     * is the request's context; whether it carries a usable identity is decided when it
-     * is read (`userId`), not when it is created.
-     *
-     * Never use `enterWith()`: it mutates the current execution context instead of
-     * scoping a new one, and leaks into whatever runs next on the same tick.
-     */
     run<T>(tokenData: Record<string, unknown>, fn: () => T): T {
         return als.run({ tokenData }, fn);
     }
 
-    /** Current store from the per-request async context. */
     getStore(): UserContextData | undefined {
         return als.getStore();
     }
 
-    /**
-     * Normalized identity of the authenticated caller.
-     *
-     * The data layer MUST read the identity through this accessor and never inspect the
-     * token shape itself — that keeps the token → identity mapping in exactly one place.
-     */
+    /** Normalized identity of the authenticated caller. */
     get userId(): string | undefined {
         return userIdOfToken(als.getStore()?.tokenData);
     }
@@ -3074,7 +3053,6 @@ export default JWTKeyStore;
 import jwt from "jsonwebtoken";
 import ms from "ms";
 import path from "path";
-// import express, { CookieOptions } from "express";
 
 import JWTKeyStore from "./JWTKeyStore.gen";
 
@@ -3108,13 +3086,6 @@ export default class JWTService {
 
     constructor() {}
 
-    /**
-     * Verifies a JSON Web Token (JWT) using the provided token and key index.
-     *
-     * @param {string} token - The JSON Web Token to be verified.
-     * @param {number} index - The index of the key used to verify the token.
-     * @return {jwt.JwtPayload } The decoded token payload, an error message, or false if verification fails.
-     */
     public verifyToken(token: string, index?: number | string): jwt.JwtPayload {
 
         if (token.startsWith("Bearer ")) {
@@ -3139,9 +3110,6 @@ export default class JWTService {
         }
     }
 
-    /**
-     * Process of login user, assign tokens and create session.
-     */
     public async assignTokens(user: UserWithRelations, provider: string): Promise<string> {
         if(!user._id) {
             throw new VexResErr(500, null, "User Data Error, User._id missing.");
@@ -3149,7 +3117,6 @@ export default class JWTService {
 
         const sessionCode = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
-        // insert new unique session for user
         await this.sessionRepo.deleteWhere({ userId: user._id });
         await this.sessionRepo.create({
             sessionCode,
@@ -3158,7 +3125,6 @@ export default class JWTService {
             expired: Date.now() + 5000,
         });
 
-        // return appAuthCode to client
         const redirectPath = `${path.posix.join("/", process.env.LOGIN_SUCCESS_REDIRECT_PATH || "/logincallback")}?code=${sessionCode}`;
         
         return redirectPath;
@@ -3177,8 +3143,6 @@ export default class JWTService {
             refreshToken: refreshToken.token
         };
     }
-
-    /** utils */
 
     /**
      * Identity value of a user record: the field tagged `x-vexData: "userId"` in the schemas,
@@ -3757,7 +3721,6 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
         Object.assign(data, values);
     }
 
-    /** Build ownership filter from current request context, or null. */
     private getOwnershipFilter(): Record<string, unknown> | null {
         const userId = UserContext.userId;
         if (!userId) return null;
@@ -3803,7 +3766,6 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
 
     private mapOperators(filter: Filter<T>): Record<string, unknown> | Array<Record<string, unknown>> {
         if (!filter || typeof filter !== "object") return {};
-        // if (Array.isArray(filter)) return filter.map(f => this.mapOperators(f));
 
         let out: Record<string, unknown> | Array<Record<string, unknown>> = {};
 
@@ -3847,10 +3809,6 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
                     out[key] = Like(oval.$like as string);
                     continue;
                 }
-                // if (val?.$raw) {
-                //     out[key] = Raw(val.$raw as string);
-                //     continue;
-                // }
             } else {
                 out[key] = val;
             }
@@ -4030,11 +3988,8 @@ export default VexDb;
 import { Request, Response, NextFunction } from "express";
 import { DataSource, EntityTarget, ObjectLiteral } from "typeorm";
 import mongoose from "mongoose";
-// import { Document } from "mongoose";
-// import { sqlMigrations } from "../_models/sqlMigration.gen";
 import { VexRepository } from "../_types/vex";
 import { TypeOrmRepositoryAdapter } from "./TypeOrmRepositoryAdapter.gen";
-// import { MongooseRepositoryAdapter } from "./MongooseRepositoryAdapter.gen";
 import utils from "./../_utils";
 
 export class VexDbConnector {
@@ -4101,7 +4056,6 @@ export class VexDbConnector {
                 .then(() => {
                     this.dataSource = ds;
                     utils.log.infoSql("TypeORM DataSource initialized");
-                    // this.runSqlMigrations(ds);
                 })
                 .catch((err) => {
                     utils.log.errorSql(`Failed to initialize TypeORM, retrying in ${retryTime}s`, err);
@@ -4112,23 +4066,6 @@ export class VexDbConnector {
         connectWithRetry(10);
     }
 
-    // private async runSqlMigrations(ds: DataSource): Promise<void> {
-    //     if (!sqlMigrations.length) return;
-    //     const runner = ds.createQueryRunner();
-    //     await runner.connect();
-    //     try {
-    //         for (const sql of sqlMigrations) {
-    //             utils.log.infoSql(`Applying migration: ${sql}`);
-    //             await runner.query(sql);
-    //         }
-    //         utils.log.infoSql(`${sqlMigrations.length} migrations applied`);
-    //     } catch (err) {
-    //         utils.log.errorSql("SQL migration failed", err);
-    //     } finally {
-    //         await runner.release();
-    //     }
-    // }
-
     closeSql(): void {
         if (this.dataSource?.isInitialized) {
             this.dataSource.destroy()
@@ -4137,7 +4074,7 @@ export class VexDbConnector {
         }
     }
 
-    // TODO: complete mongoose support, handle join and select
+    // TODO: complete mongoose support
     connectMongo(): void {
         console.warn("VeryExpress unified db adapter (MongooseRepositoryAdapter) for Mongodb are under development, use with caution. Contribute to \"https://github.com/Justin26l/VeryExpress\"");
         utils.log.infoMongo("Connecting to MongoDB (Driver: Mongoose)...");
@@ -4152,7 +4089,6 @@ export class VexDbConnector {
         connectWithRetry(10);
     }
 
-    // TODO: complete mongoose support, handle join and select
     closeMongo(): void {
         console.warn("VeryExpress unified db adapter (MongooseRepositoryAdapter) for Mongodb are under development, use with caution. Contribute to \"https://github.com/Justin26l/VeryExpress\"");
         mongoose.disconnect()
@@ -4160,13 +4096,10 @@ export class VexDbConnector {
             .catch((err) => utils.log.errorMongo("Error disconnecting Mongoose", err));
     }
 
-    // getRepository<T extends Document>(target: { schema: unknown; modelName: string }): VexRepository<T>;
     getRepository<T extends ObjectLiteral>(target: EntityTarget<T>): VexRepository<T>;
     getRepository<T>(target: EntityTarget<ObjectLiteral> | any): VexRepository<T> {
-        // TODO: complete mongoose support, handle join and select
         if (target?.schema && target?.modelName) {
             console.warn("VeryExpress unified db adapter (MongooseRepositoryAdapter) for Mongodb are under development, use with caution. Contribute to \"https://github.com/Justin26l/VeryExpress\"");
-            // return new MongooseRepositoryAdapter<T & Document>(target);
         }
         if (!this.dataSource) throw new Error("SQL DataSource not initialized");
         return new TypeOrmRepositoryAdapter<T & ObjectLiteral>(this.dataSource.getRepository(target));
@@ -4644,16 +4577,8 @@ export interface VexResponse<T = unknown>{
  */
 
 import crypto from "crypto";
-// import log from "~/utils/logger";
 import { UserWithRelations } from "../_types/User.gen";
 
-/**
- * Hashes a password with a salt (e.g., user email).
- * @param plainPassword The plain text password to hash.
- * @param salt The salt to use (e.g., user email).
- * @param algorithm The hash algorithm (default: 'sha256').
- * @returns The hashed password (hex encoded).
- */
 export function hashPassword(
     plainPassword: string,
     salt: string,
@@ -4662,24 +4587,16 @@ export function hashPassword(
     return crypto.createHash(algorithm).update(plainPassword + salt).digest("hex");
 }
 
-/**
- * Verifies if a plain password (with salt) matches a given hashed password.
- * @param user The user object containing email and userAuthProfiles.
- * @param plainPassword The plain text password to verify.
- * @returns True if the password matches, false otherwise.
- */
 export function verifyPassword(
     user: UserWithRelations,
     plainPassword: string,
 ): boolean {
     if(!user.email || !user.userAuthProfiles) {
-        // log.error(`User "${user._id}" email or userAuthProfiles missing for local auth's password verification.`);
         return false;
     }
 
     const hashedPassword = user.userAuthProfiles.find((profile:any) => profile.provider === "local")?.password;
     if(!hashedPassword) {
-        // log.error(`User "${user._id}" Local auth profile or password missing.`);
         return false;
     }
 

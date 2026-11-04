@@ -41,11 +41,15 @@ function sortKeys(value: unknown): unknown {
  * implementation detail. Reordering two `copyDir` calls once rewrote four golden
  * files while the generated output was byte-identical. Sorting the keys keeps the
  * golden sensitive to what actually matters (which files are tracked, and their
- * `allowOverwrite` / version values) without pinning incidental write order.
+ * `allowOverwrite` values) without pinning incidental write order.
+ *
+ * The version values are pinned to `<version>` for the same reason as the header
+ * comment: a release bump must not rewrite every golden file.
  */
 export function canonicalizeMetaJson(content: string): string {
     try {
-        return `${JSON.stringify(sortKeys(JSON.parse(content)), null, 2)}\n`;
+        return `${JSON.stringify(sortKeys(JSON.parse(content)), null, 2)
+            .replace(/"(lastWriteVersion|lastGeneratedVersion)": "[^"]*"/g, '"$1": "<version>"')}\n`;
     }
     catch {
         // never let a normalization helper be the reason a golden test fails
