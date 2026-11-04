@@ -1,0 +1,22 @@
+{
+    "jsonSchemaDir": "./schemas",
+    "rootDir": "./out",
+    "dbType": "sql",
+    "app": {
+        "enableSwagger": true,
+        "useUserSchema": true,
+        "useObjectID": true,
+        "allowApiCreateUpdate_id": false
+    },
+    "auth": {
+        "localAuth": true,
+        "useHttpOnlyCookieToken": true,
+        "oauthProviders": {
+            "google": false,
+            "github": false
+        }
+    },
+    "generator": {
+        "commitBeforeGenerate": false
+    }
+}

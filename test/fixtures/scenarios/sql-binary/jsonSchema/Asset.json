@@ -1,0 +1,42 @@
+{
+    "type": "object",
+    "x-documentConfig": {
+        "documentName": "Asset",
+        "restApi": {
+            "methods": [
+                "get",
+                "getList",
+                "post",
+                "put",
+                "patch",
+                "delete"
+            ],
+            "joinWhitelist": []
+        }
+    },
+    "required": ["name", "data"],
+    "properties": {
+        "_id": {
+            "type": "string",
+            "x-format": "Primary",
+            "index": true
+        },
+        "name": {
+            "type": "string",
+            "maxLength": 120
+        },
+        "mimeType": {
+            "type": "string",
+            "maxLength": 100
+        },
+        "data": {
+            "type": "string",
+            "x-format": "Binary",
+            "description": "base64-encoded image bytes"
+        },
+        "size": {
+            "type": "integer",
+            "minimum": 0
+        }
+    }
+}
