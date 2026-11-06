@@ -2,6 +2,7 @@
 import { Model, Document } from "mongoose";
 import { VexRepository, Select, Filter, Join, VexPagination, VexResErr } from "../_types/vex";
 import UserContext from "../_middlewares/UserContext.gen";
+import { entityIsolation, DataIsolationEntry } from "../_middlewares/DataIsolationRegistry.gen";
 import { entityVexFields, entitySoftDeleteFields, showSoftDeleted, VexFieldEntry } from "../_middlewares/VexFieldRegistry.gen";
 import utils from "../_utils";
 
@@ -104,9 +105,64 @@ export class MongooseRepositoryAdapter<T extends Document> implements VexReposit
         return { [field]: { $ne: true } };
     }
 
+    /** Value the request context supplies for one isolation rule. */
+    private resolveIsolationValue(source: DataIsolationEntry["source"]): string | undefined {
+        return source === "user.tenantId" ? UserContext.tenantId : UserContext.userId;
+    }
+
+    /**
+     * Isolation terms for this model, ANDed into the caller's filter.
+     * A tenant term fails closed; an ownership term skips when unauthenticated.
+     */
+    private getIsolationFilter(): Record<string, unknown> | null {
+        const rules = entityIsolation[this.getEntityName()] ?? [];
+        if (rules.length === 0) return null;
+
+        const terms: Record<string, unknown> = {};
+
+        for (const rule of rules) {
+            const value = this.resolveIsolationValue(rule.source);
+            if (value === undefined) {
+                if (rule.onMissing === "deny") {
+                    throw new VexResErr(403, undefined,
+                        `${this.model.modelName} is isolated by ${rule.source} but the request carries no such value`);
+                }
+                continue;
+            }
+
+            terms[rule.field] = value;
+        }
+
+        return Object.keys(terms).length > 0 ? terms : null;
+    }
+
+    private stripIsolationFields(data: Partial<T>): void {
+        for (const rule of entityIsolation[this.getEntityName()] ?? []) {
+            if (rule.field === "_id") continue;
+            delete (data as Record<string, unknown>)[rule.field];
+        }
+    }
+
+    private stampIsolationFields(data: Partial<T>): void {
+        for (const rule of entityIsolation[this.getEntityName()] ?? []) {
+            if (rule.field === "_id") continue;
+
+            // `all` is a read scope: a write still needs a concrete tenant to stamp.
+            const value = this.resolveIsolationValue(rule.source);
+            if (value !== undefined) {
+                (data as Record<string, unknown>)[rule.field] = value;
+            }
+            else if (rule.onMissing === "deny") {
+                throw new VexResErr(403, undefined,
+                    `${this.model.modelName} is isolated by ${rule.source} but the request carries no such value`);
+            }
+        }
+    }
+
     private mergeFilter(filter: Filter, options?: { includeSoftDeleted?: boolean }): Record<string, unknown> {
+        const isolation = this.getIsolationFilter();
         const softDelete = options?.includeSoftDeleted ? null : this.getSoftDeleteFilter();
-        return { ...((filter || {}) as Record<string, unknown>), ...softDelete };
+        return { ...((filter || {}) as Record<string, unknown>), ...softDelete, ...isolation };
     }
 
     find(filter: Filter, join?: Join, select?: Select, pagination?: VexPagination): Promise<T[]> {
@@ -131,6 +187,8 @@ export class MongooseRepositoryAdapter<T extends Document> implements VexReposit
 
     async create(data: Partial<T>): Promise<T> {
         const enriched = { ...data };
+        this.stripIsolationFields(enriched);
+        this.stampIsolationFields(enriched);
         this.applyVexFields(enriched, "create");
         const doc = new this.model(enriched);
         return doc.save();
@@ -142,8 +200,10 @@ export class MongooseRepositoryAdapter<T extends Document> implements VexReposit
             return Promise.resolve(null);
         }
         const enriched = { ...data };
+        this.stripIsolationFields(enriched);
         this.applyVexFields(enriched, "update");
-        return this.model.findByIdAndUpdate(id, enriched, { new: true, overwrite: true }).exec();
+        const filter = this.mergeFilter({ _id: id } as Filter);
+        return this.model.findOneAndUpdate(filter as any, enriched, { new: true, overwrite: true }).exec();
     }
 
     update(id: string | undefined, data: Partial<T>): Promise<T | null> {
@@ -152,8 +212,10 @@ export class MongooseRepositoryAdapter<T extends Document> implements VexReposit
             return Promise.resolve(null);
         }
         const enriched = { ...data };
+        this.stripIsolationFields(enriched);
         this.applyVexFields(enriched, "update");
-        return this.model.findByIdAndUpdate(id, { $set: enriched }, { new: true }).exec();
+        const filter = this.mergeFilter({ _id: id } as Filter);
+        return this.model.findOneAndUpdate(filter as any, { $set: enriched }, { new: true }).exec();
     }
 
     async delete(id: string | undefined): Promise<void> {
@@ -161,7 +223,8 @@ export class MongooseRepositoryAdapter<T extends Document> implements VexReposit
             utils.log.error("MongooseRepositoryAdapter.delete called without id — refuse delete document");
             return;
         }
-        await this.model.findByIdAndDelete(id).exec();
+        const filter = this.mergeFilter({ _id: id } as Filter);
+        await this.model.findOneAndDelete(filter as any).exec();
     }
 
     async deleteWhere(filter: Record<string, unknown>): Promise<void> {
@@ -189,6 +252,7 @@ export class MongooseRepositoryAdapter<T extends Document> implements VexReposit
         }
 
         const enriched: Record<string, unknown> = { ...((data ?? {}) as Record<string, unknown>) };
+        this.stripIsolationFields(enriched as Partial<T>);
         this.applyVexFields(enriched as Partial<T>, "update");
         enriched[field] = true;
 

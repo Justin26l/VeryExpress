@@ -66,17 +66,25 @@ move it into the passing variant matrix.
 
 The SQL adapter maps the filter DSL (`$and`, `$or`, `$like`, `$in`, comparison operators) onto TypeORM `FindOptions`. See [`docs/features/filterOperators.md`](../features/filterOperators.md).
 
-## Data isolation (row-level ownership)
+## Isolation (ownership and tenancy)
 
-Declared per entity in `x-documentConfig → dataIsolation: { field: "ownerId" }`.
+Declared per entity in `x-documentConfig → isolation: [{ field, source, onMissing }]`. The legacy
+`dataIsolation: { field }` form is an ownership rule.
 
 Generation produces three pieces:
 
-1. `DataIsolationRegistry.gen.ts` (`src/generators/middlewares/dataIsolationRegistry.generator.ts`) — entity → ownership-field map
-2. `UserContext.ts` — `AsyncLocalStorage` carrying the current user through the request pipeline; filled by `Authentication.middleware` from the verified token, not by a dedicated middleware
-3. The TypeORM adapter reads the user ID from that context and injects `{ [field]: userId }` into every query — transparent row-level ownership, no per-controller code
+1. `DataIsolationRegistry.gen.ts` (`src/generators/middlewares/dataIsolationRegistry.generator.ts`) —
+   entity → rule list (`field`, `source`, `onMissing`)
+2. `UserContext.ts` — `AsyncLocalStorage` carrying the request scope (`tokenData`, `requestedTenantId`,
+   `tenantId`). `Authentication.middleware` writes the verified token; in tenant `option` mode the
+   generated controllers run `TenantScope.middleware` right after it, and the L0 pass in `server.ts`
+   captures the header first. `run` layers a patch onto the enclosing scope instead of replacing it.
+3. Both adapters resolve each rule from that scope and AND every term into the query. Tenant terms
+   fail closed (`onMissing: "deny"`); ownership terms keep their historical skip-when-unauthenticated
+   behaviour. Isolation fields are stripped from caller data and stamped on create.
 
-Full guide: [`docs/features/dataIsolation.md`](../features/dataIsolation.md).
+Full guides: [`docs/features/dataIsolation.md`](../features/dataIsolation.md),
+[`docs/features/tenantIsolation.md`](../features/tenantIsolation.md).
 
 ## Auto-written audit fields
 

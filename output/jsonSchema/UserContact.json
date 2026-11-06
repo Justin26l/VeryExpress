@@ -39,9 +39,12 @@
             "type": "string",
             "index": true
         },
-        "isActive": {
+        "active": {
             "type": "boolean",
-            "default": true
+            "default": true,
+            "required": true,
+            "x-vexData": "softDelete",
+            "description": "Soft-delete / account suspension flag"
         },
         "createdAt": {
             "type": "string",
@@ -66,6 +69,7 @@
     },
     "additionalProperties": false,
     "required": [
-        "userId"
+        "userId",
+        "active"
     ]
 }

@@ -2,7 +2,7 @@
 import { Repository, ObjectLiteral, FindOptionsWhere, DeepPartial, In, Not, Like, MoreThan, LessThan, MoreThanOrEqual, LessThanOrEqual, FindManyOptions } from "typeorm";
 import { VexRepository, Select, Filter, Join, FieldOperators, VexPagination, VexResErr } from "../_types/vex";
 import UserContext from "../_middlewares/UserContext.gen";
-import { entityIsolation } from "../_middlewares/DataIsolationRegistry.gen";
+import { entityIsolation, DataIsolationEntry } from "../_middlewares/DataIsolationRegistry.gen";
 import { entityVexFields, entitySoftDeleteFields, showSoftDeleted, VexFieldEntry } from "../_middlewares/VexFieldRegistry.gen";
 import utils from "../_utils";
 
@@ -87,14 +87,67 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
         Object.assign(data, values);
     }
 
-    private getOwnershipFilter(): Record<string, unknown> | null {
-        const userId = UserContext.userId;
-        if (!userId) return null;
+    /** Value the request context supplies for one isolation rule. */
+    private resolveIsolationValue(source: DataIsolationEntry["source"]): string | undefined {
+        return source === "user.tenantId" ? UserContext.tenantId : UserContext.userId;
+    }
 
-        const config = entityIsolation[this.getEntityName()];
-        if (!config) return null;
+    /**
+     * Isolation terms for this entity, ANDed into the caller's filter.
+     *
+     * A tenant term fails closed: a document that declares one is unreachable when the
+     * request carries no tenant, unless a cross-tenant role lifted the scope. An ownership
+     * term keeps its historical skip-when-unauthenticated behaviour.
+     */
+    private getIsolationFilter(): Record<string, unknown> | null {
+        const rules = entityIsolation[this.getEntityName()] ?? [];
+        if (rules.length === 0) return null;
 
-        return { [config.field]: userId };
+        const terms: Record<string, unknown> = {};
+
+        for (const rule of rules) {
+            const value = this.resolveIsolationValue(rule.source);
+            if (value === undefined) {
+                if (rule.onMissing === "deny") {
+                    throw new VexResErr(403, undefined,
+                        `${this.getEntityName()} is isolated by ${rule.source} but the request carries no such value`);
+                }
+                continue;
+            }
+
+            terms[rule.field] = value;
+        }
+
+        return Object.keys(terms).length > 0 ? terms : null;
+    }
+
+    /**
+     * Remove isolation fields from caller-supplied data. A client must never be able to
+     * move a row under another owner or into another tenant.
+     */
+    private stripIsolationFields(data: Partial<T>): void {
+        for (const rule of entityIsolation[this.getEntityName()] ?? []) {
+            if (rule.field === "_id") continue;
+            delete (data as Record<string, unknown>)[rule.field];
+        }
+    }
+
+    /** Fill isolation fields from the request context on create. */
+    private stampIsolationFields(data: Partial<T>): void {
+        for (const rule of entityIsolation[this.getEntityName()] ?? []) {
+            // a rule on `_id` filters the row's own id; it is never stamped
+            if (rule.field === "_id") continue;
+
+            // `all` is a read scope: a write still needs a concrete tenant to stamp.
+            const value = this.resolveIsolationValue(rule.source);
+            if (value !== undefined) {
+                (data as Record<string, unknown>)[rule.field] = value;
+            }
+            else if (rule.onMissing === "deny") {
+                throw new VexResErr(403, undefined,
+                    `${this.getEntityName()} is isolated by ${rule.source} but the request carries no such value`);
+            }
+        }
     }
 
     /**
@@ -113,20 +166,20 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
         return { [field]: Not(true) };
     }
 
-    /** Merge caller filter with ownership filter. Ownership always wins. */
+    /** Merge caller filter with isolation and soft-delete terms. Isolation always wins. */
     private mergeFilter(
         callerFilter: Filter<T>,
         options?: { includeSoftDeleted?: boolean },
     ): Record<string, unknown> | Array<Record<string, unknown>> {
         const mapped = this.mapOperators(callerFilter);
-        const ownership = this.getOwnershipFilter();
+        const isolation = this.getIsolationFilter();
         const softDelete = options?.includeSoftDeleted ? null : this.getSoftDeleteFilter();
 
         if (mapped instanceof Array) {
-            return mapped.map(branch => ({ ...branch, ...softDelete, ...ownership }));
+            return mapped.map(branch => ({ ...branch, ...softDelete, ...isolation }));
         } 
         else {
-            return { ...mapped, ...softDelete, ...ownership };
+            return { ...mapped, ...softDelete, ...isolation };
         }
     }
 
@@ -229,13 +282,8 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
 
     async create(data: Partial<T>): Promise<T> {
         const enriched = { ...data };
-        const userId = UserContext.userId;
-        if (userId) {
-            const config = entityIsolation[this.getEntityName()];
-            if (config && config.field !== "_id") {
-                (enriched as Record<string, unknown>)[config.field] = userId;
-            }
-        }
+        this.stripIsolationFields(enriched);
+        this.stampIsolationFields(enriched);
         this.applyVexFields(enriched, "create");
         return this.repo.save(this.repo.create(enriched as DeepPartial<T>));
     }
@@ -246,6 +294,7 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
             return null;
         }
         const enriched = { ...data };
+        this.stripIsolationFields(enriched);
         this.applyVexFields(enriched, "update");
         const existing = await this.findOne({ _id: id } as unknown as Filter<T>);
         if (!existing) return null;
@@ -258,6 +307,7 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
             return null;
         }
         const enriched = { ...data };
+        this.stripIsolationFields(enriched);
         this.applyVexFields(enriched, "update");
         const where = this.mergeFilter({ _id: id } as unknown as Filter<T>);
         await this.repo.update(where as FindOptionsWhere<T>, enriched);

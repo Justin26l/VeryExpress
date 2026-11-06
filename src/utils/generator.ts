@@ -38,12 +38,27 @@ export function isAuthEnabled(compilerOptions: types.compilerOptions): boolean {
         || compilerOptions.auth.firebase === true;
 }
 
+/** Auth paths that attach `Authentication.middleware` to generated controllers. */
+export function isJwtAuthEnabled(compilerOptions: types.compilerOptions): boolean {
+    return compilerOptions.auth.localAuth
+        || OAuthProviders(compilerOptions).length > 0;
+}
+
 export function isFirebaseAuthEnabled(compilerOptions: types.compilerOptions): boolean {
     return isAuthEnabled(compilerOptions) && compilerOptions.auth.firebase === true;
 }
 
 export function isAccountDeletionEnabled(compilerOptions: types.compilerOptions): boolean {
-    return isAuthEnabled(compilerOptions) && (compilerOptions.auth.deleteAccount ?? true);
+    const setting = compilerOptions.auth.deleteAccount;
+    const enabled = typeof setting === "object" ? (setting.enabled ?? true) : (setting ?? true);
+    return isAuthEnabled(compilerOptions) && enabled;
+}
+
+export function deleteAccountTables(compilerOptions: types.compilerOptions): string[] {
+    const setting = compilerOptions.auth.deleteAccount;
+    return typeof setting === "object" && Array.isArray(setting.deleteTables)
+        ? setting.deleteTables
+        : [];
 }
 
 export function isShowSoftDeleted(compilerOptions: types.compilerOptions): boolean {
@@ -64,6 +79,17 @@ export function isShowSoftDeleted(compilerOptions: types.compilerOptions): boole
 export function isRbacEnabled(compilerOptions: types.compilerOptions): boolean {
     const roles = compilerOptions.useRBAC?.roles;
     return Array.isArray(roles) && roles.length > 0;
+}
+
+export const TENANT_HEADER = "x-tenant-id";
+export const TENANT_CLAIM = "tenantId";
+
+export function isTenantEnabled(compilerOptions: types.compilerOptions): boolean {
+    return compilerOptions.tenant?.enable === true;
+}
+
+export function tenantIsolationMode(compilerOptions: types.compilerOptions): types.TenantIsolationMode {
+    return compilerOptions.tenant?.IsolationMode ?? "preSelect";
 }
 
 export const defaultCompilerOptions: types.compilerOptions = {
@@ -112,8 +138,14 @@ export default {
     getSimpleStaticHeaderComment,
     OAuthProviders,
     isAuthEnabled,
+    isJwtAuthEnabled,
     isFirebaseAuthEnabled,
     isRbacEnabled,
     isAccountDeletionEnabled,
     isShowSoftDeleted,
+    isTenantEnabled,
+    tenantIsolationMode,
+    TENANT_HEADER,
+    TENANT_CLAIM,
+    deleteAccountTables,
 };

@@ -35,8 +35,8 @@ export interface VexRepository<T, U=undefined> {
     /**
      * Read a row that may be soft-deleted.
      *
-     * Skips ONLY the adapter's soft-delete term — the ownership filter still applies, so this is
-     * not a way around `dataIsolation`. Exists for internal state checks (account-deletion
+     * Skips ONLY the adapter's soft-delete term — the isolation terms still apply, so this is
+     * not a way around `isolation`. Exists for internal state checks (account-deletion
      * idempotency, the account-state guard); a `Filter`-level escape hatch would have been part of
      * every HTTP filter body, which is exactly what must not be possible.
      */

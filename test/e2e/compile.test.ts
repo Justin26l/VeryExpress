@@ -1,7 +1,9 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import fs from "node:fs";
+import path from "node:path";
 
 import { compileVariant, E2E_ROOT } from "../helpers/e2e";
+import { repoRoot } from "../helpers/paths";
 
 /**
  * Type-check a generated app for several config variants.
@@ -65,6 +67,36 @@ const variants: Record<string, Record<string, unknown>> = {
      * `oauthProviders` alone — and generated a controller calling `this.userRepo` without declaring it,
      * so this variant guards the fix as much as the Firebase code.
      */
+    /**
+     * Tenant enabled without RBAC. The register path stamps a membership and the auth
+     * middleware resolves a claim; both are independent of RBAC being on.
+     */
+    "tenant-option-rbac-off": {
+        dbType: "sql",
+        app: baseApp,
+        auth: auth(true),
+        tenant: { enable: true, IsolationMode: "option" },
+    },
+    /**
+     * The tenant module without any account system: the header is the tenant. Proves the
+     * generated files do not depend on the auth module or on a token.
+     */
+    /**
+     * preSelect with auth on compiles the login membership check and the register link.
+     */
+    "tenant-preSelect-auth-on": {
+        dbType: "sql",
+        app: baseApp,
+        auth: auth(true),
+        useRBAC: { roles: ["member"], default: "member" },
+        tenant: { enable: true, IsolationMode: "preSelect" },
+    },
+    "tenant-preSelect-auth-off": {
+        dbType: "sql",
+        app: baseApp,
+        auth: auth(false),
+        tenant: { enable: true, IsolationMode: "preSelect" },
+    },
     "firebase-only": {
         dbType: "sql",
         app: baseApp,
@@ -98,9 +130,15 @@ describe.skipIf(process.env.VEX_E2E !== "1")("generated app — compiles for eve
         fs.rmSync(`${E2E_ROOT}/variants`, { recursive: true, force: true });
     });
 
+    const tenantSchemas = path.join(repoRoot, "test", "fixtures", "e2e", "schemas");
+
     for (const [name, config] of Object.entries(variants)) {
         it(`compiles "${name}"`, () => {
-            const { errors, workDir } = compileVariant(name, configFor(config));
+            const { errors, workDir } = compileVariant(
+                name,
+                configFor(config),
+                name.startsWith("tenant-") ? tenantSchemas : undefined,
+            );
             expect(errors, `tsc errors in ${workDir}`).toEqual([]);
         }, 300_000);
     }

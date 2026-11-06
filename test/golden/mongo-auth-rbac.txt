@@ -1104,7 +1104,7 @@ export class AuthController extends controllerFactory._ControllerFactory {
         
         const user = await this.userRepo.findOne({ _id: session.userId }, ["userRole"]);
         if (!user) throw new VexResErr(404, null, "Invalid User Id");
-        
+
         const accessToken = await this.JWTService.generateAccessToken(user);
         const refreshToken = this.JWTService.generateRefreshToken({ vexUserId: this.JWTService.userIdOf(user) });
         
@@ -1133,7 +1133,7 @@ export class AuthController extends controllerFactory._ControllerFactory {
 
         const user = await this.userRepo.findOne(identity, ["userRole"]);
         if (!user) throw new VexResErr(404, null, "Invalid User Id");
-        
+
         const accessToken = await this.JWTService.generateAccessToken(user);
         throw new VexResOk(200, { result: {
             accessToken: accessToken.token,
@@ -1172,6 +1172,7 @@ export class AuthController extends controllerFactory._ControllerFactory {
                 await this.userAuthProfilesRepo.deleteWhere({ userId: user._id });
                 throw new VexResErr(500, null, "User role assignment failed."); 
             });
+
 
         throw new VexResOk(201, { result: { message: "Registration successful." } });
     }
@@ -1309,7 +1310,7 @@ class Authentication {
         }
 
         req.user = tokenData;
-        UserContext.run(tokenData, () => next());
+        UserContext.run({ tokenData }, () => next());
     }
 
     private toVexErr(e: unknown): VexResErr {
@@ -1329,12 +1330,19 @@ export default new Authentication();
  * https://github.com/Justin26l/VeryExpress
  */
 
+export type IsolationSource = "user._id" | "user.tenantId";
+export type IsolationOnMissing = "skip" | "deny";
+
 export interface DataIsolationEntry {
-  field: string;
+    field: string;
+    source: IsolationSource;
+    onMissing: IsolationOnMissing;
 }
 
-export const entityIsolation: Record<string, DataIsolationEntry> = {
-    "UserEntity": { field: "_id" }
+export const entityIsolation: Record<string, DataIsolationEntry[]> = {
+    "UserEntity": [
+        { field: "_id", source: "user._id", onMissing: "skip" },
+    ]
 };
 
 ===== out/src/system/_middlewares/JoinWhitelistMiddleware.gen.ts =====
@@ -1506,9 +1514,13 @@ export async function expressAuthentication(
 
 import { AsyncLocalStorage } from "async_hooks";
 
-/** Identity-bearing claims carried from the verified access token. */
+/** Identity-bearing claims carried from the verified access token, plus request scope. */
 export interface UserContextData {
-    tokenData: Record<string, unknown>;
+    tokenData?: Record<string, unknown>;
+    /** Tenant the client asked for, captured from the request header before authentication. */
+    requestedTenantId?: string;
+    /** Tenant of this request. The DB layer reads only this value. */
+    tenantId?: string;
 }
 
 /**
@@ -1524,9 +1536,23 @@ export function userIdOfToken(tokenData: Record<string, unknown> | undefined): s
 
 const als = new AsyncLocalStorage<UserContextData>();
 
+/**
+ * Request-scoped values shared by middleware layers.
+ *
+ * `run` layers a patch onto whatever the enclosing layer established, so a later
+ * middleware (authentication) does not erase what an earlier one (tenant header) set.
+ * The store is replaced, never merged in place, so concurrent requests stay isolated.
+ */
 class UserContext {
-    run<T>(tokenData: Record<string, unknown>, fn: () => T): T {
-        return als.run({ tokenData }, fn);
+    run<T>(patch: Partial<UserContextData>, fn: () => T): T {
+        return als.run({ ...als.getStore(), ...patch }, fn);
+    }
+
+    /** Merge into the store of the enclosing `run`. Throws outside a request scope. */
+    set(patch: Partial<UserContextData>): void {
+        const store = als.getStore();
+        if (!store) throw new Error("UserContext.set called outside a request scope");
+        Object.assign(store, patch);
     }
 
     getStore(): UserContextData | undefined {
@@ -1536,6 +1562,14 @@ class UserContext {
     /** Normalized identity of the authenticated caller. */
     get userId(): string | undefined {
         return userIdOfToken(als.getStore()?.tokenData);
+    }
+
+    get requestedTenantId(): string | undefined {
+        return als.getStore()?.requestedTenantId;
+    }
+
+    get tenantId(): string | undefined {
+        return als.getStore()?.tenantId;
     }
 }
 
@@ -2752,10 +2786,12 @@ export default class AccountDeletionService {
                 userId,
                 tombstonedAt: "",
                 deleted: { authProfiles: 0, userRoles: 0, sessions: 0 },
+                related: {},
             };
         }
 
         const deleted = await this.removeCredentials(userId);
+        const related = {};
         const tombstoned = await this.userRepo.softDelete(userId, TOMBSTONE)
             .catch(e => {
                 throw new VexResErr(500, undefined, "Account tombstone failed");
@@ -2764,11 +2800,13 @@ export default class AccountDeletionService {
             userId,
             tombstonedAt: String((tombstoned as unknown as Record<string, unknown>).updatedAt ?? ""),
             deleted,
+            related,
         };
+
     }
 
     /** Count first, then delete, so the response can report how much was removed. */
-    private async removeCredentials(userId: string): Promise<deleteAccountResponse["deleted"]> {
+    private async removeCredentials(userId: string): Promise<{ authProfiles: number, userRoles: number, sessions: number }> {
         const filter = { userId } as unknown as Filter<Session>;
 
         const authProfiles = await this.userAuthProfilesRepo.count({ userId } as unknown as Filter<UserAuthProfiles>);
@@ -3103,9 +3141,20 @@ export default class JWTService {
         };
     }
 
-    public async generateAccessToken(user: UserWithRelations, index?: number): Promise<tokenObj> {
+    /**
+     * `extraClaims` carries caller-supplied claims (for example a tenant) into the payload.
+     * The auth module stays unaware of which features add them.
+     */
+    public async generateAccessToken(
+        user: UserWithRelations,
+        index?: number,
+        extraClaims?: Record<string, unknown>,
+    ): Promise<tokenObj> {
 
-        const userInfo = this.tokenPayload(user);
+        const userInfo = {
+            ...this.tokenPayload(user) as Record<string, unknown>,
+            ...(extraClaims ?? {}),
+        };
 
         return this.generateToken(userInfo, index, process.env.ACCESS_TOKEN_EXPIRE_TIME);
     }
@@ -3125,6 +3174,7 @@ export default class JWTService {
 import { Model, Document } from "mongoose";
 import { VexRepository, Select, Filter, Join, VexPagination, VexResErr } from "../_types/vex";
 import UserContext from "../_middlewares/UserContext.gen";
+import { entityIsolation, DataIsolationEntry } from "../_middlewares/DataIsolationRegistry.gen";
 import { entityVexFields, entitySoftDeleteFields, showSoftDeleted, VexFieldEntry } from "../_middlewares/VexFieldRegistry.gen";
 import utils from "../_utils";
 
@@ -3227,9 +3277,64 @@ export class MongooseRepositoryAdapter<T extends Document> implements VexReposit
         return { [field]: { $ne: true } };
     }
 
+    /** Value the request context supplies for one isolation rule. */
+    private resolveIsolationValue(source: DataIsolationEntry["source"]): string | undefined {
+        return source === "user.tenantId" ? UserContext.tenantId : UserContext.userId;
+    }
+
+    /**
+     * Isolation terms for this model, ANDed into the caller's filter.
+     * A tenant term fails closed; an ownership term skips when unauthenticated.
+     */
+    private getIsolationFilter(): Record<string, unknown> | null {
+        const rules = entityIsolation[this.getEntityName()] ?? [];
+        if (rules.length === 0) return null;
+
+        const terms: Record<string, unknown> = {};
+
+        for (const rule of rules) {
+            const value = this.resolveIsolationValue(rule.source);
+            if (value === undefined) {
+                if (rule.onMissing === "deny") {
+                    throw new VexResErr(403, undefined,
+                        `${this.model.modelName} is isolated by ${rule.source} but the request carries no such value`);
+                }
+                continue;
+            }
+
+            terms[rule.field] = value;
+        }
+
+        return Object.keys(terms).length > 0 ? terms : null;
+    }
+
+    private stripIsolationFields(data: Partial<T>): void {
+        for (const rule of entityIsolation[this.getEntityName()] ?? []) {
+            if (rule.field === "_id") continue;
+            delete (data as Record<string, unknown>)[rule.field];
+        }
+    }
+
+    private stampIsolationFields(data: Partial<T>): void {
+        for (const rule of entityIsolation[this.getEntityName()] ?? []) {
+            if (rule.field === "_id") continue;
+
+            // `all` is a read scope: a write still needs a concrete tenant to stamp.
+            const value = this.resolveIsolationValue(rule.source);
+            if (value !== undefined) {
+                (data as Record<string, unknown>)[rule.field] = value;
+            }
+            else if (rule.onMissing === "deny") {
+                throw new VexResErr(403, undefined,
+                    `${this.model.modelName} is isolated by ${rule.source} but the request carries no such value`);
+            }
+        }
+    }
+
     private mergeFilter(filter: Filter, options?: { includeSoftDeleted?: boolean }): Record<string, unknown> {
+        const isolation = this.getIsolationFilter();
         const softDelete = options?.includeSoftDeleted ? null : this.getSoftDeleteFilter();
-        return { ...((filter || {}) as Record<string, unknown>), ...softDelete };
+        return { ...((filter || {}) as Record<string, unknown>), ...softDelete, ...isolation };
     }
 
     find(filter: Filter, join?: Join, select?: Select, pagination?: VexPagination): Promise<T[]> {
@@ -3254,6 +3359,8 @@ export class MongooseRepositoryAdapter<T extends Document> implements VexReposit
 
     async create(data: Partial<T>): Promise<T> {
         const enriched = { ...data };
+        this.stripIsolationFields(enriched);
+        this.stampIsolationFields(enriched);
         this.applyVexFields(enriched, "create");
         const doc = new this.model(enriched);
         return doc.save();
@@ -3265,8 +3372,10 @@ export class MongooseRepositoryAdapter<T extends Document> implements VexReposit
             return Promise.resolve(null);
         }
         const enriched = { ...data };
+        this.stripIsolationFields(enriched);
         this.applyVexFields(enriched, "update");
-        return this.model.findByIdAndUpdate(id, enriched, { new: true, overwrite: true }).exec();
+        const filter = this.mergeFilter({ _id: id } as Filter);
+        return this.model.findOneAndUpdate(filter as any, enriched, { new: true, overwrite: true }).exec();
     }
 
     update(id: string | undefined, data: Partial<T>): Promise<T | null> {
@@ -3275,8 +3384,10 @@ export class MongooseRepositoryAdapter<T extends Document> implements VexReposit
             return Promise.resolve(null);
         }
         const enriched = { ...data };
+        this.stripIsolationFields(enriched);
         this.applyVexFields(enriched, "update");
-        return this.model.findByIdAndUpdate(id, { $set: enriched }, { new: true }).exec();
+        const filter = this.mergeFilter({ _id: id } as Filter);
+        return this.model.findOneAndUpdate(filter as any, { $set: enriched }, { new: true }).exec();
     }
 
     async delete(id: string | undefined): Promise<void> {
@@ -3284,7 +3395,8 @@ export class MongooseRepositoryAdapter<T extends Document> implements VexReposit
             utils.log.error("MongooseRepositoryAdapter.delete called without id — refuse delete document");
             return;
         }
-        await this.model.findByIdAndDelete(id).exec();
+        const filter = this.mergeFilter({ _id: id } as Filter);
+        await this.model.findOneAndDelete(filter as any).exec();
     }
 
     async deleteWhere(filter: Record<string, unknown>): Promise<void> {
@@ -3312,6 +3424,7 @@ export class MongooseRepositoryAdapter<T extends Document> implements VexReposit
         }
 
         const enriched: Record<string, unknown> = { ...((data ?? {}) as Record<string, unknown>) };
+        this.stripIsolationFields(enriched as Partial<T>);
         this.applyVexFields(enriched as Partial<T>, "update");
         enriched[field] = true;
 
@@ -3538,7 +3651,7 @@ export default class OAuthStrategyService {
 import { Repository, ObjectLiteral, FindOptionsWhere, DeepPartial, In, Not, Like, MoreThan, LessThan, MoreThanOrEqual, LessThanOrEqual, FindManyOptions } from "typeorm";
 import { VexRepository, Select, Filter, Join, FieldOperators, VexPagination, VexResErr } from "../_types/vex";
 import UserContext from "../_middlewares/UserContext.gen";
-import { entityIsolation } from "../_middlewares/DataIsolationRegistry.gen";
+import { entityIsolation, DataIsolationEntry } from "../_middlewares/DataIsolationRegistry.gen";
 import { entityVexFields, entitySoftDeleteFields, showSoftDeleted, VexFieldEntry } from "../_middlewares/VexFieldRegistry.gen";
 import utils from "../_utils";
 
@@ -3623,14 +3736,67 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
         Object.assign(data, values);
     }
 
-    private getOwnershipFilter(): Record<string, unknown> | null {
-        const userId = UserContext.userId;
-        if (!userId) return null;
+    /** Value the request context supplies for one isolation rule. */
+    private resolveIsolationValue(source: DataIsolationEntry["source"]): string | undefined {
+        return source === "user.tenantId" ? UserContext.tenantId : UserContext.userId;
+    }
 
-        const config = entityIsolation[this.getEntityName()];
-        if (!config) return null;
+    /**
+     * Isolation terms for this entity, ANDed into the caller's filter.
+     *
+     * A tenant term fails closed: a document that declares one is unreachable when the
+     * request carries no tenant, unless a cross-tenant role lifted the scope. An ownership
+     * term keeps its historical skip-when-unauthenticated behaviour.
+     */
+    private getIsolationFilter(): Record<string, unknown> | null {
+        const rules = entityIsolation[this.getEntityName()] ?? [];
+        if (rules.length === 0) return null;
 
-        return { [config.field]: userId };
+        const terms: Record<string, unknown> = {};
+
+        for (const rule of rules) {
+            const value = this.resolveIsolationValue(rule.source);
+            if (value === undefined) {
+                if (rule.onMissing === "deny") {
+                    throw new VexResErr(403, undefined,
+                        `${this.getEntityName()} is isolated by ${rule.source} but the request carries no such value`);
+                }
+                continue;
+            }
+
+            terms[rule.field] = value;
+        }
+
+        return Object.keys(terms).length > 0 ? terms : null;
+    }
+
+    /**
+     * Remove isolation fields from caller-supplied data. A client must never be able to
+     * move a row under another owner or into another tenant.
+     */
+    private stripIsolationFields(data: Partial<T>): void {
+        for (const rule of entityIsolation[this.getEntityName()] ?? []) {
+            if (rule.field === "_id") continue;
+            delete (data as Record<string, unknown>)[rule.field];
+        }
+    }
+
+    /** Fill isolation fields from the request context on create. */
+    private stampIsolationFields(data: Partial<T>): void {
+        for (const rule of entityIsolation[this.getEntityName()] ?? []) {
+            // a rule on `_id` filters the row's own id; it is never stamped
+            if (rule.field === "_id") continue;
+
+            // `all` is a read scope: a write still needs a concrete tenant to stamp.
+            const value = this.resolveIsolationValue(rule.source);
+            if (value !== undefined) {
+                (data as Record<string, unknown>)[rule.field] = value;
+            }
+            else if (rule.onMissing === "deny") {
+                throw new VexResErr(403, undefined,
+                    `${this.getEntityName()} is isolated by ${rule.source} but the request carries no such value`);
+            }
+        }
     }
 
     /**
@@ -3649,20 +3815,20 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
         return { [field]: Not(true) };
     }
 
-    /** Merge caller filter with ownership filter. Ownership always wins. */
+    /** Merge caller filter with isolation and soft-delete terms. Isolation always wins. */
     private mergeFilter(
         callerFilter: Filter<T>,
         options?: { includeSoftDeleted?: boolean },
     ): Record<string, unknown> | Array<Record<string, unknown>> {
         const mapped = this.mapOperators(callerFilter);
-        const ownership = this.getOwnershipFilter();
+        const isolation = this.getIsolationFilter();
         const softDelete = options?.includeSoftDeleted ? null : this.getSoftDeleteFilter();
 
         if (mapped instanceof Array) {
-            return mapped.map(branch => ({ ...branch, ...softDelete, ...ownership }));
+            return mapped.map(branch => ({ ...branch, ...softDelete, ...isolation }));
         } 
         else {
-            return { ...mapped, ...softDelete, ...ownership };
+            return { ...mapped, ...softDelete, ...isolation };
         }
     }
 
@@ -3765,13 +3931,8 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
 
     async create(data: Partial<T>): Promise<T> {
         const enriched = { ...data };
-        const userId = UserContext.userId;
-        if (userId) {
-            const config = entityIsolation[this.getEntityName()];
-            if (config && config.field !== "_id") {
-                (enriched as Record<string, unknown>)[config.field] = userId;
-            }
-        }
+        this.stripIsolationFields(enriched);
+        this.stampIsolationFields(enriched);
         this.applyVexFields(enriched, "create");
         return this.repo.save(this.repo.create(enriched as DeepPartial<T>));
     }
@@ -3782,6 +3943,7 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
             return null;
         }
         const enriched = { ...data };
+        this.stripIsolationFields(enriched);
         this.applyVexFields(enriched, "update");
         const existing = await this.findOne({ _id: id } as unknown as Filter<T>);
         if (!existing) return null;
@@ -3794,6 +3956,7 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
             return null;
         }
         const enriched = { ...data };
+        this.stripIsolationFields(enriched);
         this.applyVexFields(enriched, "update");
         const where = this.mergeFilter({ _id: id } as unknown as Filter<T>);
         await this.repo.update(where as FindOptionsWhere<T>, enriched);
@@ -4118,14 +4281,20 @@ export interface deleteAccountCounts {
     authProfiles: number;
     userRoles: number;
     sessions: number;
+    /** Tenant mappings removed (tenant isolation only). */
+    userTenants?: number;
 }
 
 /** Result of a self-service account deletion. */
 export interface deleteAccountResponse {
     userId: string;
-    /** When the tombstone was written (the row's updatedAt). Empty on a repeat call. */
+    /** When the tombstone was written (the row's updatedAt). Empty on a repeat call or a tenant leave. */
     tombstonedAt: string;
     deleted: deleteAccountCounts;
+    /** Set when the account left one tenant instead of being tombstoned. */
+    tenantId?: string;
+    /** Rows removed from `auth.deleteAccount.deleteTables`, keyed by document name. */
+    related?: Record<string, number>;
 }
 
 ===== out/src/system/_types/Session.gen.ts =====
@@ -4340,8 +4509,8 @@ export interface VexRepository<T, U=undefined> {
     /**
      * Read a row that may be soft-deleted.
      *
-     * Skips ONLY the adapter's soft-delete term — the ownership filter still applies, so this is
-     * not a way around `dataIsolation`. Exists for internal state checks (account-deletion
+     * Skips ONLY the adapter's soft-delete term — the isolation terms still apply, so this is
+     * not a way around `isolation`. Exists for internal state checks (account-deletion
      * idempotency, the account-state guard); a `Filter`-level escape hatch would have been part of
      * every HTTP filter body, which is exactly what must not be possible.
      */

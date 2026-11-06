@@ -1,15 +1,16 @@
 import utils from "~/utils";
 import log from "~/utils/logger";
 import * as types from "~/types/types";
+import { isolationRulesOf } from "~/preprocess/isolation";
 
 /**
- * Generates DataIsolationRegistry.gen.ts — a static object mapping
- * entity class names → { field } for ownership-based data isolation.
+ * Generates DataIsolationRegistry.gen.ts — a static map of entity class name → isolation
+ * rules.
  *
- * Each entity with a dataIsolation config gets an entry. The TypeORM
- * repository adapter reads this registry at runtime and injects the
- * ownership filter into all queries using the current user context
- * from AsyncLocalStorage (UserContext).
+ * The repository adapters read this registry and AND every rule into their queries with
+ * the value resolved from the request context (`UserContext`). The registry is written for
+ * every project, empty when no document declares a rule, so the adapters can import it
+ * unconditionally.
  */
 export async function compile(options: {
     allSchemas: types.jsonSchema[];
@@ -20,21 +21,28 @@ export async function compile(options: {
     const entries: string[] = [];
 
     for (const schema of options.allSchemas) {
-        const config = schema["x-documentConfig"].dataIsolation;
-        if (!config) continue;
-
         const documentName = schema["x-documentConfig"].documentName;
-        entries.push(`    "${documentName}Entity": { field: "${config.field}" }`);
+        const rules = isolationRulesOf(schema["x-documentConfig"]);
+        if (rules.length === 0) continue;
+
+        const ruleSource = rules
+            .map(rule => `        { field: ${JSON.stringify(rule.field)}, source: ${JSON.stringify(rule.source)}, onMissing: ${JSON.stringify(rule.onMissing)} }`)
+            .join(",\n");
+
+        entries.push(`    "${documentName}Entity": [\n${ruleSource},\n    ]`);
     }
 
-    if (entries.length === 0) return;
-
     const source = `// {{headerComment}}
+export type IsolationSource = "user._id" | "user.tenantId";
+export type IsolationOnMissing = "skip" | "deny";
+
 export interface DataIsolationEntry {
-  field: string;
+    field: string;
+    source: IsolationSource;
+    onMissing: IsolationOnMissing;
 }
 
-export const entityIsolation: Record<string, DataIsolationEntry> = {
+export const entityIsolation: Record<string, DataIsolationEntry[]> = {
 ${entries.join(",\n")}
 };
 `;

@@ -11,18 +11,46 @@ This covers the identity domain only. Business rows, uploaded objects and third-
 
 ```json
 {
-    "auth": { "deleteAccount": true },
-    "app":  { "showSoftDeleted": false }
+    "auth": {
+        "deleteAccount": {
+            "enabled": true,
+            "deleteTables": ["UserContact", "UserAddress"]
+        }
+    },
+    "app": { "showSoftDeleted": false }
 }
 ```
 
 | Option | Default | Meaning |
 |---|---|---|
-| `auth.deleteAccount` | `true` | Emit the endpoint, the service and the page. Also requires auth to be enabled — a deletion endpoint that cannot authenticate a caller could only delete the wrong account. |
+| `auth.deleteAccount` | `true` | `true` / `false`, or the object form. Emits the endpoint, the service and the page. Also requires auth to be enabled — a deletion endpoint that cannot authenticate a caller could only delete the wrong account. |
+| `auth.deleteAccount.enabled` | `true` | The switch inside the object form. |
+| `auth.deleteAccount.deleteTables` | `[]` | Documents whose rows linked to the deleted user are removed with the account. |
 | `app.showSoftDeleted` | `false` | Lifts the adapter's soft-delete filter app-wide, making tombstones visible (and writable) again. Loud on every generation run. |
 
-Both are read with `??`, so an explicit `false` is never swallowed. There is no `deleteAccountPlaceholder`:
-the tombstone label is the constant `"Deleted user"`.
+Both switches are read with `??`, so an explicit `false` is never swallowed. There is no
+`deleteAccountPlaceholder`: the tombstone label is the constant `"Deleted user"`.
+
+### `deleteTables`
+
+Each name must be a document in the project that can be linked to the identity row. The generator
+resolves the link at generation time:
+
+1. a property whose `x-foreignKey.schemaName` is the identity document and whose `fieldName` is its
+   identity field;
+2. otherwise a `userId` string property.
+
+A name that does not resolve fails generation, as does a missing document, a duplicate entry, or the
+identity document itself.
+
+At deletion time the service removes the caller's rows from each table:
+
+| Document declares `x-vexData: "softDelete"` | Behaviour |
+|---|---|
+| yes | find the rows and `softDelete` each one |
+| no | count, then `deleteWhere` |
+
+The cleanup runs in both modes — with or without tenant isolation — whenever it is configured.
 
 ## Declaring soft delete
 
@@ -105,16 +133,37 @@ unhandled rejection. The async work lives in `handle()` and every outcome is rou
 ## Deletion flow
 
 `AccountDeletionService.deleteSelf()` takes the identity from `UserContext` only; no id is ever
-accepted from a path or body, so one account cannot delete another. It is idempotent: a repeat call
-returns `alreadyDeleted` without re-stamping the row.
+accepted from a path or body, so one account cannot delete another.
 
 Order is load-bearing:
 
 1. **Credentials first** — auth profiles, roles, sessions. Tombstoning first would leave the OAuth
    path able to resolve the account through `provider` / `oauthId`, i.e. a deleted user could log
    back into their own tombstone.
-2. **Tombstone last** — `softDelete(userId, TOMBSTONE)`. A mid-flight failure therefore leaves a
-   live account that can simply be retried.
+2. **Related tables** — the `deleteTables` cleanup.
+3. **Identity last** — either the tombstone (no tenant isolation) or the `UserTenant` row (tenant
+   isolation). A mid-flight failure therefore leaves a live account that can simply be retried.
+
+### Without tenant isolation
+
+`softDelete(userId, TOMBSTONE)` writes the tombstone. The call is idempotent: a repeat call returns
+`tombstonedAt: ""` without re-stamping the row.
+
+### With tenant isolation
+
+The account may belong to several tenants, so deletion removes only the current tenant mapping:
+
+1. `UserContext.tenantId` must be set — `400` otherwise.
+2. The mapping must exist — `404` otherwise.
+3. `removeCredentials` runs.
+4. `deleteTables` runs.
+5. `TenantService.removeUserTenant(userId, tenantId)` removes the mapping.
+
+The `User` row is not tombstoned: the account keeps working for its other tenants. The response
+carries `tenantId` and `deleted.userTenants = 1`; `tombstonedAt` is empty.
+
+The endpoint attaches `TenantScope.middleware` after authentication in `option` mode, so the claim
+must be present. In `preSelect` mode the header already established the tenant at L0.
 
 The tombstone redacts the standard personal fields: `email` → NULL, `name` → `"Deleted user"`,
 `locale` / `profileErrors` → NULL, `active` → false. `email` is NULL rather than `""` because `User`
@@ -147,3 +196,6 @@ rejects would only produce confusing 401s.
 - **Per-request cost.** The guard costs one narrow indexed read per authenticated request.
 - **Third-party identity.** vex cannot delete a Firebase account. Do it from the app, and capture the
   provider uid *before* calling the service.
+- **Response shape.** `deleteAccountResponse` carries `userId`, `tombstonedAt`, `deleted`, and — when
+  the tenant branch ran — `tenantId` and `deleted.userTenants`. `related` reports the row count per
+  cleaned table.

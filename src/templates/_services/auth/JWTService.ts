@@ -150,9 +150,20 @@ export default class JWTService {
         };
     }
 
-    public async generateAccessToken(user: UserWithRelations, index?: number): Promise<tokenObj> {
+    /**
+     * `extraClaims` carries caller-supplied claims (for example a tenant) into the payload.
+     * The auth module stays unaware of which features add them.
+     */
+    public async generateAccessToken(
+        user: UserWithRelations,
+        index?: number,
+        extraClaims?: Record<string, unknown>,
+    ): Promise<tokenObj> {
 
-        const userInfo = this.tokenPayload(user);
+        const userInfo = {
+            ...this.tokenPayload(user) as Record<string, unknown>,
+            ...(extraClaims ?? {}),
+        };
 
         return this.generateToken(userInfo, index, process.env.ACCESS_TOKEN_EXPIRE_TIME);
     }

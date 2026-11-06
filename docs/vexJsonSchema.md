@@ -26,6 +26,8 @@ Each `.json` file defines one REST resource. Filename must match `x-documentConf
 | `documentName` | `string` | yes | Resource name. Must match filename (e.g. `User.json` → `"User"`). Used as collection name, controller class, route prefix. |
 | `methods` | `array<schemaMethod>` | yes | REST methods to generate. See values below. |
 | `uniqueIndex` | `array<array<string>>` | no | Compound unique index definitions, e.g. `[["email"], ["userId","role"]]`. |
+| `isolation` | `array<object>` | no | Query terms the repository adds to every read and write. `{ field, source, onMissing }` — see [isolation rules](#isolation-rules). |
+| `dataIsolation` | `object` | no | Legacy single-field form: `{ "field": "ownerId" }`. Normalized into `isolation`. |
 
 ### `methods` values
 
@@ -37,6 +39,26 @@ Each `.json` file defines one REST resource. Filename must match `x-documentConf
 | `put` | `PUT /:id` | Full replace |
 | `patch` | `PATCH /:id` | Partial update |
 | `delete` | `DELETE /:id` | Delete document |
+
+### Isolation rules
+
+```jsonc
+"isolation": [
+    { "field": "tenantId", "source": "user.tenantId", "onMissing": "deny" },
+    { "field": "ownerId",  "source": "user._id",      "onMissing": "skip" }
+]
+```
+
+| Key | Values |
+| --- | --- |
+| `field` | a `string` property of the document |
+| `source` | `user._id` (authenticated user) or `user.tenantId` (verified tenant) |
+| `onMissing` | `skip` (no term) or `deny` (`403`). Default: `skip` for `user._id`, `deny` for `user.tenantId` |
+
+`user.tenantId` requires `vex.config.tenant.enable`. The rule's field is server-managed: it is omitted from
+the request payload, stripped from caller data, and stamped from the request context on create.
+See [`docs/features/dataIsolation.md`](features/dataIsolation.md) and
+[`docs/features/tenantIsolation.md`](features/tenantIsolation.md).
 
 ---
 

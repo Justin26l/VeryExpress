@@ -7,6 +7,7 @@ const importSwaggerRouter = "import SwaggerRouter from \"./system/_routes/Swagge
 const importAuthRouter = "import AuthRouter from \"./system/_routes/AuthRouter.gen\";";
 const importVexSystem = "import VexSystem from \"./system/_services/VexSystem.gen\";";
 const importLoginUI = "import LoginUI from \"./system/_routes/LoginUI.gen\";";
+const importTenantScope = "import TenantScope from \"./system/_middlewares/TenantScope.gen\";";
 
 // configure
 const ConfigSwaggerRouter = "const SwaggerRoute = new SwaggerRouter();";
@@ -17,6 +18,7 @@ const ConfigLoginUiRouter = (localAuth: boolean, providers: string[], deleteAcco
 
 // use
 const UseCookieParser = "app.use(cookieParser());";
+const UseTenantScope = "app.use(TenantScope.middleware);";
 const UseResponseHandler = "app.use(VexSystem.responseHandler);";
 const UseAuthRouter = "app.use(\"/api/auth\", AuthRoute.getRouter());";
 const UseRegisterRoutes = "RegisterRoutes(app);";
@@ -98,6 +100,13 @@ main();
     Import.push(importVexSystem);
     AppRoute.push(UseRegisterRoutes);
     AppRoute.push(UseResponseHandler);
+
+    // L0: capture the requested tenant before any route or controller middleware runs, so a later
+    // edit cannot make tenant selection conditional on the endpoint.
+    if (utils.generator.isTenantEnabled(options.compilerOptions)) {
+        Import.push(importTenantScope);
+        AppUse.unshift(UseTenantScope);
+    }
 
     if (options.compilerOptions.app.enableSwagger) {
         Import.push(importSwaggerRouter);

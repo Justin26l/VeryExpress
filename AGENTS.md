@@ -64,8 +64,8 @@ Read from `vex.config.json → jsonSchemaDir` (this repo: `./output/jsonSchema`)
 - **`src/` is ESM-style TypeScript with `~/*` → `src/*` aliasing.** Use `~/generators/...`, `~/utils/...`, `~/types/...` for intra-repo imports.
 - **Only `one-to-one` and `many-to-one` are declared in `x-foreignKey`.** `one-to-many` is derived from the other side and must not be hand-written.
 - **RBAC is opt-in.** `utils.generator.isRbacEnabled()` is the single gate for every RBAC code path. Absent `useRBAC`, or `roles: []`, means RBAC off — never "RBAC with zero roles". Never branch on `compilerOptions.useRBAC` directly.
-- **Auth is the only identity gate.** `UserContext` is established by `Authentication.middleware` from the verified token — there is no separate context middleware, and no generated decorator decides it. Never gate identity on `dataIsolation`: audit fields and ownership filtering are independent features. Use `utils.generator.isAuthEnabled()` when a code path depends on auth being on.
-- **A create that declares `onCreateUserId` with no identity in `UserContext` throws.** Both repository adapters enforce it; `onUpdateUserId` is deliberately not enforced. `dataIsolation` no longer has anything to do with whether the context exists.
+- **The request scope is layered, not owned by one module.** `TenantScope.middleware` (L0 in `server.ts`) opens `UserContext`; `Authentication.middleware` (L1) adds the verified token; in tenant `option` mode `TenantScope` runs again after authentication (attached by the generated controllers) to read the claim. `UserContext.run` merges, so no layer erases another. Tenant files are emitted only when `vex.config.tenant.enable` is true; `preSelect` works with no auth module. Isolation (`isolation` rules) is independent of audit fields; use `utils.generator.isAuthEnabled()` when a code path depends on auth being on.
+- **A create that declares `onCreateUserId` with no identity in `UserContext` throws.** Both repository adapters enforce it; `onUpdateUserId` is deliberately not enforced. `isolation` has nothing to do with whether the context exists.
 - **Boolean config defaults use `??`, not `||`.** `x || true` swallows an explicit `false`.
 - **Never write to git.** No `git add`, `commit`, `push`, `reset`, `checkout`, `stash`, `rm`, `mv`. The
   working tree is the deliverable and the user reads it with git; changes stay unstaged and
@@ -130,7 +130,7 @@ This file covers only what every session needs. Deeper material lives in `docs/`
 | [`docs/vexJsonSchema.md`](docs/vexJsonSchema.md) | Full JSON Schema reference — `x-documentConfig`, `x-foreignKey`, `x-format`, `x-vexData` |
 | [`docs/developmentNote.md`](docs/developmentNote.md) | Why no ts-node, esbuild/dist working dir, `FUNC{{ }}` intent |
 | [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) | Setup, branch/PR workflow, PR checklist |
-| [`docs/features/`](docs/features/) | foreignKey, apiUsage, rbac, dataIsolation, filterOperators, joinWhitelist, auditFields, accountDeletion |
+| [`docs/features/`](docs/features/) | foreignKey, apiUsage, rbac, dataIsolation, tenantIsolation, filterOperators, joinWhitelist, auditFields, accountDeletion |
 | [`docs/appGenerated/auth.md`](docs/appGenerated/auth.md) | JWT rolling keys, OAuth2 providers |
 | [`docs/plan/`](docs/plan/) | Design records and implementation plans — the one place that narrates decisions and rejected alternatives |
 | [`docs/roadMap/`](docs/roadMap/) | Released features and version milestones |

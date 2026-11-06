@@ -54,6 +54,7 @@
             "type": "boolean",
             "default": true,
             "required": true,
+            "x-vexData": "softDelete",
             "description": "Soft-delete / account suspension flag"
         },
         "createdAt": {

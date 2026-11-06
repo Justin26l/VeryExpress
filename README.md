@@ -7,6 +7,7 @@ VeryExpress is a generator that reads JSON Schema and produces a complete Expres
 - OpenAPI generation + Swagger UI
 - OAuth via `passport` (OAuth2)
 - Mongoose (MongoDB) and TypeORM(SQL) DB driver 
+- Per-document isolation rules: row ownership and tenant scoping
 - CLI for quick project scaffolding
 
 ## Quick Start

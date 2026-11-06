@@ -14,5 +14,8 @@ export default defineConfig({
         // golden scenarios spawn a full generation each; give them room
         testTimeout: 120_000,
         hookTimeout: 120_000,
+        // The e2e suites share one generated app directory and one port, so files must not run
+        // in parallel with each other.
+        fileParallelism: false,
     },
 });

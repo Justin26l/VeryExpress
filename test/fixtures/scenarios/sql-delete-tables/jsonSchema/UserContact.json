@@ -1,0 +1,24 @@
+{
+    "type": "object",
+    "x-documentConfig": {
+        "documentName": "UserContact",
+        "restApi": { "methods": [], "joinWhitelist": [] }
+    },
+    "required": ["userId"],
+    "properties": {
+        "_id": { "type": "string", "x-format": "PrimaryUUID", "index": true },
+        "userId": {
+            "type": "string",
+            "x-format": "UUID",
+            "index": true,
+            "x-foreignKey": { "schemaName": "User", "fieldName": "_id", "relationType": "many-to-one" }
+        },
+        "phone": { "type": "string" },
+        "deleted": {
+            "type": "boolean",
+            "default": false,
+            "required": true,
+            "x-vexData": "softDelete"
+        }
+    }
+}

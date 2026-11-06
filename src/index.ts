@@ -7,6 +7,8 @@ import { applyFkMetadata } from "./preprocess/jsonSchemaForeignKeys";
 import { formatJsonSchema, formatJsonSchemaRoleDefinition } from "./preprocess/jsonschemaFormat";
 import { validateAuditFields } from "./preprocess/auditFields";
 import { validateSoftDeleteFields } from "./preprocess/softDelete";
+import { validateIsolationFields } from "./preprocess/isolation";
+import { validateDeleteAccountConfig } from "./preprocess/deleteAccount";
 
 import * as types from "./types/types";
 import * as userSchemaGen from "./generators/projectSettings/userSchema.generator";
@@ -23,9 +25,13 @@ import * as interfaceGen from "./generators/interface/generator";
 import * as joinWhitelistRegistryGen from "./generators/middlewares/joinWhitelistRegistry.generator";
 import * as dataIsolationRegistryGen from "./generators/middlewares/dataIsolationRegistry.generator";
 import * as vexFieldRegistryGen from "./generators/middlewares/vexFieldRegistry.generator";
+import * as tenantScopeGen from "./generators/middlewares/tenantScope.generator";
+import * as tenantScopeContextGen from "./generators/middlewares/tenantScopeContext.generator";
 import * as accountStateGuardGen from "./generators/services/accountStateGuard.generator";
 import * as accountDeletionGen from "./generators/services/accountDeletion.generator";
 import * as firebaseAuthGen from "./generators/services/firebaseAuth.generator";
+import * as tenantServiceGen from "./generators/services/tenantService.generator";
+import * as tenantControllerGen from "./generators/controller/tenantController.generator";
 
 export async function generate(
     options: types.compilerOptions
@@ -79,6 +85,12 @@ export async function generate(
         utils.common.copyDir(path.join(__dirname, "templates", "_roles"), dir.roleDir, options, true);
         utils.common.copyDir(path.join(__dirname, "templates", "jsonSchemaRBAC"), options.jsonSchemaDir, options, true);
     }
+
+    // the tenant module owns its mapping table; an existing schema is left alone so the app
+    // can extend it
+    if (utils.generator.isTenantEnabled(options)) {
+        utils.common.copyDir(path.join(__dirname, "templates", "tenantJsonSchema"), options.jsonSchemaDir, options, false);
+    }
     
     await userSchemaGen.compile({ compilerOptions: options || utils.generator.defaultCompilerOptions });
     
@@ -115,6 +127,15 @@ export async function generate(
     // soft-delete markers are per-document, but validated in the same pass so every schema
     // contradiction is reported together, before anything is generated
     validateSoftDeleteFields(documents);
+
+    // isolation rules are cross-document too: the tenant membership document must not be
+    // scoped, and the identity document cannot depend on a tenant. Normalizes legacy
+    // `dataIsolation` into the current rule list.
+    validateIsolationFields(documents, options);
+
+    // auth.deleteAccount.deleteTables: every declared table must exist and be linkable to the
+    // identity row at generation time
+    validateDeleteAccountConfig(documents, options);
 
     await roleGen.compile({
         schemas: documents.map((doc) => doc.schema),
@@ -184,6 +205,29 @@ export async function generate(
         documents: documents.map(d => ({ path: d.path, schema: d.schema })),
         middlewareDir: dir.middlewareDir,
         compilerOptions: options,
+    });
+
+    // tenant module — every file is emitted only when `vex.config.tenant.enable` is true;
+    // cleanupStaleFiles removes them when the feature is turned off
+    await tenantScopeContextGen.compile({
+        compilerOptions: options,
+        middlewareDir: dir.middlewareDir,
+    });
+
+    await tenantScopeGen.compile({
+        compilerOptions: options,
+        middlewareDir: dir.middlewareDir,
+    });
+
+    await tenantServiceGen.compile({
+        compilerOptions: options,
+        serviceDir: dir.serviceDir,
+    });
+
+    await tenantControllerGen.compile({
+        compilerOptions: options,
+        controllerDir: dir.controllerDir,
+        typeDir: dir.typeDir,
     });
 
     // generate sql migrations

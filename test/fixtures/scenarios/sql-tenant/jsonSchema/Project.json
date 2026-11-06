@@ -1,0 +1,34 @@
+{
+    "type": "object",
+    "x-documentConfig": {
+        "documentName": "Project",
+        "isolation": [
+            { "field": "tenantId", "source": "user.tenantId", "onMissing": "deny" },
+            { "field": "ownerId", "source": "user._id", "onMissing": "skip" }
+        ],
+        "restApi": {
+            "methods": ["get", "getList", "post", "patch", "delete"],
+            "noRelations": true,
+            "joinWhitelist": []
+        }
+    },
+    "required": ["title"],
+    "properties": {
+        "_id": {
+            "type": "string",
+            "x-format": "PrimaryUUID",
+            "index": true
+        },
+        "tenantId": {
+            "type": "string",
+            "index": true
+        },
+        "ownerId": {
+            "type": "string",
+            "index": true
+        },
+        "title": {
+            "type": "string"
+        }
+    }
+}

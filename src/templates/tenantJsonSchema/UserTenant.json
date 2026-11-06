@@ -1,0 +1,33 @@
+{
+    "type": "object",
+    "x-documentConfig": {
+        "documentName": "UserTenant",
+        "restApi": {
+            "methods": [],
+            "joinWhitelist": []
+        },
+        "uniqueIndex": [
+            ["userId", "tenantId"]
+        ]
+    },
+    "required": ["userId", "tenantId"],
+    "properties": {
+        "_id": {
+            "type": "string",
+            "x-format": "PrimaryUUID",
+            "index": true
+        },
+        "userId": {
+            "type": "string",
+            "x-format": "UUID",
+            "index": true,
+            "description": "Identity document id. Managed by TenantService."
+        },
+        "tenantId": {
+            "type": "string",
+            "x-format": "UUID",
+            "index": true,
+            "description": "Tenant id (UUID). Managed by TenantService."
+        }
+    }
+}

@@ -96,7 +96,7 @@ Custom `x-*` properties drive generation. Full reference: [`docs/vexJsonSchema.m
 
 | Property | Purpose |
 |---|---|
-| `x-documentConfig` | `documentName` (must match filename), `restApi.methods`, `restApi.joinWhitelist`, `restApi.noRelations`, `restApi.dataIsolation`, `uniqueIndex`, `keyPrefix` |
+| `x-documentConfig` | `documentName` (must match filename), `restApi.methods`, `restApi.joinWhitelist`, `restApi.noRelations`, `isolation` (legacy `dataIsolation`), `uniqueIndex`, `keyPrefix` |
 | `x-foreignKey` | Relations. Only `one-to-one` / `many-to-one` declared on the owning side; `one-to-many` is auto-derived |
 | `x-vexData: "role"` | Marks the field used for RBAC |
 | `x-format: "ObjectId"` | MongoDB ObjectId; converted to `"Primary"` for the SQL target |
@@ -107,6 +107,7 @@ Custom `x-*` properties drive generation. Full reference: [`docs/vexJsonSchema.m
 |---|---|
 | `jsonschemaFormat.ts` | Validate schema structure (`x-documentConfig`, FK config, `x-format` type constraints). Normalize per-prop `required: true` into root `required: string[]`. For SQL target: convert `ObjectId` → `Primary` on `_id`, warn on nested index/FK/vexData |
 | `jsonSchemaForeignKeys.ts` | Wire reverse-relation metadata (`one-to-many` derived from the other side's `many-to-one`). Auto-populate `restApi.joinWhitelist` when unset |
+| `isolation.ts` | Normalize the legacy `dataIsolation` field into `isolation` rules; validate rule shape, sources, duplicate fields, the identity document and the tenant sources |
 | `roleDefinitions.ts` | Ensure per-role JSON files exist with default CRUD permissions for each resource document |
 
 ## Interface generation

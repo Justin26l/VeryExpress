@@ -46,7 +46,7 @@ class Authentication {
         }
 
         req.user = tokenData;
-        UserContext.run(tokenData, () => next());
+        UserContext.run({ tokenData }, () => next());
     }
 
     private toVexErr(e: unknown): VexResErr {

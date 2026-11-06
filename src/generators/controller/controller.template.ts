@@ -22,7 +22,9 @@ export default function controllerTemplate(templateOptions: {
 }): string {
     const { documentName, idType, restApiMethods, restApiNoRelations, restApiJoinWhitelist, compilerOptions, modelPath, typePath, requestManagedFields = [] } = templateOptions;
     const useRBAC = utils.generator.isRbacEnabled(compilerOptions);
-    const useAuth = compilerOptions.auth.localAuth || utils.generator.OAuthProviders(compilerOptions).length > 0;
+    const useAuth = utils.generator.isJwtAuthEnabled(compilerOptions);
+    const useTenant = utils.generator.isTenantEnabled(compilerOptions)
+        && utils.generator.tenantIsolationMode(compilerOptions) === "option";
     const cleanId = compilerOptions.app.allowApiCreateUpdate_id
         ? ""
         : "if ((body as any)._id) delete (body as any)._id;";
@@ -36,7 +38,7 @@ export default function controllerTemplate(templateOptions: {
     // ── tsoa decorator imports ──────────────────────────────────────────────────
     const decoratorNames: string[] = [];
     decoratorNames.push("Route", "Tags", "Body", "Path", "Query", "SuccessResponse");
-    if (useRBAC || restApiJoinWhitelist) decoratorNames.push("Middlewares");
+    if (useRBAC || restApiJoinWhitelist || useTenant) decoratorNames.push("Middlewares");
     if (useAuth) decoratorNames.push("Security");
     if (restApiMethods.includes("get"))                                decoratorNames.push("Get");
     if (restApiMethods.includes("post") || restApiMethods.includes("getList")) decoratorNames.push("Post");
@@ -47,6 +49,7 @@ export default function controllerTemplate(templateOptions: {
     const optionalImports = [
         useRBAC ? "import RoleBaseAccessControl from \"../_middlewares/RoleBaseAccessControl.gen\";" : "",
         useAuth ? "import Authentication from \"../_middlewares/Authentication.gen\";" : "",
+        useTenant ? "import TenantScope from \"../_middlewares/TenantScope.gen\";" : "",
         restApiJoinWhitelist ? "import JoinWhitelistMiddleware from \"../_middlewares/JoinWhitelistMiddleware.gen\";" : "",
     ].filter(Boolean).join("\n");
 
@@ -56,7 +59,10 @@ export default function controllerTemplate(templateOptions: {
     classDecoratorLines.push(`@Tags("${documentName}")`);
     if (useRBAC) classDecoratorLines.push(`@Middlewares(RoleBaseAccessControl.middleware("${documentName}"))`);
     if (useAuth) {
-        classDecoratorLines.push("@Middlewares(Authentication.middleware)");
+        // Tenant runs after authentication: the token it verifies is established there.
+        classDecoratorLines.push(useTenant
+            ? "@Middlewares(Authentication.middleware, TenantScope.middleware)"
+            : "@Middlewares(Authentication.middleware)");
         // One security requirement object holds BOTH schemes, which OpenAPI reads as
         // AND: every listed scheme must be satisfied. Two separate `@Security(...)`
         // decorators instead document them as alternatives (OR), which contradicted

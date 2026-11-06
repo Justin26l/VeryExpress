@@ -35,12 +35,18 @@ export interface deleteAccountCounts {
     authProfiles: number;
     userRoles: number;
     sessions: number;
+    /** Tenant mappings removed (tenant isolation only). */
+    userTenants?: number;
 }
 
 /** Result of a self-service account deletion. */
 export interface deleteAccountResponse {
     userId: string;
-    /** When the tombstone was written (the row's updatedAt). Empty on a repeat call. */
+    /** When the tombstone was written (the row's updatedAt). Empty on a repeat call or a tenant leave. */
     tombstonedAt: string;
     deleted: deleteAccountCounts;
+    /** Set when the account left one tenant instead of being tombstoned. */
+    tenantId?: string;
+    /** Rows removed from `auth.deleteAccount.deleteTables`, keyed by document name. */
+    related?: Record<string, number>;
 }

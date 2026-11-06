@@ -7,6 +7,47 @@ export default function authControllerTemplate(compilerOptions: types.compilerOp
     const deleteAccount = utilsGenerator.isAccountDeletionEnabled(compilerOptions);
     const firebase = utilsGenerator.isFirebaseAuthEnabled(compilerOptions);
 
+    // ── tenant ──────────────────────────────────────────────────────────────────
+    // `preSelect`: the app build is bound to one tenant, so registration links the account to
+    // the header tenant and every login verifies that link.
+    // `option`: login is tenant-agnostic; the client calls `POST /tenant/select` afterwards.
+    const tenantEnabled = utilsGenerator.isTenantEnabled(compilerOptions);
+    const tenantPreSelect = tenantEnabled && utilsGenerator.tenantIsolationMode(compilerOptions) === "preSelect";
+    const tenantOption = tenantEnabled && utilsGenerator.tenantIsolationMode(compilerOptions) === "option";
+
+    const tenantServiceImport = tenantEnabled
+        ? "\nimport TenantService from \"../_services/TenantService.gen\";"
+        : "";
+    const tenantContextImport = tenantEnabled && localAuth
+        ? "\nimport UserContext from \"../_middlewares/UserContext.gen\";"
+        : "";
+    const tenantIdImport = tenantOption
+        ? "\nimport { isTenantId } from \"../_middlewares/TenantScopeContext.gen\";"
+        : "";
+    const tenantScopeImport = tenantOption && deleteAccount
+        ? "\nimport TenantScope from \"../_middlewares/TenantScope.gen\";"
+        : "";
+    const tenantServiceField = tenantEnabled
+        ? "\n    private tenantService = new TenantService();\n"
+        : "";
+    const deleteAccountTenantMiddleware = tenantOption ? ", TenantScope.middleware" : "";
+
+    const membershipCheck = (userIdExpression: string): string => tenantPreSelect ? `
+        const tenantId = UserContext.requestedTenantId;
+        if (!tenantId) throw new VexResErr(400, null, "x-tenant-id header is required");
+        const isTenantMember = await this.tenantService.hasUserTenant(${userIdExpression}, tenantId);
+        if (!isTenantMember) throw new VexResErr(403, null, "User is not a member of this tenant");` : "";
+
+    const optionRefreshClaims = tenantOption ? `
+        const claimTenant = payload.tenantId;
+        let extraClaims: Record<string, unknown> | undefined;
+        if (claimTenant !== undefined) {
+            if (!isTenantId(claimTenant)) throw new VexResErr(401, null, "invalid tenant claim");
+            const isTenantMember = await this.tenantService.hasUserTenant(userId, claimTenant);
+            if (!isTenantMember) throw new VexResErr(401, null, "User is no longer a member of this tenant");
+            extraClaims = { tenantId: claimTenant };
+        }` : "";
+
     // `exchangeToken` and `refreshToken` are emitted for every auth-enabled project, and both resolve
     // the user by id — so `userRepo` cannot be gated on localAuth. A passport-only or Firebase-only app
     // would otherwise generate a controller that calls a getter it never declares, which does not
@@ -43,7 +84,7 @@ export default function authControllerTemplate(compilerOptions: types.compilerOp
     const deleteAccountRoute = deleteAccount ? `
     @Post("delete-account")
     @SuccessResponse(200, "OK")
-    @Middlewares(Authentication.middleware)
+    @Middlewares(Authentication.middleware${deleteAccountTenantMiddleware})
     @Security({ BearerAuth: [], AuthIndex: [] })
     async deleteAccount(): Promise<VexResponse<deleteAccountResponse>> {
         const result = await this.accountDeletionService.deleteSelf();
@@ -71,7 +112,7 @@ export default function authControllerTemplate(compilerOptions: types.compilerOp
         @Body() body: { idToken: string }
     ): Promise<VexResponse<firebaseLoginResponse>> {
         const { user, isNewUser } = await this.firebaseAuthService.authenticate(body.idToken);
-
+${membershipCheck("this.JWTService.userIdOf(user) ?? String(user._id)")}
         const accessToken = await this.JWTService.generateAccessToken(user);
         const refreshToken = this.JWTService.generateRefreshToken({ vexUserId: this.JWTService.userIdOf(user) });
 
@@ -89,6 +130,19 @@ export default function authControllerTemplate(compilerOptions: types.compilerOp
     const oauthProviders: string[] = utilsGenerator.OAuthProviders(compilerOptions);
     const OAuthNote = oauthProviders.length > 0 ? "    // OAuth flows (Google, GitHub, etc.) are handled by AuthRouter — see /auth/<provider>": ""
 
+    const registerTenantLink = tenantEnabled ? `
+        const requestedTenantId = UserContext.requestedTenantId;${tenantPreSelect ? `
+        if (!requestedTenantId) throw new VexResErr(400, null, "x-tenant-id header is required");` : ""}
+        if (requestedTenantId) {
+            await this.tenantService.linkUserTenant(String(user._id), requestedTenantId)
+                .catch( async e => {
+                    await this.userRepo.delete(user._id);
+                    await this.userAuthProfilesRepo.deleteWhere({ userId: user._id });${useRBAC ? `
+                    await this.userRoleRepo.deleteWhere({ userId: user._id });` : ""}
+                    throw new VexResErr(500, null, "Tenant link creation failed.");
+                });
+        }` : "";
+
     return `{{headerComment}}
 import { Route, Tags, Post, Body, Query, SuccessResponse${deleteAccountMiddlewares} } from "tsoa";
 import * as controllerFactory from "./_ControllerFactory.gen";
@@ -102,14 +156,14 @@ import { tokenResponse, refreshTokenResponse${localAuth ? ', registerResponse, l
 import utils from "../_utils";
 ${userImports}
 ${localAuthImports}
-${RbacImports}${deleteAccountImports}${firebaseImports}
+${RbacImports}${deleteAccountImports}${firebaseImports}${tenantServiceImport}${tenantContextImport}${tenantIdImport}${tenantScopeImport}
 
 @Route("auth")
 @Tags("Auth")
 export class AuthController extends controllerFactory._ControllerFactory {
     private JWTService = new JWTService();
     private get sessionRepo(): VexRepository<Session> { return VexDb.getRepository(SessionEntity); }
-${localAuthRepos}${deleteAccountService}${firebaseService}
+${localAuthRepos}${deleteAccountService}${firebaseService}${tenantServiceField}
 ${OAuthNote}
 
 ${deleteAccountRoute}${firebaseRoute}
@@ -130,7 +184,7 @@ ${deleteAccountRoute}${firebaseRoute}
         
         const user = await this.userRepo.findOne({ _id: session.userId }${useRBAC ? ', ["userRole"]' : ''});
         if (!user) throw new VexResErr(404, null, "Invalid User Id");
-        
+${membershipCheck("this.JWTService.userIdOf(user) ?? String(user._id)")}
         const accessToken = await this.JWTService.generateAccessToken(user);
         const refreshToken = this.JWTService.generateRefreshToken({ vexUserId: this.JWTService.userIdOf(user) });
         
@@ -159,8 +213,8 @@ ${deleteAccountRoute}${firebaseRoute}
 
         const user = await this.userRepo.findOne(identity${useRBAC ? ', ["userRole"]' : ''});
         if (!user) throw new VexResErr(404, null, "Invalid User Id");
-        
-        const accessToken = await this.JWTService.generateAccessToken(user);
+${membershipCheck("userId")}${optionRefreshClaims}
+        const accessToken = await this.JWTService.generateAccessToken(user${tenantOption ? ", undefined, extraClaims" : ""});
         throw new VexResOk(200, { result: {
             accessToken: accessToken.token,
             accessTokenIndex: accessToken.clientIndex,
@@ -198,6 +252,7 @@ ${localAuth ? `
                 await this.userAuthProfilesRepo.deleteWhere({ userId: user._id });
                 throw new VexResErr(500, null, "User role assignment failed."); 
             });` : ''}
+${registerTenantLink}
 
         throw new VexResOk(201, { result: { message: "Registration successful." } });
     }` : ""

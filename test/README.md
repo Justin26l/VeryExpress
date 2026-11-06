@@ -62,6 +62,9 @@ Run with `KEEP_TMP=1` to stop the temp dirs being deleted, and `UPDATE_GOLDEN=1`
 | `mongo-auth-rbac` | Mongoose models instead of TypeORM entities |
 | `sql-noswagger` | `app.enableSwagger: false` — no `SwaggerRouter.gen.ts`, no swagger wiring in `server.ts` |
 | `sql-norbac` | `useRBAC` omitted — RBAC fully off: no `RoleBaseAccessControl`, no `_roles/`, no `UserRole` model/controller |
+| `sql-tenant` | `tenant` option mode: generated `UserTenant` schema, `TenantScope`, `TenantScopeContext`, `TenantService`, `TenantController` |
+| `sql-tenant-header` | `tenant` preSelect mode with auth off — no `TenantController`, no auth controller |
+| `sql-delete-tables` | `auth.deleteAccount.deleteTables` cleanup: one soft-deleted table and one hard-deleted table |
 
 ## End-to-end contract test
 
@@ -99,12 +102,30 @@ Two separate `@Security(...)` decorators would document them as alternatives, wh
 contradicted the middleware. The suite asserts the spec declaration and that either
 credential alone is rejected.
 
+### Tenant contract (`tenant.test.ts`)
+
+The same generated app carries the tenant feature: `test/fixtures/e2e/schemas/` adds
+`UserMembership` and a tenant-scoped `Project`, and the shared config declares the tenant
+source. Two users register for two tenants through the `x-tenant-id` header; the suite
+then asserts the claim in the access token, tenant stamping on create, search isolation,
+cross-tenant `404`, a contradicting header `403`, a forged body field `400`, and the
+no-tenant `403`.
+
+`tenantHeader.test.ts` generates a second app with `IsolationMode: "preSelect"` and no auth, proves
+the module works without accounts, and asserts that `TenantController.gen.ts` and the auth
+controller are absent. `tenant.test.ts` generates an `option`-mode app and drives login → list →
+select → scoped CRUD → account deletion.
+
+The e2e files share one Postgres and fixed ports, so `vitest.config.ts` sets
+`fileParallelism: false` for the suite.
+
 ### Compile variants (`compile.test.ts`)
 
 Type-checks a generated app for each config combination, reusing the shared
 `node_modules` through a symlink so a variant costs a generation plus `tsc` (~3s):
 
-`rbac-on-auth-on`, `rbac-off-auth-on`, `rbac-on-auth-off`, `rbac-off-auth-off`
+`rbac-on-auth-on`, `rbac-off-auth-on`, `rbac-on-auth-off`, `rbac-off-auth-off`, plus the tenant
+variants (`tenant-option-rbac-off`, `tenant-preSelect-auth-on`, `tenant-preSelect-auth-off`)
 
 This is the cheapest guard against a bug class the golden tests cannot see: generated
 code referencing something that does not exist in that configuration. "RBAC off +

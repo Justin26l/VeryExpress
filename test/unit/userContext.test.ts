@@ -6,9 +6,10 @@ import UserContext, { userIdOfToken } from "../../src/templates/_middlewares/Use
  * `UserContext` is a plain module (its only import is `async_hooks`), so unlike the
  * repository-adapter templates it can be exercised directly.
  *
- * This is the layer the whole audit-field feature hangs off: if the identity is read
- * wrongly here, every `createdBy` / `updatedBy` written by any downstream app is wrong,
- * and a module-level variable would additionally cross-contaminate concurrent requests.
+ * This is the layer the whole audit-field and tenant features hang off: if the request
+ * scope is read wrongly here, every `createdBy` / `updatedBy` or tenant filter written by
+ * any downstream app is wrong, and a module-level variable would cross-contaminate
+ * concurrent requests.
  */
 describe("userIdOfToken", () => {
     it("prefers the schema-declared vexUserId claim", () => {
@@ -29,10 +30,14 @@ describe("UserContext", () => {
     it("has no identity outside a request context", () => {
         expect(UserContext.getStore()).toBeUndefined();
         expect(UserContext.userId).toBeUndefined();
+        expect(UserContext.tenantId).toBeUndefined();
     });
 
     it("exposes the identity inside run() and restores the outer scope after it", () => {
-        const inside = UserContext.run({ vexUserId: "u-1" }, () => UserContext.userId);
+        const inside = UserContext.run(
+            { tokenData: { vexUserId: "u-1" } },
+            () => UserContext.userId,
+        );
 
         expect(inside).toBe("u-1");
         expect(UserContext.userId).toBeUndefined();
@@ -40,7 +45,7 @@ describe("UserContext", () => {
 
     it("keeps the whole token payload readable, not just the identity", () => {
         const token = UserContext.run(
-            { vexUserId: "u-1", vexRole: "admin" },
+            { tokenData: { vexUserId: "u-1", vexRole: "admin" } },
             () => UserContext.getStore()?.tokenData,
         );
 
@@ -48,13 +53,55 @@ describe("UserContext", () => {
     });
 
     it("survives await points inside the context", async () => {
-        const observed = await UserContext.run({ vexUserId: "u-1" }, async () => {
+        const observed = await UserContext.run({ tokenData: { vexUserId: "u-1" } }, async () => {
             await Promise.resolve();
             await new Promise((resolve) => setTimeout(resolve, 1));
             return UserContext.userId;
         });
 
         expect(observed).toBe("u-1");
+    });
+
+    /**
+     * Two middleware layers write into the same request: the L0 header capture, then
+     * authentication. A patch must layer on top, not replace what the earlier layer set —
+     * that is the bug this semantics exists to prevent.
+     */
+    it("layers a nested run() on top of the enclosing scope", () => {
+        const observed = UserContext.run({ requestedTenantId: "tenant-a" }, () => {
+            const inside = UserContext.run(
+                { tokenData: { vexUserId: "u-1" }, tenantId: "tenant-a" },
+                () => ({
+                    requestedTenantId: UserContext.requestedTenantId,
+                    userId: UserContext.userId,
+                    tenantId: UserContext.tenantId,
+                }),
+            );
+
+            return { inside, requestedAfter: UserContext.requestedTenantId, tenantAfter: UserContext.tenantId };
+        });
+
+        expect(observed.inside).toEqual({
+            requestedTenantId: "tenant-a",
+            userId: "u-1",
+            tenantId: "tenant-a",
+        });
+        // the inner frame does not leak into the outer one
+        expect(observed.requestedAfter).toBe("tenant-a");
+        expect(observed.tenantAfter).toBeUndefined();
+    });
+
+    it("set() merges into the enclosing scope", () => {
+        UserContext.run({ requestedTenantId: "tenant-a" }, () => {
+            UserContext.set({ tenantId: "tenant-a" });
+
+            expect(UserContext.requestedTenantId).toBe("tenant-a");
+            expect(UserContext.tenantId).toBe("tenant-a");
+        });
+    });
+
+    it("set() refuses to create a scope of its own", () => {
+        expect(() => UserContext.set({ tenantId: "tenant-a" })).toThrow(/outside a request scope/);
     });
 
     /**
@@ -66,14 +113,18 @@ describe("UserContext", () => {
         const ids = ["user-a", "user-b", "user-c"];
 
         const observed = await Promise.all(ids.map((id, index) => UserContext.run(
-            { vexUserId: id },
+            { tokenData: { vexUserId: id }, tenantId: `tenant-${index}` },
             async () => {
                 await new Promise((resolve) => setTimeout(resolve, 4 - index));
                 await Promise.resolve();
-                return UserContext.userId;
+                return [UserContext.userId, UserContext.tenantId];
             },
         )));
 
-        expect(observed).toEqual(ids);
+        expect(observed).toEqual([
+            ["user-a", "tenant-0"],
+            ["user-b", "tenant-1"],
+            ["user-c", "tenant-2"],
+        ]);
     });
 });

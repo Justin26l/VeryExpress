@@ -44,6 +44,15 @@ export interface compilerOptions {
         default: string,
     },
 
+    /**
+     * Tenant isolation. `enable` is the switch; `IsolationMode` decides how a request gets
+     * its tenant. A document opts in with an isolation rule whose `source` is
+     * `"user.tenantId"`.
+     *
+     * See docs/features/tenantIsolation.md.
+     */
+    tenant?: TenantConfig,
+
     auth:{
         localAuth: boolean,
         useHttpOnlyCookieToken?: boolean,
@@ -57,9 +66,10 @@ export interface compilerOptions {
         /**
          * Self-service account deletion (`POST /api/auth/delete-account`) and the
          * `/delete_account` page. Defaults to true; the feature additionally requires auth to be
-         * enabled. See docs/features/accountDeletion.md.
+         * enabled. The object form adds `deleteTables`, the documents whose rows are removed with
+         * the account. See docs/features/accountDeletion.md.
          */
-        deleteAccount?: boolean,
+        deleteAccount?: boolean | DeleteAccountConfig,
         /**
          * Firebase as a sign-in option: `POST /api/auth/firebase`, and the button that drives it on the
          * generated `/login` page. Defaults to false — it is the one feature that lets an outside
@@ -185,8 +195,47 @@ export interface populateOptions {
     [key: string]: string,
 }
 
+/** Where an isolation value comes from at request time. */
+export type IsolationSource = "user._id" | "user.tenantId";
+
+/** What the repository does when the rule resolves to no value. */
+export type IsolationOnMissing = "skip" | "deny";
+
+/**
+ * One query term the repository adds to every read and write of a document.
+ *
+ * `field` is the document column; `source` picks the request-context value.
+ */
+export interface IsolationRule {
+    field: string;
+    source: IsolationSource;
+    onMissing: IsolationOnMissing;
+}
+
+/** Legacy single-rule form. Normalized to `isolation` by the isolation preprocessor. */
 export interface DataIsolationConfig {
     field: string;
+}
+
+/**
+ * `preSelect` — the tenant is chosen before login (one app build per tenant). Every request
+ * must carry the tenant header.
+ * `option` — the user logs in first, then selects a tenant. The tenant travels in the token.
+ */
+export type TenantIsolationMode = "preSelect" | "option";
+
+export interface TenantConfig {
+    enable: boolean;
+    /** Defaults to `preSelect`. */
+    IsolationMode?: TenantIsolationMode;
+}
+
+/** Account-deletion behaviour beyond the identity tombstone. */
+export interface DeleteAccountConfig {
+    /** Defaults to true. `false` disables the endpoint and the page. */
+    enabled?: boolean;
+    /** Document names whose rows linked to the deleted user are removed with the account. */
+    deleteTables?: string[];
 }
 
 export interface documentConfig {
@@ -198,7 +247,10 @@ export interface documentConfig {
         joinWhitelist?: string[];
         noRelations?: boolean;
     };
+    /** Legacy single-field form; kept as input and normalized into `isolation`. */
     dataIsolation?: DataIsolationConfig;
+    /** Current form. Every rule is ANDed into the repository filter. */
+    isolation?: IsolationRule[];
 }
 
 /**

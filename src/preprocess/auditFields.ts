@@ -1,6 +1,7 @@
 import * as types from "../types/types";
 import log from "../utils/logger";
 import { isAuthEnabled } from "../utils/generator";
+import { collectIsolationFields } from "./isolation";
 
 /**
  * Auto-written audit / ownership fields.
@@ -96,6 +97,8 @@ export function hasReservedDefaults(schema: types.jsonSchema): boolean {
  * - every field declared with a reserved `default` keyword (the adapter strips and fills them)
  * - the soft-delete marker (`x-vexData: "softDelete"`) — a client must never be able to
  *   soft-delete, resurrect or pre-tombstone a row through the CRUD API
+ * - every isolation field — the repository stamps it from the request context, so a client
+ *   must not be able to move a row into another tenant / under another owner
  * - the primary key (`x-format: Primary` / `PrimaryUUID`), unless the app opted into
  *   letting clients set `_id` via `app.allowApiCreateUpdate_id`
  *
@@ -112,6 +115,10 @@ export function collectRequestManagedFields(
         if (prop?.["x-vexData"] === types.xVexDataType.SoftDelete && !fields.includes(key)) {
             fields.push(key);
         }
+    }
+
+    for (const field of collectIsolationFields(schema)) {
+        if (!fields.includes(field)) fields.push(field);
     }
 
     if (!allowApiCreateUpdateId) {

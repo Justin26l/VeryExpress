@@ -23,26 +23,10 @@
             "type": "string",
             "x-format": "PrimaryUUID"
         },
-        "userId": {
-            "type": "string",
-            "index": true,
-            "x-foreignKey": {
-                "schemaName": "User",
-                "fieldName": "_id",
-                "relationType": "one-to-one"
-            }
-        },
         "displayName": {
             "type": "string",
             "maxLength": 64,
             "required": true
-        },
-        "clientType": {
-            "type": "string",
-            "enum": [
-                "individual",
-                "business"
-            ]
         },
         "phone": {
             "type": "number",
@@ -51,7 +35,9 @@
         "active": {
             "type": "boolean",
             "default": true,
-            "required": true
+            "required": true,
+            "x-vexData": "softDelete",
+            "description": "Soft-delete / client suspension flag"
         },
         "createdAt": {
             "type": "string",

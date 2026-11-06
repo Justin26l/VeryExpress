@@ -1,0 +1,13 @@
+{
+    "type": "object",
+    "x-documentConfig": {
+        "documentName": "UserNote",
+        "restApi": { "methods": [], "joinWhitelist": [] }
+    },
+    "required": ["userId"],
+    "properties": {
+        "_id": { "type": "string", "x-format": "PrimaryUUID", "index": true },
+        "userId": { "type": "string", "index": true },
+        "text": { "type": "string" }
+    }
+}

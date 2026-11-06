@@ -98,7 +98,10 @@ export function generateApp(): void {
         throw new Error(`Compiled generator missing at ${distEntry}. Run "npm run compile" first.`);
     }
 
+    // a previous suite may have left fixture schemas here; start from the templates only
+    fs.rmSync(SCHEMA_DIR, { recursive: true, force: true });
     fs.mkdirSync(SCHEMA_DIR, { recursive: true });
+
     fs.writeFileSync(
         path.join(E2E_ROOT, "vex.config.json"),
         JSON.stringify(E2E_CONFIG, null, 4),
@@ -106,6 +109,35 @@ export function generateApp(): void {
     );
 
     run(process.execPath, [distEntry], E2E_ROOT);
+}
+
+/**
+ * Generate an app with an arbitrary config into `root`.
+ *
+ * Used by suites that need a config the shared app cannot carry (for example tenant
+ * `header` mode, which has no accounts and therefore no auth).
+ */
+export function generateAppAt(
+    config: Record<string, unknown>,
+    root: string,
+    schemaFixtureDir?: string,
+): void {
+    if (!fs.existsSync(distEntry)) {
+        throw new Error(`Compiled generator missing at ${distEntry}. Run "npm run compile" first.`);
+    }
+
+    const schemaDir = path.join(root, "schemas");
+    fs.rmSync(schemaDir, { recursive: true, force: true });
+    fs.mkdirSync(schemaDir, { recursive: true });
+
+    if (schemaFixtureDir) {
+        for (const file of fs.readdirSync(schemaFixtureDir)) {
+            fs.copyFileSync(path.join(schemaFixtureDir, file), path.join(schemaDir, file));
+        }
+    }
+
+    fs.writeFileSync(path.join(root, "vex.config.json"), JSON.stringify(config, null, 4), "utf8");
+    run(process.execPath, [distEntry], root);
 }
 
 export function installAppIfNeeded(): void {
@@ -124,10 +156,10 @@ export function installAppIfNeeded(): void {
 }
 
 /** tsoa spec + tsc. Produces `src/openapi/swagger.json` and `dist/server.js`. */
-export function buildApp(): void {
-    run("npx", ["tsoa", "spec-and-routes"], APP_DIR);
-    run("npx", ["tsc", "-p", "."], APP_DIR);
-    run(process.execPath, ["scripts/build.js"], APP_DIR);
+export function buildApp(appDir: string = APP_DIR): void {
+    run("npx", ["tsoa", "spec-and-routes"], appDir);
+    run("npx", ["tsc", "-p", "."], appDir);
+    run(process.execPath, ["scripts/build.js"], appDir);
 }
 
 function docker(args: string[]): string {
@@ -198,13 +230,19 @@ export interface RunningApp {
  * The app's own readiness signal is the TypeORM connector log line: `/hello`
  * answers before the DataSource is up, so polling it alone would race.
  */
-export async function startApp(dbUrl: string): Promise<RunningApp> {
+export async function startApp(
+    dbUrl: string,
+    options: { appDir?: string; port?: number } = {},
+): Promise<RunningApp> {
+    const appDir = options.appDir ?? APP_DIR;
+    const port = options.port ?? APP_PORT;
+
     const child: ChildProcess = spawn(process.execPath, ["dist/server.js"], {
-        cwd: APP_DIR,
+        cwd: appDir,
         env: cleanEnv({
             SQL_URI: dbUrl,
             SQL_SYNCHRONIZE: "true",
-            APP_PORT: String(APP_PORT),
+            APP_PORT: String(port),
             APP_HOST: "http://localhost",
         }),
         stdio: ["ignore", "pipe", "pipe"],
@@ -214,7 +252,7 @@ export async function startApp(dbUrl: string): Promise<RunningApp> {
     child.stdout?.on("data", (chunk: Buffer) => { output += chunk.toString(); });
     child.stderr?.on("data", (chunk: Buffer) => { output += chunk.toString(); });
 
-    const baseUrl = `http://localhost:${APP_PORT}`;
+    const baseUrl = `http://localhost:${port}`;
 
     const stop = async (): Promise<void> => {
         if (child.exitCode !== null || child.signalCode !== null) return;
@@ -280,10 +318,22 @@ export interface CompileResult {
  * lived in the "RBAC off + auth on" path, which stayed unreachable until empty
  * `useRBAC` stopped aborting generation.
  */
-export function compileVariant(name: string, config: Record<string, unknown>): CompileResult {
+export function compileVariant(
+    name: string,
+    config: Record<string, unknown>,
+    schemaFixtureDir?: string,
+): CompileResult {
     const workDir = path.join(VARIANTS_DIR, name);
     fs.rmSync(workDir, { recursive: true, force: true });
-    fs.mkdirSync(path.join(workDir, "schemas"), { recursive: true });
+    const schemaDir = path.join(workDir, "schemas");
+    fs.mkdirSync(schemaDir, { recursive: true });
+
+    if (schemaFixtureDir) {
+        for (const file of fs.readdirSync(schemaFixtureDir)) {
+            fs.copyFileSync(path.join(schemaFixtureDir, file), path.join(schemaDir, file));
+        }
+    }
+
     fs.writeFileSync(path.join(workDir, "vex.config.json"), JSON.stringify(config, null, 4), "utf8");
 
     run(process.execPath, [distEntry], workDir);
