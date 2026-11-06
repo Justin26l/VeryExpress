@@ -2,9 +2,6 @@
     "type": "object",
     "x-documentConfig": {
         "documentName": "Client",
-        "dataIsolation": {
-            "field": "userId"
-        },
         "restApi": {
             "methods": [
                 "get",
@@ -32,9 +29,9 @@
             "type": "number",
             "maxLength": 15
         },
-        "active": {
+        "deleted": {
             "type": "boolean",
-            "default": true,
+            "default": false,
             "required": true,
             "x-vexData": "softDelete",
             "description": "Soft-delete / client suspension flag"
@@ -62,6 +59,7 @@
     },
     "required": [
         "displayName",
-        "active"
+        "active",
+        "deleted"
     ]
 }

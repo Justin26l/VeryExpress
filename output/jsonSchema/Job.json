@@ -50,9 +50,9 @@
                 "relationType": "many-to-one"
             }
         },
-        "active": {
+        "deleted": {
             "type": "boolean",
-            "default": true,
+            "default": false,
             "required": true,
             "x-vexData": "softDelete",
             "description": "Soft-delete / account suspension flag"
@@ -80,6 +80,7 @@
     },
     "required": [
         "title",
-        "active"
+        "active",
+        "deleted"
     ]
 }
