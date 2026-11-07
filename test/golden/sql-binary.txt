@@ -3460,6 +3460,18 @@ function resolveVexFieldValue(type: VexFieldEntry["type"], userId?: string): unk
     }
 }
 
+/** Deep-merge two nested `where` fragments; a scalar leaf replaces whatever was there. */
+function mergeTerms(target: Record<string, unknown>, source: Record<string, unknown>): void {
+    for (const [key, value] of Object.entries(source)) {
+        const existing = target[key];
+        if (existing && typeof existing === "object" && value && typeof value === "object") {
+            mergeTerms(existing as Record<string, unknown>, value as Record<string, unknown>);
+            continue;
+        }
+        target[key] = value;
+    }
+}
+
 export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRepository<T> {
     constructor(private repo: Repository<T>) {}
 
@@ -3544,6 +3556,93 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
         }
 
         return Object.keys(terms).length > 0 ? terms : null;
+    }
+
+    /**
+     * Tenant terms for one related entity, or null when it declares no tenant rule.
+     *
+     * Ownership rules (`user._id`) are not applied to a joined row: joining another user's
+     * profile is legitimate, joining another tenant's row is not.
+     */
+    private getTenantJoinFilter(entityName: string): Record<string, unknown> | null {
+        const terms: Record<string, unknown> = {};
+
+        for (const rule of entityIsolation[entityName] ?? []) {
+            if (rule.source !== "user.tenantId") continue;
+
+            const value = UserContext.tenantId;
+            if (value === undefined) {
+                if (rule.onMissing === "deny") {
+                    throw new VexResErr(403, undefined,
+                        `${entityName} is isolated by ${rule.source} but the request carries no such value`);
+                }
+                continue;
+            }
+
+            terms[rule.field] = value;
+        }
+
+        return Object.keys(terms).length > 0 ? terms : null;
+    }
+
+    /**
+     * Nested `where` fragment scoping every joined row by its own entity's tenant rule.
+     *
+     * A nested term makes TypeORM constrain the join, so a row whose foreign key points at
+     * another tenant is not returned with the other tenant's columns.
+     */
+    private getJoinIsolationFilter(join?: Join): Record<string, unknown> | null {
+        if (!join || join.length === 0) return null;
+
+        const out: Record<string, unknown> = {};
+
+        for (const path of join) {
+            const filter = this.joinPathFilter(path);
+            if (filter) mergeTerms(out, filter);
+        }
+
+        return Object.keys(out).length > 0 ? out : null;
+    }
+
+    /** One join path as `{ hop: { … { field: tenantId } } }`, or null when no hop is tenant-isolated. */
+    private joinPathFilter(path: string): Record<string, unknown> | null {
+        const hops: { segment: string; entityName: string }[] = [];
+        let metadata = this.repo.metadata;
+
+        for (const segment of path.split(".")) {
+            const relation = metadata.relations.find(r => r.propertyName === segment);
+            if (!relation) return null;
+
+            const target = relation.inverseEntityMetadata;
+            // `metadata.name` is the class name the generated registry is keyed by, and stays
+            // correct when the entity was declared through `EntitySchema` (string target).
+            hops.push({ segment, entityName: target.name });
+            metadata = target;
+        }
+
+        let child: Record<string, unknown> | null = null;
+
+        for (let i = hops.length - 1; i >= 0; i--) {
+            const terms = this.getTenantJoinFilter(hops[i].entityName);
+            if (!terms && !child) continue;
+            child = { [hops[i].segment]: { ...(terms ?? {}), ...(child ?? {}) } };
+        }
+
+        return child;
+    }
+
+    /** AND the join terms into the caller's where — every `$or` branch gets them. */
+    private withJoinIsolation(
+        where: Record<string, unknown> | Array<Record<string, unknown>>,
+        join?: Join,
+    ): Record<string, unknown> | Array<Record<string, unknown>> {
+        const joinFilter = this.getJoinIsolationFilter(join);
+        if (!joinFilter) return where;
+
+        if (where instanceof Array) {
+            return where.map(branch => ({ ...branch, ...joinFilter }));
+        }
+        return { ...where, ...joinFilter };
     }
 
     /**
@@ -3665,7 +3764,7 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
     }
 
     find(filter: Filter<T>, join?: Join, select?: Select, pagination?: VexPagination): Promise<T[]> {
-        const where = this.mergeFilter(filter) as FindOptionsWhere<T>;
+        const where = this.withJoinIsolation(this.mergeFilter(filter), join) as FindOptionsWhere<T>;
         const options: FindManyOptions<T> = {
             select: select as any,
             where,
@@ -3688,7 +3787,7 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
     }
 
     findOne(filter: Filter<T>, join?: Join, select?: Select): Promise<T | null> {
-        const where = this.mergeFilter(filter) as FindOptionsWhere<T>;
+        const where = this.withJoinIsolation(this.mergeFilter(filter), join) as FindOptionsWhere<T>;
         return this.repo.findOne({
             select,
             where,
@@ -3697,7 +3796,7 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
     }
 
     findOneWhere(filter: Filter<T>, join?: Join, select?: Select): Promise<T | null> {
-        const where = this.mergeFilter(filter) as FindOptionsWhere<T>;
+        const where = this.withJoinIsolation(this.mergeFilter(filter), join) as FindOptionsWhere<T>;
         return this.repo.findOne({
             select,
             where,
@@ -3816,7 +3915,10 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
      * filter still applies. Framework-internal — see VexRepository.
      */
     findOneWithDeleted(filter: Filter<T>, join?: Join, select?: Select): Promise<T | null> {
-        const where = this.mergeFilter(filter, { includeSoftDeleted: true }) as FindOptionsWhere<T>;
+        const where = this.withJoinIsolation(
+            this.mergeFilter(filter, { includeSoftDeleted: true }),
+            join,
+        ) as FindOptionsWhere<T>;
         return this.repo.findOne({
             select,
             where,

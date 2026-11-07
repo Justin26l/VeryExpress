@@ -64,6 +64,8 @@ is equivalent to `{ "field": "ownerId", "source": "user._id", "onMissing": "skip
 - **`skip`** — no value, no term. Used for ownership: public routes keep working.
 - **`deny`** — no value, `403`. Used for tenancy: a document that declares a tenant rule is
   unreachable without a tenant.
+- **Joins** — the SQL adapter scopes a joined entity by that entity's own tenant rule, so a join
+  cannot return another tenant's row. Ownership rules are not applied to joined rows.
 
 ## Validation
 

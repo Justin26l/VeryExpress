@@ -123,6 +123,19 @@ to call `addUserTenant` or `linkUserTenant`.
 `UserTenant` mapping instead of tombstoning the shared account; `auth.deleteAccount.deleteTables`
 runs in both modes. See [`accountDeletion.md`](accountDeletion.md).
 
+## Joins
+
+A `join` is scoped by the joined document's own tenant rule, not only by the root document's. The
+SQL adapter adds the rule as a nested `where` term for every hop of the path: `join=["menuItem"]`
+filters `menuItem`, and `join=["menuItem.category"]` filters both `menuItem` and `category`.
+
+A row whose foreign key points at another tenant's row is not returned with that row's columns; the
+read comes back empty. A joined document with no tenant rule joins unchanged. A missing tenant with
+`onMissing: "deny"` answers `403`, the same as the root document.
+
+Ownership rules (`user._id`) are not applied to joined rows — joining another user's profile is
+legitimate. The Mongoose adapter does not implement joins, so this applies to the SQL target only.
+
 ## Limits
 
 - The claim is a snapshot. A revoked mapping stays usable until the access token expires; `refresh`

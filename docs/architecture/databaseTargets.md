@@ -103,6 +103,9 @@ Generation produces three pieces:
 3. Both adapters resolve each rule from that scope and AND every term into the query. Tenant terms
    fail closed (`onMissing: "deny"`); ownership terms keep their historical skip-when-unauthenticated
    behaviour. Isolation fields are stripped from caller data and stamped on create.
+4. The SQL adapter scopes a `join` by the joined entity's own tenant rule — one nested `where` term
+   per hop of the join path — so a row whose foreign key points at another tenant does not come back
+   with that row's columns. Ownership rules are not applied to joined rows.
 
 Full guides: [`docs/features/dataIsolation.md`](../features/dataIsolation.md),
 [`docs/features/tenantIsolation.md`](../features/tenantIsolation.md).
