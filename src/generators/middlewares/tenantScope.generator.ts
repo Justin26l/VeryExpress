@@ -11,6 +11,8 @@ import { isTenantEnabled, tenantIsolationMode } from "~/utils/generator";
  * controllers run it again after authentication, where the token claim decides and a token
  * without a claim is a 401.
  *
+ * `tenant.scope` narrows the paths it applies to; omitted, it applies to every route.
+ *
  * Emitted only when `vex.config.tenant.enable` is true.
  */
 export async function compile(options: {
@@ -22,6 +24,25 @@ export async function compile(options: {
     log.process("Tenant Scope Middleware");
 
     const mode = tenantIsolationMode(options.compilerOptions);
+    const scope = options.compilerOptions.tenant?.scope;
+
+    const scopeSource = scope
+        ? `const TENANT_SCOPE = ${JSON.stringify(scope)};
+
+function inTenantScope(path: string): boolean {
+    return TENANT_SCOPE.some(prefix =>
+        path === prefix || path.startsWith(prefix.endsWith("/") ? prefix : \`\${prefix}/\`));
+}`
+        : "";
+
+    const scopeGuard = scope
+        ? `        if (!inTenantScope(req.path)) {
+            next();
+            return;
+        }
+
+`
+        : "";
 
     const source = `// {{headerComment}}
 import { Request, Response, NextFunction } from "express";
@@ -31,7 +52,7 @@ import { VexResErr } from "../_types/vex";
 
 const TENANT_HEADER = "x-tenant-id";
 const ISOLATION_MODE = ${JSON.stringify(mode)};
-
+${scopeSource}
 function errorOf(error: TenantError): VexResErr {
     switch (error) {
     case "missing-header":
@@ -53,7 +74,7 @@ function errorOf(error: TenantError): VexResErr {
  */
 class TenantScope {
     public middleware = (req: Request, _res: Response, next: NextFunction): void => {
-        // framework health check: a load balancer has no tenant header
+${scopeGuard}        // framework health check: a load balancer has no tenant header
         if (req.path === "/hello") {
             next();
             return;
@@ -62,10 +83,11 @@ class TenantScope {
         const raw = req.headers[TENANT_HEADER];
         const value = Array.isArray(raw) ? raw[0] : raw;
         const headerTenantId = value?.trim() || undefined;
+        const store = UserContext.getStore();
 
         const decision = resolveTenantContext(
             ISOLATION_MODE,
-            UserContext.getStore()?.tokenData,
+            store?.tokenData,
             headerTenantId,
         );
 
@@ -74,10 +96,8 @@ class TenantScope {
             return;
         }
 
-        UserContext.run({
-            requestedTenantId: headerTenantId ?? UserContext.requestedTenantId,
-            tenantId: decision.tenantId,
-        }, () => next());
+        const requestedTenantId = headerTenantId ?? store?.requestedTenantId;
+        UserContext.run({ requestedTenantId, tenantId: decision.tenantId }, () => next());
     };
 }
 

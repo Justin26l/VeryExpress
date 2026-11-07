@@ -45,7 +45,7 @@ const CONFIG = {
         deleteAccount: false,
         oauthProviders: { google: false, github: false },
     },
-    tenant: { enable: true, IsolationMode: "preSelect" },
+    tenant: { enable: true, IsolationMode: "preSelect", scope: ["/api"] },
     generator: { commitBeforeGenerate: false },
 };
 
@@ -54,8 +54,9 @@ describeE2E("generated app — tenant header mode (no auth)", () => {
     let dbStartedByUs = false;
 
     const run = Date.now();
-    const tenantA = `11111111-1111-4111-8111-${String(run).padStart(12, "0").slice(-12)}`;
-    const tenantB = `22222222-2222-4222-8222-${String(run).padStart(12, "0").slice(-12)}`;
+    const suffix = String(run).padStart(12, "0").slice(-12);
+    const tenantA = `11111111-1111-4111-8111-${suffix}`;
+    const tenantB = `22222222-2222-4222-8222-${suffix}`;
     let projectA: string;
 
     const tenantHeaders = (tenant?: string) => ({
@@ -130,6 +131,14 @@ describeE2E("generated app — tenant header mode (no auth)", () => {
             headers: tenantHeaders(tenantB),
         });
         expect(get.status).toBe(404);
+    });
+
+    it("keeps non-API paths reachable without a tenant header", async () => {
+        const spec = await fetch(`${app.baseUrl}/swagger/openapi.json`);
+        expect(spec.status).toBe(200);
+
+        const hello = await fetch(`${app.baseUrl}/hello`);
+        expect(hello.status).toBe(200);
     });
 
     it("rejects a request without a tenant header", async () => {

@@ -194,6 +194,32 @@ export class MongooseRepositoryAdapter<T extends Document> implements VexReposit
         return doc.save();
     }
 
+    /**
+     * Insert when the payload has no `_id`, update that document otherwise.
+     *
+     * The update path runs the same guards as `update`: the document must be visible under the
+     * caller's isolation, and isolation fields are stripped so it cannot be moved.
+     */
+    async save(data: Partial<T>): Promise<T> {
+        const enriched = { ...data };
+        const id = (enriched as Record<string, unknown>)._id;
+        const hasId = id !== undefined && id !== null && id !== "";
+
+        this.stripIsolationFields(enriched);
+
+        if (hasId) {
+            this.applyVexFields(enriched, "update");
+            const existing = await this.findOne({ _id: id } as Filter);
+            if (!existing) throw new VexResErr(404);
+            return this.model.findByIdAndUpdate(id, { $set: enriched }, { new: true }).exec() as Promise<T>;
+        }
+
+        this.stampIsolationFields(enriched);
+        this.applyVexFields(enriched, "create");
+        const doc = new this.model(enriched);
+        return doc.save();
+    }
+
     replace(id: string | undefined, data: Partial<T>): Promise<T | null> {
         if(!id) {
             utils.log.error("MongooseRepositoryAdapter.replace called without id — refuse replace document");

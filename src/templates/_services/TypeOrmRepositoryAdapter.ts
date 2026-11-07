@@ -288,6 +288,31 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
         return this.repo.save(this.repo.create(enriched as DeepPartial<T>));
     }
 
+    /**
+     * Insert when the payload has no `_id`, update that row otherwise.
+     *
+     * The update path runs the same guards as `update`: the row must be visible under the
+     * caller's isolation, and isolation fields are stripped so it cannot be moved.
+     */
+    async save(data: Partial<T>): Promise<T> {
+        const enriched = { ...data };
+        const id = (enriched as Record<string, unknown>)._id;
+        const hasId = id !== undefined && id !== null && id !== "";
+
+        this.stripIsolationFields(enriched);
+
+        if (hasId) {
+            this.applyVexFields(enriched, "update");
+            const existing = await this.findOne({ _id: id } as unknown as Filter<T>);
+            if (!existing) throw new VexResErr(404);
+            return this.repo.save(enriched as DeepPartial<T>);
+        }
+
+        this.stampIsolationFields(enriched);
+        this.applyVexFields(enriched, "create");
+        return this.repo.save(this.repo.create(enriched as DeepPartial<T>));
+    }
+
     async replace(id: string | undefined, data: Partial<T>): Promise<T | null> {
         if (!id) {
             utils.log.error("TypeOrmRepositoryAdapter.replace called without id — refuse replace entity");

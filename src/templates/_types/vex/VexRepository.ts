@@ -16,6 +16,13 @@ export interface VexRepository<T, U=undefined> {
     findOne(filter: Filter<T>, join?: Join, select?: Select): Promise<[U] extends [undefined] ? T | null : U | null>;
     findOneWhere(filter: Filter<T>, join?: Join, select?: Select): Promise<[U] extends [undefined] ? T | null : U | null>;
     create(data: Partial<T>): Promise<T>;
+    /**
+     * Insert when the payload has no id; update that row when it does.
+     *
+     * The update path is scoped like every other write: a row outside the caller's isolation is
+     * a 404, and isolation fields are stripped so the row cannot be moved.
+     */
+    save(data: Partial<T>): Promise<T>;
     replace(id: string | undefined, data: Partial<T>): Promise<T | null>;
     update(id: string | undefined, data: Partial<T>): Promise<T | null>;
     delete(id: string | undefined): Promise<void>;

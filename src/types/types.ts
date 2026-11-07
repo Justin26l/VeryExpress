@@ -228,6 +228,8 @@ export interface TenantConfig {
     enable: boolean;
     /** Defaults to `preSelect`. */
     IsolationMode?: TenantIsolationMode;
+    /** Path prefixes the tenant middleware applies to. Omitted = every route. */
+    scope?: string[];
 }
 
 /** Account-deletion behaviour beyond the identity tombstone. */

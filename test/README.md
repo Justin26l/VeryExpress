@@ -63,7 +63,7 @@ Run with `KEEP_TMP=1` to stop the temp dirs being deleted, and `UPDATE_GOLDEN=1`
 | `sql-noswagger` | `app.enableSwagger: false` — no `SwaggerRouter.gen.ts`, no swagger wiring in `server.ts` |
 | `sql-norbac` | `useRBAC` omitted — RBAC fully off: no `RoleBaseAccessControl`, no `_roles/`, no `UserRole` model/controller |
 | `sql-tenant` | `tenant` option mode: generated `UserTenant` schema, `TenantScope`, `TenantScopeContext`, `TenantService`, `TenantController` |
-| `sql-tenant-header` | `tenant` preSelect mode with auth off — no `TenantController`, no auth controller |
+| `sql-tenant-header` | `tenant` preSelect mode with `scope: ["/api"]` and auth off — no `TenantController`, no auth controller |
 | `sql-delete-tables` | `auth.deleteAccount.deleteTables` cleanup: one soft-deleted table and one hard-deleted table |
 
 ## End-to-end contract test
@@ -118,6 +118,12 @@ select → scoped CRUD → account deletion.
 
 The e2e files share one Postgres and fixed ports, so `vitest.config.ts` sets
 `fileParallelism: false` for the suite.
+
+### Transaction probe (`transaction.test.ts`)
+
+Generates an `option`-mode app, writes a probe into `src/`, compiles it with the app, and runs it
+against Postgres. It asserts tenant stamping inside `vexDb.transaction`, a `403` when the callback
+has no tenant context, full rollback when the callback throws, and the nested-call rejection.
 
 ### Compile variants (`compile.test.ts`)
 

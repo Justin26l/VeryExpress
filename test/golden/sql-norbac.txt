@@ -2972,6 +2972,32 @@ export class MongooseRepositoryAdapter<T extends Document> implements VexReposit
         return doc.save();
     }
 
+    /**
+     * Insert when the payload has no `_id`, update that document otherwise.
+     *
+     * The update path runs the same guards as `update`: the document must be visible under the
+     * caller's isolation, and isolation fields are stripped so it cannot be moved.
+     */
+    async save(data: Partial<T>): Promise<T> {
+        const enriched = { ...data };
+        const id = (enriched as Record<string, unknown>)._id;
+        const hasId = id !== undefined && id !== null && id !== "";
+
+        this.stripIsolationFields(enriched);
+
+        if (hasId) {
+            this.applyVexFields(enriched, "update");
+            const existing = await this.findOne({ _id: id } as Filter);
+            if (!existing) throw new VexResErr(404);
+            return this.model.findByIdAndUpdate(id, { $set: enriched }, { new: true }).exec() as Promise<T>;
+        }
+
+        this.stampIsolationFields(enriched);
+        this.applyVexFields(enriched, "create");
+        const doc = new this.model(enriched);
+        return doc.save();
+    }
+
     replace(id: string | undefined, data: Partial<T>): Promise<T | null> {
         if(!id) {
             utils.log.error("MongooseRepositoryAdapter.replace called without id — refuse replace document");
@@ -3543,6 +3569,31 @@ export class TypeOrmRepositoryAdapter<T extends ObjectLiteral> implements VexRep
         return this.repo.save(this.repo.create(enriched as DeepPartial<T>));
     }
 
+    /**
+     * Insert when the payload has no `_id`, update that row otherwise.
+     *
+     * The update path runs the same guards as `update`: the row must be visible under the
+     * caller's isolation, and isolation fields are stripped so it cannot be moved.
+     */
+    async save(data: Partial<T>): Promise<T> {
+        const enriched = { ...data };
+        const id = (enriched as Record<string, unknown>)._id;
+        const hasId = id !== undefined && id !== null && id !== "";
+
+        this.stripIsolationFields(enriched);
+
+        if (hasId) {
+            this.applyVexFields(enriched, "update");
+            const existing = await this.findOne({ _id: id } as unknown as Filter<T>);
+            if (!existing) throw new VexResErr(404);
+            return this.repo.save(enriched as DeepPartial<T>);
+        }
+
+        this.stampIsolationFields(enriched);
+        this.applyVexFields(enriched, "create");
+        return this.repo.save(this.repo.create(enriched as DeepPartial<T>));
+    }
+
     async replace(id: string | undefined, data: Partial<T>): Promise<T | null> {
         if (!id) {
             utils.log.error("TypeOrmRepositoryAdapter.replace called without id — refuse replace entity");
@@ -3657,11 +3708,17 @@ export default VexDb;
  */
 
 import { Request, Response, NextFunction } from "express";
+import { AsyncLocalStorage } from "async_hooks";
 import { DataSource, EntityTarget, ObjectLiteral } from "typeorm";
 import mongoose from "mongoose";
 import { VexRepository } from "../_types/vex";
 import { TypeOrmRepositoryAdapter } from "./TypeOrmRepositoryAdapter.gen";
 import utils from "./../_utils";
+
+/** The only surface a transaction callback gets. It never exposes the TypeORM manager. */
+export interface VexTransaction {
+    getRepository<T extends ObjectLiteral>(target: EntityTarget<T>): VexRepository<T>;
+}
 
 export class VexDbConnector {
     private sqlUrl: string;
@@ -3669,7 +3726,8 @@ export class VexDbConnector {
     private mongoUrl: string;
     private recordAccessLog: boolean = false;
 
-    public dataSource?: DataSource;
+    private dataSource?: DataSource;
+    private transactionScope = new AsyncLocalStorage<boolean>();
 
     constructor(options: {
         sqlUrl?: string;
@@ -3682,6 +3740,34 @@ export class VexDbConnector {
         this.mongoUrl = options.mongoUrl || "";
         this.recordAccessLog = options.recordAccessLog || false;
         this.middleware = this.middleware.bind(this);
+        this.transaction = this.transaction.bind(this);
+    }
+
+    /**
+     * Run `fn` in one database transaction. Throwing inside `fn` rolls everything back.
+     *
+     * Repositories come from the transaction's own manager, but the callback only receives
+     * `getRepository`: handing out the manager would let call sites take the raw repository and
+     * bypass isolation, audit stamping and fail-closed checks.
+     *
+     * Isolation reads `UserContext` from AsyncLocalStorage, so it applies inside the callback
+     * unchanged. Nested calls are rejected rather than silently opening a second transaction.
+     */
+    async transaction<T>(fn: (tx: VexTransaction) => Promise<T>): Promise<T> {
+        if (!this.sqlUrl) {
+            throw new Error("VexDb.transaction is only available for the SQL target");
+        }
+        if (!this.dataSource) {
+            throw new Error("SQL DataSource not initialized");
+        }
+        if (this.transactionScope.getStore()) {
+            throw new Error("nested transaction is not supported");
+        }
+
+        return this.dataSource.transaction((manager) => this.transactionScope.run(true, () => fn({
+            getRepository: <E extends ObjectLiteral>(target: EntityTarget<E>): VexRepository<E> =>
+                new TypeOrmRepositoryAdapter<E & ObjectLiteral>(manager.getRepository(target)),
+        })));
     }
 
     connect(): void {
@@ -4054,6 +4140,13 @@ export interface VexRepository<T, U=undefined> {
     findOne(filter: Filter<T>, join?: Join, select?: Select): Promise<[U] extends [undefined] ? T | null : U | null>;
     findOneWhere(filter: Filter<T>, join?: Join, select?: Select): Promise<[U] extends [undefined] ? T | null : U | null>;
     create(data: Partial<T>): Promise<T>;
+    /**
+     * Insert when the payload has no id; update that row when it does.
+     *
+     * The update path is scoped like every other write: a row outside the caller's isolation is
+     * a 404, and isolation fields are stripped so the row cannot be moved.
+     */
+    save(data: Partial<T>): Promise<T>;
     replace(id: string | undefined, data: Partial<T>): Promise<T | null>;
     update(id: string | undefined, data: Partial<T>): Promise<T | null>;
     delete(id: string | undefined): Promise<void>;

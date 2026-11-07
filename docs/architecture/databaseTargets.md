@@ -28,7 +28,8 @@ Interface: `src/templates/_types/vex/VexRepository.ts`
 ```ts
 find(filter, join?, select?, pagination?)  count(filter)
 findOne(filter, join?, select?)            findOneWhere(filter, join?, select?)
-create(data)                               replace(id, data)
+create(data)                               save(data)
+replace(id, data)
 update(id, data)                           delete(id)
 deleteWhere(filter)
 ```
@@ -41,6 +42,26 @@ deleteWhere(filter)
 | `src/templates/_services/MongooseRepositoryAdapter.ts` | Mongo | Thin wrapper. Join, select, pagination and count are largely TODO — Mongoose support is less mature than SQL |
 
 Both are static templates — file extensions are `.ts` in-repo, copied as `.gen.ts` into the generated app.
+
+## Transactions
+
+`VexDbConnector` owns the transaction entry:
+
+```ts
+await vexDb.transaction(async (tx) => {
+    const repo = tx.getRepository(OrderEntity);
+    await repo.create({ ... });
+});
+```
+
+The callback receives `getRepository` only — never the TypeORM manager. Repositories are the
+normal adapters, so isolation, audit stamping and fail-closed checks apply inside the transaction.
+Throwing rolls everything back; nesting throws; the mongo target throws because the generated
+adapter has no transaction support. `dataSource` is private, so business code cannot open its own
+transaction on the raw connection.
+
+`save` is the upsert-shaped write: insert without `_id`, scoped update with one. Isolation fields
+are stripped in both branches, so a row cannot be moved to another tenant or owner.
 
 ### The Mongo target does not currently type-check
 

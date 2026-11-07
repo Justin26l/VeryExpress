@@ -1,10 +1,16 @@
 // {{headerComment}}
 import { Request, Response, NextFunction } from "express";
+import { AsyncLocalStorage } from "async_hooks";
 import { DataSource, EntityTarget, ObjectLiteral } from "typeorm";
 import mongoose from "mongoose";
 import { VexRepository } from "../_types/vex";
 import { TypeOrmRepositoryAdapter } from "./TypeOrmRepositoryAdapter.gen";
 import utils from "./../_utils";
+
+/** The only surface a transaction callback gets. It never exposes the TypeORM manager. */
+export interface VexTransaction {
+    getRepository<T extends ObjectLiteral>(target: EntityTarget<T>): VexRepository<T>;
+}
 
 export class VexDbConnector {
     private sqlUrl: string;
@@ -12,7 +18,8 @@ export class VexDbConnector {
     private mongoUrl: string;
     private recordAccessLog: boolean = false;
 
-    public dataSource?: DataSource;
+    private dataSource?: DataSource;
+    private transactionScope = new AsyncLocalStorage<boolean>();
 
     constructor(options: {
         sqlUrl?: string;
@@ -25,6 +32,34 @@ export class VexDbConnector {
         this.mongoUrl = options.mongoUrl || "";
         this.recordAccessLog = options.recordAccessLog || false;
         this.middleware = this.middleware.bind(this);
+        this.transaction = this.transaction.bind(this);
+    }
+
+    /**
+     * Run `fn` in one database transaction. Throwing inside `fn` rolls everything back.
+     *
+     * Repositories come from the transaction's own manager, but the callback only receives
+     * `getRepository`: handing out the manager would let call sites take the raw repository and
+     * bypass isolation, audit stamping and fail-closed checks.
+     *
+     * Isolation reads `UserContext` from AsyncLocalStorage, so it applies inside the callback
+     * unchanged. Nested calls are rejected rather than silently opening a second transaction.
+     */
+    async transaction<T>(fn: (tx: VexTransaction) => Promise<T>): Promise<T> {
+        if (!this.sqlUrl) {
+            throw new Error("VexDb.transaction is only available for the SQL target");
+        }
+        if (!this.dataSource) {
+            throw new Error("SQL DataSource not initialized");
+        }
+        if (this.transactionScope.getStore()) {
+            throw new Error("nested transaction is not supported");
+        }
+
+        return this.dataSource.transaction((manager) => this.transactionScope.run(true, () => fn({
+            getRepository: <E extends ObjectLiteral>(target: EntityTarget<E>): VexRepository<E> =>
+                new TypeOrmRepositoryAdapter<E & ObjectLiteral>(manager.getRepository(target)),
+        })));
     }
 
     connect(): void {

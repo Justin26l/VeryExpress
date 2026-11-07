@@ -7,7 +7,8 @@ UUID; the header (`x-tenant-id`) and the token claim (`tenantId`) are fixed.
 ```jsonc
 "tenant": {
     "enable": true,
-    "IsolationMode": "preSelect"   // or "option"; defaults to "preSelect"
+    "IsolationMode": "preSelect",   // or "option"; defaults to "preSelect"
+    "scope": ["/api"]               // optional; omitted = every route
 }
 ```
 
@@ -28,6 +29,14 @@ Documents opt in with an isolation rule:
 
 The rule field is the document column; it does not have to be named `tenantId`. See
 [`dataIsolation.md`](dataIsolation.md).
+
+`scope` limits which request paths the middleware touches, for browsers and static assets that
+cannot send the header. It is a boundary-aware prefix match (`/api` matches `/api/...`, not
+`/apix`); an entry must start with `/`; `/hello` is always exempt. In `preSelect`, include the auth
+routes the client uses (normally `/api` or `/api/auth`).
+
+The middleware validates the UUID only. It does not check whether the tenant exists or is enabled:
+that lookup belongs to the application, and a missing / deleted tenant is its normal `404`.
 
 ## Generated files
 

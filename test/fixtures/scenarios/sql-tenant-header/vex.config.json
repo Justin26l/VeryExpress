@@ -19,7 +19,10 @@
     },
     "tenant": {
         "enable": true,
-        "IsolationMode": "preSelect"
+        "IsolationMode": "preSelect",
+        "scope": [
+            "/api"
+        ]
     },
     "generator": {
         "commitBeforeGenerate": false

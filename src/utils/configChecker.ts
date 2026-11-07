@@ -51,6 +51,18 @@ function checkTenant(options: types.compilerOptions): void {
             `the user must log in before selecting a tenant.`,
         );
     }
+
+    checkStringArray(tenant.scope, "tenant.scope");
+    if (tenant.scope !== undefined) {
+        if (tenant.scope.length === 0) {
+            throw new Error("vex.config.tenant.scope must not be empty — omit it to apply to every route.");
+        }
+        for (const prefix of tenant.scope) {
+            if (!prefix.startsWith("/")) {
+                throw new Error(`vex.config.tenant.scope entry must start with "/", got ${JSON.stringify(prefix)}`);
+            }
+        }
+    }
 }
 
 function checkDeleteAccount(options: types.compilerOptions): void {
