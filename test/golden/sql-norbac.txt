@@ -1428,7 +1428,7 @@ import { UserEntity, User } from "./UserModel.gen";
 export * from "./../_types/Session.gen";
 
 @Entity("session")
-@Unique('unique_sessionCode', ['sessionCode'])
+@Unique('unique_session_sessionCode', ['sessionCode'])
 export class SessionEntity implements Partial<Session> {
     @PrimaryGeneratedColumn("uuid")
     _id!: string;
@@ -1464,7 +1464,7 @@ import { UserEntity, User } from "./UserModel.gen";
 export * from "./../_types/UserAuthProfiles.gen";
 
 @Entity("userauthprofiles")
-@Unique('unique_provider_providerUserId', ['provider', 'providerUserId'])
+@Unique('unique_userauthprofiles_provider_providerUserId', ['provider', 'providerUserId'])
 export class UserAuthProfilesEntity implements Partial<UserAuthProfiles> {
     @PrimaryGeneratedColumn("uuid")
     _id!: string;
@@ -1509,7 +1509,7 @@ import { SessionEntity, Session } from "./SessionModel.gen";
 export * from "./../_types/User.gen";
 
 @Entity("user")
-@Unique('unique_email', ['email'])
+@Unique('unique_user_email', ['email'])
 export class UserEntity implements Partial<User> {
     @PrimaryGeneratedColumn("uuid")
     _id!: string;

@@ -96,7 +96,8 @@ export default function typeormEntityTemplate(options: {
     ].filter((v, i, a) => a.indexOf(v) === i);
 
     const uniqueIndexDecorators = options.uniqueIndexes?.map((cols) => {
-        const indexName = `unique_${cols.join("_")}`;
+        // a constraint name is unique per schema in PostgreSQL, not per table
+        const indexName = `unique_${table}_${cols.join("_")}`;
         const colList = cols.map(c => `'${c}'`).join(", ");
         return `@Unique('${indexName}', [${colList}])`;
     }) ?? [];

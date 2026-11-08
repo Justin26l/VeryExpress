@@ -25,7 +25,7 @@ Each `.json` file defines one REST resource. Filename must match `x-documentConf
 | --- | --- | --- | --- |
 | `documentName` | `string` | yes | Resource name. Must match filename (e.g. `User.json` → `"User"`). Used as collection name, controller class, route prefix. |
 | `methods` | `array<schemaMethod>` | yes | REST methods to generate. See values below. |
-| `uniqueIndex` | `array<array<string>>` | no | Compound unique index definitions, e.g. `[["email"], ["userId","role"]]`. |
+| `uniqueIndex` | `array<array<string>>` | no | Compound unique index definitions, e.g. `[["email"], ["userId","role"]]`. The SQL entity names the constraint `unique_<table>_<columns>`, so two documents may declare the same column set. |
 | `isolation` | `array<object>` | no | Query terms the repository adds to every read and write. `{ field, source, onMissing }` — see [isolation rules](#isolation-rules). |
 | `dataIsolation` | `object` | no | Legacy single-field form: `{ "field": "ownerId" }`. Normalized into `isolation`. |
 
