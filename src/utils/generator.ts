@@ -48,6 +48,27 @@ export function isFirebaseAuthEnabled(compilerOptions: types.compilerOptions): b
     return isAuthEnabled(compilerOptions) && compilerOptions.auth.firebase === true;
 }
 
+/**
+ * Verify-only: tokens are minted elsewhere and this app only checks them.
+ *
+ * `isAuthEnabled` stays the sign-in question ("can this app log someone in"); it is what gates the
+ * login stack and the account tables. Verification is a separate concern, and a project can have
+ * exactly one of them.
+ */
+export function isVerifyOnlyAuthEnabled(compilerOptions: types.compilerOptions): boolean {
+    return compilerOptions.auth?.verifyOnly === true;
+}
+
+/** Any auth configuration, sign-in or verify-only — the files that read a token at all. */
+export function isAuthenticationEnabled(compilerOptions: types.compilerOptions): boolean {
+    return isAuthEnabled(compilerOptions) || isVerifyOnlyAuthEnabled(compilerOptions);
+}
+
+/** Requests carry a bearer token this app verifies — what the CRUD controllers guard on. */
+export function isTokenVerificationEnabled(compilerOptions: types.compilerOptions): boolean {
+    return isJwtAuthEnabled(compilerOptions) || isVerifyOnlyAuthEnabled(compilerOptions);
+}
+
 export function isAccountDeletionEnabled(compilerOptions: types.compilerOptions): boolean {
     const setting = compilerOptions.auth.deleteAccount;
     const enabled = typeof setting === "object" ? (setting.enabled ?? true) : (setting ?? true);
@@ -92,6 +113,17 @@ export function tenantIsolationMode(compilerOptions: types.compilerOptions): typ
     return compilerOptions.tenant?.IsolationMode ?? "preSelect";
 }
 
+/**
+ * Whether the tenant module links accounts to tenants.
+ *
+ * Membership needs a request identity: `UserTenant`, `TenantService` and every membership check
+ * resolve the caller from the access token. `preSelect` without an auth method runs on the
+ * `x-tenant-id` header alone, so it owns no mapping table and emits none of those files.
+ */
+export function isTenantMembershipEnabled(compilerOptions: types.compilerOptions): boolean {
+    return isTenantEnabled(compilerOptions) && isAuthEnabled(compilerOptions);
+}
+
 export const defaultCompilerOptions: types.compilerOptions = {
     rootDir: ".",
     srcDir: "./src",
@@ -117,6 +149,7 @@ export const defaultCompilerOptions: types.compilerOptions = {
         useHttpOnlyCookieToken: false,
         deleteAccount: true,
         firebase: false,
+        verifyOnly: false,
         oauthProviders: {
             google: false,
             microsoft: false,
@@ -139,11 +172,15 @@ export default {
     OAuthProviders,
     isAuthEnabled,
     isJwtAuthEnabled,
+    isVerifyOnlyAuthEnabled,
+    isAuthenticationEnabled,
+    isTokenVerificationEnabled,
     isFirebaseAuthEnabled,
     isRbacEnabled,
     isAccountDeletionEnabled,
     isShowSoftDeleted,
     isTenantEnabled,
+    isTenantMembershipEnabled,
     tenantIsolationMode,
     TENANT_HEADER,
     TENANT_CLAIM,

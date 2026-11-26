@@ -45,16 +45,36 @@ Emitted only when the feature is enabled; turning it off removes them on the nex
 
 | File | When | Role |
 | --- | --- | --- |
-| `jsonSchema/UserTenant.json` | enabled, if absent | the user ↔ tenant mapping table |
 | `_middlewares/TenantScopeContext.gen.ts` | enabled | pure decision + UUID check |
 | `_middlewares/TenantScope.gen.ts` | enabled | the middleware |
-| `_services/TenantService.gen.ts` | enabled | link / unlink / list |
-| `_controllers/TenantController.gen.ts` | `option` | `GET /tenant`, `POST /tenant/select` |
+| `jsonSchema/UserTenant.json` | enabled with an auth method, if absent | the user ↔ tenant mapping table |
+| `_services/TenantService.gen.ts` | enabled with an auth method | link / unlink / list |
+| `_controllers/TenantController.gen.ts` | `option` (implies auth) | `GET /tenant`, `POST /tenant/select` |
 | `_types/Tenant.gen.ts` | `option` | response types |
 
 `Authentication.middleware` and `JWTService` contain no tenant code. The generated auth controller
 uses `TenantService` in `preSelect` mode and `JWTService.generateAccessToken(user, index, { tenantId })`
 in `option` mode.
+
+## Header-only deployment
+
+Membership is the only part of the module that needs an account. `preSelect` with no auth method
+(`auth.localAuth`, every OAuth provider and `auth.firebase` off) reads the tenant from the header
+alone: it links nobody, resolves no claim, and emits no `UserTenant` document, no `TenantService`
+and no account table.
+
+The account schemas follow `app.useUserSchema`: with `false` the generator copies neither `User.json`
+nor the auth-only `Session.json` / `UserAuthProfiles.json`, and no template that imports them is
+emitted. With `true` the project has the built-in `User` document, as the flag says.
+
+`auth.verifyOnly: true` is the middle ground: tokens are verified (so a caller's identity exists),
+but no account is signed in, so membership artifacts stay out. See
+[`docs/appGenerated/auth.md`](../appGenerated/auth.md).
+
+`jsonSchemaDir` is the app's input, not generator state. A schema already there is never deleted or
+rewritten by this feature; it is generated like any other document. Turning `app.useUserSchema` off
+does not remove a `User.json` left from an earlier run — it keeps producing a `User` table until the
+app deletes the file.
 
 ## `preSelect`
 

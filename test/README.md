@@ -63,7 +63,9 @@ Run with `KEEP_TMP=1` to stop the temp dirs being deleted, and `UPDATE_GOLDEN=1`
 | `sql-noswagger` | `app.enableSwagger: false` — no `SwaggerRouter.gen.ts`, no swagger wiring in `server.ts` |
 | `sql-norbac` | `useRBAC` omitted — RBAC fully off: no `RoleBaseAccessControl`, no `_roles/`, no `UserRole` model/controller |
 | `sql-tenant` | `tenant` option mode: generated `UserTenant` schema, `TenantScope`, `TenantScopeContext`, `TenantService`, `TenantController` |
-| `sql-tenant-header` | `tenant` preSelect mode with `scope: ["/api"]` and auth off — no `TenantController`, no auth controller |
+| `sql-tenant-header` | `tenant` preSelect mode with `scope: ["/api"]` and auth off — no `TenantController`, no auth controller, no `UserTenant` table |
+| `sql-tenant-header-nouser` | same, with `app.useUserSchema: false` — no `User` / `Session` / `UserAuthProfiles` schema either |
+| `sql-verify-only` | `auth.verifyOnly: true` — verifies tokens minted elsewhere: `Authentication` without the account-state read, no login stack, no account tables |
 | `sql-delete-tables` | `auth.deleteAccount.deleteTables` cleanup: one soft-deleted table and one hard-deleted table |
 
 ## End-to-end contract test

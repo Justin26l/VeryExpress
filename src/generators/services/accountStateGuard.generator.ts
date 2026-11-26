@@ -13,9 +13,9 @@ import { collectSoftDeleteEntities } from "~/preprocess/softDelete";
  * deleted user's unexpired access token keeps working for the rest of its lifetime. The guard
  * closes that gap.
  *
- * It exists only when the identity document is itself soft-deletable — otherwise there is no state
- * to check and the file is emitted as a no-op, so the middleware's import always resolves and
- * projects without soft delete pay nothing.
+ * It exists only when the app has an auth method — nothing imports it otherwise. Within that, it
+ * reads the identity row only when that document is itself soft-deletable; otherwise the answer is
+ * a constant and the file is emitted as a no-op.
  *
  * See docs/features/accountDeletion.md.
  */
@@ -24,7 +24,26 @@ export async function compile(options: {
     serviceDir: string;
     compilerOptions: types.compilerOptions;
 }): Promise<void> {
+    if (!utilsGenerator.isAuthenticationEnabled(options.compilerOptions)) return;
+
     log.process("Account State Guard");
+
+    // Verify-only: the accounts live in the app that signs the tokens, so there is nothing here to
+    // look up. The middleware still imports this function, so it stays a constant.
+    if (utilsGenerator.isVerifyOnlyAuthEnabled(options.compilerOptions)) {
+        utils.common.writeFile("Account State Guard", `${options.serviceDir}/auth/AccountStateGuard.gen.ts`, `// {{headerComment}}
+/**
+ * No-op account-state guard.
+ *
+ * Emitted because this app verifies tokens it did not mint: it owns no account row, so a token's
+ * user id cannot be checked against one here. Revocation takes effect when the token expires.
+ */
+export async function isActiveIdentity(_userId: string | undefined): Promise<boolean> {
+    return true;
+}
+`);
+        return;
+    }
 
     const identity = findUserIdIdentity(options.documents);
     const softDeleteEntities = collectSoftDeleteEntities(options.documents);

@@ -9,6 +9,7 @@ import { validateAuditFields } from "./preprocess/auditFields";
 import { validateSoftDeleteFields } from "./preprocess/softDelete";
 import { validateIsolationFields } from "./preprocess/isolation";
 import { validateDeleteAccountConfig } from "./preprocess/deleteAccount";
+import { validateAuthDocuments } from "./preprocess/authDocuments";
 
 import * as types from "./types/types";
 import * as userSchemaGen from "./generators/projectSettings/userSchema.generator";
@@ -32,6 +33,28 @@ import * as accountDeletionGen from "./generators/services/accountDeletion.gener
 import * as firebaseAuthGen from "./generators/services/firebaseAuth.generator";
 import * as tenantServiceGen from "./generators/services/tenantService.generator";
 import * as tenantControllerGen from "./generators/controller/tenantController.generator";
+import * as authenticationGen from "./generators/middlewares/authentication.generator";
+import * as jwtServiceGen from "./generators/services/jwtService.generator";
+
+/**
+ * Templates that exist only when the app has an auth method.
+ *
+ * They import the identity / session models directly, so they cannot be emitted unless the schemas
+ * behind those models are. Turning auth off leaves no file in the generated app that names
+ * `UserEntity`, `UserWithRelations` or `SessionEntity`.
+ */
+const AUTH_ONLY_TEMPLATES: Record<string, string[]> = {
+    _middlewares: ["Authentication.ts"],
+    _routes: ["FirebaseAuthUI.gen.ts", "LoginUI.ts", "oauth/OAuthRouteFactory.ts"],
+    _services: [
+        "auth/JWTKeyStore.ts",
+        "auth/JWTService.ts",
+        "oauth/OAuthProfileMap.ts",
+        "oauth/OAuthStrategyService.ts",
+    ],
+    _types: ["auth.ts"],
+    jsonSchema: ["Session.json", "UserAuthProfiles.json"],
+};
 
 export async function generate(
     options: types.compilerOptions
@@ -73,22 +96,39 @@ export async function generate(
         if (!fs.existsSync(path)) { fs.mkdirSync(path); }
     });
 
+    // No auth method means no identity and no session, so the templates that name them are not
+    // copied at all; `cleanupStaleFiles` removes the ones an earlier run emitted.
+    const authEnabled = utils.generator.isAuthEnabled(options);
+    const authenticationEnabled = utils.generator.isAuthenticationEnabled(options);
+    const useUserSchema = options.app?.useUserSchema === true;
+    const authGate = (templateDir: string) => (entryPath: string): boolean => {
+        // `app.useUserSchema` owns this file. A schema already in jsonSchemaDir is never touched:
+        // it belongs to the app, and generation treats it as one of its documents.
+        if (templateDir === "jsonSchema" && entryPath === "User.json") return useUserSchema;
+
+        // The key store is shared by sign-in and verify-only: both check a signature against it.
+        if (templateDir === "_services" && entryPath === "auth/JWTKeyStore.ts") return authenticationEnabled;
+
+        return authEnabled || !AUTH_ONLY_TEMPLATES[templateDir].includes(entryPath);
+    };
+
     utils.common.copyDir(path.join(__dirname, "templates", "_controllers"), dir.controllerDir, options, true);
-    utils.common.copyDir(path.join(__dirname, "templates", "_middlewares"), dir.middlewareDir, options, true);
-    utils.common.copyDir(path.join(__dirname, "templates", "_routes"), dir.routeDir, options, true);
-    utils.common.copyDir(path.join(__dirname, "templates", "_services"), dir.serviceDir, options, true);
-    utils.common.copyDir(path.join(__dirname, "templates", "_types"), dir.typeDir, options, true);
+    utils.common.copyDir(path.join(__dirname, "templates", "_middlewares"), dir.middlewareDir, options, true, authGate("_middlewares"));
+    utils.common.copyDir(path.join(__dirname, "templates", "_routes"), dir.routeDir, options, true, authGate("_routes"));
+    utils.common.copyDir(path.join(__dirname, "templates", "_services"), dir.serviceDir, options, true, authGate("_services"));
+    utils.common.copyDir(path.join(__dirname, "templates", "_types"), dir.typeDir, options, true, authGate("_types"));
     utils.common.copyDir(path.join(__dirname, "templates", "_utils"), dir.utilsDir, options, true);
     utils.common.copyDir(path.join(__dirname, "templates", "root"), options.rootDir, options, false);
-    utils.common.copyDir(path.join(__dirname, "templates", "jsonSchema"), options.jsonSchemaDir, options, true);
+    utils.common.copyDir(path.join(__dirname, "templates", "jsonSchema"), options.jsonSchemaDir, options, true, authGate("jsonSchema"));
     if (utils.generator.isRbacEnabled(options)) {
         utils.common.copyDir(path.join(__dirname, "templates", "_roles"), dir.roleDir, options, true);
         utils.common.copyDir(path.join(__dirname, "templates", "jsonSchemaRBAC"), options.jsonSchemaDir, options, true);
     }
 
-    // the tenant module owns its mapping table; an existing schema is left alone so the app
-    // can extend it
-    if (utils.generator.isTenantEnabled(options)) {
+    // the tenant module's mapping table belongs to the membership layer, which resolves the caller
+    // from a token; a header-only deployment owns no mapping table. An existing schema is left
+    // alone so the app can extend it.
+    if (utils.generator.isTenantMembershipEnabled(options)) {
         utils.common.copyDir(path.join(__dirname, "templates", "tenantJsonSchema"), options.jsonSchemaDir, options, false);
     }
     
@@ -119,6 +159,10 @@ export async function generate(
             log.error(`Processing File : ${schemaPath}\n`, err);
         }
     });
+    // must run before foreign keys resolve: a UserRole key that points at a missing User document
+    // would otherwise fail deep inside the relation builder
+    validateAuthDocuments(documents, options);
+
     applyFkMetadata(documents);
 
     // audit / ownership declarations are cross-document (one identity source) — validate once
@@ -237,6 +281,17 @@ export async function generate(
     //         outDir: dir.modelDir,
     //     });
     // }
+
+    // verify-only: Authentication and JWTService are re-emitted without the account side
+    await authenticationGen.compile({
+        compilerOptions: options,
+        middlewareDir: dir.middlewareDir,
+    });
+
+    await jwtServiceGen.compile({
+        compilerOptions: options,
+        serviceDir: dir.serviceDir,
+    });
 
     // generate account-state guard — Authentication.middleware imports it unconditionally,
     // so it is emitted for every project (no-op when the identity document is not soft-deletable)

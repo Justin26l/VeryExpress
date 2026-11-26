@@ -1,6 +1,6 @@
 import * as types from "../types/types";
 import log from "../utils/logger";
-import { isTenantEnabled } from "../utils/generator";
+import { isTenantEnabled, isTenantMembershipEnabled } from "../utils/generator";
 
 /**
  * Isolation rules.
@@ -174,12 +174,14 @@ function checkTenantSources(
     ctx: validationContext,
     identity: { documentName: string, field: string } | undefined,
 ): void {
-    if (!isTenantEnabled(ctx.options)) return;
+    // Only the membership layer needs an identity: it links a user to a tenant and resolves that
+    // link on login. `preSelect` without auth reads the header alone and links nobody.
+    if (!isTenantMembershipEnabled(ctx.options)) return;
 
     if (!identity) {
         ctx.problems.push(
-            `vex.config.tenant.enable is true but no document declares x-vexData "userId" — ` +
-            `the tenant module links users by that identity.`,
+            `vex.config.tenant.enable is true with authentication on but no document declares ` +
+            `x-vexData "userId" — the tenant module links users by that identity.`,
         );
     }
 

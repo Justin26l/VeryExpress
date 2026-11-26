@@ -97,6 +97,26 @@ const variants: Record<string, Record<string, unknown>> = {
         auth: auth(false),
         tenant: { enable: true, IsolationMode: "preSelect" },
     },
+    /**
+     * Header-only tenant with no account document at all: `app.useUserSchema: false` must leave no
+     * file behind that names the identity model.
+     */
+    "tenant-preSelect-auth-off-nouser": {
+        dbType: "sql",
+        app: { ...baseApp, useUserSchema: false },
+        auth: auth(false),
+        tenant: { enable: true, IsolationMode: "preSelect" },
+    },
+    /**
+     * Verify-only: tokens come from another app. The generated auth file must check a signature and
+     * nothing else — no account row, no login endpoint, no account table.
+     */
+    "tenant-preSelect-verify-only": {
+        dbType: "sql",
+        app: { ...baseApp, useUserSchema: false },
+        auth: { ...auth(false), verifyOnly: true },
+        tenant: { enable: true, IsolationMode: "preSelect" },
+    },
     "firebase-only": {
         dbType: "sql",
         app: baseApp,

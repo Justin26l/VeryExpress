@@ -252,6 +252,6 @@ schema — a keyword would otherwise become a literal string default.
 - Soft delete.
 - Backfilling existing NULL rows.
 - An app whose ownership column points at a profile row rather than at `User`.
-- Extending `useUserSchema: false` into a fully custom account model. Today `User.json` is copied from the
-  templates unconditionally and `localAuth` requires `useUserSchema: true`, so a custom identity schema is
+- Extending `useUserSchema: false` into a fully custom account model. `localAuth` requires
+  `useUserSchema: true`, and auth / RBAC require a document named `User`, so a custom identity schema is
   not reachable yet; `x-vexData: "userId"` is the forward-compatible hook for it.

@@ -56,7 +56,7 @@ async function run(documents: { path: string, schema: types.jsonSchema }[]): Pro
     await compile({
         documents,
         serviceDir: "./out/src/system/_services",
-        compilerOptions: {} as types.compilerOptions,
+        compilerOptions: { auth: { localAuth: true, oauthProviders: {} } } as types.compilerOptions,
     });
 }
 

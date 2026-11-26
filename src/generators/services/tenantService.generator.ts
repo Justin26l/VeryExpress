@@ -1,19 +1,20 @@
 import utils from "~/utils";
 import log from "~/utils/logger";
 import * as types from "~/types/types";
-import { isTenantEnabled } from "~/utils/generator";
+import { isTenantMembershipEnabled } from "~/utils/generator";
 
 /**
  * Generates TenantService.gen.ts — the user ↔ tenant mapping every deployment uses.
  *
  * The table is the module's own `UserTenant` document, so app code only passes a tenant id.
- * Emitted only when `vex.config.tenant.enable` is true.
+ * Emitted only when the tenant module links accounts, i.e. `tenant.enable` plus an auth method:
+ * a header-only deployment has no user to link.
  */
 export async function compile(options: {
     compilerOptions: types.compilerOptions;
     serviceDir: string;
 }): Promise<void> {
-    if (!isTenantEnabled(options.compilerOptions)) return;
+    if (!isTenantMembershipEnabled(options.compilerOptions)) return;
 
     log.process("Tenant Service");
 

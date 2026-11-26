@@ -85,6 +85,19 @@ export interface compilerOptions {
          * sign-in. See docs/plan/spec-firebase-auth.md.
          */
         firebase?: boolean,
+        /**
+         * Verify-only: this app validates access tokens minted by another vex app and issues none.
+         *
+         * The signing app runs a normal auth method; this one shares `JWT_SECRET0..9` and
+         * `JWT_ALGORITHM` with it. Verification is signature-only — there is no account row here to
+         * look up, so `AccountStateGuard` stays a no-op. `onCreateUserId` / ownership isolation work
+         * because the identity travels in the token as `vexUserId`.
+         *
+         * Cannot be combined with a sign-in method, with `useRBAC` (role assignments live in the
+         * local `UserRole` table) or with `tenant.IsolationMode: "option"` (selecting a tenant mints
+         * tokens).
+         */
+        verifyOnly?: boolean,
     },
 
     _: {

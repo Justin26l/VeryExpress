@@ -1,6 +1,11 @@
 // {{headerComment}}
 import crypto from "crypto";
-import { UserWithRelations } from "../_types/User.gen";
+
+/** The identity fields this module reads — any row carrying them satisfies it. */
+export interface PasswordHolder {
+    email?: string;
+    userAuthProfiles?: Array<{ provider?: string, password?: string }>;
+}
 
 export function hashPassword(
     plainPassword: string,
@@ -11,14 +16,14 @@ export function hashPassword(
 }
 
 export function verifyPassword(
-    user: UserWithRelations,
+    user: PasswordHolder,
     plainPassword: string,
 ): boolean {
     if(!user.email || !user.userAuthProfiles) {
         return false;
     }
 
-    const hashedPassword = user.userAuthProfiles.find((profile:any) => profile.provider === "local")?.password;
+    const hashedPassword = user.userAuthProfiles.find(profile => profile.provider === "local")?.password;
     if(!hashedPassword) {
         return false;
     }

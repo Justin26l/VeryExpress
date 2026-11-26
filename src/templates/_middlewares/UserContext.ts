@@ -14,7 +14,7 @@ export interface UserContextData {
  * Pure: identity value carried by a verified access token.
  *
  * `vexUserId` is the schema-declared identity (the field tagged `x-vexData: "userId"`,
- * which JWTService copies into the token); `_id` keeps tokens issued before that claim
+ * which the auth module copies into the token); `_id` keeps tokens issued before that claim
  * existed working.
  */
 export function userIdOfToken(tokenData: Record<string, unknown> | undefined): string | undefined {

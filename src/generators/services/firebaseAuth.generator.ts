@@ -13,6 +13,8 @@ export async function compile(options: {
     routeDir: string;
     compilerOptions: types.compilerOptions;
 }): Promise<void> {
+    if (!utilsGenerator.isAuthEnabled(options.compilerOptions)) return;
+
     const uiPath = `${options.routeDir}/FirebaseAuthUI.gen.ts`;
 
     if (!utilsGenerator.isFirebaseAuthEnabled(options.compilerOptions)) {

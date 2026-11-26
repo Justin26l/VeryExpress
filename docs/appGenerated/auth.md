@@ -36,6 +36,56 @@ OAUTH_GOOGLE_CLIENTSECRET=xxxxx
 
 `/login` renders a form or a button for whichever paths are enabled.
 
+## The built-in account model
+
+Auth resolves every request against one document named `User`. `app.useUserSchema` decides whether
+vex writes it:
+
+- `true` (default) — `jsonSchema/User.json` is copied from the templates and kept in sync with them
+  (`email`, `name`, `active`, `deleted`, the audit fields).
+- `false` — vex writes nothing. The project supplies its own `User.json`; without one, generation
+  stops with `authentication needs a document named "User"`.
+
+RBAC needs the same document (`UserRole` declares a foreign key to it), so it carries the same
+requirement and the same error.
+
+A schema in `jsonSchemaDir` is the app's input. Nothing deletes or rewrites it when the flag is off:
+a `User.json` that is there is generated like any other document. The flag governs the template, not
+the directory.
+
+## Verify-only services
+
+An app that serves business routes but never signs anyone in sets `auth.verifyOnly: true`. It
+validates access tokens minted by another vex app and issues none:
+
+```jsonc
+"auth": { "localAuth": false, "verifyOnly": true }
+```
+
+What it generates, and what it does not:
+
+| | Sign-in app | Verify-only app |
+|---|---|---|
+| `Authentication.middleware` | verifies the token, then checks the account row | verifies the token only |
+| `JWTService` | mints and verifies, owns sessions | `verifyToken` only |
+| `AuthController`, `/login`, OAuth routes | yes | no |
+| `User`, `UserAuthProfiles`, `Session` schemas | yes | no |
+| `AccountStateGuard` | reads the identity row | constant `true` |
+
+`JWT_SECRET0..9` and `JWT_ALGORITHM` must match the app that signs. The client sends the key slot
+in `X-Auth-Index`, the same header it sends to the signing app.
+
+The identity travels in the token, so `onCreateUserId` / `onUpdateUserId` and ownership isolation
+(`source: "user._id"`) work. The token carries it as `vexUserId`; when it is absent the middleware
+falls back to `_id`.
+
+Revocation is bounded by token lifetime: there is no account row here to check, so a deleted
+account's unexpired access token stays valid until it expires.
+
+Verify-only cannot be combined with a sign-in method, with `useRBAC` (role assignments live in the
+local `UserRole` table) or with `tenant.IsolationMode: "option"` (selecting a tenant mints a token).
+Generation stops with a config error naming the conflict.
+
 ## The identity row
 
 A sign-in writes one `UserAuthProfiles` row, keyed by `(provider, providerUserId)` — a composite unique

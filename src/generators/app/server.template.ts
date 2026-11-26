@@ -125,13 +125,16 @@ main();
         AppRoute.push(UseAuthRouter);
     }
 
-    Import.push(importLoginUI);
-    Config.push(ConfigLoginUiRouter(
-        options.compilerOptions.auth.localAuth,
-        OAuthProviders,
-        utils.generator.isAccountDeletionEnabled(options.compilerOptions),
-    ));
-    AppRoute.push(UseLoginUI);
+    // The login page posts to `/api/auth`; without an auth method there is nothing to post to.
+    if (isAuthEnabled) {
+        Import.push(importLoginUI);
+        Config.push(ConfigLoginUiRouter(
+            options.compilerOptions.auth.localAuth,
+            OAuthProviders,
+            utils.generator.isAccountDeletionEnabled(options.compilerOptions),
+        ));
+        AppRoute.push(UseLoginUI);
+    }
 
     template = template.replace(/{{Import}}/g, Import.join("\n"));
     template = template.replace(/{{Config}}/g, Config.join("\n"));

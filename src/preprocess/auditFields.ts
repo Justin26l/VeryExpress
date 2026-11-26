@@ -1,6 +1,6 @@
 import * as types from "../types/types";
 import log from "../utils/logger";
-import { isAuthEnabled } from "../utils/generator";
+import { isAuthenticationEnabled } from "../utils/generator";
 import { collectIsolationFields } from "./isolation";
 
 /**
@@ -283,7 +283,7 @@ function checkCreateIdentityIsReachable(ctx: validationContext, compilerOptions:
         f => f.type === types.vexDefaultKeyword.OnCreateUserId
     ));
     if (!usesCreateUserIdKeyword) return;
-    if (isAuthEnabled(compilerOptions)) return;
+    if (isAuthenticationEnabled(compilerOptions)) return;
 
     ctx.problems.push(
         `Schema declares "onCreateUserId" but the app enables no authentication ` +

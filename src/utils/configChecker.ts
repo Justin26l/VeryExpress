@@ -1,5 +1,5 @@
 import * as types from "~/types/types";
-import { isJwtAuthEnabled } from "~/utils/generator";
+import { isAuthEnabled, isJwtAuthEnabled, isRbacEnabled, isVerifyOnlyAuthEnabled } from "~/utils/generator";
 
 /**
  * Refuse a non-boolean for a switch that is documented as a boolean.
@@ -45,6 +45,13 @@ function checkTenant(options: types.compilerOptions): void {
         );
     }
 
+    if (tenant.enable && tenant.IsolationMode === "option" && isVerifyOnlyAuthEnabled(options)) {
+        throw new Error(
+            `vex.config.tenant.IsolationMode is "option" cannot be combined with auth.verifyOnly — ` +
+            `selecting a tenant mints a tenant-scoped token, and a verify-only app issues none. Use "preSelect".`,
+        );
+    }
+
     if (tenant.enable && tenant.IsolationMode === "option" && !isJwtAuthEnabled(options)) {
         throw new Error(
             `vex.config.tenant.IsolationMode is "option" but the app enables no JWT authentication — ` +
@@ -62,6 +69,27 @@ function checkTenant(options: types.compilerOptions): void {
                 throw new Error(`vex.config.tenant.scope entry must start with "/", got ${JSON.stringify(prefix)}`);
             }
         }
+    }
+}
+
+function checkAuth(options: types.compilerOptions): void {
+    checkBoolean(options.auth?.verifyOnly, "auth.verifyOnly");
+    if (!isVerifyOnlyAuthEnabled(options)) return;
+
+    if (isAuthEnabled(options)) {
+        throw new Error(
+            `vex.config.auth.verifyOnly cannot be combined with a sign-in method ` +
+            `(auth.localAuth, an OAuth provider, or auth.firebase) — one app signs in, the other ` +
+            `only verifies. Turn the sign-in method off in this app.`,
+        );
+    }
+
+    if (isRbacEnabled(options)) {
+        throw new Error(
+            `vex.config.auth.verifyOnly cannot be combined with useRBAC — role assignments live in the ` +
+            `app's own UserRole table, which a verify-only app does not own. Read the roles off the ` +
+            `token, or run RBAC in the app that signs in.`,
+        );
     }
 }
 
@@ -97,6 +125,7 @@ export function checkConfigValid(options: types.compilerOptions): void {
     }
 
     checkBoolean(options.auth?.firebase, "auth.firebase");
+    checkAuth(options);
     checkTenant(options);
     checkDeleteAccount(options);
 }
