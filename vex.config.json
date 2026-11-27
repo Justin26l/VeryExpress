@@ -20,7 +20,8 @@
         "oauthProviders": {
             "google": false,
             "github": false
-        }
+        },
+        "verifyOnly": false
     },
     "useRBAC": {
         "roles": [

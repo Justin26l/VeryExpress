@@ -23,8 +23,7 @@ export default function controllerTemplate(templateOptions: {
     const { documentName, idType, restApiMethods, restApiNoRelations, restApiJoinWhitelist, compilerOptions, modelPath, typePath, requestManagedFields = [] } = templateOptions;
     const useRBAC = utils.generator.isRbacEnabled(compilerOptions);
     const useAuth = utils.generator.isTokenVerificationEnabled(compilerOptions);
-    const useTenant = utils.generator.isTenantEnabled(compilerOptions)
-        && utils.generator.tenantIsolationMode(compilerOptions) === "option";
+    const useTenant = utils.generator.tenantUsesClaim(compilerOptions);
     const cleanId = compilerOptions.app.allowApiCreateUpdate_id
         ? ""
         : "if ((body as any)._id) delete (body as any)._id;";

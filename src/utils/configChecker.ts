@@ -39,9 +39,31 @@ function checkTenant(options: types.compilerOptions): void {
 
     if (tenant.IsolationMode !== undefined
         && tenant.IsolationMode !== "preSelect"
-        && tenant.IsolationMode !== "option") {
+        && tenant.IsolationMode !== "option"
+        && tenant.IsolationMode !== "single") {
         throw new Error(
-            `vex.config.tenant.IsolationMode must be "preSelect" or "option", got ${JSON.stringify(tenant.IsolationMode)}`,
+            `vex.config.tenant.IsolationMode must be "preSelect", "option" or "single", got ${JSON.stringify(tenant.IsolationMode)}`,
+        );
+    }
+
+    if (tenant.IsolationMode === "single" && !tenant.enable) {
+        throw new Error(
+            `vex.config.tenant.IsolationMode is "single" but tenant.enable is false — ` +
+            `single mode resolves the user's membership at login and needs the module's tables.`,
+        );
+    }
+
+    if (tenant.enable && tenant.IsolationMode === "single" && isVerifyOnlyAuthEnabled(options)) {
+        throw new Error(
+            `vex.config.tenant.IsolationMode is "single" cannot be combined with auth.verifyOnly — ` +
+            `login mints a tenant-scoped token, and a verify-only app issues none. Use "preSelect".`,
+        );
+    }
+
+    if (tenant.enable && tenant.IsolationMode === "single" && !isJwtAuthEnabled(options)) {
+        throw new Error(
+            `vex.config.tenant.IsolationMode is "single" needs a JWT sign-in method — ` +
+            `login is where single mode mints the tenant claim. Enable auth.localAuth or an OAuth provider.`,
         );
     }
 

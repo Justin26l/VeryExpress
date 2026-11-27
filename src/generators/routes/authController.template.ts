@@ -11,9 +11,12 @@ export default function authControllerTemplate(compilerOptions: types.compilerOp
     // `preSelect`: the app build is bound to one tenant, so registration links the account to
     // the header tenant and every login verifies that link.
     // `option`: login is tenant-agnostic; the client calls `POST /tenant/select` afterwards.
+    // `single`: one account belongs to one tenant, so login resolves the membership and mints the
+    // claim itself — no select endpoint exists.
     const tenantEnabled = utilsGenerator.isTenantEnabled(compilerOptions);
     const tenantPreSelect = tenantEnabled && utilsGenerator.tenantIsolationMode(compilerOptions) === "preSelect";
-    const tenantOption = tenantEnabled && utilsGenerator.tenantIsolationMode(compilerOptions) === "option";
+    const tenantSingle = utilsGenerator.isTenantSingleMode(compilerOptions);
+    const tenantClaimMode = utilsGenerator.tenantUsesClaim(compilerOptions);
 
     const tenantServiceImport = tenantEnabled
         ? "\nimport TenantService from \"../_services/TenantService.gen\";"
@@ -21,16 +24,16 @@ export default function authControllerTemplate(compilerOptions: types.compilerOp
     const tenantContextImport = tenantEnabled && localAuth
         ? "\nimport UserContext from \"../_middlewares/UserContext.gen\";"
         : "";
-    const tenantIdImport = tenantOption
+    const tenantIdImport = tenantClaimMode
         ? "\nimport { isTenantId } from \"../_middlewares/TenantScopeContext.gen\";"
         : "";
-    const tenantScopeImport = tenantOption && deleteAccount
+    const tenantScopeImport = tenantClaimMode && deleteAccount
         ? "\nimport TenantScope from \"../_middlewares/TenantScope.gen\";"
         : "";
     const tenantServiceField = tenantEnabled
         ? "\n    private tenantService = new TenantService();\n"
         : "";
-    const deleteAccountTenantMiddleware = tenantOption ? ", TenantScope.middleware" : "";
+    const deleteAccountTenantMiddleware = tenantClaimMode ? ", TenantScope.middleware" : "";
 
     const membershipCheck = (userIdExpression: string): string => tenantPreSelect ? `
         const tenantId = UserContext.requestedTenantId;
@@ -38,7 +41,15 @@ export default function authControllerTemplate(compilerOptions: types.compilerOp
         const isTenantMember = await this.tenantService.hasUserTenant(${userIdExpression}, tenantId);
         if (!isTenantMember) throw new VexResErr(403, null, "User is not a member of this tenant");` : "";
 
-    const optionRefreshClaims = tenantOption ? `
+    // `single` resolves the membership at login: exactly one row becomes the claim, zero rows stay
+    // claimless (the app guides the account through creating its tenant), more than one is a data
+    // error and `singleUserTenant` rejects it with 409 `tenant_ambiguous`.
+    const singleLoginClaim = (userIdExpression: string): string => tenantSingle ? `
+        const membershipTenantId = await this.tenantService.singleUserTenant(${userIdExpression});` : "";
+    const loginAccessClaimArg = tenantSingle ? ", undefined, membershipTenantId ? { tenantId: membershipTenantId } : undefined" : "";
+    const loginRefreshClaimArg = tenantSingle ? ", ...(membershipTenantId ? { tenantId: membershipTenantId } : {})" : "";
+
+    const tokenClaimRefresh = tenantClaimMode ? `
         const claimTenant = payload.tenantId;
         let extraClaims: Record<string, unknown> | undefined;
         if (claimTenant !== undefined) {
@@ -46,7 +57,11 @@ export default function authControllerTemplate(compilerOptions: types.compilerOp
             const isTenantMember = await this.tenantService.hasUserTenant(userId, claimTenant);
             if (!isTenantMember) throw new VexResErr(401, null, "User is no longer a member of this tenant");
             extraClaims = { tenantId: claimTenant };
-        }` : "";
+        }${tenantSingle ? `
+        if (claimTenant === undefined) {
+            const membershipTenantId = await this.tenantService.singleUserTenant(userId);
+            if (membershipTenantId !== undefined) extraClaims = { tenantId: membershipTenantId };
+        }` : ""}` : "";
 
     // `exchangeToken` and `refreshToken` are emitted for every auth-enabled project, and both resolve
     // the user by id — so `userRepo` cannot be gated on localAuth. A passport-only or Firebase-only app
@@ -112,9 +127,9 @@ export default function authControllerTemplate(compilerOptions: types.compilerOp
         @Body() body: { idToken: string }
     ): Promise<VexResponse<firebaseLoginResponse>> {
         const { user, isNewUser } = await this.firebaseAuthService.authenticate(body.idToken);
-${membershipCheck("this.JWTService.userIdOf(user) ?? String(user._id)")}
-        const accessToken = await this.JWTService.generateAccessToken(user);
-        const refreshToken = this.JWTService.generateRefreshToken({ vexUserId: this.JWTService.userIdOf(user) });
+${membershipCheck("this.JWTService.userIdOf(user) ?? String(user._id)")}${singleLoginClaim("this.JWTService.userIdOf(user) ?? String(user._id)")}
+        const accessToken = await this.JWTService.generateAccessToken(user${loginAccessClaimArg});
+        const refreshToken = this.JWTService.generateRefreshToken({ vexUserId: this.JWTService.userIdOf(user)${loginRefreshClaimArg} });
 
         throw new VexResOk(200, { result: {
             accessToken: accessToken.token,
@@ -184,9 +199,9 @@ ${deleteAccountRoute}${firebaseRoute}
         
         const user = await this.userRepo.findOne({ _id: session.userId }${useRBAC ? ', ["userRole"]' : ''});
         if (!user) throw new VexResErr(404, null, "Invalid User Id");
-${membershipCheck("this.JWTService.userIdOf(user) ?? String(user._id)")}
-        const accessToken = await this.JWTService.generateAccessToken(user);
-        const refreshToken = this.JWTService.generateRefreshToken({ vexUserId: this.JWTService.userIdOf(user) });
+${membershipCheck("this.JWTService.userIdOf(user) ?? String(user._id)")}${singleLoginClaim("this.JWTService.userIdOf(user) ?? String(user._id)")}
+        const accessToken = await this.JWTService.generateAccessToken(user${loginAccessClaimArg});
+        const refreshToken = this.JWTService.generateRefreshToken({ vexUserId: this.JWTService.userIdOf(user)${loginRefreshClaimArg} });
         
         throw new VexResOk(200, { result: {
             accessToken: accessToken.token,
@@ -213,8 +228,8 @@ ${membershipCheck("this.JWTService.userIdOf(user) ?? String(user._id)")}
 
         const user = await this.userRepo.findOne(identity${useRBAC ? ', ["userRole"]' : ''});
         if (!user) throw new VexResErr(404, null, "Invalid User Id");
-${membershipCheck("userId")}${optionRefreshClaims}
-        const accessToken = await this.JWTService.generateAccessToken(user${tenantOption ? ", undefined, extraClaims" : ""});
+${membershipCheck("userId")}${tokenClaimRefresh}
+        const accessToken = await this.JWTService.generateAccessToken(user${tenantClaimMode ? ", undefined, extraClaims" : ""});
         throw new VexResOk(200, { result: {
             accessToken: accessToken.token,
             accessTokenIndex: accessToken.clientIndex,

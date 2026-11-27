@@ -7,9 +7,9 @@ import { isTenantEnabled, tenantIsolationMode } from "~/utils/generator";
  * Generates TenantScope.gen.ts — the middleware that resolves the tenant.
  *
  * `preSelect`: one pass, at L0, and a missing/invalid header is a 400.
- * `option`: two passes. L0 treats the request as a guest (header fallback); generated
- * controllers run it again after authentication, where the token claim decides and a token
- * without a claim is a 401.
+ * `option` and `single`: two passes. L0 treats the request as a guest (header fallback);
+ * generated controllers run it again after authentication, where the token claim decides and a
+ * token without a claim is a 401. `single` differs only in how login mints that claim.
  *
  * `tenant.scope` narrows the paths it applies to; omitted, it applies to every route.
  *
@@ -69,7 +69,7 @@ function errorOf(error: TenantError): VexResErr {
 /**
  * Request tenant.
  *
- * In \`option\` mode this runs once at L0 (guest fallback) and once after
+ * In \`option\` and \`single\` modes this runs once at L0 (guest fallback) and once after
  * \`Authentication.middleware\` (token claim). The later pass overwrites the earlier one.
  */
 class TenantScope {

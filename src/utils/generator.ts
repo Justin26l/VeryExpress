@@ -114,6 +114,21 @@ export function tenantIsolationMode(compilerOptions: types.compilerOptions): typ
 }
 
 /**
+ * Whether the request tenant comes from the token claim.
+ *
+ * `preSelect` reads the header and never a claim. `option` and `single` both carry the tenant in
+ * the token, so every code path that resolves or mints a claim is shared between them.
+ */
+export function tenantUsesClaim(compilerOptions: types.compilerOptions): boolean {
+    return isTenantEnabled(compilerOptions) && tenantIsolationMode(compilerOptions) !== "preSelect";
+}
+
+/** `single`: one account belongs to one tenant, resolved at login. */
+export function isTenantSingleMode(compilerOptions: types.compilerOptions): boolean {
+    return isTenantEnabled(compilerOptions) && tenantIsolationMode(compilerOptions) === "single";
+}
+
+/**
  * Whether the tenant module links accounts to tenants.
  *
  * Membership needs a request identity: `UserTenant`, `TenantService` and every membership check
@@ -182,6 +197,8 @@ export default {
     isTenantEnabled,
     isTenantMembershipEnabled,
     tenantIsolationMode,
+    tenantUsesClaim,
+    isTenantSingleMode,
     TENANT_HEADER,
     TENANT_CLAIM,
     deleteAccountTables,

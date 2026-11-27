@@ -128,6 +128,18 @@ const variants: Record<string, Record<string, unknown>> = {
         },
         useRBAC: { roles: ["member"], default: "member" },
     },
+    /**
+     * `single`: login resolves the one membership and mints the claim, and no tenant endpoint is
+     * generated. Firebase is on because its login path mints tokens outside `POST /auth/token`,
+     * so it must carry the same claim.
+     */
+    "tenant-single-auth-on": {
+        dbType: "sql",
+        app: baseApp,
+        auth: { ...auth(true), firebase: true },
+        useRBAC: { roles: ["member"], default: "member" },
+        tenant: { enable: true, IsolationMode: "single" },
+    },
 };
 
 function configFor(config: Record<string, unknown>): Record<string, unknown> {

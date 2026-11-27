@@ -12,6 +12,9 @@ import { isRbacEnabled, isTenantEnabled, tenantIsolationMode } from "~/utils/gen
  * itself is only a snapshot.
  *
  * `preSelect` needs none of this: the header already identifies the tenant.
+ *
+ * `single` needs none either: login resolves the one tenant of the account, so there is nothing
+ * to list and nothing to select.
  */
 export async function compile(options: {
     compilerOptions: types.compilerOptions;

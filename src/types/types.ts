@@ -94,8 +94,8 @@ export interface compilerOptions {
          * because the identity travels in the token as `vexUserId`.
          *
          * Cannot be combined with a sign-in method, with `useRBAC` (role assignments live in the
-         * local `UserRole` table) or with `tenant.IsolationMode: "option"` (selecting a tenant mints
-         * tokens).
+         * local `UserRole` table) or with `tenant.IsolationMode: "option" | "single"` (both mint
+         * a tenant-scoped token).
          */
         verifyOnly?: boolean,
     },
@@ -234,8 +234,10 @@ export interface DataIsolationConfig {
  * `preSelect` — the tenant is chosen before login (one app build per tenant). Every request
  * must carry the tenant header.
  * `option` — the user logs in first, then selects a tenant. The tenant travels in the token.
+ * `single` — one account belongs to one tenant. Login resolves the membership and the tenant
+ * travels in the token; the module emits no tenant endpoints.
  */
-export type TenantIsolationMode = "preSelect" | "option";
+export type TenantIsolationMode = "preSelect" | "option" | "single";
 
 export interface TenantConfig {
     enable: boolean;

@@ -7,7 +7,7 @@ UUID; the header (`x-tenant-id`) and the token claim (`tenantId`) are fixed.
 ```jsonc
 "tenant": {
     "enable": true,
-    "IsolationMode": "preSelect",   // or "option"; defaults to "preSelect"
+    "IsolationMode": "preSelect",   // "preSelect" | "option" | "single"; defaults to "preSelect"
     "scope": ["/api"]               // optional; omitted = every route
 }
 ```
@@ -18,6 +18,7 @@ UUID; the header (`x-tenant-id`) and the token claim (`tenantId`) are fixed.
 | --- | --- | --- |
 | `preSelect` | the app build / client (header) | one frontend per tenant, e.g. a branded app |
 | `option` | the logged-in user | one app, user logs in then picks an organization |
+| `single` | login, from the account's one mapping | one app, one account belongs to one tenant |
 
 Documents opt in with an isolation rule:
 
@@ -48,13 +49,13 @@ Emitted only when the feature is enabled; turning it off removes them on the nex
 | `_middlewares/TenantScopeContext.gen.ts` | enabled | pure decision + UUID check |
 | `_middlewares/TenantScope.gen.ts` | enabled | the middleware |
 | `jsonSchema/UserTenant.json` | enabled with an auth method, if absent | the user ↔ tenant mapping table |
-| `_services/TenantService.gen.ts` | enabled with an auth method | link / unlink / list |
+| `_services/TenantService.gen.ts` | enabled with an auth method | link / unlink / list; `singleUserTenant` in `single` |
 | `_controllers/TenantController.gen.ts` | `option` (implies auth) | `GET /tenant`, `POST /tenant/select` |
 | `_types/Tenant.gen.ts` | `option` | response types |
 
 `Authentication.middleware` and `JWTService` contain no tenant code. The generated auth controller
 uses `TenantService` in `preSelect` mode and `JWTService.generateAccessToken(user, index, { tenantId })`
-in `option` mode.
+in `option` and `single` mode.
 
 ## Header-only deployment
 
@@ -106,6 +107,32 @@ route that bypasses the middleware.
 still list and select. Custom controllers that need a selected tenant must attach
 `TenantScope.middleware` after their authentication middleware.
 
+## `single`
+
+One account belongs to one tenant. The mode needs `tenant.enable` and a JWT sign-in method
+(`auth.localAuth` or an OAuth provider): login is where the claim is minted.
+
+1. `TenantScope.middleware` runs at L0 (guest pass); a valid header may set the tenant for public
+   endpoints.
+2. `Authentication.middleware` verifies the token; the generated controllers then run
+   `TenantScope.middleware` again and the `tenantId` claim decides, exactly as in `option`.
+3. Every login path — `POST /auth/token` (local and OAuth) and `POST /auth/firebase` — looks up the
+   account's `UserTenant` rows:
+
+   | Rows | Result |
+   | --- | --- |
+   | 1 | access and refresh tokens carry `tenantId` |
+   | 0 | tokens carry no claim; login still succeeds, so the app can guide the account through creating its tenant |
+   | more than 1 | `409` `tenant_ambiguous` — one account one tenant is the mode's promise, so extra rows are a data error |
+
+4. No tenant endpoint is generated: there is no `GET /tenant` and no `POST /tenant/select`.
+5. Refresh keeps a claim the refresh token already carries and re-validates the mapping (removed
+   mapping → `401`). A token without a claim is resolved again through the same 1 / 0 / more-than-1
+   rule.
+
+`POST /auth/register` still links the header tenant when one is present, as in the other modes. The
+tenant itself is created by the application's own endpoint; this module does not provide one.
+
 ## `UserTenant`
 
 The module owns one table, copied into `jsonSchemaDir` on first enable:
@@ -132,6 +159,7 @@ linkUserTenant(userId, tenantId)     // registration / provisioning
 hasUserTenant(userId, tenantId)
 removeUserTenant(userId, tenantId)
 listUserTenants(userId?)
+singleUserTenant(userId)             // single mode: the one tenant, or undefined; 409 on more than one
 ```
 
 The tenant system decides where tenant ids come from (invite, billing, admin console); it only has
@@ -159,10 +187,10 @@ legitimate. The Mongoose adapter does not implement joins, so this applies to th
 ## Limits
 
 - The claim is a snapshot. A revoked mapping stays usable until the access token expires; `refresh`
-  and `select` re-check the database.
+  re-checks the database, and so does `select` in `option` mode.
 - `preSelect` trusts the header. A caller that knows a tenant UUID can send it; use it only where the
   client build is controlled and tenant ids are not secret.
-- Registration links the header tenant when one is present, in both modes. An open registration
+- Registration links the header tenant when one is present, in all modes. An open registration
   endpoint therefore lets a caller pick a tenant; gate registration where tenants are private.
 - Unique indexes are not rewritten. Declare tenant-scoped uniqueness explicitly, e.g.
   `"uniqueIndex": [["tenantId", "email"]]`.
@@ -170,11 +198,15 @@ legitimate. The Mongoose adapter does not implement joins, so this applies to th
 
 ## Tests
 
-- `test/unit/tenantScopeContext.test.ts` — decision and UUID validation.
+- `test/unit/tenantScopeContext.test.ts` — decision and UUID validation for every mode.
 - `test/unit/isolation.test.ts` — rule and `UserTenant` validation.
+- `test/unit/tenantSingle.test.ts` — `single` config rules, claim resolution in every login path.
 - `test/e2e/tenant.test.ts` — `option`: login → list → select → scoped CRUD → account deletion.
+- `test/e2e/tenantSingle.test.ts` — `single`: login claim with one mapping, no claim with none,
+  `409` with several, no tenant endpoint.
 - `test/e2e/tenantHeader.test.ts` — `preSelect` with no auth module.
-- `test/fixtures/scenarios/sql-tenant` / `sql-tenant-header` — golden output for both modes.
-- `test/e2e/compile.test.ts` — `tenant-option-rbac-off`, `tenant-preSelect-auth-off`.
+- `test/fixtures/scenarios/sql-tenant` / `sql-tenant-header` / `sql-tenant-single` — golden output.
+- `test/e2e/compile.test.ts` — `tenant-option-rbac-off`, `tenant-preSelect-auth-off`,
+  `tenant-single-auth-on`.
 
 The e2e suites are opt-in: `npm run test:e2e`.

@@ -1,7 +1,7 @@
 import utils from "~/utils";
 import log from "~/utils/logger";
 import * as types from "~/types/types";
-import { isTenantMembershipEnabled } from "~/utils/generator";
+import { isTenantMembershipEnabled, isTenantSingleMode } from "~/utils/generator";
 
 /**
  * Generates TenantService.gen.ts — the user ↔ tenant mapping every deployment uses.
@@ -17,6 +17,21 @@ export async function compile(options: {
     if (!isTenantMembershipEnabled(options.compilerOptions)) return;
 
     log.process("Tenant Service");
+
+    const singleResolution = isTenantSingleMode(options.compilerOptions) ? `
+
+    /**
+     * The tenant of \`userId\` when the account belongs to exactly one.
+     *
+     * \`single\` mode promises one account one tenant: no row means the account is not linked yet,
+     * and more than one is a data error that login must not paper over.
+     */
+    public async singleUserTenant(userId: string): Promise<string | undefined> {
+        const rows = await this.repo.find({ userId } as unknown as Filter<UserTenant>);
+        if (rows.length > 1) throw new VexResErr(409, "tenant_ambiguous", "User belongs to more than one tenant");
+
+        return rows[0]?.tenantId;
+    }` : "";
 
     const source = `// {{headerComment}}
 import { Filter, VexRepository, VexResErr } from "../_types/vex";
@@ -85,7 +100,7 @@ export default class TenantService {
         if (!id) throw new VexResErr(401);
 
         return this.repo.find({ userId: id } as unknown as Filter<UserTenant>);
-    }
+    }${singleResolution}
 }
 `;
 

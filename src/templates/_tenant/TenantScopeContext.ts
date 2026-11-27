@@ -1,6 +1,6 @@
 // {{headerComment}}
 
-export type TenantIsolationMode = "preSelect" | "option";
+export type TenantIsolationMode = "preSelect" | "option" | "single";
 
 export type TenantError =
     | "missing-header"
@@ -29,6 +29,9 @@ export function isTenantId(value: unknown): value is string {
  * `option` — the user logs in first and then selects a tenant. A token that carries the
  * `tenantId` claim decides; a token without one is rejected. A request with no token is a
  * guest, and the header identifies the tenant for public endpoints.
+ *
+ * `single` — one account belongs to one tenant, resolved at login. The claim is the only
+ * source once a token exists, exactly as in `option`; login issues no selectable state.
  *
  * `tokenData` is absent on the L0 pass because authentication has not run yet.
  */
