@@ -6,7 +6,7 @@ import * as template from "./firebaseAuth.template";
 
 /**
  * Emits the Firebase sign-in runtime. `FirebaseAuthUI.gen.ts` is written for every project, as
- * `undefined` when `auth.firebase` is off — `LoginUI.gen.ts` imports it unconditionally.
+ * `undefined` when `auth.firebase` is off — `StarterUI.gen.ts` imports it unconditionally.
  */
 export async function compile(options: {
     serviceDir: string;

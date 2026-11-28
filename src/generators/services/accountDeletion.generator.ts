@@ -17,7 +17,8 @@ import { collectDeleteTablePlans, DeleteTablePlan } from "~/preprocess/deleteAcc
  * never emitted, so a project that renamed or dropped `locale` still gets a service that compiles.
  *
  * Tenant isolation changes one branch: the account leaves the tenant (the UserTenant row is
- * removed) instead of being tombstoned. The feature still owns the whole flow.
+ * removed) instead of being tombstoned. A tombstone is shared across tenants, so writing one would
+ * end the account everywhere; the tenant row itself stays, because other members may remain.
  *
  * See docs/features/accountDeletion.md.
  */

@@ -1,11 +1,11 @@
 // {{headerComment}}
-import type { FirebaseAuthUI } from "./LoginUI.gen";
+import type { FirebaseAuthUI } from "./StarterUI.gen";
 
 /**
  * Test/compile-time stand-in for the generated login-page wiring.
  *
  * **In a generated app this file is overwritten by the generator**, which emits the Firebase wiring or
- * `undefined` when `auth.firebase` is off. It lives in the template directory so that `LoginUI.ts`'s
+ * `undefined` when `auth.firebase` is off. It lives in the template directory so that `StarterUI.ts`'s
  * unconditional import resolves in this repo — that import has to be unconditional, because the
  * generated default is how the configuration reaches the login page without editing the app-owned
  * `server.ts`.

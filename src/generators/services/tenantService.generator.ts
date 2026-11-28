@@ -39,6 +39,7 @@ import VexDb from "./VexDb.gen";
 import UserContext from "../_middlewares/UserContext.gen";
 import { isTenantId } from "../_middlewares/TenantScopeContext.gen";
 import { UserTenantEntity, UserTenant } from "../_models/UserTenantModel.gen";
+import { TenantEntity, Tenant } from "../_models/TenantModel.gen";
 
 function assertTenantId(tenantId: string): void {
     if (!isTenantId(tenantId)) {
@@ -55,6 +56,30 @@ function assertTenantId(tenantId: string): void {
 export default class TenantService {
 
     private get repo(): VexRepository<UserTenant> { return VexDb.getRepository(UserTenantEntity); }
+    private get tenantRepo(): VexRepository<Tenant> { return VexDb.getRepository(TenantEntity); }
+
+    /**
+     * Register a tenant.
+     *
+     * The module owns the row so a tenant id is a real record, not just a uuid some mapping happens
+     * to carry. \`name\` is display-only and may be omitted.
+     */
+    public async createTenant(name?: string): Promise<Tenant> {
+        return this.tenantRepo.create({ ...(name ? { name } : {}) } as Tenant);
+    }
+
+    /** The tenant row behind \`tenantId\`, or null when no such tenant was registered. */
+    public async findTenant(tenantId: string): Promise<Tenant | null> {
+        assertTenantId(tenantId);
+
+        return this.tenantRepo.findOne({ _id: tenantId } as unknown as Filter<Tenant>);
+    }
+
+    /** Remove the tenant row. The membership rows are the caller's to clean up. */
+    public async deleteTenant(tenantId: string): Promise<void> {
+        assertTenantId(tenantId);
+        await this.tenantRepo.deleteWhere({ _id: tenantId } as unknown as Filter<Tenant>);
+    }
 
     /** Link the calling user to \`tenantId\`. */
     public async addUserTenant(tenantId: string): Promise<UserTenant> {

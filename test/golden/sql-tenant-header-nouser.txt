@@ -1019,7 +1019,6 @@ import { resolveTenantContext, TenantError } from "./TenantScopeContext.gen";
 import { VexResErr } from "../_types/vex";
 
 const TENANT_HEADER = "x-tenant-id";
-const ISOLATION_MODE = "preSelect";
 const TENANT_SCOPE = ["/api"];
 
 function inTenantScope(path: string): boolean {
@@ -1032,18 +1031,14 @@ function errorOf(error: TenantError): VexResErr {
         return new VexResErr(400, undefined, "x-tenant-id header is required");
     case "invalid-tenant":
         return new VexResErr(400, undefined, "x-tenant-id must be a UUID");
-    case "missing-claim":
-        return new VexResErr(401, undefined, "tenant not selected");
-    case "invalid-claim":
-        return new VexResErr(401, undefined, "invalid tenant claim");
     }
 }
 
 /**
  * Request tenant.
  *
- * In `option` and `single` modes this runs once at L0 (guest fallback) and once after
- * `Authentication.middleware` (token claim). The later pass overwrites the earlier one.
+ * One pass at L0. The header is required and is the only source; there is no token yet.
+ * It also records `requestedTenantId`, which registration uses to link the new account.
  */
 class TenantScope {
     public middleware = (req: Request, _res: Response, next: NextFunction): void => {
@@ -1061,21 +1056,15 @@ class TenantScope {
         const raw = req.headers[TENANT_HEADER];
         const value = Array.isArray(raw) ? raw[0] : raw;
         const headerTenantId = value?.trim() || undefined;
-        const store = UserContext.getStore();
 
-        const decision = resolveTenantContext(
-            ISOLATION_MODE,
-            store?.tokenData,
-            headerTenantId,
-        );
+        const decision = resolveTenantContext(headerTenantId);
 
         if (decision.error) {
             next(errorOf(decision.error));
             return;
         }
 
-        const requestedTenantId = headerTenantId ?? store?.requestedTenantId;
-        UserContext.run({ requestedTenantId, tenantId: decision.tenantId }, () => next());
+        UserContext.run({ requestedTenantId: headerTenantId, tenantId: decision.tenantId }, () => next());
     };
 }
 
@@ -1088,13 +1077,9 @@ export default new TenantScope();
  */
 
 
-export type TenantIsolationMode = "preSelect" | "option" | "single";
-
 export type TenantError =
     | "missing-header"
-    | "invalid-tenant"
-    | "missing-claim"
-    | "invalid-claim";
+    | "invalid-tenant";
 
 export interface TenantDecision {
     tenantId?: string;
@@ -1103,7 +1088,7 @@ export interface TenantDecision {
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/** Tenant ids are UUIDs everywhere: header, claim and the UserTenant table. */
+/** Tenant ids are UUIDs everywhere: the tenant table and the token claim. */
 export function isTenantId(value: unknown): value is string {
     return typeof value === "string" && UUID_PATTERN.test(value);
 }
@@ -1112,36 +1097,12 @@ export function isTenantId(value: unknown): value is string {
  * Decide the tenant of a request.
  *
  * `preSelect` — the app build is bound to one tenant: the header is required and is the only
- * source; a token claim is not used.
- *
- * `option` — the user logs in first and then selects a tenant. A token that carries the
- * `tenantId` claim decides; a token without one is rejected. A request with no token is a
- * guest, and the header identifies the tenant for public endpoints.
- *
- * `single` — one account belongs to one tenant, resolved at login. The claim is the only
- * source once a token exists, exactly as in `option`; login issues no selectable state.
- *
- * `tokenData` is absent on the L0 pass because authentication has not run yet.
+ * source. No token exists on the pass that calls this.
  */
 export function resolveTenantContext(
-    mode: TenantIsolationMode,
-    tokenData: Record<string, unknown> | undefined,
     headerTenantId: string | undefined,
 ): TenantDecision {
-    if (mode === "preSelect") {
-        if (!headerTenantId) return { error: "missing-header" };
-        if (!isTenantId(headerTenantId)) return { error: "invalid-tenant" };
-        return { tenantId: headerTenantId };
-    }
-
-    if (tokenData) {
-        const claimed = tokenData.tenantId;
-        if (claimed === undefined || claimed === "") return { error: "missing-claim" };
-        if (!isTenantId(claimed)) return { error: "invalid-claim" };
-        return { tenantId: claimed };
-    }
-
-    if (!headerTenantId) return {};
+    if (!headerTenantId) return { error: "missing-header" };
     if (!isTenantId(headerTenantId)) return { error: "invalid-tenant" };
     return { tenantId: headerTenantId };
 }

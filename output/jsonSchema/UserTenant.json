@@ -3,9 +3,7 @@
     "x-documentConfig": {
         "documentName": "UserTenant",
         "restApi": {
-            "methods": [
-                "post"
-            ],
+            "methods": [],
             "joinWhitelist": []
         },
         "uniqueIndex": [

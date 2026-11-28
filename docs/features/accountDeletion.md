@@ -159,8 +159,9 @@ The account may belong to several tenants, so deletion removes only the current 
 4. `deleteTables` runs.
 5. `TenantService.removeUserTenant(userId, tenantId)` removes the mapping.
 
-The `User` row is not tombstoned: the account keeps working for its other tenants. The response
-carries `tenantId` and `deleted.userTenants = 1`; `tombstonedAt` is empty.
+The `User` row is not tombstoned: the account keeps working for its other tenants. The `Tenant` row
+stays as well — other members may remain. The response carries `tenantId` and
+`deleted.userTenants = 1`; `tombstonedAt` is empty.
 
 The endpoint attaches `TenantScope.middleware` after authentication in `option` mode, so the claim
 must be present. In `preSelect` mode the header already established the tenant at L0.
@@ -175,11 +176,11 @@ and audit / identity fields are skipped.
 
 ## The page
 
-`GET /delete_account`, served from `LoginUI` rather than as a static file — `express.static("public")`
+`GET /delete_account`, served from `StarterUI` rather than as a static file — `express.static("public")`
 would expose `public/delete_account.html` at `/delete_account.html`, not at the route the store
 listing points people at.
 
-`LoginUIConfig.deleteAccount` is **optional and defaults to true**, because an app's `server.ts` is
+`StarterUIConfig.deleteAccount` is **optional and defaults to true**, because an app's `server.ts` is
 generated once and is not overwritten on later runs; a required field would stop such a project from
 compiling.
 

@@ -1,35 +1,39 @@
 import utils from "~/utils";
 import log from "~/utils/logger";
 import * as types from "~/types/types";
-import { isRbacEnabled, isTenantEnabled, tenantIsolationMode } from "~/utils/generator";
+import { isRbacEnabled, isTenantMembershipEnabled, tenantIsolationMode } from "~/utils/generator";
 
 /**
- * Generates TenantController.gen.ts and Tenant.gen.ts for `option` mode.
+ * Generates the tenant endpoints for `option` and `single` mode.
  *
- * `option` logs a user in before a tenant exists, so the module owns the two endpoints that
- * turn a login into a tenant-scoped session: list the user's tenants, and select one. The
- * selection is the point where the mapping is checked against the database — the token claim
- * itself is only a snapshot.
+ * Both modes share `POST /tenant/create`: a login exists before any tenant does, so creating one is
+ * the step that turns a claimless session into a tenant-scoped one. The response carries freshly
+ * minted tokens, because the claim only exists in a token.
+ *
+ * `option` additionally owns the chooser — `GET /tenant` lists the caller's mappings and
+ * `POST /tenant/select` switches between them, re-checking the mapping against the database.
+ *
+ * `single` owns no chooser: one account belongs to one tenant, so a second create is a `409`.
  *
  * `preSelect` needs none of this: the header already identifies the tenant.
- *
- * `single` needs none either: login resolves the one tenant of the account, so there is nothing
- * to list and nothing to select.
  */
 export async function compile(options: {
     compilerOptions: types.compilerOptions;
     controllerDir: string;
     typeDir: string;
 }): Promise<void> {
-    if (!isTenantEnabled(options.compilerOptions)) return;
-    if (tenantIsolationMode(options.compilerOptions) !== "option") return;
+    if (!isTenantMembershipEnabled(options.compilerOptions)) return;
+
+    const mode = tenantIsolationMode(options.compilerOptions);
+    if (mode === "preSelect") return;
 
     log.process("Tenant Controller");
 
     const useRBAC = isRbacEnabled(options.compilerOptions);
+    const optionMode = mode === "option";
     const joinArg = useRBAC ? ', ["userRole"]' : "";
 
-    const typeSource = `// {{headerComment}}
+    const typeSource = optionMode ? `// {{headerComment}}
 export interface tenantSummary {
     tenantId: string;
 }
@@ -37,31 +41,25 @@ export interface tenantSummary {
 export interface tenantListResponse {
     tenants: tenantSummary[];
 }
+` : "";
+
+    const tenantTypeImport = optionMode
+        ? `\nimport { tenantListResponse } from "../_types/TenantList.gen";`
+        : "";
+
+    const tenantIdImport = optionMode
+        ? `\nimport { isTenantId } from "../_middlewares/TenantScopeContext.gen";`
+        : "";
+
+    const createGuard = optionMode
+        ? ""
+        : `
+        if ((await this.tenantService.listUserTenants(userId)).length > 0) {
+            throw new VexResErr(409, "tenant_exists", "This account already belongs to a tenant");
+        }
 `;
 
-    const controllerSource = `// {{headerComment}}
-import { Route, Tags, Get, Post, Body, Middlewares, Security, SuccessResponse } from "tsoa";
-import * as controllerFactory from "./_ControllerFactory.gen";
-import JWTService from "../_services/auth/JWTService.gen";
-import TenantService from "../_services/TenantService.gen";
-import VexDb from "../_services/VexDb.gen";
-import UserContext from "../_middlewares/UserContext.gen";
-import Authentication from "../_middlewares/Authentication.gen";
-import { vexUserIdField } from "../_middlewares/VexFieldRegistry.gen";
-import { isTenantId } from "../_middlewares/TenantScopeContext.gen";
-import { UserEntity, User } from "../_models/UserModel.gen";
-import { VexRepository, VexResponse, VexResErr, VexResOk, Filter } from "../_types/vex";
-import { tokenResponse } from "../_types/auth.gen";
-import { tenantListResponse } from "../_types/Tenant.gen";
-
-@Route("tenant")
-@Tags("Tenant")
-export class TenantController extends controllerFactory._ControllerFactory {
-    private JWTService = new JWTService();
-    private tenantService = new TenantService();
-
-    private get userRepo(): VexRepository<User> { return VexDb.getRepository(UserEntity); }
-
+    const chooserRoutes = optionMode ? `
     /** Tenants the authenticated user may enter — the chooser's data source. */
     @Get()
     @Middlewares(Authentication.middleware)
@@ -92,32 +90,96 @@ export class TenantController extends controllerFactory._ControllerFactory {
         const isMember = await this.tenantService.hasUserTenant(userId, body.tenantId);
         if (!isMember) throw new VexResErr(403, undefined, "User is not a member of this tenant");
 
+        throw new VexResOk(200, { result: await this.mintTenantTokens(userId, body.tenantId) });
+    }
+` : "";
+
+    const decorators = optionMode
+        ? "Route, Tags, Get, Post, Body, Middlewares, Security, SuccessResponse"
+        : "Route, Tags, Post, Body, Middlewares, Security, SuccessResponse";
+
+    const controllerSource = `// {{headerComment}}
+import { ${decorators} } from "tsoa";
+import * as controllerFactory from "./_ControllerFactory.gen";
+import JWTService from "../_services/auth/JWTService.gen";
+import TenantService from "../_services/TenantService.gen";
+import VexDb from "../_services/VexDb.gen";
+import UserContext from "../_middlewares/UserContext.gen";
+import Authentication from "../_middlewares/Authentication.gen";
+import { vexUserIdField } from "../_middlewares/VexFieldRegistry.gen";
+import { UserEntity, User } from "../_models/UserModel.gen";
+import { VexRepository, VexResponse, VexResErr, VexResOk, Filter } from "../_types/vex";
+import { tokenResponse } from "../_types/auth.gen";${tenantTypeImport}${tenantIdImport}
+
+@Route("tenant")
+@Tags("Tenant")
+export class TenantController extends controllerFactory._ControllerFactory {
+    private JWTService = new JWTService();
+    private tenantService = new TenantService();
+
+    private get userRepo(): VexRepository<User> { return VexDb.getRepository(UserEntity); }
+
+    /**
+     * Access token and refresh token carrying \`tenantId\`. A claim lives in a token, so linking a
+     * mapping is not enough for the caller to act inside the tenant.
+     */
+    private async mintTenantTokens(userId: string, tenantId: string) {
         const identity = { [vexUserIdField]: userId } as unknown as Filter;
         const user = await this.userRepo.findOne(identity${joinArg});
         if (!user) throw new VexResErr(404, undefined, "Invalid User Id");
 
-        const tenantId = body.tenantId;
         const accessToken = await this.JWTService.generateAccessToken(user, undefined, { tenantId });
         const refreshToken = this.JWTService.generateRefreshToken({
             vexUserId: this.JWTService.userIdOf(user),
             tenantId,
         });
 
-        throw new VexResOk(200, { result: {
+        return {
             accessToken: accessToken.token,
             accessTokenIndex: accessToken.clientIndex,
             refreshToken: refreshToken.token,
             refreshTokenIndex: refreshToken.clientIndex,
-        }});
+        };
     }
-}
+
+    /**
+     * Create a tenant for the calling account and link it.
+     *
+     * The route attaches only \`Authentication.middleware\`: the caller has no tenant yet, so a
+     * tenant-scoped middleware would reject exactly the request that fixes that.
+     */
+    @Post("create")
+    @Middlewares(Authentication.middleware)
+    @Security({ BearerAuth: [], AuthIndex: [] })
+    @SuccessResponse(201, "Created")
+    public async createTenant(
+        @Body() body: { name?: string },
+    ): Promise<VexResponse<tokenResponse>> {
+        const userId = UserContext.userId;
+        if (!userId) throw new VexResErr(401);
+${createGuard}
+        const tenant = await this.tenantService.createTenant(body?.name);
+        const tenantId = String(tenant._id);
+
+        try {
+            await this.tenantService.linkUserTenant(userId, tenantId);
+        } catch (error) {
+            await this.tenantService.deleteTenant(tenantId).catch(() => undefined);
+            throw error;
+        }
+
+        throw new VexResOk(201, { result: await this.mintTenantTokens(userId, tenantId) });
+    }
+${chooserRoutes}}
 `;
 
-    utils.common.writeFile(
-        "Tenant Types",
-        `${options.typeDir}/Tenant.gen.ts`,
-        utils.template.format(typeSource),
-    );
+    if (optionMode) {
+        utils.common.writeFile(
+            "Tenant Types",
+            `${options.typeDir}/TenantList.gen.ts`,
+            utils.template.format(typeSource),
+        );
+    }
     utils.common.writeFile(
         "Tenant Controller",
         `${options.controllerDir}/TenantController.gen.ts`,

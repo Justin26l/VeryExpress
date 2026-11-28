@@ -45,7 +45,7 @@ import * as jwtServiceGen from "./generators/services/jwtService.generator";
  */
 const AUTH_ONLY_TEMPLATES: Record<string, string[]> = {
     _middlewares: ["Authentication.ts"],
-    _routes: ["FirebaseAuthUI.gen.ts", "LoginUI.ts", "oauth/OAuthRouteFactory.ts"],
+    _routes: ["FirebaseAuthUI.gen.ts", "StarterUI.ts", "oauth/OAuthRouteFactory.ts"],
     _services: [
         "auth/JWTKeyStore.ts",
         "auth/JWTService.ts",

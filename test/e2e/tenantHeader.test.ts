@@ -90,12 +90,13 @@ describeE2E("generated app — tenant header mode (no auth)", () => {
     it("generates the tenant module and no auth controller", () => {
         expect(fs.existsSync(path.join(HEADER_APP_DIR, "src/system/_middlewares/TenantScope.gen.ts"))).toBe(true);
         expect(fs.existsSync(path.join(HEADER_APP_DIR, "src/system/_middlewares/TenantScopeContext.gen.ts"))).toBe(true);
-        expect(fs.existsSync(path.join(HEADER_APP_DIR, "src/system/_services/TenantService.gen.ts"))).toBe(true);
+        // no account exists, so there is nobody to map: the header is the only tenant source
+        expect(fs.existsSync(path.join(HEADER_APP_DIR, "src/system/_services/TenantService.gen.ts"))).toBe(false);
         // preSelect resolves at L0; the tenant chooser belongs to option mode
         expect(fs.existsSync(path.join(HEADER_APP_DIR, "src/system/_controllers/TenantController.gen.ts"))).toBe(false);
         expect(fs.existsSync(path.join(HEADER_APP_DIR, "src/system/_controllers/AuthController.gen.ts"))).toBe(false);
-        // the module copies its own mapping table into the schema dir
-        expect(fs.existsSync(path.join(APP_ROOT, "schemas", "UserTenant.json"))).toBe(true);
+        // no mapping table either: a header-only deployment links no account
+        expect(fs.existsSync(path.join(APP_ROOT, "schemas", "UserTenant.json"))).toBe(false);
     });
 
     it("stamps the header tenant on create", async () => {

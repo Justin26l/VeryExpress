@@ -31,6 +31,10 @@
         ],
         "default": "admin"
     },
+    "tenant": {
+        "enable": true,
+        "IsolationMode": "single"
+    },
     "generator": {
         "commitBeforeGenerate": false,
         "disableVersionLabel": false

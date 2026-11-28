@@ -49,13 +49,26 @@ Emitted only when the feature is enabled; turning it off removes them on the nex
 | `_middlewares/TenantScopeContext.gen.ts` | enabled | pure decision + UUID check |
 | `_middlewares/TenantScope.gen.ts` | enabled | the middleware |
 | `jsonSchema/UserTenant.json` | enabled with an auth method, if absent | the user ↔ tenant mapping table |
+| `jsonSchema/Tenant.json` | enabled with an auth method, if absent | the tenant record: `_id` plus an optional `name` |
 | `_services/TenantService.gen.ts` | enabled with an auth method | link / unlink / list; `singleUserTenant` in `single` |
-| `_controllers/TenantController.gen.ts` | `option` (implies auth) | `GET /tenant`, `POST /tenant/select` |
-| `_types/Tenant.gen.ts` | `option` | response types |
+| `_controllers/TenantController.gen.ts` | `option` / `single` (implies auth) | `POST /tenant/create`; `option` adds `GET /tenant` and `POST /tenant/select` |
+| `_types/TenantList.gen.ts` | `option` | chooser response types |
+| `_routes/StarterUI.gen.ts` | auth on | serves `/tenant` (create page) and links it from `/`; also `/login`, `/logout`, `/delete_account` |
 
 `Authentication.middleware` and `JWTService` contain no tenant code. The generated auth controller
 uses `TenantService` in `preSelect` mode and `JWTService.generateAccessToken(user, index, { tenantId })`
 in `option` and `single` mode.
+
+`IsolationMode` is fixed at generation time, so `TenantScopeContext.gen.ts` and `TenantScope.gen.ts`
+hold one mode's code only: no mode constant, no branch for a mode the build cannot be in, and no
+error case that mode cannot raise. Only "does the request carry a token yet" stays a runtime branch.
+The source tables are below.
+
+| Mode | Request tenant | Header | `TenantService` | Tenant endpoints |
+| --- | --- | --- | --- | --- |
+| `preSelect` | header, required | the only source | only with an auth method | none |
+| `option` | token claim; header for guests | guest fallback | emitted | create, list, select |
+| `single` | token claim | never read | emitted, plus `singleUserTenant` | create |
 
 ## Header-only deployment
 
@@ -112,10 +125,10 @@ still list and select. Custom controllers that need a selected tenant must attac
 One account belongs to one tenant. The mode needs `tenant.enable` and a JWT sign-in method
 (`auth.localAuth` or an OAuth provider): login is where the claim is minted.
 
-1. `TenantScope.middleware` runs at L0 (guest pass); a valid header may set the tenant for public
-   endpoints.
+1. `TenantScope.middleware` never reads `x-tenant-id` in this mode: a token is the only source of a
+   tenant. A request with no token has no tenant, so a caller cannot pick one.
 2. `Authentication.middleware` verifies the token; the generated controllers then run
-   `TenantScope.middleware` again and the `tenantId` claim decides, exactly as in `option`.
+   `TenantScope.middleware` again and the `tenantId` claim decides. A token without the claim → `401`.
 3. Every login path — `POST /auth/token` (local and OAuth) and `POST /auth/firebase` — looks up the
    account's `UserTenant` rows:
 
@@ -125,17 +138,41 @@ One account belongs to one tenant. The mode needs `tenant.enable` and a JWT sign
    | 0 | tokens carry no claim; login still succeeds, so the app can guide the account through creating its tenant |
    | more than 1 | `409` `tenant_ambiguous` — one account one tenant is the mode's promise, so extra rows are a data error |
 
-4. No tenant endpoint is generated: there is no `GET /tenant` and no `POST /tenant/select`.
+4. No chooser is generated: there is no `GET /tenant` and no `POST /tenant/select`.
+   `POST /tenant/create` exists, because an account can start without a tenant: it writes a `Tenant`
+   row (optional body `{ name }`), links the membership, and returns tokens carrying the claim. It
+   answers `409 tenant_exists` when the account already has one.
 5. Refresh keeps a claim the refresh token already carries and re-validates the mapping (removed
    mapping → `401`). A token without a claim is resolved again through the same 1 / 0 / more-than-1
    rule.
 
-`POST /auth/register` still links the header tenant when one is present, as in the other modes. The
-tenant itself is created by the application's own endpoint; this module does not provide one.
+`POST /auth/register` does not link a tenant in this mode: the request is not a source of one. The
+account creates its tenant through `POST /tenant/create` (or the app's own endpoint) and receives a
+token carrying the claim; the next login or refresh mints the same claim from the mapping.
 
-## `UserTenant`
+## `Tenant` and `UserTenant`
 
-The module owns one table, copied into `jsonSchemaDir` on first enable:
+The module owns two tables, copied into `jsonSchemaDir` on first enable.
+
+`Tenant` is the registry: one row per tenant, `_id` is the tenant id every other table stores, and
+`name` is display-only. It carries no `restApi` methods — the module writes it, the app reads it
+through `TenantService`.
+
+```jsonc
+{
+    "documentName": "Tenant",
+    "restApi": { "methods": [] },
+    "properties": {
+        "_id":  { "type": "string", "x-format": "PrimaryUUID", "index": true },
+        "name": { "type": "string" }
+    }
+}
+```
+
+A tenant created before this table existed has membership rows and no `Tenant` row; nothing reads the
+row during login or isolation, so those deployments keep working.
+
+`UserTenant` is the mapping:
 
 ```jsonc
 {
@@ -154,6 +191,9 @@ An existing `UserTenant.json` is left alone, so the app can extend it.
 `TenantService`:
 
 ```ts
+createTenant(name?)                  // writes the Tenant row; returns it
+findTenant(tenantId)                 // the Tenant row, or null
+deleteTenant(tenantId)               // removes the row; memberships are the caller's to clean up
 addUserTenant(tenantId)              // userId from UserContext; idempotent
 linkUserTenant(userId, tenantId)     // registration / provisioning
 hasUserTenant(userId, tenantId)
@@ -168,8 +208,9 @@ to call `addUserTenant` or `linkUserTenant`.
 ## Account deletion
 
 `AccountDeletionService` keeps owning deletion. With tenant isolation enabled it removes the
-`UserTenant` mapping instead of tombstoning the shared account; `auth.deleteAccount.deleteTables`
-runs in both modes. See [`accountDeletion.md`](accountDeletion.md).
+`UserTenant` mapping instead of tombstoning the shared account; the `Tenant` row stays, because other
+members may remain. `auth.deleteAccount.deleteTables` runs in both modes. See
+[`accountDeletion.md`](accountDeletion.md).
 
 ## Joins
 

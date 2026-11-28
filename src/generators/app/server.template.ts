@@ -6,14 +6,19 @@ const importCookieParser = "import cookieParser from \"cookie-parser\";";
 const importSwaggerRouter = "import SwaggerRouter from \"./system/_routes/SwaggerRouter.gen\";";
 const importAuthRouter = "import AuthRouter from \"./system/_routes/AuthRouter.gen\";";
 const importVexSystem = "import VexSystem from \"./system/_services/VexSystem.gen\";";
-const importLoginUI = "import LoginUI from \"./system/_routes/LoginUI.gen\";";
+const importStarterUI = "import StarterUI from \"./system/_routes/StarterUI.gen\";";
 const importTenantScope = "import TenantScope from \"./system/_middlewares/TenantScope.gen\";";
 
 // configure
 const ConfigSwaggerRouter = "const SwaggerRoute = new SwaggerRouter();";
 const ConfigAuthRouter = "const AuthRoute = new AuthRouter();";
-const ConfigLoginUiRouter = (localAuth: boolean, providers: string[], deleteAccount: boolean) =>
-    `const loginUI = new LoginUI({ localAuth: ${localAuth}, oauthProviders: ${JSON.stringify(providers)}, deleteAccount: ${deleteAccount} });`;
+const ConfigStarterUiRouter = (
+    localAuth: boolean,
+    providers: string[],
+    deleteAccount: boolean,
+    tenantPage: boolean,
+) =>
+    `const starterUI = new StarterUI({ localAuth: ${localAuth}, oauthProviders: ${JSON.stringify(providers)}, deleteAccount: ${deleteAccount}${tenantPage ? ", tenantPage: true" : ""} });`;
 
 
 // use
@@ -23,7 +28,7 @@ const UseResponseHandler = "app.use(VexSystem.responseHandler);";
 const UseAuthRouter = "app.use(\"/api/auth\", AuthRoute.getRouter());";
 const UseRegisterRoutes = "RegisterRoutes(app);";
 const UseSwaggerRouter = "app.use(\"/swagger\", SwaggerRoute.getRouter());";
-const UseLoginUI =  "app.use(\"/\", loginUI.getRouter());";
+const UseStarterUI =  "app.use(\"/\", starterUI.getRouter());";
 
 export default function serverTemplate(options: {
     compilerOptions: types.compilerOptions,
@@ -92,6 +97,9 @@ main();
 `;
     const isAuthEnabled = utils.generator.isAuthEnabled(options.compilerOptions);
     const OAuthProviders: string[] = utils.generator.OAuthProviders(options.compilerOptions);
+    // Create-tenant page: only for a token-resolved tenant that starts without one.
+    const tenantPageEnabled = utils.generator.isTenantMembershipEnabled(options.compilerOptions)
+        && utils.generator.tenantIsolationMode(options.compilerOptions) !== "preSelect";
     const Import: string[] = [];
     const Config: string[] = [];
     const AppUse: string[] = [];
@@ -127,14 +135,16 @@ main();
 
     // The login page posts to `/api/auth`; without an auth method there is nothing to post to.
     if (isAuthEnabled) {
-        Import.push(importLoginUI);
-        Config.push(ConfigLoginUiRouter(
+        Import.push(importStarterUI);
+        Config.push(ConfigStarterUiRouter(
             options.compilerOptions.auth.localAuth,
             OAuthProviders,
             utils.generator.isAccountDeletionEnabled(options.compilerOptions),
+            tenantPageEnabled,
         ));
-        AppRoute.push(UseLoginUI);
+        AppRoute.push(UseStarterUI);
     }
+
 
     template = template.replace(/{{Import}}/g, Import.join("\n"));
     template = template.replace(/{{Config}}/g, Config.join("\n"));

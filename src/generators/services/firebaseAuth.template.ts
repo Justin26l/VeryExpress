@@ -368,15 +368,15 @@ export const firebaseAuthUIDefaults: firebaseAuthUI = {
 /**
  * `_routes/FirebaseAuthUI.gen.ts` — the login page's copy of the wiring above.
  *
- * Always written, because `LoginUI.gen.ts` imports it unconditionally; `undefined` when the feature is
+ * Always written, because `StarterUI.gen.ts` imports it unconditionally; `undefined` when the feature is
  * off is the same no-op contract `AccountStateGuard.gen.ts` uses.
  */
 export function uiModule(): string {
     return `// {{headerComment}}
 // Generated from auth.firebase - do not edit.
-// The app may still override any of this from its own server.ts; a value passed to new LoginUI({...})
+// The app may still override any of this from its own server.ts; a value passed to new StarterUI({...})
 // wins over this default.
-import { FirebaseAuthUI } from "./LoginUI.gen";
+import { FirebaseAuthUI } from "./StarterUI.gen";
 
 export const firebaseAuthUI: FirebaseAuthUI | undefined = ${JSON.stringify(firebaseAuthUIDefaults, null, 4)};
 `;
@@ -387,7 +387,7 @@ export function disabledUIModule(): string {
     return `// {{headerComment}}
 // Generated - do not edit.
 // auth.firebase is off, so the login page renders no Firebase button.
-import { FirebaseAuthUI } from "./LoginUI.gen";
+import { FirebaseAuthUI } from "./StarterUI.gen";
 
 export const firebaseAuthUI: FirebaseAuthUI | undefined = undefined;
 `;

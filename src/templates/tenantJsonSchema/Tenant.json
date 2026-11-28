@@ -1,0 +1,22 @@
+{
+    "type": "object",
+    "x-documentConfig": {
+        "documentName": "Tenant",
+        "restApi": {
+            "methods": [],
+            "joinWhitelist": []
+        }
+    },
+    "required": [],
+    "properties": {
+        "_id": {
+            "type": "string",
+            "x-format": "PrimaryUUID",
+            "index": true
+        },
+        "name": {
+            "type": "string",
+            "description": "Display name. Optional; the module never reads it."
+        }
+    }
+}

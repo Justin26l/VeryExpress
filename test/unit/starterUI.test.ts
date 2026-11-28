@@ -1,14 +1,14 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 /**
- * `LoginUI` renders the generated app's own login page. Its output is HTML that depends on config
+ * `StarterUI` renders the generated app's own login page. Its output is HTML that depends on config
  * combinations — precisely the shape that regresses silently (a button bound to nothing, or a nonce
  * that no longer matches its CSP header, looks fine in a diff).
  *
  * Two modules are stubbed:
  *
  * - `express` belongs to the *generated app*, not to this repo, so `Router` is replaced by the minimal
- *   surface `LoginUI` uses. Routing is therefore not under test here; the HTML is. Real express
+ *   surface `StarterUI` uses. Routing is therefore not under test here; the HTML is. Real express
  *   integration is covered by the e2e suite, which boots a generated app.
  * - `FirebaseAuthUI.gen` is overwritten by the generator in a real app; the copy in the template
  *   directory is the stand-in this repo compiles against, and its setter lets a test choose what the
@@ -24,7 +24,7 @@ vi.mock("express", () => {
     return { Router: () => new StubRouter() };
 });
 
-import LoginUI, { FirebaseAuthUI, LoginUIConfig } from "../../src/templates/_routes/LoginUI";
+import StarterUI, { FirebaseAuthUI, StarterUIConfig } from "../../src/templates/_routes/StarterUI";
 import { setFirebaseAuthUI } from "../../src/templates/_routes/FirebaseAuthUI.gen";
 
 interface Page {
@@ -34,11 +34,11 @@ interface Page {
 }
 
 function renderPage(
-    config: LoginUIConfig,
+    config: StarterUIConfig,
     routePath: string,
     params: Record<string, string> = {},
 ): Page {
-    const ui = new LoginUI(config);
+    const ui = new StarterUI(config);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const stack = (ui.getRouter() as any).stack as any[];
 
@@ -78,7 +78,7 @@ const firebaseUI: FirebaseAuthUI = {
     },
 };
 
-const baseConfig: LoginUIConfig = { localAuth: false, oauthProviders: [] };
+const baseConfig: StarterUIConfig = { localAuth: false, oauthProviders: [] };
 
 afterEach(() => {
     setFirebaseAuthUI(undefined);
@@ -88,7 +88,7 @@ afterEach(() => {
     delete process.env.TEST_FIREBASE_PROVIDERS;
 });
 
-describe("LoginUI — login page, Firebase wiring", () => {
+describe("StarterUI — login page, Firebase wiring", () => {
     it("renders one button per configured provider, with the label substituted", () => {
         setFirebaseAuthUI(firebaseUI);
         process.env.TEST_FIREBASE_PROVIDERS = "google,github";
@@ -234,11 +234,11 @@ describe("LoginUI — login page, Firebase wiring", () => {
     });
 });
 
-describe("LoginUI — no vendored SDK route any more", () => {
+describe("StarterUI — no vendored SDK route any more", () => {
     it("registers only page routes, because the SDK is loaded from gstatic by the glue", () => {
         setFirebaseAuthUI(firebaseUI);
 
-        const ui = new LoginUI(baseConfig);
+        const ui = new StarterUI(baseConfig);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const stack = (ui.getRouter() as any).stack as any[];
         const paths = stack.map((entry) => entry.route?.path);

@@ -46,13 +46,15 @@ export function diagnoseMissingEnv(
     return problems;
 }
 
-export interface LoginUIConfig {
+export interface StarterUIConfig {
     localAuth: boolean;
     oauthProviders: string[];
     /** Serve the self-service deletion page at `/delete_account`. */
     deleteAccount?: boolean;
     /** Override the Firebase sign-in wiring. */
     firebase?: FirebaseAuthUI;
+    /** Link the create-tenant page from the home page. */
+    tenantPage?: boolean;
 }
 
 /** Everything the login page needs to drive Firebase, as emitted into `FirebaseAuthUI.gen.ts`. */
@@ -83,7 +85,7 @@ interface firebaseProvider {
     label: string;
 }
 
-export default class LoginUI {
+export default class StarterUI {
 
     /** Last set of problems warned about, so a page render logs them once. */
     private static warnedEnvSignature = "";
@@ -92,9 +94,9 @@ export default class LoginUI {
     private static envFileCache: Record<string, string> | undefined;
 
     private router: Router = Router();
-    private config: LoginUIConfig;
+    private config: StarterUIConfig;
 
-    constructor(config: LoginUIConfig) {
+    constructor(config: StarterUIConfig) {
         this.config = config;
         this.registerRoutes();
     }
@@ -116,6 +118,9 @@ export default class LoginUI {
         this.router.get("/logincallback", this.loginCallbackPage.bind(this));
         if (this.deleteAccountEnabled) {
             this.router.get("/delete_account", this.deleteAccountPage.bind(this));
+        }
+        if (this.config.tenantPage) {
+            this.router.get("/tenant", this.tenantPage.bind(this));
         }
     }
 
@@ -210,12 +215,17 @@ export default class LoginUI {
             ? `<li><a href="/delete_account">Delete account</a></li>`
             : "";
 
+        const tenantLink = this.config.tenantPage
+            ? `<li><a href="/tenant">Tenant</a></li>`
+            : "";
+
         res.send(`
             <div>
                 <h1>Hello World</h1>
                 <ul>
                     ${authLinks}
                     ${deleteAccountLink}
+                    ${tenantLink}
                     <li><a href="/swagger">Swagger UI</a></li>
                 </ul>
                 <h1>Others</h1>
@@ -223,6 +233,110 @@ export default class LoginUI {
                     <li><a href="/logincallback">logincallback</a></li>
                 </ul>
             </div>
+        `);
+    }
+
+    /**
+     * Create the caller's tenant.
+     *
+     * The claim lives in a token, so the endpoint returns new tokens and the page stores them in the
+     * same four keys the login page uses. `single` mode renders one button: a second create answers
+     * `409 tenant_exists`, so the page explains that instead of offering the action again.
+     */
+    private tenantPage(_req: Request, res: Response): void {
+        const nonce = this.nonce();
+        res.setHeader("Content-Security-Policy", `script-src 'self' 'nonce-${nonce}'`);
+
+        res.send(`
+            <link rel="stylesheet" href="/css/style.css">
+            <body>
+                <h1>Tenant</h1>
+                <p>Create a tenant. It becomes the active one for this session.</p>
+                <p>Name (optional):</p>
+                <input type="text" id="tenantName" maxlength="120"/>
+                <br/><br/>
+                <button id="createBtn">Create tenant</button>
+                <p id="status"></p>
+                <p><a href="/">back to home</a></p>
+            </body>
+            <script nonce="${nonce}">
+                (function () {
+                    var createBtn = document.getElementById("createBtn");
+                    var status = document.getElementById("status");
+
+                    function storeTokens(result) {
+                        localStorage.setItem("accessToken", result.accessToken);
+                        localStorage.setItem("accessTokenIndex", result.accessTokenIndex);
+                        localStorage.setItem("refreshToken", result.refreshToken);
+                        localStorage.setItem("refreshTokenIndex", result.refreshTokenIndex);
+                    }
+
+                    function say(text, link) {
+                        status.textContent = text;
+                        if (!link) return;
+
+                        var a = document.createElement("a");
+                        a.href = link.href;
+                        a.textContent = link.text;
+                        status.appendChild(document.createElement("br"));
+                        status.appendChild(a);
+                    }
+
+                    createBtn.addEventListener("click", function () {
+                        var accessToken = localStorage.getItem("accessToken");
+                        var accessTokenIndex = localStorage.getItem("accessTokenIndex");
+
+                        if (!accessToken || !accessTokenIndex) {
+                            say("Log in first.", { href: "/login", text: "Go to login" });
+                            return;
+                        }
+
+                        var nameInput = document.getElementById("tenantName");
+                        var name = nameInput && nameInput.value ? nameInput.value.trim() : "";
+
+                        createBtn.disabled = true;
+                        fetch("/api/tenant/create", {
+                            method: "POST",
+                            headers: {
+                                "Authorization": "Bearer " + accessToken,
+                                "X-Auth-Index": accessTokenIndex,
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify(name ? { name: name } : {}),
+                        }).then(function (response) {
+                            return response.text().then(function (text) {
+                                var body;
+                                try {
+                                    body = text ? JSON.parse(text) : {};
+                                }
+                                catch (e) {
+                                    body = { raw: text };
+                                }
+                                return { ok: response.ok, status: response.status, body: body };
+                            });
+                        }).then(function (outcome) {
+                            var result = outcome.body && outcome.body.result;
+                            if (outcome.ok && result && result.accessToken) {
+                                storeTokens(result);
+                                say("Tenant created. This session is now tenant-scoped.",
+                                    { href: "/mytokens", text: "Inspect the token" });
+                                return;
+                            }
+
+                            createBtn.disabled = false;
+                            if (outcome.status === 409) {
+                                say("This account already belongs to a tenant.",
+                                    { href: "/mytokens", text: "Inspect the token" });
+                                return;
+                            }
+                            say("Create failed (" + outcome.status + "): " + JSON.stringify(outcome.body));
+                        }).catch(function (err) {
+                            createBtn.disabled = false;
+                            say("Create failed: " + String(err));
+                        });
+                    });
+                })();
+            </script>
         `);
     }
 
@@ -324,7 +438,7 @@ export default class LoginUI {
      * A missing or unparseable file is not an error — plenty of deployments have no `.env` at all.
      */
     private envFileValues(): Record<string, string> {
-        if (LoginUI.envFileCache) return LoginUI.envFileCache;
+        if (StarterUI.envFileCache) return StarterUI.envFileCache;
 
         let values: Record<string, string> = {};
         try {
@@ -334,7 +448,7 @@ export default class LoginUI {
             // no .env, or unreadable: every missing name is then simply unset
         }
 
-        LoginUI.envFileCache = values;
+        StarterUI.envFileCache = values;
         return values;
     }
 
@@ -352,8 +466,8 @@ export default class LoginUI {
         if (problems.length === 0) return;
 
         const signature = problems.join("|");
-        if (LoginUI.warnedEnvSignature === signature) return;
-        LoginUI.warnedEnvSignature = signature;
+        if (StarterUI.warnedEnvSignature === signature) return;
+        StarterUI.warnedEnvSignature = signature;
 
         console.warn(
             `[vex] auth.firebase is enabled but its public browser config is not usable:\n  - ` +

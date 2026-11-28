@@ -62,6 +62,8 @@ describeE2E("generated app — tenant option mode", () => {
     const password = "Secret123!";
     const emailA = `option-a+${run}@test.local`;
     const emailB = `option-b+${run}@test.local`;
+    /** Separate account: creating a tenant here must not disturb the deletion case below. */
+    const emailCreate = `option-create+${run}@test.local`;
 
     let tokenA: string;
     let indexA: string;
@@ -78,10 +80,13 @@ describeE2E("generated app — tenant option mode", () => {
         "Content-Type": "application/json",
     });
 
-    async function register(email: string, tenantId: string): Promise<void> {
+    async function register(email: string, tenantId?: string): Promise<void> {
         const res = await fetch(`${app.baseUrl}/api/auth/register`, {
             method: "POST",
-            headers: { "Content-Type": "application/json", "x-tenant-id": tenantId },
+            headers: {
+                "Content-Type": "application/json",
+                ...(tenantId ? { "x-tenant-id": tenantId } : {}),
+            },
             body: JSON.stringify({ email, password }),
         });
         expect(res.status, `register ${email}`).toBe(201);
@@ -138,6 +143,7 @@ describeE2E("generated app — tenant option mode", () => {
 
         await register(emailA, tenantA);
         await register(emailB, tenantB);
+        await register(emailCreate);
     }, 900_000);
 
     afterAll(async () => {
@@ -166,6 +172,42 @@ describeE2E("generated app — tenant option mode", () => {
         const selectedB = await selectTenant(b.accessToken, b.accessTokenIndex, tenantB);
         tokenB = selectedB.accessToken;
         indexB = selectedB.accessTokenIndex;
+    });
+
+    it("creates a tenant and switches to it", async () => {
+        const pre = await login(emailCreate);
+        expect(claimsOf(pre.accessToken).tenantId).toBeUndefined();
+
+        const created = await fetch(`${app.baseUrl}/api/tenant/create`, {
+            method: "POST",
+            headers: auth(pre.accessToken, pre.accessTokenIndex),
+        });
+        expect(created.status).toBe(201);
+
+        const result = (await created.json()).result;
+        const newTenant = claimsOf(result.accessToken).tenantId;
+        expect(newTenant).toEqual(expect.any(String));
+        expect(newTenant).not.toBe(tenantA);
+
+        const scoped = await fetch(`${app.baseUrl}/api/project/search`, {
+            method: "POST",
+            headers: auth(result.accessToken, result.accessTokenIndex),
+            body: JSON.stringify({ filter: {}, pagination: { page: 1, perPage: 20 } }),
+        });
+        expect(scoped.status).toBe(200);
+        expect((await scoped.json()).result.total).toBe(0);
+
+        const listed = await fetch(`${app.baseUrl}/api/tenant`, {
+            headers: auth(result.accessToken, result.accessTokenIndex),
+        });
+        const tenants = (await listed.json()).result.tenants.map((row: { tenantId: string }) => row.tenantId);
+        expect(tenants).toEqual([newTenant]);
+    });
+
+    it("serves the create page", async () => {
+        const page = await fetch(`${app.baseUrl}/tenant`);
+        expect(page.status).toBe(200);
+        expect(await page.text()).toContain("Create tenant");
     });
 
     it("refuses a tenant the user does not belong to", async () => {

@@ -1,13 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import authControllerTemplate from "../../src/generators/routes/authController.template";
-import { resolveTenantContext } from "../../src/templates/_tenant/TenantScopeContext";
 import * as types from "../../src/types/types";
 import { checkConfigValid } from "../../src/utils/configChecker";
 import { isTenantSingleMode, tenantIsolationMode, tenantUsesClaim } from "../../src/utils/generator";
-
-const TENANT_A = "11111111-1111-4111-8111-111111111111";
-const TENANT_B = "22222222-2222-4222-8222-222222222222";
 
 function options(overrides: {
     mode?: types.TenantIsolationMode,
@@ -91,20 +87,6 @@ describe("configChecker — single mode validation", () => {
     });
 });
 
-describe("resolveTenantContext — single", () => {
-    it("uses the token claim over the header", () => {
-        expect(resolveTenantContext("single", { tenantId: TENANT_A }, TENANT_B)).toEqual({ tenantId: TENANT_A });
-    });
-
-    it("rejects a token without a claim — login resolves it, so absence is a bug", () => {
-        expect(resolveTenantContext("single", {}, TENANT_A)).toEqual({ error: "missing-claim" });
-    });
-
-    it("falls back to the header for a guest request", () => {
-        expect(resolveTenantContext("single", undefined, TENANT_A)).toEqual({ tenantId: TENANT_A });
-    });
-});
-
 describe("AuthController template — single mode", () => {
     it("resolves the membership in both login paths and mints the claim", () => {
         const source = authControllerTemplate(options({ mode: "single", firebase: true }));
@@ -128,6 +110,13 @@ describe("AuthController template — single mode", () => {
             .toContain("Authentication.middleware, TenantScope.middleware");
     });
 
+    it("never links a tenant from the request on registration", () => {
+        const source = authControllerTemplate(options({ mode: "single" }));
+
+        expect(source).not.toContain("requestedTenantId");
+        expect(source).not.toContain("linkUserTenant");
+    });
+
     it("emits no membership resolution in option mode", () => {
         const source = authControllerTemplate(options({ mode: "option", firebase: true }));
 
@@ -141,5 +130,45 @@ describe("AuthController template — single mode", () => {
         expect(source).not.toContain("singleUserTenant");
         expect(source).not.toContain("claimTenant");
         expect(source).toContain("const isTenantMember = await this.tenantService.hasUserTenant(");
+    });
+});
+
+describe("Tenant endpoints across modes", () => {
+    it("emits create in single and option, and nothing in preSelect", async () => {
+        const fs = await import("node:fs");
+        const os = await import("node:os");
+        const path = await import("node:path");
+        const { compile } = await import("../../src/generators/controller/tenantController.generator");
+        const { setCompilerOptions } = await import("../../src/utils/common");
+
+        const emitFor = async (mode: types.TenantIsolationMode) => {
+            const root = fs.mkdtempSync(path.join(os.tmpdir(), `vex-tenant-ctrl-${mode}-`));
+            const compilerOptions = options({ mode });
+            const withDirs = { ...compilerOptions, rootDir: root } as types.compilerOptions;
+            setCompilerOptions(withDirs);
+            await compile({
+                compilerOptions: withDirs,
+                controllerDir: path.join(root, "controllers"),
+                typeDir: path.join(root, "types"),
+            });
+            return root;
+        };
+
+        const single = await emitFor("single");
+        const singleSource = fs.readFileSync(path.join(single, "controllers", "TenantController.gen.ts"), "utf8");
+        expect(singleSource).toContain('@Post("create")');
+        expect(singleSource).not.toContain('@Post("select")');
+        expect(singleSource).not.toContain("@Get()");
+        expect(fs.existsSync(path.join(single, "types", "Tenant.gen.ts"))).toBe(false);
+
+        const option = await emitFor("option");
+        const optionSource = fs.readFileSync(path.join(option, "controllers", "TenantController.gen.ts"), "utf8");
+        expect(optionSource).toContain('@Post("create")');
+        expect(optionSource).toContain('@Post("select")');
+        expect(optionSource).toContain("@Get()");
+        expect(fs.existsSync(path.join(option, "types", "TenantList.gen.ts"))).toBe(true);
+
+        const preSelect = await emitFor("preSelect");
+        expect(fs.existsSync(path.join(preSelect, "controllers", "TenantController.gen.ts"))).toBe(false);
     });
 });

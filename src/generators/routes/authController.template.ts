@@ -21,7 +21,8 @@ export default function authControllerTemplate(compilerOptions: types.compilerOp
     const tenantServiceImport = tenantEnabled
         ? "\nimport TenantService from \"../_services/TenantService.gen\";"
         : "";
-    const tenantContextImport = tenantEnabled && localAuth
+    // `single` reads no header, so it has no `requestedTenantId` to read either.
+    const tenantContextImport = tenantEnabled && localAuth && !tenantSingle
         ? "\nimport UserContext from \"../_middlewares/UserContext.gen\";"
         : "";
     const tenantIdImport = tenantClaimMode
@@ -145,7 +146,9 @@ ${membershipCheck("this.JWTService.userIdOf(user) ?? String(user._id)")}${single
     const oauthProviders: string[] = utilsGenerator.OAuthProviders(compilerOptions);
     const OAuthNote = oauthProviders.length > 0 ? "    // OAuth flows (Google, GitHub, etc.) are handled by AuthRouter — see /auth/<provider>": ""
 
-    const registerTenantLink = tenantEnabled ? `
+    // `single` takes no tenant from the request: the account's tenant comes from membership, so
+    // registration cannot pick one. The app links the account after it creates the tenant.
+    const registerTenantLink = tenantEnabled && !tenantSingle ? `
         const requestedTenantId = UserContext.requestedTenantId;${tenantPreSelect ? `
         if (!requestedTenantId) throw new VexResErr(400, null, "x-tenant-id header is required");` : ""}
         if (requestedTenantId) {
